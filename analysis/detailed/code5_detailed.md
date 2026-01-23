@@ -29,71 +29,77 @@ CODE 5 contains a single large function that:
 
 ### Function 0x0000 - Initialize Game State
 ```asm
-0000: LINK       A6,#-1152            ; Large frame (1152 bytes)
-0004: MOVE.L     12(A6),-(A7)         ; Push param2
-0008: MOVE.L     8(A6),-(A7)          ; Push param1
-000C: JSR        1354(A5)             ; JT[1354] - validate params
-0010: TST.W      D0
-0012: BNE.S      $0024                ; If valid, continue
-0016: MOVE.W     #$03FF,-(A7)         ; Push error code 1023
-001A: JSR        1418(A5)             ; JT[1418] - show error dialog
-001E: TST.W      D0
-0020: BNE.S      $002A                ; If OK clicked, continue
-0024: MOVEQ      #0,D0                ; Return 0 (failure)
-0026: BRA.W      $00CA
+; From disassembly:
+0000: 4E56FB80      LINK       A6,#-1152            ; Large frame (1152 bytes)
+0004: 2F2E000C      MOVE.L     12(A6),-(A7)         ; Push param2
+0008: 2F2E0008      MOVE.L     8(A6),-(A7)          ; Push param1
+000C: 4EAD054A      JSR        1354(A5)             ; JT[1354] - validate params
+0010: 4A40          TST.W      D0
+0012: 508F          ADDQ.L     #8,A7                ; Clean stack
+0014: 670E          BEQ.S      $0024                ; If invalid, show error
+0016: 3F3C03FF      MOVE.W     #$03FF,-(A7)         ; Push error code 1023 (0x3FF)
+001A: 4EAD058A      JSR        1418(A5)             ; JT[1418] - show error dialog
+001E: 4A40          TST.W      D0
+0020: 548F          ADDQ.L     #2,A7                ; Clean stack
+0022: 6606          BNE.S      $002A                ; If OK clicked, continue
+0024: 7000          MOVEQ      #0,D0                ; Return 0 (failure)
+0026: 600000A0      BRA.W      $00CA                ; Jump to return
 
 ; Initialization sequence
-002A: JSR        658(A5)              ; JT[658] - init_subsystem
-002E: MOVE.L     8(A6),-(A7)          ; Push param1
-0032: PEA        -15514(A5)           ; Push g_field_14
-0036: JSR        3490(A5)             ; JT[3490] - copy_to_global
-003A: MOVE.L     12(A6),(A7)          ; Replace with param2
-003E: PEA        -15522(A5)           ; Push g_field_22
-0042: JSR        3490(A5)             ; Copy to g_field_22
+002A: 4EAD0292      JSR        658(A5)              ; JT[658] - init_subsystem
+002E: 2F2E0008      MOVE.L     8(A6),-(A7)          ; Push param1
+0032: 486DC366      PEA        -15514(A5)           ; Push &g_field_14
+0036: 4EAD0DA2      JSR        3490(A5)             ; JT[3490] - copy_to_global
+003A: 2EAE000C      MOVE.L     12(A6),(A7)          ; Replace with param2
+003E: 486DC35E      PEA        -15522(A5)           ; Push &g_field_22
+0042: 4EAD0DA2      JSR        3490(A5)             ; Copy to g_field_22
 
-0046: JSR        1362(A5)             ; JT[1362] - state_update
-004A: MOVE.L     16(A6),-15502(A5)    ; g_size2 = param3
-0050: MOVE.L     20(A6),-15506(A5)    ; g_size1 = param4
+0046: 4EAD0552      JSR        1362(A5)             ; JT[1362] - state_update
+004A: 2B6E0010C372  MOVE.L     16(A6),-15502(A5)   ; g_size2 = param3
+0050: 2B6E0014C36E  MOVE.L     20(A6),-15506(A5)   ; g_size1 = param4
 
-0056: JSR        1258(A5)             ; JT[1258] - post_search_init
-005A: JSR        1018(A5)             ; JT[1018] - some init
+0056: 4EAD04EA      JSR        1258(A5)             ; JT[1258] - post_search_init
+005A: 4EAD03FA      JSR        1018(A5)             ; JT[1018] - some init
 
-; Copy lookup table
-005E: PEA        $0121.W              ; Push 289 (17×17)
-0062: PEA        -10388(A5)           ; Push g_lookup_tbl
-0066: PEA        -10099(A5)           ; Push source
-006A: JSR        3466(A5)             ; JT[3466] - memcpy
+; Copy 17x17 lookup table (289 bytes = 0x121)
+005E: 48780121      PEA        $0121.W              ; Push 289 (17x17)
+0062: 486DD76C      PEA        -10388(A5)           ; Push g_lookup_tbl (dest)
+0066: 486DD88D      PEA        -10099(A5)           ; Push source
+006A: 4EAD0D8A      JSR        3466(A5)             ; JT[3466] - memcpy
 
 ; Check who goes first (param at offset 24)
-006E: TST.W      24(A6)               ; param5
-0076: BEQ.S      $009A                ; If 0, human goes first
+006E: 4A6E0018      TST.W      24(A6)               ; param5 (computer_first)
+0072: 4FEF0018      LEA        24(A7),A7            ; Clean stack
+0076: 6722          BEQ.S      $009A                ; If 0, human goes first
 
-; Computer goes first
-0078: LEA        -15514(A5),A0        ; A0 = &g_field_14
-007C: MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_14
-0080: PEA        -15514(A5)           ; Push g_field_14
-0084: JSR        2402(A5)             ; JT[2402] - process buffer
-0088: PEA        -15522(A5)           ; Push g_field_22
-008C: JSR        2402(A5)             ; Process other buffer
-0090: MOVE.W     #$0003,-8604(A5)     ; g_game_mode = 3
-0098: BRA.S      $00BA
+; Computer goes first path
+0078: 41EDC366      LEA        -15514(A5),A0        ; A0 = &g_field_14
+007C: 2B48C376      MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_14
+0080: 486DC366      PEA        -15514(A5)           ; Push g_field_14
+0084: 4EAD0962      JSR        2402(A5)             ; JT[2402] - process buffer
+0088: 486DC35E      PEA        -15522(A5)           ; Push g_field_22
+008C: 4EAD0962      JSR        2402(A5)             ; Process other buffer
+0090: 3B7C0003DE64  MOVE.W     #$0003,-8604(A5)     ; g_game_mode = 3 (computer's turn)
+0096: 508F          ADDQ.L     #8,A7                ; Clean stack
+0098: 6020          BRA.S      $00BA                ; Jump to final setup
 
-; Human goes first
-009A: LEA        -15522(A5),A0        ; A0 = &g_field_22
-009E: MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_22
-00A2: PEA        -15522(A5)           ; Push g_field_22
-00A6: JSR        2402(A5)             ; Process buffer
-00AA: PEA        -15514(A5)           ; Push g_field_14
-00AE: JSR        2402(A5)             ; Process other buffer
-00B2: MOVE.W     #$0002,-8604(A5)     ; g_game_mode = 2
+; Human goes first path
+009A: 41EDC35E      LEA        -15522(A5),A0        ; A0 = &g_field_22
+009E: 2B48C376      MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_22
+00A2: 486DC35E      PEA        -15522(A5)           ; Push g_field_22
+00A6: 4EAD0962      JSR        2402(A5)             ; Process buffer
+00AA: 486DC366      PEA        -15514(A5)           ; Push g_field_14
+00AE: 4EAD0962      JSR        2402(A5)             ; Process other buffer
+00B2: 3B7C0002DE64  MOVE.W     #$0002,-8604(A5)     ; g_game_mode = 2 (human's turn)
+00B8: 508F          ADDQ.L     #8,A7                ; Clean stack
 
 ; Final setup
-00BA: JSR        1362(A5)             ; JT[1362] - state_update
-00BE: JSR        298(A5)              ; JT[298] - final init
-00C2: CLR.W      -9810(A5)            ; Clear A5-9810
-00C6: MOVEQ      #1,D0                ; Return 1 (success)
-00C8: UNLK       A6
-00CA: RTS
+00BA: 4EAD0552      JSR        1362(A5)             ; JT[1362] - state_update
+00BE: 4EAD012A      JSR        298(A5)              ; JT[298] - final init
+00C2: 426DD9AE      CLR.W      -9810(A5)            ; Clear g_some_flag
+00C6: 7001          MOVEQ      #1,D0                ; Return 1 (success)
+00C8: 4E5E          UNLK       A6
+00CA: 4E75          RTS
 ```
 
 **C equivalent**:
@@ -152,8 +158,8 @@ int setup_game_state(void* board1, void* board2,
 
 | Offset | Name | Purpose |
 |--------|------|---------|
-| A5-15514 | g_field_14 | Vertical board buffer |
-| A5-15522 | g_field_22 | Horizontal board buffer |
+| A5-15514 | g_field_14 | Hook-before board buffer |
+| A5-15522 | g_field_22 | Hook-after board buffer |
 | A5-15506 | g_size1 | Size of section 1 |
 | A5-15502 | g_size2 | Size of section 2 |
 | A5-15498 | g_current_ptr | Pointer to active buffer |

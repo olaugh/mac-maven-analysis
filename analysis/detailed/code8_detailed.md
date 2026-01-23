@@ -13,10 +13,11 @@
 
 ## System Role
 
-**Category**: User Interface
-**Function**: Menu Handling
+**Category**: Game Logic
+**Function**: Move Scoring and Validation
 
-Menu command dispatch and processing
+Core scoring engine for evaluating moves, validating placements, and applying moves to the board.
+
 ## Architecture Role
 
 CODE 8 is responsible for:
@@ -28,54 +29,53 @@ CODE 8 is responsible for:
 
 ### Function 0x0000 - Calculate Move Score
 ```asm
-0000: LINK       A6,#-64              ; 64 bytes local
-0004: MOVEM.L    D3/D4/D5/D6/D7/A2/A3/A4,-(SP)
-0008: MOVEA.L    8(A6),A3             ; A3 = move info structure
-000C: CLR.L      -36(A6)              ; total_score = 0
-0010: MOVEQ      #1,D7                ; D7 = direction multiplier
-0012: CLR.L      -52(A6)              ; word_score = 0
-0016: LEA        16(A3),A0            ; A0 = &move->tiles
-001A: MOVE.L     A0,-28(A6)
-001E: CLR.L      20(A3)               ; Clear result field
-0022: MOVEQ      #0,D0
-0024: MOVE.W     D0,30(A3)            ; Clear flag
+; From disassembly - main scoring function
+0000: 4E56FFC0      LINK       A6,#-64              ; 64 bytes local vars
+0004: 48E71F38      MOVEM.L    D3/D4/D5/D6/D7/A2/A3/A4,-(SP)  ; Save registers
+0008: 266E0008      MOVEA.L    8(A6),A3             ; A3 = move info structure (MoveInfo*)
+000C: 42AEFFDC      CLR.L      -36(A6)              ; total_score = 0
+0010: 7E01          MOVEQ      #1,D7                ; D7 = word multiplier (starts at 1)
+0012: 42AEFFCC      CLR.L      -52(A6)              ; cross_word_score = 0
+0016: 41EB0010      LEA        16(A3),A0            ; A0 = &move->tiles
+001A: 2D48FFE4      MOVE.L     A0,-28(A6)           ; Store tiles pointer
+001E: 42AB0014      CLR.L      20(A3)               ; move->score = 0
+0022: 7000          MOVEQ      #0,D0
+0024: 3740001E      MOVE.W     D0,30(A3)            ; move->bingo_flag = 0
 ...
 
-; Clear scoring counters
-003A: MOVE.W     D0,-17158(A5)        ; Clear counter 1
-003E: MOVE.W     D0,-17160(A5)        ; Clear counter 2
-0042: MOVE.W     D0,-17162(A5)        ; Clear counter 3
-0046: MOVE.W     D0,-17164(A5)        ; Clear counter 4
-004A: MOVE.W     D0,-20010(A5)        ; Clear tile count
+; Clear blank position tracking globals
+003A: 3B40BCFA      MOVE.W     D0,-17158(A5)        ; blank2_col = 0
+003E: 3B40BCF8      MOVE.W     D0,-17160(A5)        ; blank1_col = 0
+0042: 3B40BCF6      MOVE.W     D0,-17162(A5)        ; blank2_row = 0
+0046: 3B40BCF4      MOVE.W     D0,-17164(A5)        ; blank1_row = 0
+004A: 3B40B1D6      MOVE.W     D0,-20010(A5)        ; g_tiles_used = 0
 
-; Get move position
-004E: MOVE.B     32(A3),D3            ; D3 = row/position
-0052: TST.B      D3
-0054: BEQ.W      $036A                ; If no position, skip
+; Get move position from structure
+004E: 162B0020      MOVE.B     32(A3),D3            ; D3 = move->row
+0052: 4A03          TST.B      D3
+0054: 67000312      BEQ.W      $036A                ; If no position, skip to end
 
-; Check direction (row < 16 or row >= 16)
-005C: CMPI.B     #16,D3
-0060: BGE.S      $0086                ; Vertical move
+; Check direction: row < 16 means horizontal, >= 16 means vertical
+005C: 0C030010      CMPI.B     #16,D3
+0060: 6C24          BGE.S      $0086                ; If row >= 16, vertical move
 
 ; Horizontal move setup
-0062: MOVE.B     33(A3),D6            ; D6 = column
-0068: EXT.L      D6
-; Calculate offset for horizontal
-...
-007E: MOVEQ      #1,D1
-0080: MOVE.L     D1,-48(A6)           ; step = 1
-0084: BRA.S      $00B2
+0062: 1C2B0021      MOVE.B     33(A3),D6            ; D6 = move->col
+0066: 4886          EXT.W      D6
+0068: 48C6          EXT.L      D6
+; ... calculate horizontal offset
+007E: 7201          MOVEQ      #1,D1
+0080: 2D41FFD0      MOVE.L     D1,-48(A6)           ; step = 1 (horizontal)
+0084: 602C          BRA.S      $00B2
 
 ; Vertical move setup
-0086: MOVE.B     33(A3),D6            ; D6 = column
-008E: PEA        $0011.W              ; Push 17
-0092: MOVE.L     D6,-(A7)
-0094: JSR        66(A5)               ; JT[66] - multiply
-0098: MOVE.B     32(A3),D1            ; D1 = row
-...
-00A8: MOVE.L     D0,-44(A6)           ; Store offset
-00AC: MOVEQ      #17,D1
-00AE: MOVE.L     D1,-48(A6)           ; step = 17 (vertical)
+0086: 1C2B0021      MOVE.B     33(A3),D6            ; D6 = move->col
+008E: 48780011      PEA        $0011.W              ; Push 17
+0092: 2F06          MOVE.L     D6,-(A7)
+0094: 4EAD0042      JSR        66(A5)               ; JT[66] - multiply (col * 17)
+; ... adjust row and calculate offset
+00AC: 7211          MOVEQ      #17,D1
+00AE: 2D41FFD0      MOVE.L     D1,-48(A6)           ; step = 17 (vertical stride)
 
 ; Main scoring loop
 00B2: MOVE.B     D3,D4                ; D4 = current position
@@ -181,23 +181,26 @@ CODE 8 is responsible for:
 02C6: ADD.L      D0,-52(A6)           ; Add cross-word score
 02CC: ...
 
-; Check for BINGO (all 7 tiles)
-0340: MOVEA.L    -15514(A5),A0        ; g_field_14
-0340: JSR        3522(A5)             ; strlen
-0344: MOVEA.W    -20010(A5),A0        ; Get tile count
-0348: CMP.W      (A0),D0
-034A: LEA        12(A7),A7
-034C: BNE.S      $0360                ; Not all 7 tiles
+; Check for BINGO (all 7 tiles used)
+; From disassembly:
+0336: 486DC366      PEA        -15514(A5)           ; Push g_field_14 (rack)
+033A: 4EAD0DC2      JSR        3522(A5)             ; JT[3522] - strlen (get rack length)
+033E: 306DB1D6      MOVEA.W    -20010(A5),A0        ; A0 = g_tiles_used
+0344: B088          CMP.W      A0,D0                ; Compare tiles used with rack size
+0346: 588F          ADDQ.L     #4,A7                ; Clean stack
+0348: 6616          BNE.S      $0360                ; Not all tiles used
 
-034E: CMPI.W     #7,-20010(A5)        ; Used 7 tiles?
-0356: BNE.S      $035A
-0358: ADDI.L     #5000,-52(A6)        ; Add 50 point bonus (5000 = 50*100)
-035A: MOVE.W     #1,28(A3)            ; Set bingo flag
+034A: 0C6D0007B1D6  CMPI.W     #7,-20010(A5)        ; tiles_used == 7?
+0350: 6608          BNE.S      $035A                ; No, skip bonus
+0352: 06AE00001388FFCC  ADDI.L #5000,-52(A6)       ; Add 50-point BINGO bonus (5000 = 50*100 internal scale)
+035A: 377C0001001C  MOVE.W     #1,28(A3)            ; move->bingo_flag = 1
 
-; Store final score
-0360: MOVEA.L    -28(A6),A0
-0364: MOVE.L     -52(A6),(A0)         ; Store score in result
-0368: RTS
+; Store final score in result structure
+0360: 206EFFE4      MOVEA.L    -28(A6),A0           ; A0 = result pointer
+0364: 20AEFFCC      MOVE.L     -52(A6),(A0)         ; *result = total_score
+0368: 4CDF1CF8      MOVEM.L    (SP)+,D3-D7/A2-A4   ; Restore registers
+036C: 4E5E          UNLK       A6
+036E: 4E75          RTS
 ```
 
 **C equivalent**:

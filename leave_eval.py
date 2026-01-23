@@ -211,8 +211,12 @@ def evaluate_leave(leave, mul_data, vcb_data=None, verbose=True):
             })
 
     # Apply VCBh vowel count adjustment
+    # VCBh contains adjustments indexed by vowel count (0-7)
+    # Note: How Maven applies this to partial racks is unclear from disassembly
     vcb_adj = 0
     vcb_desc = None
+    total_tiles = sum(counts.values())
+
     if vcb_data and 'h' in vcb_data:
         vcb_h = vcb_data['h']
         if 0 <= vowel_count < len(vcb_h):

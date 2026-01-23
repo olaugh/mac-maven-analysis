@@ -480,12 +480,49 @@ Each cache entry is 34 bytes:
 4. **Score comparison**: Replace cache entry if new move scores higher
 5. **Direction-specific**: Separate handling for horizontal/vertical
 
+## Integration with CODE 43 and 44
+
+CODE 40 is the caching layer between search and validation:
+
+1. **CODE 44 → CODE 40 Flow**:
+   - CODE 44 dispatches search based on rack size
+   - CODE 40 caches validated moves from search
+   - Cache entries reused by subsequent searches
+
+2. **CODE 43 → CODE 40 Flow**:
+   - CODE 43 generates cross-check masks
+   - CODE 40's g_dawg_search_area (A5-23056) receives results
+   - Shared 34-byte entry structure
+
+## Shared Global Variables
+
+| Offset | CODE 40 | CODE 43 | CODE 44 | Purpose |
+|--------|---------|---------|---------|---------|
+| A5-12496 | Write | Read | - | Secondary cache |
+| A5-12540 | Read/Write | Read | Read/Write | Entry count |
+| A5-22698 | Write | Read | - | Results array |
+| A5-23056 | Read/Write | Write | Read | DAWG search area |
+
+## Cache Sizes
+
+- g_dawg_search_area: 340 bytes (0x154) for initial copy
+- Cache buffer: 3584 bytes (0x0E00) cleared per search
+- Entry size: 34 bytes (consistent with CODE 44)
+
+## Search Callback System
+
+Callbacks registered at A5+2682 and A5+2674:
+- Horizontal search uses A5+2682
+- Vertical search uses A5+2674
+- Debug callback at A5+2690
+
 ## Confidence: MEDIUM-HIGH
 
 Clear caching patterns with:
-- Two-level cache hierarchy
-- Score-based replacement policy
-- Position/player/direction matching
-- Callback system for search phases
+- Two-level cache hierarchy (primary at A5-22698, secondary at A5-12496)
+- Score-based replacement policy (compare at offsets 16 and 20)
+- Position/player/direction matching (offsets 30, 32, 33)
+- Callback system for search phases (JT[2618] sets callback)
+- 14-byte partial copy in function 0x0110 (4+4+4+2 bytes)
 
-Some disassembly artifacts but overall structure is clear.
+Some disassembly artifacts (garbled indexed addressing) but overall structure is clear.

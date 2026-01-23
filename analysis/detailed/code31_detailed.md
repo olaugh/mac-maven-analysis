@@ -13,10 +13,9 @@
 
 ## System Role
 
-**Category**: Scoring
-**Function**: Word Score
+**Category**: Board State Management
+**Function**: Move Application, Board Serialization, Tile Placement
 
-Word score calculation
 ## Architecture Role
 
 CODE 31 manages:

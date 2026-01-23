@@ -13,10 +13,9 @@
 
 ## System Role
 
-**Category**: Scoring
-**Function**: Position Scoring
+**Category**: Dictionary/DAWG
+**Function**: Core DAWG Traversal Engine
 
-Position-based score calculation
 ## Architecture Role
 
 CODE 30 appears to be the **actual DAWG traversal engine** - it:

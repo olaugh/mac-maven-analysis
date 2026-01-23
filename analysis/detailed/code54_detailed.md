@@ -16,92 +16,41 @@
 **Category**: Utility
 **Function**: String Compare
 
-String equality comparison (smallest CODE at 46 bytes)
+String equality comparison - the smallest CODE resource at 42 bytes.
+
 ## Architecture Role
 
-CODE 54 is the smallest CODE resource, providing a simple utility:
-1. Compare two C-style strings
-2. Return equality result
+CODE 54 provides a simple utility:
+1. Compare two C-style null-terminated strings
+2. Return boolean equality result
 3. Used throughout the application for string matching
 
-## Key Functions
+## Key Function
 
-### Function 0x0000 - String Compare
-```asm
-0000: LINK       A6,#0
-0004: MOVEM.L    A3/A4,-(SP)          ; Save registers
-0008: MOVEA.L    8(A6),A4             ; A4 = string1
-000C: MOVEA.W    12(A6),A3            ; A3 = string2 (word offset)
-
-; Main comparison loop
-0010: MOVE.B     A4,8(PC,D6.W)        ; Complex addressing
-0014: TST.B      (A4)+                ; Get char from string1, advance
-0016: BEQ.S      $001C                ; Null terminator - end
-
-; Check if chars match
-0018: MOVEQ      #0,D0                ; Assume not equal
-001A: BRA.S      $0022                ; Return 0
-
-; Check if both strings ended
-001C: MOVE.W     A4,-12(PC,D6.W)      ; Check string2
-0020: MOVEQ      #1,D0                ; Strings equal - return 1
-
-0022: MOVEM.L    (SP)+,A3/A4          ; Restore registers
-0026: UNLK       A6
-0028: RTS
-```
-
-**Simplified C equivalent**:
-```c
-int string_equal(char* str1, char* str2) {
-    while (*str1) {
-        if (*str1 != *str2) {
-            return 0;  // Not equal
-        }
-        str1++;
-        str2++;
-    }
-
-    // Check if str2 also ended
-    if (*str2 == '\0') {
-        return 1;  // Equal
-    }
-
-    return 0;  // str2 is longer
-}
-```
-
-## Detailed Assembly Analysis
-
-The code is compact but slightly unusual in its addressing:
-
+### Function 0x0000 - String Equality Compare
 ```asm
 ; Entry
-0000: LINK       A6,#0                ; Standard frame setup
+0000: LINK       A6,#0
 0004: MOVEM.L    A3/A4,-(SP)          ; Save A3, A4
 
-; Get parameters
-0008: MOVEA.L    8(A6),A4             ; First string pointer
-000C: MOVEA.W    12(A6),A3            ; Second string (word value)
+; Get parameters from stack
+0008: MOVEA.L    8(A6),A4             ; A4 = string1 pointer
+000C: MOVEA.W    12(A6),A3            ; A3 = string2 pointer (word value - unusual)
 
-; Comparison loop
-0010: D7CC                            ; Add A4 to D7 (complex)
-0012: 6008                            ; BRA.S +8 to check
+; Main comparison loop
+0010: ...                             ; (disassembly shows complex addressing)
 
 ; Test current character
-0014: TST.B      (A4)+                ; Test and increment
-0016: BEQ.S      $001C                ; Branch if zero (end)
+0014: TST.B      (A4)+                ; Test char at A4, then increment
+0016: BEQ.S      $001C                ; If null terminator, go check str2
 
-; Not equal case
-0018: MOVEQ      #0,D0                ; Return 0
+; Characters didn't match (or still comparing)
+0018: MOVEQ      #0,D0                ; Return 0 (not equal)
 001A: BRA.S      $0022                ; Exit
 
-; End of string1 - check string2
-001C: B7CC                            ; Compare A4 with something
-001E: 62F4                            ; BNE back to loop
-
-; Strings are equal
-0020: MOVEQ      #1,D0                ; Return 1
+; End of string1 reached - check if string2 also ended
+001C: ...                             ; Complex check of string2
+0020: MOVEQ      #1,D0                ; Return 1 (strings equal)
 
 ; Cleanup and return
 0022: MOVEM.L    (SP)+,A3/A4          ; Restore registers
@@ -109,13 +58,46 @@ The code is compact but slightly unusual in its addressing:
 0028: RTS
 ```
 
-## Usage Pattern
+## Detailed Analysis
 
-This function is likely used for:
-1. **Word Dictionary Lookup**: Check if a word exists
-2. **Command Parsing**: Match user input commands
-3. **Resource Name Matching**: Find resources by name
-4. **Configuration Comparison**: Check settings
+The actual comparison logic (reconstructed from disassembly patterns):
+
+```asm
+; Loop start - compare characters
+loop:
+    MOVE.B     (A4)+,D0         ; Get char from string1, advance
+    MOVE.B     (A3)+,D1         ; Get char from string2, advance
+
+    CMP.B      D1,D0            ; Compare characters
+    BNE.S      not_equal        ; Different - fail
+
+    TST.B      D0               ; Check if null terminator
+    BNE.S      loop             ; Not null - continue loop
+
+    ; Both strings ended at same point
+    MOVEQ      #1,D0            ; Return TRUE (equal)
+    BRA.S      exit
+
+not_equal:
+    MOVEQ      #0,D0            ; Return FALSE (not equal)
+
+exit:
+    MOVEM.L    (SP)+,A3/A4
+    UNLK       A6
+    RTS
+```
+
+## Parameters
+
+| Offset | Type | Description |
+|--------|------|-------------|
+| 8(A6) | char* | First string pointer (null-terminated) |
+| 12(A6) | char* | Second string pointer (null-terminated) |
+
+Note: The disassembly shows `MOVEA.W 12(A6),A3` which loads a word, not a long. This is unusual for a pointer and may indicate:
+- A near pointer in the first 64KB
+- Disassembly artifact
+- Actually a length or offset parameter
 
 ## Return Values
 
@@ -124,26 +106,81 @@ This function is likely used for:
 | 0 | Strings are different |
 | 1 | Strings are equal |
 
-## Parameters
+## C Equivalent
 
-| Offset | Type | Description |
-|--------|------|-------------|
-| 8(A6) | char* | First string (null-terminated) |
-| 12(A6) | char* | Second string (null-terminated) |
+```c
+int string_equal(const char* str1, const char* str2) {
+    // Compare character by character
+    while (*str1) {
+        if (*str1 != *str2) {
+            return 0;  // Not equal - mismatch found
+        }
+        str1++;
+        str2++;
+    }
+
+    // str1 ended - check if str2 also ended
+    if (*str2 == '\0') {
+        return 1;  // Equal - both ended at same point
+    }
+
+    return 0;  // Not equal - str2 is longer
+}
+```
+
+## Usage Pattern
+
+This function is likely used for:
+1. **Word Dictionary Lookup**: Check if a word exists in word list
+2. **Command Parsing**: Match user input commands
+3. **Resource Name Matching**: Find resources by name
+4. **Configuration Comparison**: Check settings strings
+
+## Why a Separate CODE Segment?
+
+At only 42 bytes, this is the smallest CODE segment in Maven. Possible reasons:
+1. **Frequent calls**: Loaded once, used many times
+2. **Segment optimization**: Keep frequently-used utilities in small segments for fast loading
+3. **Compiler artifact**: May have been compiled separately
 
 ## Performance Characteristics
 
-- **Fast**: Single-pass comparison
-- **Early Exit**: Returns immediately on mismatch
-- **No Length Check**: Relies on null terminators
+- **Fast**: Single-pass comparison, O(n) where n = string length
+- **Early Exit**: Returns immediately on first mismatch
+- **No Length Check**: Relies entirely on null terminators
+- **Minimal Register Use**: Only A3, A4 saved/restored
+
+## Comparison with CODE 52 strcmp
+
+CODE 52 contains a full `strcmp` implementation that returns -1/0/+1 for ordering.
+This function (CODE 54) only returns 0/1 for equality, which is simpler and slightly faster.
+
+| Feature | CODE 54 | CODE 52 strcmp |
+|---------|---------|----------------|
+| Return | 0 or 1 | -1, 0, or +1 |
+| Purpose | Equality only | Ordering |
+| Size | 42 bytes | ~40 bytes |
+| Speed | Slightly faster | Standard |
+
+## Register Usage
+
+| Register | Purpose |
+|----------|---------|
+| A3 | String 2 pointer |
+| A4 | String 1 pointer |
+| D0 | Current char / return value |
 
 ## Confidence: MEDIUM
 
-The disassembly shows some unusual addressing modes that may be partially incorrect due to instruction boundary issues. However, the overall function purpose (string comparison) is clear from:
+The disassembly shows some unusual addressing modes that may be partially incorrect due to instruction boundary issues. However, the overall function purpose (string comparison returning boolean) is clear from:
 - Two pointer parameters
 - Loop with character testing
-- Binary return value
+- Binary return value (0 or 1)
+- Small size suggests simple equality check
 
 ## Note
 
-The 42-byte size makes this one of the smallest CODE resources, containing just this single utility function. The compact size suggests it may be called frequently and was optimized for minimal code segment loading overhead.
+The 42-byte size makes this one of the smallest CODE resources, containing just this single utility function. The compact size suggests it was designed for:
+1. Minimal code segment loading overhead
+2. Frequent invocation from multiple callers
+3. Fast memory footprint when loaded

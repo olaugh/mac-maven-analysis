@@ -26,7 +26,7 @@ Letter pair synergy scoring (9632-byte stack frame)
 CODE 39 handles multi-letter combination analysis:
 1. Generate all valid letter pair combinations
 2. Calculate combined scores for letter groups
-3. Support both horizontal and vertical orientations
+3. Support both hook-before and hook-after orientations
 4. Provide score tables for different board positions
 
 ## Key Functions
@@ -679,8 +679,8 @@ int get_pair_scores(uint16_t pair, int* score_out1, int* score_out2) {
 - Lower 7 bits encode letter indices
 
 **Score Tables** (6 tables):
-- 3 for horizontal (A5-12524, A5-12528, A5-12532)
-- 3 for vertical (A5-12512, A5-12516, A5-12520)
+- 3 for hook-after (A5-12524, A5-12528, A5-12532)
+- 3 for hook-before (A5-12512, A5-12516, A5-12520)
 - Each provides different score components:
   - Table 1: Base letter values
   - Table 2: Letter combination bonuses
@@ -713,12 +713,57 @@ The large 9632-byte stack frame in function 0x018C:
 
 This represents the most memory-intensive function in Maven, used for exhaustive move generation.
 
+## ESTR Pattern and Synergy Tables
+
+The six score tables at A5-12512 to A5-12532 implement **ESTR (Extended Score Table Record) patterns** for letter synergy evaluation:
+
+**Table Structure** (18-byte records indexed by letter pair):
+```
+Offset 0-1:   Base value
+Offset 2-3:   Synergy bonus 1
+Offset 4-5:   Synergy bonus 2
+...
+Offset 16-17: Position multiplier
+```
+
+**Letter Synergy Computation**:
+The tables encode pre-computed synergy values for common letter combinations:
+- High-value combinations (QU, ING, TION, etc.) have positive synergy
+- Conflicting combinations (multiple high-point tiles) have negative synergy
+- Position-dependent adjustments for premium squares
+
+**Horizontal vs Vertical Tables**:
+- Tables 1-3 (A5-12524 to A5-12532): Used for hook-after cross-checks
+- Tables 4-6 (A5-12512 to A5-12520): Used for hook-before cross-checks
+- Distinction important because row/column premium square patterns differ
+
+## Data Flow
+
+```
+Rack Letters → Letter Pair Table → Valid Pairs Filter
+                                         ↓
+                              Pair Combinations Generator
+                                         ↓
+                              Score Table Lookups (6 tables)
+                                         ↓
+                              Results Array (A5-22698)
+                                         ↓
+                              Best Score Selection
+```
+
+## Integration with Other CODE Resources
+
+- **CODE 32**: Consumes synergy scores for move evaluation
+- **CODE 42**: Provides rack analysis that feeds into pair generation
+- **CODE 36**: Uses results for cache optimization
+
 ## Confidence: MEDIUM-HIGH
 
 Complex score calculation logic with:
-- Clear separation of horizontal/vertical tables
-- Systematic pair enumeration
-- Multi-pass scoring algorithm
-- Direction-aware table selection
+- Clear separation of hook-after/hook-before tables (confirmed by direction parameter check)
+- Systematic pair enumeration with 0x80 processed flag
+- Multi-pass scoring algorithm (4+ passes visible in function 0x018C)
+- ESTR pattern lookup using 18-byte indexed records
+- Direction-aware table selection at offset 0x019A-0x01BA
 
-Some disassembly artifacts (garbled instructions) but overall flow is clear.
+Some disassembly artifacts (garbled instructions at complex addressing modes) but overall algorithm flow is well-understood.

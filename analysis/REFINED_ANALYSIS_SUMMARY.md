@@ -46,7 +46,7 @@ CODE 30 contains the actual tree-walking code:
 
 CODE 3 orchestrates searches:
 - 2282-byte and 2968-byte frames for state
-- Manages horizontal/vertical buffer selection
+- Manages hook-before/hook-after buffer selection
 - Validates DAWG bounds
 - Calls CODE 30 for actual traversal
 - Handles result processing
@@ -65,8 +65,8 @@ CODE 3 orchestrates searches:
 │                      AI ENGINE                              │
 ├─────────────────────────────────────────────────────────────┤
 │  CODE 3 (Coordinator)       │  CODE 7 (Board State)        │
-│  - Setup search params      │  - g_field_14 (vertical)     │
-│  - Select h/v direction     │  - g_field_22 (horizontal)   │
+│  - Setup search params      │  - g_field_14 (hook-before)     │
+│  - Select hook direction     │  - g_field_22 (hook-after)   │
 │  - Manage 34-byte info      │  - Rack management           │
 ├─────────────────────────────┼───────────────────────────────┤
 │  CODE 30 (Traversal)        │  CODE 22 (Processing)        │

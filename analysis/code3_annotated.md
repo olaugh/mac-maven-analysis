@@ -2,7 +2,7 @@
 
 ## Compiler Analysis
 
-**Probable Compiler**: THINK C 5.x or MPW C 3.x (late 1980s/early 1990s)
+**Probable Compiler**: THINK C 5.x or MPW C 3.x (1980s)
 
 **Evidence**:
 - LINK A6,#-n / MOVEM.L pattern for function prologues

@@ -13,7 +13,7 @@
 ## Purpose (Speculative)
 
 CODE 7 appears to manage **board state and rack letters** for the Scrabble game. It:
-- Maintains two parallel data structures (horizontal/vertical board views?)
+- Maintains two parallel data structures (hook-before/hook-after for cross-checks)
 - Copies data between board state and DAWG lookup structures
 - Handles 17x17 grid operations (standard Scrabble = 15x15 + 1 for boundaries?)
 
@@ -267,7 +267,7 @@ typedef struct GameState {
 
 ## Key Observations
 
-1. **Two Parallel Buffers**: g_field_14 and g_field_22 seem to represent horizontal and vertical word directions
+1. **Two Parallel Buffers**: g_field_14 and g_field_22 handle hook-before and hook-after cross-check computation
 2. **Board Size**: 17×17 iterations suggest boundary padding around 15×15 Scrabble board
 3. **34-byte Structures**: Match the 34-byte entry size seen in CODE 3 - likely search state
 4. **XGME Format**: Custom game save format with magic number 0x58474D45

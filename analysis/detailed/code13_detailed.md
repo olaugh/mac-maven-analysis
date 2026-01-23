@@ -8,22 +8,47 @@
 | JT Offset | 592 |
 | JT Entries | 4 |
 | Functions | 5 |
-| Purpose | **Player direction switching, move direction display** |
-
+| Purpose | **Player direction switching, move direction display, sound playback** |
 
 ## System Role
 
-**Category**: Utility
-**Function**: Memory Management
+**Category**: UI Support
+**Function**: Direction Management
 
-Memory allocation utilities
+Handles player move direction toggling (hook-after/hook-before) and manages direction indicators on the board display. Also provides sound playback support.
+
+**Related CODE resources**:
+- CODE 21 (main UI)
+- CODE 20 (board state)
+- CODE 6 (window management)
+
 ## Architecture Role
 
 CODE 13 handles player direction management:
-1. Toggle between horizontal and vertical moves
-2. Update direction indicators
-3. Manage player-specific settings
-4. Coordinate UI updates for direction changes
+1. Toggle between hook-after and hook-before move directions
+2. Update direction indicators on the game board
+3. Manage player-specific direction settings
+4. Coordinate UI updates when direction changes
+5. Play sound effects
+
+## Key Data Structures
+
+### Window Data Structure (partial)
+```c
+struct WindowData {
+    // ... earlier fields ...
+    short toggle_state;       // Offset 768: Direction toggle state
+    short current_player;     // Offset 770: Current player (0 or 1)
+    // Player data starts at offset 10, size 192 bytes per player
+    struct PlayerData {
+        // ...
+        short direction;      // Offset 10 within player data
+        // ...
+    } players[2];
+};
+// Each player has 192 bytes of data
+// player[n].direction = window_base + 10 + (n * 192)
+```
 
 ## Key Functions
 
@@ -56,7 +81,7 @@ CODE 13 handles player direction management:
 003C: BRA.S      $0078
 
 ; Normal direction update (direction <= 19)
-003E: CLR.W      -(A7)                ; Push 0
+003E: CLR.W      -(A7)                ; Push 0 (clear indicator)
 0040: MOVEA.L    -8584(A5),A0
 0044: MOVEA.L    (A0),A1
 0046: MOVE.W     770(A1),D0           ; Get current player
@@ -73,7 +98,7 @@ CODE 13 handles player direction management:
 006C: MOVEA.L    (A0),A0
 0068: MOVE.W     D7,10(A0,D0.L)       ; Set new direction
 
-; Update indicator
+; Show new indicator
 006C: MOVE.W     #$0001,(A7)          ; Push 1 (show)
 0070: MOVE.W     D7,-(A7)             ; Push new direction
 0072: JSR        370(PC)              ; Show new indicator
@@ -87,20 +112,21 @@ CODE 13 handles player direction management:
 **C equivalent**:
 ```c
 void handle_direction(short new_dir) {
-    WindowData* win = *(WindowData**)g_window_handle;
+    WindowData** wh = g_window_handle;  // A5-8584
+    WindowData* w = *wh;
 
     if (new_dir > 19) {
-        // Toggle mode
-        win->toggle_state = (win->toggle_state == 0) ? 1 : 0;
-        update_display(new_dir, win->toggle_state);
+        // Toggle mode - flip direction state
+        w->toggle_state = (w->toggle_state == 0) ? 1 : 0;
+        update_display(new_dir, w->toggle_state);
     } else {
         // Normal direction change
-        short player = win->current_player;
-        short old_dir = win->player_data[player].direction;
+        short player = w->current_player;
+        short old_dir = w->players[player].direction;
 
-        clear_indicator(old_dir, 0);
-        win->player_data[player].direction = new_dir;
-        show_indicator(new_dir, 1);
+        clear_indicator(old_dir, 0);              // Hide old
+        w->players[player].direction = new_dir;
+        show_indicator(new_dir, 1);               // Show new
     }
 }
 ```
@@ -110,20 +136,32 @@ void handle_direction(short new_dir) {
 007E: LINK       A6,#0
 0082: CMPI.W     #256,-7454(A5)       ; If counter >= 256
 0088: BLT.S      $008E
-008A: CLR.W      -7454(A5)            ; Reset counter
+008A: CLR.W      -7454(A5)            ; Reset counter to 0
 008E: MOVE.W     -7454(A5),D0         ; Get counter
-0092: ADDQ.W     #1,-7454(A5)         ; Increment
+0092: ADDQ.W     #1,-7454(A5)         ; Increment counter
 0096: MOVEA.L    -7452(A5),A0         ; Get data pointer
-009A: TST.B      0(A0,D0.W)           ; Check flag
+009A: TST.B      0(A0,D0.W)           ; Check flag at counter index
 009E: BEQ.S      $00AA                ; If zero, skip
 00A0: MOVE.L     8(A6),-(A7)          ; Push param
-00A4: JSR        2114(A5)             ; JT[2114] - update
+00A4: JSR        2114(A5)             ; JT[2114] - update function
 00A8: LEA        4(A7),A7
 00AA: UNLK       A6
 00AC: RTS
 ```
 
-**Purpose**: Cycle through a 256-entry array checking for flags.
+**C equivalent**:
+```c
+void check_and_update(void* param) {
+    // Cycle through 256-entry array checking flags
+    if (g_counter >= 256)
+        g_counter = 0;
+
+    short idx = g_counter++;
+    if (g_flag_array[idx] != 0) {
+        update_function(param);  // JT[2114]
+    }
+}
+```
 
 ### Function 0x00AE - Get Direction-Based Search Area
 ```asm
@@ -140,23 +178,16 @@ void handle_direction(short new_dir) {
 
 ; Get search area based on direction
 00CE: MOVEA.L    -8584(A5),A0
-00D2: MOVEA.L    (A0),A1
-00D4: MOVE.W     770(A1),D0
-00D8: MULU.W     #192,D0
-00DE: MOVEA.L    D0,A1
-00E0: MOVEA.L    A5,A0
-00E2: ADDA.W     D7,A0
-00E4: ADDA.W     D7,A0
-00E6: PEA        -24180(A0)           ; Push search area
+; ... calculate search area pointer using direction ...
+00E6: PEA        -24180(A0)           ; Push search area at A5-24180
 
 ; Setup drawing rectangles
-00EA: PEA        -266(A6)
+00EA: PEA        -266(A6)             ; Local rect buffer
 00EE: MOVE.W     #$200E,-(A7)         ; Push coordinates
 00F2: A9EB                            ; SetRect trap
 00F6: PEA        -266(A6)
 00FA: MOVE.W     #$0002,-(A7)
-00FE: A9EB                            ; InsetRect
-...
+00FE: A9EB                            ; InsetRect trap
 
 ; Check direction type
 011A: CMPI.W     #1,D7
@@ -171,25 +202,21 @@ void handle_direction(short new_dir) {
 0134: BRA.W      $01CA
 
 ; Other directions - general handling
-0138: LEA        -256(A6),A0
+0138: LEA        -256(A6),A0          ; Local 256-byte buffer
 013C: MOVE.L     A0,-7452(A5)         ; Store buffer pointer
 
 ; Clear buffer
 0140: PEA        $0100.W              ; 256 bytes
 0144: PEA        -256(A6)
-0148: JSR        426(A5)              ; memset
+0148: JSR        426(A5)              ; JT[426] - memset
 
-; Validate direction
-014C: MOVEA.L    -8584(A5),A0
-0150: MOVEA.L    (A0),A1
-0152: MOVE.W     770(A1),D0
-...
+; Validate direction bounds
 015C: CMPI.W     #19,10(A0,D0.L)      ; Direction < 19?
 0162: LEA        16(A7),A7
 0164: BCS.S      $016A
-0166: JSR        418(A5)              ; bounds_error
+0166: JSR        418(A5)              ; JT[418] - bounds_error
 
-; Build position array
+; Build position array based on direction
 016A: MOVEQ      #0,D5                ; D5 = count
 016C: MOVE.W     D5,D6                ; D6 = position
 016E: BRA.S      $0196
@@ -197,19 +224,19 @@ void handle_direction(short new_dir) {
 0170: CMPI.W     #256,D6              ; Wrap at 256
 0174: BCS.S      $017E
 0176: MOVE.W     D6,D0
-0178: ADDI.W     #-256,D0             ; D0 = D6 - 256
+0178: SUBI.W     #256,D0              ; D0 = D6 - 256
 017C: MOVE.W     D0,D6
 
 017E: LEA        -256(A6),A4
 0182: ADDA.W     D6,A4                ; Index into buffer
 0184: TST.B      (A4)                 ; Already set?
 0186: BNE.S      $018C
-0188: JSR        418(A5)              ; Error if already set
+0188: JSR        418(A5)              ; Error if conflict
 018C: MOVE.B     #1,(A4)              ; Mark position
 0190: ADDQ.W     #1,D5                ; count++
 0192: ADDI.W     #17,D6               ; Next diagonal position
 
-0196: ... ; Continue based on direction count
+0196: ; ... continue based on direction count ...
 
 ; Perform search in area
 01B6: PEA        642(A5)              ; Push constant
@@ -219,68 +246,88 @@ void handle_direction(short new_dir) {
 01C8: CLR.W      -23220(A5)           ; Clear result count
 
 01CA: MOVE.L     A4,D0                ; Return result
-01CE: MOVEM.L    (SP)+,...
-01D4: RTS
+01CE: MOVEM.L    (SP)+,D5/D6/D7/A4
+01D4: UNLK       A6
+01D6: RTS
 ```
 
 ### Function 0x01E6 - Play Sound
 ```asm
 01E6: LINK       A6,#0
-01EA: CLR.L      -(A7)                ; Push NULL
-01EC: MOVE.W     #5,-(A7)             ; Push sound ID
+01EA: CLR.L      -(A7)                ; Push NULL (channel)
+01EC: MOVE.W     #5,-(A7)             ; Push sound resource ID
 01F0: A949                            ; GetResource trap
-01F4: MOVE.W     8(A6),-(A7)          ; Push param
-01F8: MOVE.B     11(A6),-(A7)         ; Push flag
+01F4: MOVE.W     8(A6),-(A7)          ; Push sound param
+01F8: MOVE.B     11(A6),-(A7)         ; Push async flag
 01FC: A945                            ; SndPlay trap
 01FE: UNLK       A6
 0200: RTS
 ```
 
-## Window Data Structure
+**C equivalent**:
+```c
+void play_sound(short param, char async_flag) {
+    Handle snd = GetResource('snd ', 5);
+    SndPlay(NULL, snd, async_flag);
+}
+```
+
+## Window Data Structure Details
 
 | Offset | Size | Purpose |
 |--------|------|---------|
-| 768 | 2 | Toggle state |
+| 768 | 2 | Toggle state (0 or non-zero) |
 | 770 | 2 | Current player (0 or 1) |
-| 10+p*192 | 2 | Player direction |
+| 10 + n*192 | 2 | Player n's direction (at offset 10 within 192-byte player block) |
 
-## Player Data Size
+## Player Data Block (192 bytes each)
 
-Each player has 192 bytes of data, accessed as:
-```c
-player_data = window_base + 10 + (player_num * 192)
-```
+| Offset | Size | Purpose |
+|--------|------|---------|
+| 10 | 2 | Move direction |
+| ... | ... | Other player data |
 
 ## Direction Values
 
 | Value | Meaning |
 |-------|---------|
-| 1-19 | Normal directions/positions |
-| 20+ | Toggle modes |
+| 1-19 | Normal board positions/directions |
+| 20+ | Toggle modes (special operations) |
 
 ## Global Variables
 
-| Offset | Purpose |
-|--------|---------|
-| A5-7452 | Data buffer pointer |
-| A5-7454 | Cycle counter (0-255) |
-| A5-8584 | Window handle |
-| A5-23056 | g_dawg_field |
-| A5-23220 | Result count |
-| A5-24180 | Search area data |
+| Offset | Type | Name | Purpose |
+|--------|------|------|---------|
+| A5-7452 | long | flag_array_ptr | Pointer to 256-byte flag array |
+| A5-7454 | short | cycle_counter | Counter (0-255) |
+| A5-8584 | long | g_window_handle | Main window handle |
+| A5-23056 | - | g_dawg_field | DAWG search field |
+| A5-23220 | short | result_count | Search result count |
+| A5-24180 | - | search_area_data | Search area data |
+
+## Jump Table Calls
+
+| JT Offset | Purpose |
+|-----------|---------|
+| 418 | bounds_check - Error handler |
+| 426 | memset - Clear memory |
+| 2114 | update_function |
+| 2130 | search - Search in area |
+| 2754 | direction_search - Direction-specific search |
 
 ## Toolbox Traps
 
 | Trap | Purpose |
 |------|---------|
-| A945 | SndPlay |
-| A949 | GetResource |
-| A9EB | SetRect/InsetRect |
+| A945 | SndPlay - Play sound |
+| A949 | GetResource - Load resource |
+| A9EB | SetRect / InsetRect - Rectangle operations |
 
 ## Confidence: HIGH
 
-Clear direction management:
-- Player state tracking
-- Direction toggle logic
-- Position calculation
-- UI update coordination
+Clear direction management patterns:
+- Player state tracking via 192-byte player blocks
+- Direction toggle logic with SEQ/NEG.B idiom
+- Position calculation with modular arithmetic (wrap at 256)
+- Sound playback using Mac Sound Manager
+- UI update coordination through jump table calls

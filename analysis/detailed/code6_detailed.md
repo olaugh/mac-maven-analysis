@@ -29,37 +29,38 @@ CODE 6 handles window/display operations:
 
 ### Function 0x0000 - Update Display Pointers
 ```asm
-0000: MOVEA.L    -8584(A5),A0         ; A0 = handle
-0004: MOVEA.L    (A0),A0              ; A0 = *handle
-0006: MOVE.W     770(A0),D0           ; D0 = direction flag (field 770)
-000A: BEQ.S      $001A                ; If 0, use horizontal
-000C: BMI.S      $0060                ; If negative, error
-000E: CMPI.W     #1,D0                ; Compare with 1
-0010: BEQ.S      $003E                ; If 1, use vertical variant
-0012: CMPI.W     #2,D0                ; Compare with 2
-0016: BEQ.S      $002C                ; If 2, use horizontal variant
-0018: BRA.S      $002C
+; From disassembly - switch statement based on direction flag
+0000: 206DDE78      MOVEA.L    -8584(A5),A0         ; A0 = g_main_handle
+0004: 2050          MOVEA.L    (A0),A0              ; A0 = *handle (dereference)
+0006: 30280302      MOVE.W     770(A0),D0           ; D0 = direction flag (offset 0x302)
+000A: 670E          BEQ.S      $001A                ; If 0, use horizontal
+000C: 6B52          BMI.S      $0060                ; If negative, error/return
+000E: 5740          ...                             ; Compare with 1
+0012: 6A4C          ...
+0016: 6A26          BPL.S      $003E                ; If 1, use vertical
+0018: 6012          BRA.S      $002C                ; Else use horizontal variant
 
-; Direction 0: Horizontal
-001A: MOVE.L     -8596(A5),-11960(A5) ; Copy ptr1
-0020: MOVE.L     -8588(A5),-11956(A5) ; Copy ptr2
-0026: CLR.L      -11948(A5)           ; Clear extra ptr
-002A: BRA.S      $0060
+; Direction 0: Horizontal only
+001A: 2B6DDE6CD148  MOVE.L     -8596(A5),-11960(A5) ; g_display_ptr1 = g_ptr1
+0020: 2B6DDE74D14C  MOVE.L     -8588(A5),-11956(A5) ; g_display_ptr2 = g_ptr2
+0026: 42ADD154      CLR.L      -11948(A5)           ; g_display_ptr3 = NULL
+002A: 6034          BRA.S      $0060                ; Return
 
-; Direction 2: Horizontal with second buffer
-002C: MOVE.L     -8600(A5),-11960(A5)
-0032: MOVE.L     -8592(A5),-11956(A5)
-0038: CLR.L      -11948(A5)
-003C: BRA.S      $0060
+; Direction 2: Hook-after with alternate buffer set
+002C: 2B6DDE68D148  MOVE.L     -8600(A5),-11960(A5) ; g_display_ptr1 = g_ptr3
+0032: 2B6DDE70D14C  MOVE.L     -8592(A5),-11956(A5) ; g_display_ptr2 = g_ptr4
+0038: 42ADD154      CLR.L      -11948(A5)           ; g_display_ptr3 = NULL
+003C: 6022          BRA.S      $0060                ; Return
 
-; Direction 1: Vertical (both buffers)
-003E: MOVE.L     -8596(A5),-11960(A5)
-0044: MOVE.L     -8588(A5),-11956(A5)
-004A: MOVE.L     -8600(A5),-11952(A5)
-0050: MOVE.L     -8592(A5),-11948(A5)
-0056: CLR.L      -11940(A5)
-005C: JSR        418(A5)              ; bounds_check
-0060: RTS
+; Direction 1: Hook-before (uses both buffer sets)
+003E: 2B6DDE6CD148  MOVE.L     -8596(A5),-11960(A5) ; g_display_ptr1 = g_ptr1
+0044: 2B6DDE74D14C  MOVE.L     -8588(A5),-11956(A5) ; g_display_ptr2 = g_ptr2
+004A: 2B6DDE68D150  MOVE.L     -8600(A5),-11952(A5) ; g_display_ptr3 = g_ptr3
+0050: 2B6DDE70D154  MOVE.L     -8592(A5),-11948(A5) ; g_display_ptr4 = g_ptr4
+0056: 42ADD15C      CLR.L      -11940(A5)           ; g_display_ptr5 = NULL
+005A: 6004          BRA.S      $0060                ; Return
+005C: 4EAD01A2      JSR        418(A5)              ; JT[418] - bounds_check/assert
+0060: 4E75          RTS
 ```
 
 **C equivalent**:
@@ -159,26 +160,27 @@ void update_display_pointers(void) {
 
 ### Function 0x020E - Toggle Active Buffer
 ```asm
-020E: MOVEA.L    -8584(A5),A0         ; Get handle
-0212: MOVEA.L    (A0),A0              ; Dereference
-0214: TST.W      772(A0)              ; Check flag at offset 772
-0218: BNE.S      $022E                ; If set, use field_14
+; From disassembly - toggles between hook-after and hook-before search buffers
+020E: 206DDE78      MOVEA.L    -8584(A5),A0         ; A0 = g_main_handle
+0212: 2050          MOVEA.L    (A0),A0              ; Dereference
+0214: 4A680304      TST.W      772(A0)              ; Check direction flag at offset 0x304
+0218: 6714          BEQ.S      $022E                ; If 0, switch to field_14
 
-; Currently using field_14, switch to field_22
-021A: LEA        -15522(A5),A0        ; A0 = &g_field_22
-021E: MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_22
-0222: MOVEA.L    -8584(A5),A1
-0226: MOVEA.L    (A1),A1
-0228: CLR.W      772(A1)              ; Clear flag
-022C: BRA.S      $0242
+; Flag is set - switch to field_22 (horizontal)
+021A: 41EDC35E      LEA        -15522(A5),A0        ; A0 = &g_field_22
+021E: 2B48C376      MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_22
+0222: 226DDE78      MOVEA.L    -8584(A5),A1         ; Get handle again
+0226: 2251          MOVEA.L    (A1),A1              ; Dereference
+0228: 42690304      CLR.W      772(A1)              ; Clear flag (now horizontal)
+022C: 6014          BRA.S      $0242                ; Return
 
-; Currently using field_22, switch to field_14
-022E: LEA        -15514(A5),A0        ; A0 = &g_field_14
-0232: MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_14
-0236: MOVEA.L    -8584(A5),A1
-023A: MOVEA.L    (A1),A1
-023C: MOVE.W     #$0001,772(A1)       ; Set flag
-0242: RTS
+; Flag is clear - switch to field_14 (vertical)
+022E: 41EDC366      LEA        -15514(A5),A0        ; A0 = &g_field_14
+0232: 2B48C376      MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_14
+0236: 226DDE78      MOVEA.L    -8584(A5),A1         ; Get handle again
+023A: 2251          MOVEA.L    (A1),A1              ; Dereference
+023C: 337C00010304  MOVE.W     #$0001,772(A1)       ; Set flag (now vertical)
+0242: 4E75          RTS
 ```
 
 **C equivalent**:

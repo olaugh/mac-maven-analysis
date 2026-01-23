@@ -13,10 +13,9 @@
 
 ## System Role
 
-**Category**: Utility
-**Function**: Small Helper
+**Category**: Word Hashing
+**Function**: Anagram Signature Computation
 
-Minimal utility functions
 ## Architecture Role
 
 CODE 25 computes a product based on letter values, likely for:

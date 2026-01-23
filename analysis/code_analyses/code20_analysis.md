@@ -21,7 +21,7 @@ Entry points at: 0x0074, 0x00BE, 0x0232, 0x0272, 0x0338, 0x03DC, 0x0416, 0x044A,
 
 | Offset | Name | Description |
 |--------|------|-------------|
-| A5-15514 | g_field_14 | Board buffer 1 (vertical) |
+| A5-15514 | g_field_14 | Board buffer 1 (hook-before) |
 | A5-10388 | g_lookup_tbl | Lookup table |
 | A5-8584 | g_handle | Handle to data structure |
 | A5-8510 | g_window_ptr | Main window pointer |
@@ -46,7 +46,7 @@ Also references 28 unknown A5-relative globals.
 ## Analysis Notes
 
 - **DAWG-related**: Uses 1 DAWG-related globals
-- Uses the two-buffer system (horizontal/vertical word directions)
+- Uses the two-buffer system (hook-before/hook-after cross-check computation)
 - No direct Toolbox calls - may be pure computation or use jump table exclusively
 
 ## Refined Analysis (Second Pass)

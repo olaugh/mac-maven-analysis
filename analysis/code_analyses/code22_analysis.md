@@ -22,8 +22,8 @@ Entry points at: 0x0000, 0x0162, 0x02C8, 0x0486, 0x04A4, 0x058C, 0x0674, 0x06F6,
 |--------|------|-------------|
 | A5-24026 | g_common | Common data area |
 | A5-23090 | g_dawg_info | 34-byte DAWG info structure |
-| A5-15522 | g_field_22 | Board buffer 2 (horizontal) |
-| A5-15514 | g_field_14 | Board buffer 1 (vertical) |
+| A5-15522 | g_field_22 | Board buffer 2 (hook-after) |
+| A5-15514 | g_field_14 | Board buffer 1 (hook-before) |
 | A5-15506 | g_size1 | DAWG section 1 size (56630) |
 | A5-15502 | g_size2 | DAWG section 2 size (65536) |
 | A5-10388 | g_lookup_tbl | Lookup table |
@@ -71,7 +71,7 @@ Also references 12 unknown A5-relative globals.
 ## Analysis Notes
 
 - **DAWG-related**: Uses 5 DAWG-related globals
-- Uses the two-buffer system (horizontal/vertical word directions)
+- Uses the two-buffer system (hook-before/hook-after cross-check computation)
 - No direct Toolbox calls - may be pure computation or use jump table exclusively
 
 ## Refined Analysis (Second Pass)

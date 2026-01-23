@@ -255,20 +255,42 @@ The second section has different ptr semantics:
 
 Example: Entry 56630 'o' with ptr=888 → child at 888 + (0xd0 & 0x7e) = 968
 
-## Confirmed: Two DAWGs (Not GADDAG)
+## Confirmed: Two Overlapping DAWGs (Not GADDAG)
 
-The file contains **two separate DAWGs** (1.02MB total), not a GADDAG (which would be ~7x larger):
+The file contains **two heavily overlapping DAWGs** (1.02MB total), not a GADDAG (which would be ~7x larger):
 
-1. **First DAWG (entries 0-56,629)**: Reversed words
+### Structure
+
+| Region | Entries | Description |
+|--------|---------|-------------|
+| Shared suffix pool | 0-999 | Common word endings, 986 of 1000 referenced by BOTH sections |
+| Section 1 (Reversed) | 0-56,629 | Complete reversed-word DAWG for hook-BEFORE checks |
+| Section 2 (Forward) | 56,630-122,165 | Forward-word entry points, heavily reuses Section 1 |
+
+### Section 2 Child Pointer Analysis
+
+Section 2 is NOT a self-contained DAWG. Its children point:
+- **57.1%** → Shared suffix pool (entries 0-999)
+- **42.9%** → Section 1 body (entries 1000-56,629)
+- **0%** → Within Section 2 itself
+
+This means Section 2 acts as an "alternate entry layer" - forward word traversals start in Section 2 but immediately descend into Section 1's structure for all suffix matching.
+
+### Purpose
+
+1. **Section 1 (entries 0-56,629)**: Reversed words for **hook-BEFORE** checking
    - EHT (THE reversed) found with 10+ paths
-   - Used for extending LEFT from anchor during move generation
+   - Used for cross-check computation: what letters can legally precede an anchor
 
-2. **Second DAWG (entries 56,630-122,165)**: Forward words
-   - CAT found with 56 paths
-   - RET found with 102 paths
-   - Used for extending RIGHT from anchor
+2. **Section 2 (entries 56,630-122,165)**: Forward words for **hook-AFTER** checking
+   - CAT found with 56 paths, RET found with 102 paths
+   - Used for cross-check computation: what letters can legally follow an anchor
+   - Exactly 65,536 entries (2^16) - maxed out 16-bit index
+   - Only stores unique forward-word prefixes; all suffixes shared with Section 1
 
-Both DAWGs share a common suffix pool in low-numbered entries (0-~200).
+**Why two entry points?** Without a reversed DAWG, computing cross-checks would require brute-force testing all 26 letters A-Z. This design enables O(1) lookup per letter while minimizing memory through suffix sharing.
+
+**Speculation:** The reversed/forward DAWGs may also be used for main word generation during move search (extending left from anchor using reversed DAWG, extending right using forward DAWG), not just for cross-set computation. The code hasn't been analyzed deeply enough to confirm this.
 
 ## Verified Word Paths
 
@@ -418,6 +440,6 @@ Analysis scripts in `/Volumes/T7/retrogames/oldmac/maven_re/scripts/`:
 
 1. Debug in emulator to watch actual DAWG access
 2. Trace specific word lookups through structure
-3. Compare word counts with alternate dictionaries (TWL, OSPD)
+3. Compare word counts with alternate dictionaries (our version uses OSWI 2000)
 4. Analyze second DAWG section separately
 5. Look for endgame/leave value data structures

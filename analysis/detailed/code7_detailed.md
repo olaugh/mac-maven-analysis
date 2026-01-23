@@ -182,8 +182,8 @@ void select_buffer(GameData* data) {
 | A5-17154 | g_state1 | 544 | Primary state buffer |
 | A5-16882 | board_grid | 289 | 17×17 board |
 | A5-16610 | g_state2 | 1088 | Extended state |
-| A5-15522 | g_field_22 | ? | Horizontal buffer |
-| A5-15514 | g_field_14 | ? | Vertical buffer |
+| A5-15522 | g_field_22 | ? | Hook-after buffer |
+| A5-15514 | g_field_14 | ? | Hook-before buffer |
 | A5-15506 | g_size1 | 4 | Section 1 size |
 | A5-15502 | g_size2 | 4 | Section 2 size |
 | A5-15498 | g_current_ptr | 4 | Active buffer |

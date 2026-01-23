@@ -13,17 +13,16 @@
 
 ## System Role
 
-**Category**: Scoring
-**Function**: Adjacent Tiles
+**Category**: Move Generation
+**Function**: Search Coordination (Horizontal/Vertical)
 
-Checks adjacent tile positions
 ## Architecture Role
 
 CODE 29 coordinates the word search process:
 1. Initialize search parameters
 2. Set up callbacks for different search phases
 3. Process search results
-4. Manage horizontal and vertical search coordination
+4. Manage hook-before and hook-after cross-check coordination
 
 ## Key Functions
 
@@ -60,7 +59,7 @@ void init_and_search(Context* ctx, void* p2, void* p3, void* p4) {
 003C: JSR        2410(A5)             ; JT[2410] - setup
 0040: JSR        2434(A5)             ; JT[2434] - more setup
 
-; Set horizontal search callback
+; Set hook-after search callback
 0044: PEA        2162(A5)             ; Horizontal callback
 0048: JSR        2242(A5)             ; JT[2242] - set callback
 004C: UNLK       A6
@@ -204,7 +203,7 @@ void init_and_search(Context* ctx, void* p2, void* p3, void* p4) {
 016E: JSR        2410(A5)             ; JT[2410] - setup
 0172: JSR        2434(A5)             ; JT[2434] - more setup
 
-; Set vertical search callback
+; Set hook-before search callback
 0176: PEA        2186(A5)             ; Vertical callback
 017A: JSR        2242(A5)             ; JT[2242] - set callback
 017E: UNLK       A6
@@ -360,7 +359,7 @@ void init_and_search(Context* ctx, void* p2, void* p3, void* p4) {
 
 ## Search Coordination
 
-The module coordinates horizontal and vertical searches:
+The module coordinates hook-before and hook-after cross-checks:
 1. **Horizontal (0x0028/0x0050)**: Primary word placement
 2. **Vertical (0x015A/0x0182)**: Cross-word checking
 3. Both use callback system for extensibility

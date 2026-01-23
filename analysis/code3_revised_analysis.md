@@ -52,7 +52,7 @@ Evidence from CODE 3 (0x0AEE-0x0B50):
 
 ### 3. g_current_ptr (A5-15498) Tracks Active Buffer
 
-The game dynamically switches between horizontal and vertical word searches by changing `g_current_ptr`:
+The game dynamically switches between hook-before and hook-after cross-checks by changing `g_current_ptr`:
 
 ```asm
 0A7E: MOVE.L     -15498(A5),-(A7)  ; get current buffer
@@ -63,8 +63,8 @@ The game dynamically switches between horizontal and vertical word searches by c
 ```
 
 This explains why Scrabble AI needs two DAWG sections:
-- **Horizontal moves**: Use forward DAWG (section 2) with g_field_22
-- **Vertical moves**: Use reversed DAWG (section 1) with g_field_14
+- **Hook-after moves**: Use forward DAWG (section 2) with g_field_22
+- **Hook-before moves**: Use reversed DAWG (section 1) with g_field_14
 
 ### 4. The Value 46 Relates to Board Position Encoding
 
@@ -89,16 +89,16 @@ void dawg_search(SearchContext *ctx) {
     // Setup using the 34-byte g_dawg_info structure
     DawgInfo *info = &g_dawg_info;  // A5-23090
 
-    // Get current active buffer (horizontal or vertical)
+    // Get current active buffer (hook direction)
     void *current_buffer = g_current_ptr;  // A5-15498
 
     // Calculate DAWG base address based on which buffer is active
     long dawg_offset;
     if (current_buffer == &g_field_22) {
-        // Forward DAWG for horizontal words
+        // Forward DAWG for hook-after checks
         dawg_offset = g_dawg_ptr + g_size2;  // section 2
     } else {
-        // Reversed DAWG for vertical words
+        // Reversed DAWG for hook-before checks
         dawg_offset = g_dawg_ptr + g_size1;  // section 1
     }
 
@@ -135,7 +135,7 @@ These patterns may be in the functions called via the jump table, not in CODE 3 
 | Aspect | Previous | Revised | Notes |
 |--------|----------|---------|-------|
 | 34-byte structure purpose | LOW | **HIGH** | Confirmed as g_dawg_info |
-| Two-buffer system | UNKNOWN | **HIGH** | Horizontal/vertical word directions |
+| Two-buffer system | UNKNOWN | **HIGH** | hook-before/hook-after cross-check computation |
 | DAWG section pairing | UNKNOWN | **HIGH** | field_14↔size1, field_22↔size2 |
 | g_current_ptr role | UNKNOWN | **HIGH** | Tracks active search direction |
 | Value 46 meaning | LOW | MEDIUM | Likely board position related |

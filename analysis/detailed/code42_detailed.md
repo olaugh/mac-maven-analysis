@@ -589,12 +589,40 @@ Recursive letter evaluation:
 - Cross-check validation against filter masks
 - Duplicate letters handled (skip consecutive same)
 
+## Integration with CODE 39
+
+CODE 42's rack analysis feeds directly into CODE 39's letter combination scoring:
+
+1. **CODE 42 → CODE 39 Data Flow**:
+   - CODE 42 produces filtered letter lists and counts
+   - CODE 39 uses these to generate letter pair combinations
+   - Score tables at A5-12512 to A5-12532 are shared
+
+2. **Recursive Evaluation Depth**:
+   - Maximum depth = 7 (one full rack)
+   - Each depth level represents one letter placement
+   - Filter mask tracks which positions have been filled
+
+3. **Cross-Check Integration**:
+   - Cross-check arrays at A5-17404 and A5-17500 initialized to 0xFFFF
+   - Values updated as letters are validated against board constraints
+   - Shared with CODE 43's cross-check generation
+
+## Global Variable Cross-References
+
+| Offset | Used By | Purpose |
+|--------|---------|---------|
+| A5-1666 | CODE 42, 39 | Letter count accumulator |
+| A5-1668 | CODE 42, 39 | Blank tile tracking |
+| A5-26024 | CODE 42, 39, 35 | Letter score lookup table |
+| A5-26158 | CODE 42, 38, 35 | g_rack pointer |
+
 ## Confidence: MEDIUM-HIGH
 
 Recursive scoring pattern with:
 - Clear base case (max depth reached)
-- Filter-based pruning
-- Score accumulation
-- Backtracking support
+- Filter-based pruning (0x7F mask)
+- Score accumulation via g_letter_scores (A5-26024)
+- Backtracking support with filter restoration
 
-Some disassembly artifacts but algorithm structure is clear.
+Some disassembly artifacts (garbled complex addressing modes) but algorithm structure is clearly a depth-first enumeration with pruning.

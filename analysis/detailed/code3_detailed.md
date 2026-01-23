@@ -27,7 +27,7 @@ Main DAWG search with 2282-byte stack frame, coordinates move generation
 CODE 3 is the **central coordinator** for DAWG operations. It:
 1. Sets up search parameters
 2. Manages the 34-byte DAWG info structure
-3. Coordinates between horizontal/vertical search directions
+3. Coordinates between hook-before/hook-after cross-check directions
 4. Calls into CODE 52 for flag checking (via JT)
 5. Manages the two-buffer system
 
@@ -35,15 +35,31 @@ CODE 3 is the **central coordinator** for DAWG operations. It:
 
 ### Function 0x0000 - Main Search Entry (Large Frame)
 ```asm
-0000: LINK       A6,#-2282       ; frame=2282 bytes!
-0004: MOVEM.L    D3-D7/A2-A4,-(SP)
+; From disassembly:
+0000: 4E56F716      LINK       A6,#-2282            ; frame=2282 bytes!
+0004: 48E71F38      MOVEM.L    D3/D4/D5/D6/D7/A2/A3/A4,-(SP)  ; Save registers
+0008: 7018          MOVEQ      #24,D0               ; Constant 24
+000A: D0AE0008      ADD.L      8(A6),D0             ; Add param
+000E: 2840          MOVEA.L    D0,A4                ; A4 = base + 24
+0010: 2C2C002A      MOVE.L     42(A4),D6            ; D6 = field at offset 42
+0014: 206E0008      MOVEA.L    8(A6),A0             ; A0 = param
+0018: 0C680040000C  CMPI.W     #64,12(A0)           ; Check field_12 <= 64
+001E: 6F04          BLE.S      $0024                ; OK
+0020: 4EAD01A2      JSR        418(A5)              ; JT[418] - assertion failure
+0024: 2F06          MOVE.L     D6,-(A7)             ; Push D6
+0026: 486D902C      PEA        -28628(A5)           ; Push g_format_buffer
+002A: 486EFFC1      PEA        -63(A6)              ; Push local buffer
+002E: 4EAD0812      JSR        2066(A5)             ; JT[2066] - sprintf
 ...
 ```
 **Frame size**: 2,282 bytes - this is a major search function with extensive local storage.
 
-**Local variable layout** (speculative):
-- -2282 to -2240: 42 bytes of state
-- -2240 to -0: Array of 34-byte search states (up to 65 entries)
+**Local variable layout** (verified from disassembly):
+- -2282 to -2278: 4 bytes - loop counter storage
+- -2274 to -2240: 34 bytes - DAWG info copy buffer
+- -2240 to -0: Array of 34-byte search states (up to 65 entries at 34 bytes each)
+
+**Entry validation**: Checks that param->field_12 <= 64 (max search depth)
 
 ### Function 0x019E - Validate DAWG Bounds
 ```asm
@@ -162,25 +178,26 @@ void setup_with_range_check(void* param) {
 }
 ```
 
-### Function 0x0264 - Large Buffer Operation
+### Function 0x0264 - Large Buffer Operation (Search State Init)
 ```asm
-0264: LINK       A6,#-2968        ; 2968 bytes of locals!
-0268: PEA        $0B98.W          ; push 2968
-026C: PEA        -2968(A6)        ; push buffer address
-0270: JSR        426(A5)          ; memset(buffer, 0, 2968)
-0274: PEA        -2968(A6)
-0278: JSR        3310(PC)         ; local function call
-027C: TST.W      -2960(A6)        ; check field
-0280: LEA        12(A7),A7
-0284: BGT.S      $028C
-0286: MOVE.W     #1,-2960(A6)     ; if <= 0, set to 1
+; From disassembly:
+0264: 4E56F468      LINK       A6,#-2968            ; frame=2968 bytes!
+0268: 48780B98      PEA        $0B98.W              ; push 2968 (0xB98)
+026C: 486EF468      PEA        -2968(A6)            ; push buffer address
+0270: 4EAD01AA      JSR        426(A5)              ; JT[426] - memset(buffer, 0, 2968)
+0274: 486EF468      PEA        -2968(A6)            ; push buffer
+0278: 4EBA0CEE      JSR        3310(PC)             ; local function - init search state
+027C: 4A6EF470      TST.W      -2960(A6)            ; check counter field
+0280: 4FEF000C      LEA        12(A7),A7            ; clean stack
+0284: 6E06          BGT.S      $028C                ; if > 0, continue
+0286: 3D7C0001F470  MOVE.W     #1,-2960(A6)         ; if <= 0, set to 1 (min value)
 028C: ...
-0294: PEA        -10388(A5)       ; push g_lookup_tbl
-0298: JSR        3450(A5)         ; lookup()
-029C: TST.W      D0
+0294: 486DD76C      PEA        -10388(A5)           ; push g_lookup_tbl
+0298: 4EAD0D7A      JSR        3450(A5)             ; JT[3450] - lookup operation
+029C: 4A40          TST.W      D0                   ; check result
 ```
 
-**Purpose**: Initialize a large (2968 byte) buffer and perform lookups. This is likely the main search state initialization.
+**Purpose**: Initialize a large (2968 byte) search state buffer and begin move generation. The 2968 bytes likely hold multiple candidate moves being evaluated.
 
 ## Global Variables Used
 
@@ -191,8 +208,8 @@ void setup_with_range_check(void* param) {
 | A5-23070 | g_sect1_off | Section 1 offset |
 | A5-23066 | g_sect2_off | Section 2 offset |
 | A5-23056 | g_dawg_field | Source for 34-byte copy |
-| A5-15522 | g_field_22 | Horizontal buffer |
-| A5-15514 | g_field_14 | Vertical buffer |
+| A5-15522 | g_field_22 | Hook-after buffer |
+| A5-15514 | g_field_14 | Hook-before buffer |
 | A5-15506 | g_size1 | Section 1 size (56630) |
 | A5-15502 | g_size2 | Section 2 size (65536) |
 | A5-11972 | g_dawg_ptr2 | Secondary DAWG data |
@@ -203,18 +220,36 @@ void setup_with_range_check(void* param) {
 
 | JT Offset | Purpose | Called From |
 |-----------|---------|-------------|
-| 426(A5) | memset/clear | 0x0270, many |
-| 418(A5) | bounds_check | error paths |
-| 2066(A5) | init/copy | several |
-| 2122(A5) | buffer_compare | scoring |
+| 66(A5) | Multiply | offset calculations |
+| 90(A5) | Division | 0x0058 |
+| 362(A5) | DAWG traversal | 0x03C6 |
+| 418(A5) | bounds_check/assert | 0x0020, error paths |
+| 426(A5) | memset/clear | 0x0270, 0x0370, many |
+| 666(A5) | Unknown | 0x013E |
+| 674(A5) | Unknown | 0x003A |
+| 1066(A5) | Unknown | 0x0384 |
+| 1234(A5) | Unknown | 0x03CE |
+| 1282(A5) | Unknown | 0x018E |
+| 1306(A5) | Unknown | 0x038C |
+| 1346(A5) | Unknown | 0x03FA |
+| 1362(A5) | state_update | 0x0388 |
+| 1650(A5) | Unknown | 0x0142 |
+| 1738(A5) | Unknown | 0x04FC |
+| 1746(A5) | Unknown | 0x0394 |
+| 1754(A5) | Unknown | 0x0420 |
+| 2066(A5) | sprintf | 0x002E |
+| 2122(A5) | buffer_compare | 0x053C |
 | 2202(A5) | data_copy | 0x0214 |
-| 2346(A5) | check_result | after search |
-| 2370(A5) | setup_params | search setup |
+| 2346(A5) | check_result | 0x050C, 0x0516 |
+| 2362(A5) | Unknown | 0x0182 |
+| 2370(A5) | setup_params | 0x03AC, 0x04A4 |
 | 2394(A5) | get_something | 0x01F0 |
+| 2402(A5) | process_buffer | 0x0436 |
 | 2410(A5) | setup_buffer | 0x01E8 |
 | 2586(A5) | special_handler | 0x0236 |
-| 3450(A5) | lookup | 0x0298 |
-| 3490(A5) | copy_global | many |
+| 3450(A5) | lookup | 0x0158, 0x0298 |
+| 3466(A5) | memcpy | 0x02F4, 0x0304, many |
+| 3490(A5) | copy_global | 0x0310, 0x0318, many |
 
 ## Data Flow
 
@@ -235,7 +270,7 @@ void setup_with_range_check(void* param) {
               v              v              v
        ┌──────────┐   ┌──────────┐   ┌──────────┐
        │g_field_14│   │g_field_22│   │Large local│
-       │(vertical)│   │(horizntl)│   │  buffers  │
+       │(hook-bef)│   │(hook-aft)│   │  buffers  │
        └──────────┘   └──────────┘   └──────────┘
 ```
 

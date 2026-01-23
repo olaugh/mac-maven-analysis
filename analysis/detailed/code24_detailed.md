@@ -13,10 +13,9 @@
 
 ## System Role
 
-**Category**: Simulation
-**Function**: Analysis Functions
+**Category**: C Runtime Library
+**Function**: Formatted Output
 
-Statistical analysis (9 FP calls)
 ## Architecture Role
 
 CODE 24 provides C-style formatted output:

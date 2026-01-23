@@ -443,10 +443,56 @@ Single tile moves have special validation:
 2. Cannot be placed at row edges without adjacent tiles
 3. Uses callback for complex cases
 
+## Integration with Search Pipeline
+
+CODE 44 coordinates the entire move search system:
+
+```
+                    CODE 44 (Dispatcher)
+                           |
+         +-----------------+------------------+
+         |                 |                  |
+    JT[2202]           JT[2586]          JT[2130]
+    Small Search      Complex Search    Extended Search
+    (< 8 tiles)       (8-16 tiles)      (>= 17 tiles)
+         |                 |                  |
+         +--------+--------+--------+---------+
+                  |                 |
+              CODE 43           CODE 40
+            Cross-Checks       Move Cache
+                  |                 |
+              CODE 42           CODE 39
+            Rack Analysis     Score Tables
+```
+
+## Shared Data with Other CODE Resources
+
+| Global | CODE Resources | Purpose |
+|--------|----------------|---------|
+| A5-12540 | CODE 40, 44 | Entry count |
+| A5-17154 | CODE 37, 43, 44 | Board state |
+| A5-19486 | CODE 42, 44 | Callback ptr |
+| A5-23056 | CODE 40, 43, 44 | Search results |
+
+## Callback System
+
+The validation callback at A5-19486 allows:
+- Empty board: NULL callback (all moves valid)
+- Occupied board: Points to A5+2770 for adjacency checks
+- Extensible design for special game modes
+
+## Move Entry Memory Layout
+
+The 34-byte move entry structure matches CODE 40's cache entries:
+- Shared between search results and move cache
+- Allows direct copy between g_dawg_search_area and g_cache
+- Score components (main + component + bonus) support leave value integration
+
 ## Confidence: HIGH
 
 Clear search dispatch and validation logic:
-- Rack size-based algorithm selection
-- Move comparison by score
-- Single tile edge case handling
-- Callback-based extensibility
+- Rack size-based algorithm selection (thresholds at 8 and 17)
+- Move comparison by composite score (main + component + bonus)
+- Single tile edge case handling with row boundary checks (0x0F, 0x10, 0x1E)
+- Callback-based extensibility via A5-19486 function pointer
+- 34-byte entry structure confirmed by shift_move_entry copy loop (8 longs + 1 word)

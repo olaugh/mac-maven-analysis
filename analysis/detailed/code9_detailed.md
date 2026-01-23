@@ -13,10 +13,11 @@
 
 ## System Role
 
-**Category**: User Interface
-**Function**: Event Handling
+**Category**: Runtime Support
+**Function**: Standard Library / System Wrappers
 
-Mac event loop processing
+Provides wrapper functions for Mac Toolbox calls and common utilities.
+
 ## Key Insight
 
 CODE 9 is the **runtime support library**. It contains 37 exported functions (via jump table) that provide common services used throughout the application. This is a classic C runtime pattern - small utility functions that don't warrant their own segment.

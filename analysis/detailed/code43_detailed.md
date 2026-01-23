@@ -23,7 +23,7 @@ CODE 43 handles cross-check set generation:
 1. Build validity masks for each board position
 2. Determine which letters can form valid perpendicular words
 3. Cache cross-check results for move generation
-4. Support both horizontal and vertical directions
+4. Support both hook-after and hook-before directions
 
 ## Key Functions
 
@@ -773,12 +773,50 @@ Cross-check generation process:
 5. Build mask of valid letters for that position
 6. Cache results for move generation reuse
 
+## Integration with Move Generation
+
+CODE 43 is central to the move generation pipeline:
+
+1. **Cross-Check → Move Generation Flow**:
+   - CODE 43 builds validity masks for each position
+   - CODE 38 uses these masks to filter rack letters
+   - CODE 42 validates letter placements against masks
+   - CODE 40 caches results for repeated lookups
+
+2. **DAWG Table Structure**:
+   - 17408 bytes (0x4400) cleared at initialization
+   - 68-byte stride per row (17 columns * 4 bytes)
+   - 8 direction variants (horizontal/vertical * 4 quadrants)
+
+3. **Two-Phase Validation**:
+   - Forward scan: Check tiles to the right/below
+   - Backward scan: Check tiles to the left/above
+   - Combined mask ensures valid cross-words in both directions
+
+## Shared Data Structures
+
+| Offset | Shared With | Purpose |
+|--------|-------------|---------|
+| A5-12536 | CODE 39, 40 | DAWG table base |
+| A5-13060 | CODE 39, 42 | Letter pair table |
+| A5-17154 | CODE 37, 40 | g_state1 board |
+| A5-22698 | CODE 40 | g_results_array |
+| A5-26154 | CODE 42 | Rack letter mask |
+
+## Board Coordinate System
+
+- Board is 17x17 (15 playable + 2 boundary)
+- Row 0 and column 0 are boundary markers
+- Row index: 17 bytes per row
+- DAWG index: 68 bytes per row (4 bytes per position)
+
 ## Confidence: MEDIUM-HIGH
 
 Complex cross-check logic with:
-- Two-directional scanning (forward/backward)
-- DAWG integration for word validation
-- Caching for performance
-- Proper boundary checking
+- Two-directional scanning (forward/backward up to bounds 0x1F and 0x10)
+- DAWG integration via JT[2450] for word validation
+- Caching at A5-1664 (48 bytes = 8 entries * 6 bytes each)
+- Proper boundary checking with error handler JT[418]
+- 0x80 flag used to mark processed entries (same as CODE 39)
 
-Some disassembly artifacts but algorithm patterns are recognizable.
+Some disassembly artifacts (garbled complex addressing modes) but algorithm patterns are clearly recognizable as Appel-Jacobson cross-check generation.

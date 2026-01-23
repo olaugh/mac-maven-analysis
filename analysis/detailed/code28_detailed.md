@@ -13,10 +13,9 @@
 
 ## System Role
 
-**Category**: Scoring
-**Function**: Cross-word Scoring
+**Category**: Move Data Structures
+**Function**: Sorted Move Array Management
 
-Calculates perpendicular word scores
 ## Architecture Role
 
 CODE 28 manages arrays of move candidates:

@@ -28,8 +28,8 @@ Entry points at: 0x0000, 0x019E, 0x01DA, 0x0264, 0x02C2, 0x069E, 0x0C54, 0x0E12,
 | A5-23070 | g_sect1_off | Section 1 offset |
 | A5-23066 | g_sect2_off | Section 2 offset |
 | A5-23056 | g_dawg_field | DAWG related field |
-| A5-15522 | g_field_22 | Board buffer 2 (horizontal) |
-| A5-15514 | g_field_14 | Board buffer 1 (vertical) |
+| A5-15522 | g_field_22 | Board buffer 2 (hook-after) |
+| A5-15514 | g_field_14 | Board buffer 1 (hook-before) |
 | A5-15506 | g_size1 | DAWG section 1 size (56630) |
 | A5-15502 | g_size2 | DAWG section 2 size (65536) |
 | A5-15498 | g_current_ptr | Current active buffer pointer |
@@ -105,7 +105,7 @@ Also references 22 unknown A5-relative globals.
 ## Analysis Notes
 
 - **DAWG-related**: Uses 8 DAWG-related globals
-- Uses the two-buffer system (horizontal/vertical word directions)
+- Uses the two-buffer system (hook-before/hook-after cross-check computation)
 - No direct Toolbox calls - may be pure computation or use jump table exclusively
 
 ## Refined Analysis (Second Pass)

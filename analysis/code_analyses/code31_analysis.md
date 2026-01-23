@@ -20,8 +20,8 @@ Entry points at: 0x0000, 0x0048, 0x0074, 0x00DA, 0x0124, 0x0150, 0x0168, 0x0180,
 
 | Offset | Name | Description |
 |--------|------|-------------|
-| A5-15522 | g_field_22 | Board buffer 2 (horizontal) |
-| A5-15514 | g_field_14 | Board buffer 1 (vertical) |
+| A5-15522 | g_field_22 | Board buffer 2 (hook-after) |
+| A5-15514 | g_field_14 | Board buffer 1 (hook-before) |
 
 Also references 44 unknown A5-relative globals.
 
@@ -46,7 +46,7 @@ Also references 44 unknown A5-relative globals.
 ## Analysis Notes
 
 - **DAWG-related**: Uses 2 DAWG-related globals
-- Uses the two-buffer system (horizontal/vertical word directions)
+- Uses the two-buffer system (hook-before/hook-after cross-check computation)
 - No direct Toolbox calls - may be pure computation or use jump table exclusively
 
 ## Refined Analysis (Second Pass)

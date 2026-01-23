@@ -178,7 +178,7 @@ CODE 39 (1784 bytes) handles multi-letter combination analysis with a massive 96
 
 ### Score Tables
 
-Six parallel tables for horizontal/vertical scoring:
+Six parallel tables for directional scoring:
 
 | Offset | Table | Purpose |
 |--------|-------|---------|
@@ -425,71 +425,47 @@ Precision: ~18 decimal digits
 
 ## 10. Extracted Leave Value Tables
 
-MUL resources contain 28-byte records per copy count. Key fields extracted via CODE 32 analysis:
+See **LEAVE_VALUES.md** for comprehensive documentation.
 
 ### MUL Record Structure (28 bytes each)
 
 | Offset | Size | Type | Description |
 |--------|------|------|-------------|
 | 0 | 8 | double | Expected turn score with N copies (~10-11 range) |
-| 8 | 8 | double | Secondary value (often garbage) |
+| 8 | 8 | double | Secondary value (purpose unclear) |
 | 16 | 4 | uint32 | Simulation count (sample size) |
 | 20 | 4 | int32 | Unknown |
-| 24 | 4 | int32 | **Leave adjustment value** (used by CODE 32) |
+| 24 | 4 | int32 | **Leave adjustment in centipoints** |
 
 ### Leave Adjustment Values (Offset 24)
 
-**Single-tile values (1 copy on rack):**
+**Single-tile values (1 copy on rack) - in centipoints:**
 
-| Letter | Adjustment | Sim Count | Expected Score |
-|--------|------------|-----------|----------------|
-| Blank (?) | -515 | 54,635 | 10.88 |
-| S | -337 | 71,784 | 11.28 |
-| E | -219 | 86,203 | 11.32 |
-| R | -85 | varies | 10.97 |
-| T | -37 | varies | 11.27 |
-| Z | -33 | varies | 11.28 |
-| X | -26 | varies | 11.29 |
-| N | -11 | varies | 11.31 |
-| L | +6 | varies | 11.38 |
-| J | +6 | varies | 11.30 |
-| K | +2 | varies | 11.28 |
-| V | +68 | varies | 10.97 |
-| Q | +88 | varies | 11.35 |
+| Letter | Raw Adj | Points | Assessment |
+|--------|---------|--------|------------|
+| Blank (?) | +2440 | +24.40 | Excellent (keep) |
+| S | +721 | +7.21 | Excellent |
+| X | +419 | +4.19 | Very good |
+| Z | +359 | +3.59 | Very good |
+| E | +299 | +2.99 | Good |
+| R | +245 | +2.45 | Good |
+| A | +220 | +2.20 | Good |
+| Q | -879 | -8.79 | Very bad (play it) |
+| V | -498 | -4.98 | Bad |
+| J | -369 | -3.69 | Bad |
 
-**Note:** Negative values appear to be BONUSES (want to keep), positive values are PENALTIES (want to play). This is inverted from traditional leave value notation.
+**Sign Convention:** Positive raw values = good tiles to keep, negative = bad tiles (play them).
 
-### Multi-Copy Adjustments
+### VCB Vowel Count Balance (from VCBh resource)
 
-| Letter | 1 copy | 2 copies | 3 copies | 4 copies |
-|--------|--------|----------|----------|----------|
-| E | -219 | +299 | -46 | -941 |
-| S | -337 | +721 | +810 | 0 |
-| Blank | -515 | +2440 | +3851 | - |
+| Vowels | Adjustment | Points | Assessment |
+|--------|------------|--------|------------|
+| 0 | -756 | -7.56 | Poor (all consonants) |
+| 3 | +23 | +0.23 | Good |
+| 4 | +368 | +3.68 | Optimal |
+| 7 | -1238 | -12.38 | Poor (all vowels) |
 
-Pattern: First copy gets a bonus, additional copies show diminishing returns or penalties.
-
-### Formula Analysis (Work in Progress)
-
-The offset-24 values appear to be **adjustment increments** rather than absolute leave values:
-
-| Tile | Offset-24 | As Points | Expected Leave | Delta |
-|------|-----------|-----------|----------------|-------|
-| Blank | -515 | -5.15 | ~+25 | ??? |
-| S | -337 | -3.37 | ~+8 | ??? |
-| Q | +88 | +0.88 | ~-15 | ??? |
-
-**Key Observations:**
-1. All tiles have similar expected_score (~10.9-11.4) at offset 0
-2. The offset-24 values are much smaller than expected leave values
-3. The sign is inverted from expected (negative = good, positive = bad)
-
-**Possible Interpretations:**
-1. Offset-24 is a delta applied to the expected_score
-2. The full formula involves subtracting from a baseline (~21 points for full rack?)
-3. Multi-tile patterns (from ESTR) contribute additional adjustments
-
-**CODE 32 Usage (offsets 0x156A and 0x15C4):**
+### CODE 32 Usage (offsets 0x156A and 0x15C4)
 ```asm
 ; At 0x156A - Load leave adjustment
 2068 d58c       MOVEA.L -10868(A0),A0   ; Load MUL data ptr from handle
@@ -499,24 +475,9 @@ The offset-24 values appear to be **adjustment increments** rather than absolute
 90ae ffdc       SUB.L   -36(A6),D0      ; SUBTRACT adjustment from D0
 ```
 
-**Key finding:** The adjustment is **subtracted**, which inverts the sign:
-- Negative offset-24 → bonus (D0 - (-515) = D0 + 515)
-- Positive offset-24 → penalty (D0 - (+88) = D0 - 88)
-
-The loaded value is then processed through SANE floating-point operations (FMULX at 0x159E, FADDX at 0x15B6) which may scale it to final point values.
-
-### Multi-Tile Diminishing Returns
-
-For letters with multiple copies, keeping duplicates has diminishing value:
-
-| Letter | 1-tile | 2-tile | 3-tile | 4+ tile |
-|--------|--------|--------|--------|---------|
-| E | 11.32 | 10.76 (-5%) | 7.88 (-30%) | 5.73 (-49%) |
-| I | 11.30 | 9.97 (-12%) | 7.41 (-34%) | - |
-| A | 10.90 | 9.77 (-10%) | 6.95 (-36%) | - |
-| O | 10.91 | 9.37 (-14%) | 6.89 (-37%) | 3.82 (-65%) |
-
-This encourages playing duplicate vowels rather than keeping them.
+**Key finding:** The adjustment is **subtracted** from the score accumulator, so:
+- Positive offset-24 (e.g., S=+721) → subtracted → reduces move score (incentivizes keeping)
+- Negative offset-24 (e.g., Q=-879) → subtracted → increases move score (incentivizes playing)
 
 ---
 

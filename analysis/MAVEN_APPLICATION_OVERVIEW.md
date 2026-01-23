@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Maven is a classic Macintosh Scrabble AI application from the late 1980s/early 1990s. The application consists of **53 CODE resources** totaling approximately **119 KB** of executable code. It uses a **DAWG (Directed Acyclic Word Graph)** data structure for efficient word lookup and move generation.
+Maven is a classic Macintosh Scrabble AI application from the 1980s. The application consists of **53 CODE resources** totaling approximately **119 KB** of executable code. It uses a **DAWG (Directed Acyclic Word Graph)** data structure for efficient word lookup and move generation.
 
 ## Application Statistics
 
@@ -115,12 +115,22 @@ These segments reference DAWG globals but serve auxiliary functions.
 
 ### DAWG (Directed Acyclic Word Graph)
 
-The DAWG is split into **two sections**:
+The DAWG uses **two heavily overlapping sections** for efficient cross-check computation:
 
-| Section | Size | Purpose |
-|---------|------|---------|
-| Section 1 | 56,630 entries | **Reversed words** (suffix matching for vertical) |
-| Section 2 | 65,536 entries | **Forward words** (prefix matching for horizontal) |
+| Region | Entries | Purpose |
+|--------|---------|---------|
+| Shared suffix pool | 0-999 | Common endings referenced by both sections (986 of 1000 shared) |
+| Section 1 | 0-56,629 | **Reversed words** - for hook-BEFORE checks (what letters can precede) |
+| Section 2 | 56,630-122,165 | **Forward words** - for hook-AFTER checks (what letters can follow) |
+
+**Key insight: Sections overlap heavily.**
+- Section 2 is NOT self-contained: 57% of its children → shared pool, 43% → Section 1
+- 0% of Section 2 children point within Section 2 itself
+- Section 2 acts as an "alternate entry layer" that reuses Section 1's suffix structure
+
+**Why two entry points?** Without a reversed DAWG, computing cross-checks would require brute-force testing all 26 letters A-Z. The two DAWGs may also be used for main word generation (extending left/right from anchors), not just cross-sets - this hasn't been confirmed in the disassembly yet.
+
+**Size note**: Section 2 = exactly 65,536 (2^16) entries, maxing out a 16-bit index. It only stores unique forward-word prefixes since all suffixes are shared.
 
 **DAWG Entry Format (4 bytes)**:
 ```c
@@ -133,12 +143,12 @@ typedef struct {
 
 ### Board Buffer System
 
-Maven uses a **two-buffer system** for searching in different directions:
+Maven uses a **two-buffer system** for searching:
 
-| Buffer | Global | Paired With | Direction |
-|--------|--------|-------------|-----------|
-| g_field_14 | A5-15514 | g_size1 (56630) | Vertical words |
-| g_field_22 | A5-15522 | g_size2 (65536) | Horizontal words |
+| Buffer | Global | Paired With | Purpose |
+|--------|--------|-------------|---------|
+| g_field_14 | A5-15514 | g_size1 (56630) | Reversed DAWG (hook-before checks) |
+| g_field_22 | A5-15522 | g_size2 (65536) | Forward DAWG (hook-after checks) |
 | g_current_ptr | A5-15498 | - | Active buffer pointer |
 
 ### DAWG Info Structure (34 bytes)

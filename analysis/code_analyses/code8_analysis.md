@@ -22,7 +22,7 @@ Entry points at: 0x0000, 0x0370, 0x0714
 |--------|------|-------------|
 | A5-23090 | g_dawg_info | 34-byte DAWG info structure |
 | A5-23074 | g_dawg_ptr | Main DAWG data pointer |
-| A5-15514 | g_field_14 | Board buffer 1 (vertical) |
+| A5-15514 | g_field_14 | Board buffer 1 (hook-before) |
 | A5-10388 | g_lookup_tbl | Lookup table |
 | A5-8510 | g_window_ptr | Main window pointer |
 
@@ -57,7 +57,7 @@ Also references 23 unknown A5-relative globals.
 ## Analysis Notes
 
 - **DAWG-related**: Uses 3 DAWG-related globals
-- Uses the two-buffer system (horizontal/vertical word directions)
+- Uses the two-buffer system (hook-before/hook-after cross-check computation)
 - No direct Toolbox calls - may be pure computation or use jump table exclusively
 
 ## Refined Analysis (Second Pass)

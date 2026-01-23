@@ -13,10 +13,9 @@
 
 ## System Role
 
-**Category**: Move Logic
-**Function**: Move Generation
+**Category**: Move Data Structures
+**Function**: Move Candidate List Management
 
-Move generation helper
 ## Architecture Role
 
 CODE 27 manages move candidate data structures:

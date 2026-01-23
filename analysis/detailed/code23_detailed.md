@@ -13,10 +13,9 @@
 
 ## System Role
 
-**Category**: Game Logic
-**Function**: Turn Handling
+**Category**: Utility Functions
+**Function**: String processing and character classification
 
-Turn sequence control
 ## Architecture Role
 
 CODE 23 provides string utility functions:
@@ -348,10 +347,19 @@ The table at A5-1064 appears to be a character classification bitmap:
 - Bits indicate character properties (alpha, digit, etc.)
 - AND with mask tests character class
 
+## Usage Context
+
+These string utilities support:
+- Rack string manipulation (filtering valid letters)
+- User input processing (case normalization)
+- Display formatting (Pascal strings for Mac TextEdit)
+- Word validation preprocessing
+
 ## Confidence: HIGH
 
-Standard string utility patterns:
-- strchr/strlen/strncpy wrappers
-- toupper/tolower character conversion
-- Pascal string formatting
-- Character set filtering
+Standard string utility patterns clearly identified:
+- strchr/strlen/strncpy library wrappers
+- toupper/tolower character conversion loops
+- Pascal string formatting for Mac Toolbox
+- Character set filtering with two methods (strchr and mask table)
+- All functions follow standard 68000 calling conventions

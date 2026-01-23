@@ -178,7 +178,10 @@ Maven's 53 CODE resources are organized into functional subsystems:
 ### Leave Values
 | Offset | Name | Purpose |
 |--------|------|---------|
-| A5-10868 | MUL handles | Array of MUL resource handles |
+| A5-10868 | MUL handles | Array of 27 MUL resource handles (a-z, ?) |
+| A5-10900 | VCB handles | Array of 8 VCB resource handles (only VCBh has data) |
+| A5-10904 | FRST handle | FRST resource handle |
+| A5-10908 | EXPR handle | EXPR resource handle |
 | A5-27630 | Letter values | Point value lookup table |
 
 ### Game State
@@ -212,7 +215,9 @@ Maven's 53 CODE resources are organized into functional subsystems:
 
 - **Bingo bonus**: 5000 centipoints = 50 points
 - **Leave values**: Integer centipoints at MUL offset 24
-- **Sign convention**: Negative = bonus (subtracted), Positive = penalty
+- **Sign convention**: Positive = good tile (keep it), Negative = bad tile (play it)
+  - CODE 32 SUBTRACTS the adjustment, so positive values reduce move score (incentivize keeping)
+- **VCBh**: Vowel count adjustments (optimal at 4 vowels = +3.68 pts)
 
 ## Cross-References
 

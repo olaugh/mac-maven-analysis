@@ -13,16 +13,15 @@
 
 ## System Role
 
-**Category**: Simulation
-**Function**: Result Storage
+**Category**: Game State
+**Function**: History Formatting
 
-Heavy FP (25 calls), stores simulation results via ChangedResource
+Formats game moves for history display using standard Scrabble notation.
 
 **Related CODE resources**:
 - CODE 35 (FP statistics)
 - CODE 15 (MUL resources)
 
-**Scale Note**: Converts FP statistics to integer centipoints for storage.
 ## Architecture Role
 
 CODE 50 formats game moves for display:
@@ -35,14 +34,21 @@ CODE 50 formats game moves for display:
 
 | Trap | Name | Purpose |
 |------|------|---------|
-| A9EB | StringToNum | Convert string to number |
+| A9EB | Pack7/SANE | Floating-point operations |
+| A9A0 | GetScrap | Get scrap data (clipboard) |
+| A9AB | AddResource | Add resource to file |
+| A9AA | WriteResource | Write resource data |
 | A9AF | ReleaseResource | Release resource |
+| A999 | ChangedResource | Mark resource as changed |
+| A994 | GetResInfo | Get resource info |
+| A122 | NewHandle | Allocate new handle |
 
-## Key Functions
+## Key Function
 
 ### Function 0x0000 - Format Move History Entry
 ```asm
-0000: LINK       A6,#-66              ; frame=66
+; Entry - frame=66 bytes of local storage
+0000: LINK       A6,#-66
 0004: MOVEM.L    D5/D6/D7/A2/A3/A4,-(SP)
 0008: MOVE.L     8(A6),D6             ; D6 = move index
 000C: MOVE.L     12(A6),D5            ; D5 = player (0 or 1)
@@ -50,173 +56,88 @@ CODE 50 formats game moves for display:
 ; Get game state handle
 0010: MOVE.L     -8584(A5),-(A7)      ; g_game_state
 0014: JSR        1514(A5)             ; JT[1514] - HLock
-0018: MOVEA.L    D0,A4                ; A4 = state ptr
+0018: MOVEA.L    D0,A4                ; A4 = locked state ptr
 
-; Get move score
-001E: MOVEA.L    -8584(A5),A0
-0022: MOVEA.L    (A0),A0
-0024: MOVE.W     770(A0),D0           ; Get field offset
-0028: ...                             ; Complex offset calculation
+; Get field from state at offset 770
+001A: MOVEA.L    -8584(A5),A0
+001E: MOVEA.L    (A0),A0
+0020: MOVE.W     770(A0),D0           ; Get move count or index
 
-; Get player score 1
-002A: PEA        -8504(A5)            ; g_score_buffer1
-002E: ...
-0034: JSR        842(A5)              ; JT[842] - format score
-
-; Get player score 2
+; Format player scores
+002A: ... (format score to g_score_buffer1)
+0030: JSR        842(A5)              ; JT[842] - format score
 0034: MOVEA.L    -8584(A5),A0
-0038: MOVEA.L    (A0),A0
-003A: MOVE.W     770(A0),D0
-003E: ...
-0044: PEA        -23312(A5)           ; g_score_buffer2
-004A: JSR        842(A5)              ; JT[842]
+...
+004A: JSR        842(A5)              ; JT[842] - format score 2
 
-; Get move data
-004E: MOVEA.L    -8584(A5),A0
-0052: MOVEA.L    (A0),A0
-0054: MOVE.W     770(A0),D0
+; Find or create HIST resource
+0062: MOVE.L     #$48495354,-(A7)     ; 'HIST' type
+0068: CLR.W      -(A7)                ; ID 0
+006A: A9A0                            ; _GetScrap
+...
+0074: BNE.S      $0090                ; Found existing
+
+; Create new history handle
+0076: MOVEQ      #0,D0
+0078: A122                            ; _NewHandle (size 0)
+007A: MOVEA.L    A0,A3
 ...
 
-; Try to find existing history entry
-005E: ...
-0062: CLR.L      (A7)                 ; Clear
-0064: MOVE.L     #$48495354,-(A7)     ; 'HIST' type
-0068: CLR.W      -(A7)
-006A: A9A0                            ; _GetScrap (find)
-006E: MOVEA.L    (A7)+,A3             ; A3 = handle
-0070: MOVE.L     A3,D0
-0074: BNE.S      $0090                ; Found
-
-; Create new history resource
-0076: MOVEQ      #0,D0
-0078: A122                            ; _NewHandle
-007A: MOVEA.L    A0,A3
-007C: MOVE.L     A0,D0
-007E: BEQ.S      $0090                ; Failed
-
 ; Add to resource file
-0080: MOVE.L     A3,-(A7)
+0080: MOVE.L     A3,-(A7)             ; Handle
 0082: MOVE.L     #$48495354,-(A7)     ; 'HIST'
-0088: CLR.W      -(A7)
-008A: MOVE.L     -3512(A5),-(A7)      ; Resource file
+0088: CLR.W      -(A7)                ; ID 0
+008A: MOVE.L     -3512(A5),-(A7)      ; g_res_file refnum
 008E: A9AB                            ; _AddResource
 
-; Initialize history entry
-0094: ...
-0098: JSR        418(A5)              ; JT[418] - error check
-
-; Lock handle
+; Lock handle for writing
 009C: CLR.L      -(A7)
 009E: MOVE.L     A3,-(A7)
 00A0: JSR        2826(A5)             ; JT[2826] - HLock
-00A4: MOVE.L     (A7)+,D7             ; D7 = pointer
 
-; Resize for 8 bytes
-00A6: ...
-00A8: PEA        $0008.W
+; Resize for 8 more bytes
+00A8: PEA        $0008.W              ; 8 bytes per entry
 00AC: MOVE.L     A3,-(A7)
-00AE: JSR        1482(A5)             ; JT[1482] - resize
+00AE: JSR        1482(A5)             ; JT[1482] - SetHandleSize
 
-; Store move index
-00B4: ...
-00BC: JSR        418(A5)              ; Error check
+; Format move number
+00D4: PEA        $0064.W              ; max 100
+00D8: MOVE.L     D6,-(A7)             ; move index
+00DA: JSR        90(A5)               ; JT[90] - NumToString
 
-00CC: MOVE.L     D7,D0
-00CE: EXT.L      D0
-00D0: ...
-00D4: PEA        $0064.W              ; 100 max
-00D8: MOVE.L     D6,-(A7)             ; Move index
-00DA: JSR        90(A5)               ; JT[90] - format number
-00DE: ...
-00E0: ...
-
-; Store player score
+; Format player number
 00E4: PEA        $0064.W
-00E8: MOVE.L     D5,-(A7)             ; Player
+00E8: MOVE.L     D5,-(A7)             ; player
 00EA: JSR        90(A5)               ; JT[90]
-00EE: ...
 
-; Get move word from game state
+; Get move data from state at offset 770
 00F4: MOVEA.L    -8584(A5),A0
 00F8: MOVEA.L    (A0),A0
 00FA: MOVE.W     770(A0),D0
-...
-; Format word letters
-...
 
-; Format position notation
-0162: PEA        -36(A6)              ; Buffer
-0166: PEA        -46(A6)              ; Destination
-016A: MOVE.W     #$200E,-(A7)         ; Format code
-016E: A9EB                            ; _StringToNum
+; Copy 10-byte move entry (4+4+2 bytes)
+0144: LEA        0(A4,D0.L),A1        ; Source
+0146: MOVE.L     (A1)+,(A0)+          ; 4 bytes
+0148: MOVE.L     (A1)+,(A0)+          ; 4 bytes
+014A: MOVE.W     (A1)+,(A0)+          ; 2 bytes
 
-; Copy word to buffer
-0170: ...
-0178: LEA        -56(A6),A1
-017A: ...
-
-; Format row/column
-018A: ...
-019A: PEA        752(PC)              ; Constant string
-019E: PEA        -10(A1)
-01A2: MOVE.W     #$0006,-(A7)
-01A6: A9EB                            ; _StringToNum
-
-; Check for bingo (all 7 tiles)
-01B6: ...
-01C2: A9EB                            ; _StringToNum
-
-; Check move score sign
-01C4: BGE.S      $01FE                ; Score >= 0
-
-; Format negative (exchange or pass)
-01FE: ...
-; Many more formatting steps
+; Multiple SANE (A9EB) calls for formatting
+0162: PEA        -24180(A0)           ; Source buffer
+0166: PEA        -36(A6)              ; Dest buffer
+016A: MOVE.W     #$200E,-(A7)         ; SANE operation
+016E: A9EB                            ; _Pack7 (SANE)
 ...
 
-; Check if win/loss
-02FA: MOVE.W     D6,(A5)              ; Compare indices
-02FC: BGE.S      $0366                ; Not end
-02FE: TST.W      768(A4)              ; Check game over flag
+; Check for game over
+02FE: TST.W      768(A4)              ; g_game_over flag
 0302: BEQ.S      $0338                ; Not over
 
-; Check who won
-0304: MOVEA.L    -8584(A5),A0
-0308: MOVEA.L    (A0),A0
-030A: MOVE.W     770(A0),D0
-...
 ; Compare final scores
+0304: MOVEA.L    -8584(A5),A0
 ...
-
-; Format win/loss indicator
+032E: MOVE.W     D1,-(A7)
+0330: CLR.L      -(A7)
 0332: JSR        634(A5)              ; JT[634] - format result
-
-; Format final notation string
-0338: ...
-0352: A9EB                            ; _StringToNum
-
-; Check for other player
-0366: ...
-0368: BNE.S      $0396                ; Not equal
-
-; Format leading notation
-036A: ...
-0384: A9EB                            ; _StringToNum
-
-; Release and return
-03F6: MOVEA.L    -8584(A5),A0
-03FA: MOVEA.L    (A0),A0
-...
-
-; Copy final result
-0406: ...
-0410: LEA        0(A4,D0.L),A1
-...
-041C: ...
-
-; Format score differential
-0426: ...
-0432: A9EB                            ; _StringToNum
 
 ; Final cleanup
 046E: JSR        810(A5)              ; JT[810] - HUnlock
@@ -225,104 +146,35 @@ CODE 50 formats game moves for display:
 0478: RTS
 ```
 
-**C equivalent**:
-```c
-void format_move_history(int move_index, int player) {
-    Handle gameState = g_game_state;
-    char buffer[66];
-    char notation[32];
+## Local Variables (Stack Frame)
 
-    HLock(gameState);
-    GameState* state = *gameState;
+| Offset | Size | Purpose |
+|--------|------|---------|
+| -2(A6) | 2 | Temp word |
+| -8(A6) | 4 | Temp long |
+| -10(A6) | 10 | Extended precision buffer |
+| -36(A6) | 10 | Extended precision buffer 2 |
+| -46(A6) | 10 | Extended precision buffer 3 |
+| -48(A6) | 2 | Score differential |
+| -56(A6) | 10 | Extended precision buffer 4 |
+| -66(A6) | 10 | Extended precision buffer 5 |
 
-    // Get current scores
-    int score1 = format_score(state->player1Score, g_score_buffer1);
-    int score2 = format_score(state->player2Score, g_score_buffer2);
+## SANE Operations Used
 
-    // Find or create history resource
-    Handle histH = GetResource('HIST', 0);
-    if (!histH) {
-        histH = NewHandle(0);
-        AddResource(histH, 'HIST', 0, g_res_file);
-    }
-
-    HLock(histH);
-
-    // Resize for new entry
-    SetHandleSize(histH, GetHandleSize(histH) + 8);
-
-    // Get move data
-    MoveData* move = &state->moves[move_index];
-
-    // Format move number
-    NumToString(move_index + 1, notation);
-    strcat(notation, ". ");
-
-    // Format word played
-    if (move->score >= 0) {
-        // Normal move - format word and position
-        char word[16];
-        get_move_word(state, move_index, word);
-
-        // Format position (e.g., "H8" or "8H")
-        char pos[4];
-        int row = move->row;
-        int col = move->col;
-
-        if (move->direction == HORIZONTAL) {
-            pos[0] = 'A' + col;
-            NumToString(row + 1, pos + 1);
-        } else {
-            NumToString(row + 1, pos);
-            pos[strlen(pos)] = 'A' + col;
-        }
-
-        strcat(notation, word);
-        strcat(notation, " ");
-        strcat(notation, pos);
-
-        // Add score
-        char scoreStr[8];
-        NumToString(move->score, scoreStr);
-        strcat(notation, " +");
-        strcat(notation, scoreStr);
-
-        // Check for bingo bonus
-        if (move->tilesPlayed == 7) {
-            strcat(notation, "*");  // Bingo indicator
-        }
-    } else if (move->score == -1) {
-        // Exchange
-        strcat(notation, "(exchange)");
-    } else {
-        // Pass
-        strcat(notation, "(pass)");
-    }
-
-    // Check for game end
-    if (move_index == state->totalMoves - 1 && state->gameOver) {
-        // Add win/loss indicator
-        if (state->player1Score > state->player2Score) {
-            strcat(notation, player == 0 ? " WIN" : " LOSS");
-        } else {
-            strcat(notation, player == 1 ? " WIN" : " LOSS");
-        }
-
-        // Add final score differential
-        int diff = abs(state->player1Score - state->player2Score);
-        char diffStr[8];
-        NumToString(diff, diffStr);
-        strcat(notation, " by ");
-        strcat(notation, diffStr);
-    }
-
-    // Store notation in history
-    memcpy(*histH + move_index * 8, notation, 8);
-
-    HUnlock(histH);
-    HUnlock(gameState);
-}
-```
+| Code | Operation |
+|------|-----------|
+| 0x0002 | FX2I - Extended to Integer |
+| 0x0006 | FI2X - Integer to Extended |
+| 0x0008 | FL2X - Long to Extended |
+| 0x000D | FX2S - Extended to String |
+| 0x0016 | FSUBX - Subtract Extended |
+| 0x1004 | FCPXX - Compare Extended |
+| 0x100E | FSUB with mode |
+| 0x200E | FADD with mode |
+| 0x2002 | FX2I variant |
+| 0x2004 | FI2X variant |
+| 0x2008 | FL2X variant |
+| 0x2010 | FADDX variant |
 
 ## Global Variables
 
@@ -333,25 +185,32 @@ void format_move_history(int move_index, int player) {
 | A5-8584 | g_game_state - Game state handle |
 | A5-23312 | g_score_buffer2 - Second score buffer |
 
+## Game State Structure (partial)
+
+| Offset | Type | Purpose |
+|--------|------|---------|
+| 768 | Word | Game over flag |
+| 770 | Word | Move count or current index |
+| 770+N*10 | 10 bytes | Move entry N |
+
 ## Jump Table Calls
 
 | JT Offset | Purpose |
 |-----------|---------|
-| 66 | Multiply/offset calculation |
-| 90 | NumToString |
+| 90 | NumToString wrapper |
 | 418 | Error handler |
 | 634 | Format result string |
 | 810 | HUnlock |
 | 842 | Format score |
 | 1482 | SetHandleSize |
 | 1514 | HLock |
-| 2826 | HLock |
+| 2826 | HLock (alternate entry) |
 
 ## Resource Types
 
-| Code | Type |
-|------|------|
-| HIST | 0x48495354 - History entries |
+| Code | ASCII | Purpose |
+|------|-------|---------|
+| 0x48495354 | 'HIST' | History entries |
 
 ## Move Notation Format
 
@@ -365,10 +224,73 @@ Standard Scrabble notation:
 - Pass: "(pass)"
 - Game end: "WIN" or "LOSS by N"
 
+## History Entry Structure
+
+Each entry is 8 bytes stored in 'HIST' resource:
+```c
+struct HistoryEntry {
+    int16_t move_number;
+    int16_t player;
+    int16_t score;
+    int16_t flags;  // bingo, exchange, pass indicators
+};
+```
+
+## C Equivalent
+
+```c
+void format_move_history(int move_index, int player) {
+    char buffer[66];
+
+    GameState** stateH = g_game_state;
+    HLock((Handle)stateH);
+    GameState* state = *stateH;
+
+    // Get current scores
+    format_score(state->player1Score, g_score_buffer1);
+    format_score(state->player2Score, g_score_buffer2);
+
+    // Find or create history resource
+    Handle histH = GetResource('HIST', 0);
+    if (!histH) {
+        histH = NewHandle(0);
+        AddResource(histH, 'HIST', 0, NULL);
+    }
+
+    HLock(histH);
+
+    // Resize for new entry (8 bytes per entry)
+    SetHandleSize(histH, GetHandleSize(histH) + 8);
+
+    // Get move data
+    MoveData* move = &state->moves[move_index];
+
+    // Format move notation with SANE extended precision
+    // for accurate score calculations
+    Extended scoreExt;
+    FI2X(move->score, &scoreExt);
+    // ... formatting operations ...
+
+    // Check for game over
+    if (state->gameOver) {
+        // Compare final scores and format result
+        if (state->player1Score > state->player2Score) {
+            format_result(player == 0 ? "WIN" : "LOSS", diff);
+        } else {
+            format_result(player == 1 ? "WIN" : "LOSS", diff);
+        }
+    }
+
+    HUnlock(histH);
+    HUnlock((Handle)stateH);
+}
+```
+
 ## Confidence: HIGH
 
 Clear move history formatting patterns:
 - Standard Scrabble notation
+- SANE floating-point for accurate score calculations
 - Score tracking for both players
 - Win/loss determination
-- Resource-based storage
+- Resource-based storage with 'HIST' type

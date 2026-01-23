@@ -161,9 +161,16 @@ From disassembly analysis:
 ## Key Insights
 
 ### DAWG Access Pattern
-The code uses two DAWG sections:
-- **Section 1**: 56,630 entries (reversed words for suffix matching)
-- **Section 2**: 65,536 entries (forward words)
+The code uses two **heavily overlapping** DAWG sections for cross-check computation:
+- **Shared suffix pool (0-999)**: 986 of 1000 entries referenced by both sections
+- **Section 1 (0-56,629)**: Reversed words for hook-BEFORE checking
+- **Section 2 (56,630-122,165)**: Forward words for hook-AFTER checking
+
+Section 2 is not self-contained - 57% of its children point to the shared pool, 43% point into Section 1, and 0% point within Section 2 itself. It acts as an "alternate entry layer" that reuses Section 1's suffix structure.
+
+Section 2 = exactly 65,536 (2^16) entries, maxing out a 16-bit index.
+
+**Speculation:** Both DAWGs may be used for main word generation (left/right extension from anchors) as well as cross-set computation - not yet confirmed in disassembly.
 
 Offset calculations frequently seen:
 - `g_dawg_ptr + g_size1` - Start of section 2
@@ -171,11 +178,11 @@ Offset calculations frequently seen:
 
 ### Two-Buffer System
 Both CODE 7 and CODE 11 use alternating buffers:
-- `g_field_14` (A5-15514): Primary buffer
-- `g_field_22` (A5-15522): Secondary buffer
+- `g_field_14` (A5-15514): Paired with reversed DAWG (hook-before)
+- `g_field_22` (A5-15522): Paired with forward DAWG (hook-after)
 - `g_current_ptr` (A5-15498): Points to active buffer
 
-This likely represents horizontal/vertical word directions on the board.
+This enables efficient cross-check computation without brute-force A-Z testing.
 
 ### State Machine
 `g_game_mode` (A5-8604) controls game states:

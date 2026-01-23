@@ -23,7 +23,7 @@ Entry points at: 0x0000, 0x002E, 0x0118, 0x0182, 0x02DA, 0x0302, 0x032E, 0x0368,
 | A5-27732 | g_buffer1 | Buffer area 1 |
 | A5-24026 | g_common | Common data area |
 | A5-23056 | g_dawg_field | DAWG related field |
-| A5-15514 | g_field_14 | Board buffer 1 (vertical) |
+| A5-15514 | g_field_14 | Board buffer 1 (hook-before) |
 | A5-15498 | g_current_ptr | Current active buffer pointer |
 
 Also references 28 unknown A5-relative globals.
@@ -71,7 +71,7 @@ Also references 28 unknown A5-relative globals.
 ## Analysis Notes
 
 - **DAWG-related**: Uses 2 DAWG-related globals
-- Uses the two-buffer system (horizontal/vertical word directions)
+- Uses the two-buffer system (hook-before/hook-after cross-check computation)
 - No direct Toolbox calls - may be pure computation or use jump table exclusively
 
 ## Refined Analysis (Second Pass)

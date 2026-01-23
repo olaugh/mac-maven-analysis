@@ -22,7 +22,7 @@ Maven is a classic Macintosh Scrabble engine created by Brian Sheppard. This doc
 - **CFIG**: Board configuration (1,088 bytes) - appears to contain board multiplier positions
 - **EXPR**: "experience" resource (96 bytes) - contains floating-point rack leave values
 - **MULa-MULz, MUL?**: Letter multiplier tables (224 bytes each) - leave value contributions per letter
-- **VCBa-VCBh**: Vocabulary-related tables (224 bytes each) - currently all zeros, may be runtime buffers
+- **VCBa-VCBh**: Vowel Count Balance tables (224 bytes each) - VCBa-VCBg are zeros, VCBh contains vowel count adjustments (0-7 vowels)
 - **ESTR**: Pattern strings (536 bytes) - rack leave pattern definitions
 
 #### Leave Heuristics
@@ -38,11 +38,33 @@ representing the leave value contributions for each letter pattern combination.
 
 ### Header (0x00-0x0F)
 ```
-Offset 0x00: 0x0000dd36 (56,630) - possibly number of terminal nodes
-Offset 0x04: 0x0001dd36 (122,166) - possibly total nodes
+Offset 0x00: 0x0000dd36 (56,630) - Section 1 size (reversed words, overflow)
+Offset 0x04: 0x0001dd36 (122,166) - Cumulative size (Section 1 + Section 2)
 Offset 0x08: 0x00023844 (145,476) - unknown
 Offset 0x0C: 0x00000300 (768) - possibly data offset
 ```
+
+### Two-Section Structure (Heavily Overlapping)
+The DAWG contains **two overlapping sections** for efficient cross-check computation:
+
+| Section | Entries | Size | Purpose |
+|---------|---------|------|---------|
+| Shared suffix pool | 0-999 | ~1,000 | Common word endings used by both DAWGs |
+| Section 1 | 0-56,629 | 56,630 | **Reversed words** - for hook-BEFORE checking |
+| Section 2 | 56,630-122,165 | 65,536 | **Forward words** - for hook-AFTER checking |
+
+**Key insight: The sections heavily overlap.** Analysis shows:
+- 986 of the first 1000 entries are referenced by BOTH sections
+- Section 2 is not self-contained: 57% of its children point to the shared pool (0-999), and 43% point into Section 1 (1000-56629)
+- 0% of Section 2 children point within Section 2 itself
+
+Section 2 functions as an "alternate entry layer" - forward word traversals start in Section 2 but quickly descend into Section 1's suffix structure. This clever design minimizes memory usage by sharing all common word endings.
+
+**Why two entry points?** Without a reversed DAWG, computing cross-checks (what letters can legally extend existing words) would require brute-force testing all 26 letters A-Z.
+
+**Note:** The reversed/forward DAWGs may also be used for main word generation (extending left/right from an anchor square), not just cross-set computation. This hasn't been confirmed in the code yet.
+
+**Size note**: Section 2 being exactly 65,536 (2^16) indicates it maxed out a 16-bit index. It only needs to store the unique "front parts" of forward words since it shares all suffixes with Section 1.
 
 ### Letter Index (0x10-0x77)
 26 entries, one for each letter a-z:
@@ -93,26 +115,31 @@ Analyzes the DAWG header and node structure.
 ### dawg_traverse.py / dawg_reversed.py
 Attempts to extract words from the DAWG (work in progress).
 
+## Documentation
+
+See the `analysis/` directory for detailed documentation:
+
+- **ANALYSIS_SUMMARY.md** - High-level summary of all findings
+- **LEAVE_VALUES.md** - Complete leave value system documentation
+- **MOVE_EVALUATION.md** - Move scoring algorithm details
+- **CODE_RESOURCE_MAP.md** - CODE resource classification and relationships
+- **detailed/codeN_detailed.md** - Per-CODE detailed analysis (53 files)
+- **disasm/codeN_disasm.asm** - Disassembly output (53 files)
+
+## Tools
+
+- **leave_eval.py** - Interactive leave value evaluator using extracted Maven data
+- **extract_resources.py** - Extract resources from .rdump file
+- **analyze_dawg.py** - DAWG dictionary structure analysis
+
 ## Next Steps
 
-1. **Complete DAWG decoding**:
-   - Reverse engineer the exact pointer/flag bit packing
-   - Successfully extract the full word list
-
-2. **Disassemble key CODE segments**:
-   - Identify word validation function
-   - Identify move generation function
-   - Identify endgame evaluation function
-
-3. **Document leave heuristics**:
-   - Decode the EXPR floating-point values
-   - Map patterns in ESTR to values in MUL*
-
-4. **Create C decompilation**:
-   - Convert 68k assembly to readable C code
-   - Document all data structures
+1. **Extract ESTR synergy values** via runtime debugging (values computed by CODE 39)
+2. **Complete endgame analysis** (CODE 36-37 are large and complex)
+3. **Understand VCB application** for partial racks (disassembly incomplete)
+4. **Document Monte Carlo simulation** system (CODE 35, 50)
 
 ## References
-- Maven was created by Brian Sheppard in the late 1980s
-- Uses OSPD/TWL dictionary format (estimated ~100,000-178,000 words)
+- Maven was created by Brian Sheppard in the 1980s
+- Uses DAWG dictionary format (can be configured for any word list; our emulator version uses OSWI from 2000)
 - Classic Macintosh 68000 application architecture
