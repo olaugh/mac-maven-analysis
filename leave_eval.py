@@ -139,22 +139,80 @@ SYNERGIES = {
 def calculate_synergies(counts):
     """
     Calculate synergy adjustments based on tile combinations.
-    Returns adjustment in centipoints.
+    Returns (adjustment, breakdown) where adjustment is centipoints
+    and breakdown is a list of (description, value) tuples.
     """
     adjustment = 0
+    breakdown = []
     tiles_present = set(counts.keys())
 
+    # Pair synergies
     for (tile1, tile2), bonus in SYNERGIES.items():
         if tile1 == tile2:
             # Same tile - check if count >= 2
             if tile1 in counts and counts[tile1] >= 2:
                 adjustment += bonus
+                breakdown.append((f"{tile1}{tile1}", bonus))
         else:
             # Different tiles - check if both present
             if tile1 in tiles_present and tile2 in tiles_present:
                 adjustment += bonus
+                breakdown.append((f"{tile1}+{tile2}", bonus))
 
-    return adjustment
+    # Vowel/consonant balance (from ESTR patterns)
+    vowels = set('AEIOU')
+    good_consonants = set('LNRST')  # "lnrtsu" pattern (minus U which is vowel)
+    bad_consonants = set('FHKWVY')   # "fhkwvy" pattern
+
+    vowel_count = sum(counts.get(v, 0) for v in vowels)
+    total_tiles = sum(counts.values())
+
+    # Vowel-heavy penalties (from "aeiou", "aeio" patterns)
+    distinct_vowels = len([v for v in vowels if v in tiles_present])
+    if distinct_vowels >= 5:
+        penalty = -400  # All 5 vowels present
+        adjustment += penalty
+        breakdown.append(("5 vowels", penalty))
+    elif distinct_vowels >= 4:
+        penalty = -200  # 4 different vowels
+        adjustment += penalty
+        breakdown.append(("4 vowels", penalty))
+
+    # Vowel ratio penalties (too vowel-heavy)
+    if total_tiles >= 3:
+        vowel_ratio = vowel_count / total_tiles
+        if vowel_ratio > 0.6:
+            penalty = -300  # More than 60% vowels
+            adjustment += penalty
+            breakdown.append(("vowel-heavy", penalty))
+        elif vowel_ratio < 0.2 and total_tiles >= 4:
+            penalty = -200  # Less than 20% vowels (consonant-heavy)
+            adjustment += penalty
+            breakdown.append(("consonant-heavy", penalty))
+
+    # Good consonant bonus (having LNRST)
+    good_cons_count = sum(1 for c in good_consonants if c in tiles_present)
+    if good_cons_count >= 4:
+        bonus = 150  # 4+ of the power consonants
+        adjustment += bonus
+        breakdown.append(("power consonants", bonus))
+    elif good_cons_count >= 3:
+        bonus = 75
+        adjustment += bonus
+        breakdown.append(("good consonants", bonus))
+
+    # Bad consonant penalty (having FHKWVY cluster)
+    bad_cons_count = sum(counts.get(c, 0) for c in bad_consonants)
+    if bad_cons_count >= 3:
+        penalty = -250
+        adjustment += penalty
+        breakdown.append(("awkward consonants", penalty))
+    elif bad_cons_count >= 2:
+        penalty = -100
+        adjustment += penalty
+        breakdown.append(("weak consonants", penalty))
+
+    return adjustment, breakdown
 
 
 def evaluate_leave(leave, mul_data, verbose=True):
@@ -203,7 +261,7 @@ def evaluate_leave(leave, mul_data, verbose=True):
             })
 
     # Calculate synergy adjustments
-    synergy_adj = calculate_synergies(counts)
+    synergy_adj, synergy_breakdown = calculate_synergies(counts)
 
     if verbose:
         print(f"\nLeave: {leave.upper()}")
@@ -216,9 +274,10 @@ def evaluate_leave(leave, mul_data, verbose=True):
             else:
                 print(f"{d['tile']:<6} {d['count']:<6} {d['raw_adj']:<10} {d['value_points']:>+9.2f} {d['expected_score']:>9.2f}")
         print("-" * 60)
-        print(f"{'Sum':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f} {total_expected:>9.2f}")
-        if synergy_adj != 0:
-            print(f"{'Synergy':<6} {'':<6} {synergy_adj:<10} {synergy_adj/100:>+9.2f}")
+        print(f"{'Tiles':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f} {total_expected:>9.2f}")
+        if synergy_breakdown:
+            for desc, val in synergy_breakdown:
+                print(f"  {desc:<18} {val:<10} {val/100:>+9.2f}")
             print("-" * 60)
             print(f"{'TOTAL':<6} {'':<6} {'':<10} {(total_centipoints + synergy_adj)/100:>+9.2f}")
         print()
