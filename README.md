@@ -2,7 +2,7 @@
 
 ## Status: Work in Progress
 
-This project aims to reverse engineer Maven, Brian Sheppard's classic Macintosh Scrabble engine.
+This project aims to reverse engineer Maven 2.1, Brian Sheppard's classic Macintosh Scrabble engine. This copy has been updated to use the OSWI (SOWPODS) word list.
 
 ## Project Goals
 
@@ -81,6 +81,6 @@ Located in three resource types:
 
 ## Resources
 
-- Maven was created by Brian Sheppard (late 1980s)
-- Uses OSPD/TWL dictionary format
+- Maven was created by Brian Sheppard
+- This copy uses OSWI (SOWPODS) dictionary
 - Classic Macintosh 68000 application
