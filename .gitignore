@@ -1,0 +1,18 @@
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+
+# Mac metadata files
+._*
+.DS_Store
+
+# Original binary resources (extracted from Maven app)
+resources/
+
+# Debug traces (large)
+traces/
+
+# Temporary files
+*.tmp
+/tmp/
