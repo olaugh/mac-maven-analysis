@@ -373,3 +373,418 @@ Standard Mac File Manager patterns:
 - FSRead/FSWrite with count pointer
 - FlushVol after writes for data integrity
 - Line reading with CR/LF handling (Mac and Unix compatible)
+
+---
+
+## Speculative C Translation
+
+### Complete File I/O Module
+
+```c
+/*
+ * CODE 47 - File I/O Operations for Maven
+ *
+ * This module provides file reading and writing services for:
+ * - Game save files
+ * - Word list loading
+ * - Configuration files
+ * - Text export functionality
+ */
+
+/* Global variables */
+char g_write_buffer[256];      /* A5-1170: Buffer for write operations */
+
+/*--------------------------------------------------------------------
+ * Function 0x0000 - Read Single Byte
+ *--------------------------------------------------------------------*/
+/*
+ * file_read_byte - Read one byte from an open file
+ *
+ * Returns the byte value (0-255) or -1 on EOF/error.
+ * This is the primitive used by higher-level read functions.
+ *
+ * @param file_ref: Open file reference number
+ * @return: Byte value (0-255) or -1 on EOF/error
+ */
+short file_read_byte(short file_ref) {
+    char byte_buffer;
+    long byte_count = 1;
+    OSErr error;
+
+    /* Call FSRead through jump table wrapper */
+    error = FSRead(file_ref, &byte_count, &byte_buffer);
+
+    if (error != noErr) {
+        return -1;  /* 0xFF sign-extended = -1 */
+    }
+
+    /* Return unsigned byte value */
+    return (unsigned char)byte_buffer;
+}
+
+/*--------------------------------------------------------------------
+ * Function 0x0034 - Write Single Byte
+ *--------------------------------------------------------------------*/
+/*
+ * file_write_byte - Write one byte to an open file
+ *
+ * Writes from the global buffer, which must be set before calling.
+ *
+ * @param file_ref: Open file reference number
+ * @return: OSErr (0 = success)
+ */
+OSErr file_write_byte(short file_ref) {
+    long byte_count = 1;
+
+    /* Write from global buffer */
+    return FSWrite(file_ref, &byte_count, g_write_buffer);
+}
+
+/*--------------------------------------------------------------------
+ * Function 0x0056 - Open File for Reading
+ *--------------------------------------------------------------------*/
+/*
+ * file_open_read - Open file with read permission
+ *
+ * Uses HOpen with HParamBlockRec for full HFS support.
+ *
+ * @param filename_ptr: Pascal string filename
+ * @param out_file_ref: Receives opened file reference
+ * @return: OSErr (0 = success)
+ */
+OSErr file_open_read(StringPtr filename_ptr, long *out_file_ref) {
+    HParamBlockRec param_block;  /* 122 bytes */
+    OSErr error;
+
+    /* Clear parameter block */
+    memset(&param_block, 0, sizeof(HParamBlockRec));
+
+    /* Set filename pointer at offset 18 (ioNamePtr) */
+    param_block.ioNamePtr = filename_ptr;
+
+    /* HOpen with read permission (fsRdPerm = 0) */
+    error = PBHOpenSync(&param_block, false);
+
+    if (error == noErr) {
+        /* Return file reference from offset 24 (ioRefNum) */
+        /* uncertain: exact offset mapping in HParamBlockRec */
+        *out_file_ref = param_block.ioParam.ioRefNum;
+    }
+
+    return error;
+}
+
+/*--------------------------------------------------------------------
+ * Function 0x008E - Open File and Get Size
+ *--------------------------------------------------------------------*/
+/*
+ * file_open_read_with_size - Open file and return data+rsrc fork sizes
+ *
+ * @param filename_ptr: Pascal string filename
+ * @param out_total_size: Receives combined file size
+ * @return: OSErr
+ */
+OSErr file_open_read_with_size(StringPtr filename_ptr, long *out_total_size) {
+    HParamBlockRec param_block;
+    OSErr error;
+
+    memset(&param_block, 0, sizeof(HParamBlockRec));
+    param_block.ioNamePtr = filename_ptr;
+
+    error = PBHOpenSync(&param_block, false);
+
+    if (error == noErr) {
+        /* Calculate total size (data fork + resource fork) */
+        /* uncertain: exact field offsets for fork sizes */
+        long data_fork_size = param_block.ioParam.ioMisc;  /* uncertain */
+        long rsrc_fork_size = param_block.fileParam.ioFlLgLen;  /* uncertain */
+        *out_total_size = data_fork_size + rsrc_fork_size;
+    }
+
+    return error;
+}
+
+/*--------------------------------------------------------------------
+ * Function 0x00CC - Save Dialog
+ *--------------------------------------------------------------------*/
+/*
+ * file_save_dialog - Display save dialog and validate filename
+ *
+ * Shows standard save dialog. If user enters existing filename,
+ * validates it can be replaced.
+ *
+ * @param default_name: Default filename to suggest
+ * @param out_vol_ref: Receives selected volume reference
+ * @return: OSErr (0 = success, user pressed OK)
+ */
+OSErr file_save_dialog(StringPtr default_name, short *out_vol_ref) {
+    SFReply reply;                    /* 80 bytes */
+    unsigned char filename_buffer[256];  /* Working filename copy */
+    OSErr error;
+    short selection_index = 1;
+
+    /* Initialize reply structure */
+    memset(&reply, 0, sizeof(SFReply));
+
+    /* Copy default name to filename buffer at proper offset */
+    /* uncertain: exact offset -258 from A6 in original */
+    BlockMove(default_name, filename_buffer, default_name[0] + 1);
+
+    do {
+        reply.fName[0] = selection_index;  /* uncertain: selection tracking */
+
+        /* Show StandardPutFile dialog */
+        SFPutFile(NULL, "\p", filename_buffer, NULL, &reply);
+
+        if (!reply.good) {
+            return userCanceledErr;  /* User cancelled */
+        }
+
+        /* Validate the chosen filename doesn't conflict */
+        if (validate_save_filename(default_name, filename_buffer)) {
+            *out_vol_ref = reply.vRefNum;
+            return noErr;
+        }
+
+        /* Name exists - increment selection and retry */
+        selection_index++;
+
+    } while (1);
+}
+
+/*--------------------------------------------------------------------
+ * Function 0x01D6 - Write Complete Text File
+ *--------------------------------------------------------------------*/
+/*
+ * file_write_text - Create and write a complete TEXT file
+ *
+ * Creates file with TEXT type, writes data, flushes, and closes.
+ * Handles all error cases with proper cleanup.
+ *
+ * @param filename: Pascal string filename
+ * @param vol_ref: Volume reference number
+ * @param data_ptr: Pointer to data buffer
+ * @param data_size: Number of bytes to write
+ * @return: OSErr
+ */
+OSErr file_write_text(StringPtr filename, short vol_ref,
+                      void *data_ptr, long data_size) {
+    short file_ref;
+    OSErr error;
+
+    /* Create/open file with TEXT type (0x54455854) */
+    error = file_create_open(filename, vol_ref, 'TEXT', true, &file_ref);
+    if (error != noErr) {
+        return error;
+    }
+
+    /* Write the data */
+    error = FSWrite(file_ref, &data_size, data_ptr);
+    if (error != noErr) {
+        FSClose(file_ref);
+        return error;
+    }
+
+    /* Flush to ensure data is written */
+    error = FlushVol(NULL, vol_ref);
+    if (error != noErr) {
+        FSClose(file_ref);
+        return error;
+    }
+
+    /* Close the file */
+    error = FSClose(file_ref);
+    if (error != noErr) {
+        return error;
+    }
+
+    /* Final volume flush for safety */
+    return FlushVol(NULL, vol_ref);
+}
+
+/*--------------------------------------------------------------------
+ * Function 0x02EA - Read Line from File
+ *--------------------------------------------------------------------*/
+/*
+ * file_read_line - Read characters until line ending
+ *
+ * Reads characters one at a time until CR, LF, or EOF.
+ * Handles backspace (0x08) for interactive editing support.
+ * Null-terminates the result.
+ *
+ * @param buffer: Destination buffer for line
+ * @param max_length: Maximum characters to read
+ * @param file_ref: Open file reference
+ * @return: Pointer to buffer if data read, NULL if empty/EOF
+ */
+char* file_read_line(char *buffer, long max_length, short file_ref) {
+    char *buffer_start = buffer;
+    char *write_pos = buffer;
+    short current_char;
+
+    /* Reject zero-length requests */
+    if (max_length == 0) {
+        return NULL;
+    }
+
+    /* Read characters until line ending or buffer full */
+    while (max_length > 0) {
+        max_length--;
+        if (max_length < 0) {
+            break;  /* Buffer exhausted */
+        }
+
+        /* Read next character */
+        current_char = file_read_byte(file_ref);
+
+        if (current_char < 0) {
+            break;  /* EOF or error */
+        }
+
+        /* Handle backspace (delete previous char if possible) */
+        if (current_char == 0x08) {
+            if (write_pos != buffer_start) {
+                max_length++;  /* Reclaim count */
+                write_pos--;   /* Back up write position */
+            }
+            continue;
+        }
+
+        /* Store the character */
+        *write_pos++ = (char)current_char;
+
+        /* Check for line endings */
+        if (current_char == 0x0A) {  /* LF (Unix/modern) */
+            break;
+        }
+        if (current_char == 0x0D) {  /* CR (Classic Mac) */
+            break;
+        }
+    }
+
+    /* Null-terminate the line */
+    if (write_pos != buffer_start) {
+        *write_pos = '\0';
+    }
+
+    /* Return buffer pointer if we read something, else NULL */
+    return (write_pos != buffer_start) ? buffer_start : NULL;
+}
+
+/*--------------------------------------------------------------------
+ * Function 0x0354 - Get File Size / Seek
+ *--------------------------------------------------------------------*/
+/*
+ * file_get_size_and_seek - Get file size and optionally reposition
+ *
+ * Gets the logical end-of-file then sets the file position.
+ *
+ * @param file_ref: Open file reference
+ * @param seek_mode: Positioning mode for SetFPos
+ * @return: 0 on success, -1 on error
+ */
+short file_get_size_and_seek(short file_ref, short seek_mode) {
+    long file_size;
+    OSErr error;
+
+    /* Get logical EOF (file size) */
+    file_size = GetEOF(file_ref);
+
+    /* Set file position based on mode */
+    error = SetFPos(file_ref, seek_mode, &file_size);
+
+    return (error == noErr) ? 0 : -1;
+}
+```
+
+### Utility Functions (Internal)
+
+```c
+/*
+ * file_create_open - Create file if needed and open it
+ *
+ * Used internally by file_write_text.
+ *
+ * @param filename: Pascal string filename
+ * @param vol_ref: Volume reference
+ * @param file_type: Type code (e.g., 'TEXT')
+ * @param create_flag: Create if doesn't exist
+ * @param out_ref: Receives file reference
+ * @return: OSErr
+ */
+static OSErr file_create_open(StringPtr filename, short vol_ref,
+                              OSType file_type, Boolean create_flag,
+                              short *out_ref) {
+    OSErr error;
+
+    if (create_flag) {
+        /* Try to create the file first */
+        error = Create(filename, vol_ref, 'MVNX', file_type);
+        /* uncertain: creator code 'MVNX' or 'MAVN' */
+        if (error != noErr && error != dupFNErr) {
+            return error;  /* Real error, not just "already exists" */
+        }
+    }
+
+    /* Open the file */
+    return FSOpen(filename, vol_ref, out_ref);
+}
+
+/*
+ * validate_save_filename - Check if save filename is acceptable
+ *
+ * Called by file_save_dialog to validate user's filename choice.
+ *
+ * @param default_name: Original suggested name
+ * @param entered_name: Name user entered
+ * @return: TRUE if acceptable
+ */
+static Boolean validate_save_filename(StringPtr default_name,
+                                      StringPtr entered_name) {
+    /* uncertain: exact validation logic */
+    /* Likely checks for conflicts, illegal characters, etc. */
+
+    /* JT[2042] wrapper call */
+    return check_filename_valid(default_name, entered_name);
+}
+```
+
+### Error Handling Pattern
+
+All file functions follow this consistent pattern:
+
+```c
+/*
+ * Standard file operation error handling pattern:
+ *
+ * 1. Clear stack space for error result
+ * 2. Push parameters
+ * 3. Call through jump table
+ * 4. Pop and test error
+ * 5. Either propagate error or continue
+ *
+ * Example:
+ *   error = do_file_operation(params);
+ *   if (error != noErr) {
+ *       cleanup_if_needed();
+ *       return error;
+ *   }
+ */
+```
+
+### Constants and Magic Numbers
+
+```c
+/* File type codes */
+#define FILE_TYPE_TEXT  'TEXT'  /* 0x54455854 - Plain text */
+
+/* Special characters */
+#define CHAR_BACKSPACE  0x08    /* Delete previous character */
+#define CHAR_LF         0x0A    /* Unix line ending */
+#define CHAR_CR         0x0D    /* Mac line ending */
+
+/* Return codes */
+#define READ_EOF        -1      /* End of file reached */
+#define SEEK_SUCCESS    0       /* Position set successfully */
+#define SEEK_ERROR      -1      /* Position set failed */
+```

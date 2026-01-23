@@ -369,3 +369,401 @@ The patterns are clear and well-documented:
 - Record-based save format
 - Dictionary validation via JT[794]
 - Board transpose for vertical word processing
+
+---
+
+## Speculative C Translation
+
+### Global Variables
+
+```c
+/* Board data structures - 17x17 arrays with border cells */
+char  g_word_multipliers[289];   /* A5-27229: Word multiplier grid (1=none, 2=DW, 3=TW) */
+char  g_letter_multipliers[289]; /* A5-26685: Letter multiplier grid (1=none, 2=DL, 3=TL) */
+char  g_board_letters[289];      /* A5-17137: Board letters (17x17, +17 to skip border) */
+short g_board_scores[289];       /* A5-16576: Board tile scores */
+
+char  g_current_word[32];        /* A5-15514: g_field_14 - word being played */
+char  g_cross_word[32];          /* A5-15522: g_field_22 - perpendicular word */
+long  g_size1;                   /* A5-15506: Size parameter 1 (56630 observed) */
+long  g_size2;                   /* A5-15502: Size parameter 2 (65536 observed) */
+
+char  g_lookup_table[289];       /* A5-10388: Board lookup table */
+WindowPtr g_main_window;         /* A5-8510: Main game window (Toolbox) */
+
+#define BOARD_WIDTH 17
+#define BOARD_SIZE  289          /* 17 * 17 */
+```
+
+### Function 0x0000 - Dump Board State to Text
+
+Generates a human-readable text representation of the board for debugging or logging.
+
+```c
+/*
+ * dump_board_to_file - Write board state as ASCII art
+ *
+ * @param file_handle: File reference number to write to
+ *
+ * Output format:
+ *   A B C - - + D E F ...   (letters on board)
+ *   G H - $ * # - I J ...   ($ = DL, * = TL, + = DW, # = TW, - = empty)
+ *   ...
+ *   g_field_14: EXAMPLE      (current word)
+ *   g_field_22: TEST         (cross word)
+ *   g_size1: 56630  g_size2: 65536
+ */
+void dump_board_to_file(short file_handle) {
+    char line_buffer[128];       /* -128(A6): Output line buffer */
+    int row_counter;             /* D4: Current row (1-16) */
+    char* word_mult_ptr;         /* A4: Word multiplier array */
+    char* letter_mult_ptr;       /* D6: Letter multiplier array */
+    char* board_ptr;             /* A3: Board letters */
+    char* score_ptr;             /* D7: Board scores */
+
+    row_counter = 1;
+    word_mult_ptr = g_word_multipliers;
+    letter_mult_ptr = g_letter_multipliers;
+    board_ptr = g_board_letters + BOARD_WIDTH;  /* Skip border row */
+    score_ptr = g_board_scores;
+
+    /* Process each row */
+    while (row_counter <= 16) {
+        char* output_ptr = line_buffer;  /* A2 */
+        int col = 1;                      /* D3 */
+
+        /* Store column pointers for this row */
+        char* score_row = score_ptr;      /* -136(A6) */
+        char* board_row = board_ptr;      /* -132(A6) */
+        char* letter_row = letter_mult_ptr; /* -144(A6) */
+        char* word_row = word_mult_ptr;   /* -148(A6) */
+
+        /* Process each column */
+        while (col <= 16) {
+            /* Check if cell has a tile */
+            if (score_row[col] != 0) {
+                /* Has tile - check if tentative (being played) */
+                char letter = board_row[col];
+
+                if (is_tentative_tile(col)) {  /* uncertain: exact check */
+                    /* Lowercase = tentative tile */
+                    *output_ptr++ = tolower(letter);  /* JT[3562] */
+                } else {
+                    /* Uppercase = placed tile */
+                    *output_ptr++ = letter;
+                }
+            } else {
+                /* Empty cell - show multiplier type */
+                if (letter_row[col] == 2) {
+                    *output_ptr++ = '$';     /* Double letter */
+                } else if (letter_row[col] == 3) {
+                    *output_ptr++ = '*';     /* Triple letter */
+                } else if (word_row[col] == 2) {
+                    *output_ptr++ = '+';     /* Double word */
+                } else if (word_row[col] == 3) {
+                    *output_ptr++ = '#';     /* Triple word */
+                } else {
+                    *output_ptr++ = '-';     /* Regular empty */
+                }
+            }
+
+            *output_ptr++ = ' ';  /* Space between cells */
+            col++;
+        }
+
+        /* End line with carriage return */
+        *output_ptr++ = '\r';
+        *output_ptr = '\0';
+
+        /* Write line to file */
+        write_string_to_file(file_handle, line_buffer);  /* JT[3370] */
+
+        /* Advance to next row */
+        row_counter++;
+        word_mult_ptr += BOARD_WIDTH;
+        letter_mult_ptr += BOARD_WIDTH;
+        board_ptr += BOARD_WIDTH;
+        score_ptr += (BOARD_WIDTH * 2);  /* Scores are word-sized */
+    }
+
+    /* Write additional debug info */
+    write_string_to_file(file_handle, g_current_word);   /* g_field_14 */
+    write_string_to_file(file_handle, g_cross_word);     /* g_field_22 */
+
+    /* Format and write size values */
+    long size1_scaled = divide_long(g_size1, 100);  /* JT[90] */
+    long size2_scaled = divide_long(g_size2, 100);  /* JT[90] */
+    sprintf(line_buffer, "g_size1: %ld  g_size2: %ld", size1_scaled, size2_scaled);  /* JT[2066] */
+    write_string_to_file(file_handle, line_buffer);
+}
+```
+
+### Function 0x0162 - Save Game to File
+
+Creates a save file with the current game state.
+
+```c
+#define FILE_TYPE_TEXT   'TEXT'
+#define FILE_CREATOR     'XGME'    /* Maven application signature */
+#define RECORD_SIZE      6
+
+/*
+ * save_game_to_file - Write game state to a file
+ *
+ * @param volume_ref: Volume reference number
+ * @param filename: Pascal string filename
+ * Returns: 1 on success, 0 on failure
+ */
+int save_game_to_file(short volume_ref, char* filename) {
+    short file_ref;              /* -2(A6): File reference */
+    long file_size;              /* -30(A6): Handle size */
+    OSErr err;
+    /* uncertain */ ParamBlock pb;  /* -26(A6): File info block */
+
+    /* Create the file with TEXT type */
+    err = FSCreate(filename, volume_ref, &file_ref, 0x0001, FILE_TYPE_TEXT);  /* JT[3378] */
+    if (err != noErr) {
+        bounds_error();  /* JT[418] */
+    }
+
+    /* Open file for writing */
+    err = FSOpen_Write(&pb, volume_ref, filename, 0);  /* JT[2874] */
+
+    /* Set file creator to Maven */
+    pb.creator = FILE_CREATOR;  /* 'XGME' = 0x58474D45 */
+    FSSetFileInfo(&pb, volume_ref, filename, 0);  /* JT[2906] */
+
+    /* Set file to empty (will write from beginning) */
+    SetEOF(file_ref, 0);  /* JT[2922] */
+
+    /* Get window data handle */
+    Handle window_data = g_main_window->data_handle;  /* offset 202 in window */
+    file_size = GetHandleSize(window_data);  /* JT[2826] */
+
+    /* Calculate number of 6-byte records */
+    long record_count = divide_long(file_size, RECORD_SIZE);  /* JT[74] */
+
+    /* Write each record */
+    for (long i = 0; i < record_count; i++) {
+        long bytes_to_write = RECORD_SIZE;
+
+        /* Get record data from window handle */
+        Handle record_handle = get_resource_handle(i);  /* JT[1514] */
+
+        /* Special handling for first record */
+        if (i == 0) {
+            /* uncertain */ short temp = record_handle[4];
+            record_handle[4] = 0;  /* Clear something */
+        }
+
+        /* Write 6 bytes */
+        FSWrite(file_ref, &bytes_to_write, record_handle);  /* JT[2866] */
+    }
+
+    /* Flush volume to ensure data is written */
+    FlushVol(volume_ref);  /* JT[1242] */
+
+    return 1;  /* Success */
+}
+```
+
+### Function 0x02C8 - Load Game from File
+
+Reads and restores a game from a save file.
+
+```c
+/*
+ * load_game_from_file - Restore game state from file
+ *
+ * @param volume_ref: Volume reference number
+ * @param filename: Pascal string filename
+ * Returns: 1 on success, 0 on failure
+ */
+int load_game_from_file(short volume_ref, char* filename) {
+    short file_ref;              /* -2(A6): File reference */
+    long bytes_read;             /* -10(A6): Bytes actually read */
+    short record_type;           /* -4(A6): Type of current record */
+    short record_length;         /* -6(A6): Length of record data */
+    OSErr err;
+
+    /* Null-terminate Pascal string for C compatibility */
+    char* p = filename;
+    int len = (unsigned char)*p;
+    p[len + 1] = '\0';
+
+    /* Open file for reading */
+    err = FSOpen(filename, volume_ref, &file_ref, 0);  /* JT[2842] */
+    if (err != noErr) {
+        return 0;
+    }
+
+    /* Read and process records */
+    while (1) {
+        /* Read record header (2 bytes type, 2 bytes length) */
+        bytes_read = 2;
+        err = FSRead(file_ref, &bytes_read, &record_type);  /* JT[2858] */
+        if (err != noErr || bytes_read != 2) break;
+
+        bytes_read = 2;
+        err = FSRead(file_ref, &bytes_read, &record_length);
+        if (err != noErr) break;
+
+        /* Read record data based on type */
+        /* uncertain: exact record processing */
+        Handle data_handle = get_resource_handle(record_type);  /* JT[1514] */
+        if (data_handle) {
+            bytes_read = record_length;
+            FSRead(file_ref, &bytes_read, *data_handle);
+
+            /* Process based on record type */
+            apply_record_to_game_state(record_type, data_handle);  /* uncertain */
+        }
+    }
+
+    /* Restore lookup table (289 bytes) */
+    memcpy(g_lookup_table, g_lookup_table_source, 289);  /* JT[3466] */
+    /* Note: 0x121 = 289 bytes = 17*17 board */
+
+    /* Close file */
+    FSClose(file_ref);  /* JT[2850] */
+
+    return 1;  /* Success */
+}
+```
+
+### Function 0x058C - Check Word Against Board
+
+Validates that a word on the board exists in the dictionary.
+
+```c
+/*
+ * check_word_on_board - Validate a horizontal word at given position
+ *
+ * @param board_position: Pointer to first letter position on board
+ * Returns: 1 if valid word, 0 if not in dictionary
+ */
+int check_word_on_board(char* board_position) {
+    char word_buffer[32];        /* -32(A6): Buffer to collect word */
+    char* word_ptr = word_buffer; /* A3 */
+    char* pos = board_position;   /* A4 */
+
+    /* Check if this is the start of a word (no letter to the left) */
+    if (pos[-1] != 0) {
+        /* Not word start - this is middle of a longer word */
+        return 0;  /* uncertain: maybe returns different value */
+    }
+
+    /* Collect letters until end of word */
+    while (*pos != 0) {
+        char letter = *pos;
+
+        /* Convert to uppercase for dictionary lookup */
+        *word_ptr++ = toupper(letter);  /* JT[3554] */
+
+        pos++;
+    }
+
+    /* Null-terminate the word */
+    *word_ptr = '\0';
+
+    /* Check if word is in dictionary */
+    int found = check_in_dictionary(word_buffer);  /* JT[794] */
+    if (!found) {
+        /* Word not in dictionary - invalid */
+        return 0;
+    }
+
+    /* Word is valid */
+    return 1;
+}
+```
+
+### Function 0x07B0 - Transpose Board
+
+Swaps rows and columns for vertical word processing. This is a common technique in Scrabble engines to reuse horizontal word-finding logic for vertical words.
+
+```c
+/*
+ * transpose_board - Swap board rows and columns in-place
+ *
+ * @param board_offset: Offset to add to board calculations
+ *
+ * After transpose:
+ *   board[row][col] becomes board[col][row]
+ *
+ * This allows the horizontal word finder to find vertical words
+ * by transposing, finding, then transposing back.
+ */
+void transpose_board(long board_offset) {
+    int row, col;                /* D6, D5: Loop counters */
+    char* row_ptr;               /* A4: Current row pointer */
+    char* col_ptr;               /* A2: Column traversal pointer */
+    char temp;                   /* D4: Swap temporary */
+
+    char* board_base = g_board_letters;  /* A3 */
+    row_ptr = board_base;
+
+    /* For each row */
+    for (row = 0; row < BOARD_WIDTH; row++) {
+        col_ptr = board_base;
+
+        /* For each column (only need to swap upper triangle) */
+        for (col = row + 1; col < BOARD_WIDTH; col++) {
+            /* Calculate source position: board[row][col] */
+            int src_offset = row * BOARD_WIDTH + col;
+
+            /* Calculate dest position: board[col][row] */
+            char* dest_ptr = col_ptr + board_offset;
+            long dest_offset = col * BOARD_WIDTH + row;
+
+            /* Swap the two cells */
+            temp = board_base[src_offset];
+            board_base[src_offset] = *dest_ptr;
+            *dest_ptr = temp;
+
+            col_ptr += BOARD_WIDTH;  /* Move to next column's row */
+        }
+
+        row_ptr += BOARD_WIDTH;  /* Move to next row */
+    }
+}
+```
+
+### File Format Summary
+
+```c
+/*
+ * Maven Save File Format (.XGME)
+ *
+ * File header:
+ *   Type:    'TEXT'
+ *   Creator: 'XGME' (Maven)
+ *
+ * File structure:
+ *   Series of 6-byte records:
+ *     +0 (2 bytes): Record type
+ *     +2 (2 bytes): Record length (sometimes)
+ *     +4 (2 bytes): Data or handle reference
+ *
+ * Record types (uncertain - inferred):
+ *   - Window position and state
+ *   - Board letter array (289 bytes)
+ *   - Board score array (578 bytes)
+ *   - Multiplier arrays
+ *   - Rack contents
+ *   - Game settings
+ *   - Move history
+ */
+```
+
+### Board Symbol Legend
+
+| Symbol | ASCII | Meaning | Detection Method |
+|--------|-------|---------|------------------|
+| A-Z | 0x41-0x5A | Placed tile (permanent) | Score != 0, not tentative |
+| a-z | 0x61-0x7A | Tentative tile (being played) | Score == 0 or tentative flag |
+| $ | 0x24 | Double Letter Score | letter_mult[pos] == 2 |
+| * | 0x2A | Triple Letter Score | letter_mult[pos] == 3 |
+| + | 0x2B | Double Word Score | word_mult[pos] == 2 |
+| # | 0x23 | Triple Word Score | word_mult[pos] == 3 |
+| - | 0x2D | Empty square | All multipliers == 1 |

@@ -312,3 +312,262 @@ void setup_with_range_check(void* param) {
 - **CODE 11**: Calls CODE 3 to perform AI search
 - **CODE 52**: Called via JT for flag extraction
 - **CODE 21**: Uses results for display
+
+---
+
+## Speculative C Translation
+
+```c
+/* CODE 3 - Speculative C Translation */
+/* DAWG Search Coordinator */
+
+/*============================================================
+ * Data Structures
+ *============================================================*/
+
+/* 34-byte DAWG info structure - used throughout search */
+typedef struct DAWGInfo {
+    long field_0;                    /* Offset 0: unknown */
+    long field_4;                    /* Offset 4: unknown */
+    long field_8;                    /* Offset 8: unknown */
+    long field_C;                    /* Offset 12: unknown */
+    long section_size_10;            /* Offset 16: section size component */
+    long section_size_14;            /* Offset 20: section size component */
+    long section_size_18;            /* Offset 24: section size component */
+    long field_1C;                   /* Offset 28: unknown */
+    short field_20;                  /* Offset 32: final word */
+} DAWGInfo;  /* Total: 34 bytes */
+
+/* Search state entry - 34 bytes each, up to 65 in array */
+typedef struct SearchState {
+    DAWGInfo info;                   /* Copy of current search info */
+} SearchState;
+
+/* Parameter structure passed to main search */
+typedef struct SearchParams {
+    long field_0;                    /* Offset 0 */
+    long field_4;                    /* Offset 4 */
+    long field_8;                    /* Offset 8 */
+    short max_depth;                 /* Offset 12: max search depth (<=64) */
+    short field_E;                   /* Offset 14 */
+    /* ... more fields ... */
+    long field_2A;                   /* Offset 42: used via A4 */
+} SearchParams;
+
+/*============================================================
+ * Global Variables
+ *============================================================*/
+extern DAWGInfo g_dawg_info;         /* A5-23090, 34 bytes */
+extern DAWGInfo g_dawg_field;        /* A5-23056, 34 bytes */
+extern long g_dawg_ptr;              /* A5-23074, base DAWG pointer */
+extern long g_sect1_off;             /* A5-23070, section 1 offset */
+extern long g_sect2_off;             /* A5-23066, section 2 offset */
+extern void* g_field_14;             /* A5-15514, hook-before buffer */
+extern void* g_field_22;             /* A5-15522, hook-after buffer */
+extern long g_size1;                 /* A5-15506 */
+extern long g_size2;                 /* A5-15502 */
+extern void* g_dawg_ptr2;            /* A5-11972, secondary DAWG data */
+extern char g_lookup_tbl[289];       /* A5-10388, 17x17 lookup */
+extern char g_format_buffer[64];     /* A5-28628 */
+
+/*============================================================
+ * Function 0x0000 - Main Search Entry Point
+ * JT offset: 112(A5)
+ * Frame size: 2282 bytes (massive search state)
+ *============================================================*/
+void main_dawg_search(SearchParams *params /* 8(A6) */) {
+    /* Local variables - 2282 bytes total */
+    long loop_counter;               /* -2282(A6) to -2278(A6) */
+    DAWGInfo local_info;             /* -2274(A6) to -2240(A6), 34 bytes */
+    SearchState search_stack[65];    /* -2240(A6) to 0(A6), 65 * 34 bytes */
+    char string_buffer[64];          /* -63(A6), for sprintf */
+
+    /* Registers used: D3-D7 saved, A2-A4 saved */
+    SearchParams *base_ptr;          /* A4 = params + 24 */
+    long field_42_value;             /* D6 */
+
+    /* Set up base pointer to params+24 offset */
+    base_ptr = (SearchParams*)((char*)params + 24);  /* 0x0008-0x000E */
+    field_42_value = base_ptr->field_2A;             /* 0x0010 */
+
+    /* Validate search depth - must be <= 64 */
+    if (params->max_depth > 64) {    /* CMPI.W #64,12(A0) at 0x0018 */
+        bounds_check_error();         /* JT[418] at 0x0020 */
+    }
+
+    /* Format debug string - uncertain purpose */
+    sprintf(string_buffer,           /* JT[2066] at 0x002E */
+            g_format_buffer,          /* format at A5-28628 */
+            field_42_value);          /* D6 value */
+
+    /* ... extensive search logic follows ... */
+
+    /*
+     * The 2282-byte frame contains:
+     * - Loop counters and state
+     * - Copy of 34-byte DAWG info
+     * - Array of up to 65 search states (65 * 34 = 2210 bytes)
+     * - String formatting buffers
+     */
+
+    /* Search would iterate through DAWG using JT[362] */
+    /* Results checked via JT[2346] */
+    /* Buffer operations via JT[3466] memcpy, JT[3490] copy_to_global */
+}
+
+/*============================================================
+ * Function 0x019E - Validate DAWG Bounds
+ *============================================================*/
+void validate_dawg_bounds(DAWGInfo *header /* 8(A6), stored in A4 */) {
+    /* Calculate expected total size from header fields */
+    long expected_size = header->section_size_10 +  /* 16(A4) */
+                         header->section_size_14 +  /* 20(A4) */
+                         header->section_size_18;   /* 24(A4) */
+
+    /* Calculate actual loaded size from globals */
+    long loaded_size = g_dawg_ptr +    /* A5-23074 */
+                       g_sect1_off +   /* A5-23070 */
+                       g_sect2_off;    /* A5-23066 */
+
+    /* Validate: loaded must be >= expected */
+    if (loaded_size < expected_size) {  /* CMP.L at 0x01C0 */
+        /* Bounds error - copy header to global for debugging */
+        /* Manual copy of 34 bytes (8 longs + 1 word) */
+        long *dest = (long*)&g_dawg_info;  /* A5-23090 */
+        long *src = (long*)header;
+
+        for (int i = 0; i < 8; i++) {   /* DBF D0,$01CC */
+            *dest++ = *src++;
+        }
+        *(short*)dest = *(short*)src;   /* Copy final word */
+    }
+}
+
+/*============================================================
+ * Function 0x01DA - Setup with Range Check
+ * Frame size: 128 bytes
+ *============================================================*/
+void setup_with_range_check(void *param /* 8(A6), stored in A4 */) {
+    char local_buffer[128];          /* -128(A6) */
+    char search_type;                /* D7 */
+
+    /* Initialize buffer from parameter */
+    setup_buffer(param);             /* JT[2410] at 0x01E8 */
+
+    /* Determine search type */
+    search_type = get_search_type(local_buffer);  /* JT[2394] at 0x01F0 */
+
+    /* Branch based on type range */
+    if (search_type < 8) {           /* CMPI.B #8,D7 at 0x01F6 */
+        /* Type 0-7: Standard search path */
+        struct DAWGData *dawg_data = g_dawg_ptr2;  /* A5-11972 */
+
+        if (dawg_data->field_20 != 0) {  /* TST.W 20(A0) at 0x0202 */
+            /* Copy data using field_14 offset */
+            void *src = (void*)dawg_data->field_14;  /* 14(A0) */
+            data_copy(param, src);   /* JT[2202] at 0x0214 */
+        }
+    }
+    else if (search_type >= 8 && search_type < 17) {
+        /* Type 8-16: Special handling path */
+        struct DAWGData *dawg_data = g_dawg_ptr2;
+
+        if (dawg_data->field_18 != 0) {  /* TST.W 18(A0) at 0x022C */
+            special_handler(param, 0);   /* JT[2586] at 0x0236 */
+        }
+    }
+    /* else type >= 17: some_function(param, 2114) - uncertain */
+
+    /* Copy 34 bytes from g_dawg_field to g_dawg_info */
+    /* Manual copy: 8 longs + 1 word */
+    long *dest = (long*)&g_dawg_info;    /* A5-23090 */
+    long *src = (long*)&g_dawg_field;    /* A5-23056 */
+
+    for (int i = 0; i < 8; i++) {        /* DBF at 0x0256 */
+        *dest++ = *src++;
+    }
+    *(short*)dest = *(short*)src;        /* Final word at 0x025A */
+}
+
+/*============================================================
+ * Function 0x0264 - Initialize Search State Buffer
+ * Frame size: 2968 bytes (0xB98)
+ *============================================================*/
+void init_search_state_buffer(void) {
+    /* Allocate 2968 bytes on stack for search state */
+    char search_state_buffer[2968];  /* -2968(A6), 0xB98 bytes */
+
+    /* Zero the entire buffer */
+    memset(search_state_buffer,      /* JT[426] at 0x0270 */
+           0,
+           2968);                     /* 0x0B98 */
+
+    /* Initialize search state with local function */
+    init_search_state_local(search_state_buffer);  /* JSR 3310(PC) */
+
+    /* Check counter field at offset 8 in buffer */
+    short *counter = (short*)(search_state_buffer + 8);  /* -2960(A6) */
+    if (*counter <= 0) {             /* TST.W at 0x027C */
+        *counter = 1;                 /* Minimum value of 1 at 0x0286 */
+    }
+
+    /* Perform lookup using global table */
+    short result = lookup_operation(g_lookup_tbl);  /* JT[3450] at 0x0298 */
+
+    /* Check result and continue processing */
+    if (result != 0) {               /* TST.W D0 at 0x029C */
+        /* ... continue search ... */
+    }
+}
+
+/*============================================================
+ * Search Algorithm Flow (reconstructed)
+ *============================================================*/
+
+/*
+ * DAWG Search Overview:
+ *
+ * 1. ENTRY VALIDATION
+ *    - Check max_depth <= 64 (prevents stack overflow)
+ *    - Validate DAWG bounds (loaded size >= expected)
+ *
+ * 2. TYPE CLASSIFICATION
+ *    - Type 0-7:   Standard cross-check search
+ *    - Type 8-16:  Special handling (different cross-check?)
+ *    - Type 17+:   Another variant
+ *
+ * 3. BUFFER SELECTION
+ *    - g_field_14 (A5-15514): "Hook-before" - left/top anchor
+ *    - g_field_22 (A5-15522): "Hook-after" - right/bottom anchor
+ *    - Selection depends on search direction
+ *
+ * 4. SEARCH EXECUTION
+ *    - JT[362]: Core DAWG traversal
+ *    - 34-byte state structures track position
+ *    - Up to 65 states in search stack (recursive depth)
+ *
+ * 5. RESULT HANDLING
+ *    - JT[2346]: Validate/check results
+ *    - JT[3490]: Copy valid moves to global storage
+ *    - JT[1362]: Update game state
+ */
+
+/*============================================================
+ * 34-Byte Structure Copy Helper (used throughout CODE 3)
+ *============================================================*/
+static inline void copy_dawg_info(DAWGInfo *dest, DAWGInfo *src) {
+    /* Optimized 34-byte copy: 8 longs + 1 word */
+    long *d = (long*)dest;
+    long *s = (long*)src;
+
+    *d++ = *s++;  /* bytes 0-3 */
+    *d++ = *s++;  /* bytes 4-7 */
+    *d++ = *s++;  /* bytes 8-11 */
+    *d++ = *s++;  /* bytes 12-15 */
+    *d++ = *s++;  /* bytes 16-19 */
+    *d++ = *s++;  /* bytes 20-23 */
+    *d++ = *s++;  /* bytes 24-27 */
+    *d++ = *s++;  /* bytes 28-31 */
+    *(short*)d = *(short*)s;  /* bytes 32-33 */
+}
+```

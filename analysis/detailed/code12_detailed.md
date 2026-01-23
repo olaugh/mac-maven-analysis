@@ -421,6 +421,410 @@ Bits 10-31: Child node index (22 bits, offset into DAWG array)
 | 3522 | strlen - String length |
 | 3562 | tolower - Convert to lowercase |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 12 - Word Validation & DAWG Search
+ * Central word validation module for Maven.
+ * Validates words against DAWG dictionary, tracks letter availability.
+ */
+
+#include <MacTypes.h>
+
+/*========== Constants ==========*/
+#define LETTER_ARRAY_SIZE       128     /* ASCII character range */
+#define WORD_BUFFER_SIZE        16      /* Max word length + null */
+#define RESULT_BUFFER_SIZE      32      /* Result word buffer */
+#define MAX_VALID_WORDS         1000    /* Maximum words to collect */
+#define RACK_SIZE               7       /* Tiles in player's rack */
+#define BLANK_TILE              '?'     /* Blank tile character (0x3F) */
+
+/*========== DAWG Entry Format ==========*/
+/* Each DAWG entry is 4 bytes:
+ * Bits 0-7:   Letter (ASCII character code)
+ * Bit 8:      End-of-word flag (1 = valid word ends here)
+ * Bit 9:      Last-sibling flag (1 = last child of parent)
+ * Bits 10-31: Child node index (22 bits)
+ */
+#define DAWG_LETTER_MASK        0x000000FF
+#define DAWG_END_OF_WORD        0x00000100  /* Bit 8 */
+#define DAWG_LAST_SIBLING       0x00000200  /* Bit 9 */
+#define DAWG_CHILD_SHIFT        10
+#define DAWG_CHILD_MASK         0xFFFFFC00
+
+/*========== Data Structures ==========*/
+
+/* Rack entry structure (8 bytes per tile) */
+typedef struct RackEntry {
+    short tile_value;           /* Offset 0: Tile letter code */
+    short played_flag;          /* Offset 2: Non-zero if played */
+    short reserved1;            /* Offset 4: Padding */
+    short reserved2;            /* Offset 6: Padding */
+} RackEntry;
+
+/*========== Global Variables (A5-relative) ==========*/
+extern short  g_letter_available[LETTER_ARRAY_SIZE];  /* A5-8930: Available counts */
+extern short  g_letter_used[LETTER_ARRAY_SIZE];       /* A5-9186: Used letter counts */
+extern short  g_cross_check[LETTER_ARRAY_SIZE];       /* A5-9442: Cross-check requirements */
+extern short  g_rack_count[LETTER_ARRAY_SIZE];        /* A5-9698: Rack letter counts */
+
+extern char   g_current_word[WORD_BUFFER_SIZE];       /* A5-9728: Word being built */
+extern char   g_result_word[RESULT_BUFFER_SIZE];      /* A5-9760: Result buffer */
+extern char   g_cross_letters[WORD_BUFFER_SIZE];      /* A5-9776: Cross-check letters */
+extern char   g_rack_letters[WORD_BUFFER_SIZE];       /* A5-9792: Rack letters string */
+extern char   g_rack_string[WORD_BUFFER_SIZE];        /* A5-9808: Rack as string */
+
+extern long   g_result_ptr;                           /* A5-9708: Current result position */
+extern long   g_search_ptr;                           /* A5-9712: Current search position */
+extern short  g_found_count;                          /* A5-9700: Valid words found */
+extern short  g_word_counter;                         /* A5-8804: Words processed */
+extern short  g_blank_count;                          /* A5-8670: Blank tiles available */
+
+extern long   g_dawg_base_ptr;                        /* A5-11960: DAWG array base */
+extern long   g_dawg_position;                        /* A5-11964: Current DAWG position */
+extern long   g_dawg_compare_ptr;                     /* A5-24030: DAWG compare pointer */
+extern long   g_dawg_main_ptr;                        /* A5-27732: Main DAWG pointer */
+
+extern RackEntry g_rack[RACK_SIZE];                   /* A5-8664: Player's rack */
+```
+
+### Letter Array Management
+```c
+/*
+ * clear_letter_arrays - Initialize all letter tracking arrays
+ *
+ * Clears the 128-entry arrays used for tracking letter availability
+ * during word generation. Also clears word buffers.
+ */
+void clear_letter_arrays(void) {
+    /* Clear 256-byte arrays (128 shorts each) */
+    memset(g_letter_available, 0, 256);     /* A5-8930 */
+    memset(g_letter_used, 0, 256);          /* A5-9186 */
+
+    /* Clear 16-byte buffers */
+    memset(g_rack_letters, 0, 16);          /* A5-9792 */
+    memset(g_cross_letters, 0, 16);         /* A5-9776 */
+    memset(g_current_word, 0, 16);          /* A5-9728 */
+
+    /* Clear 32-byte result buffer */
+    memset(g_result_word, 0, 32);           /* A5-9760 */
+}
+
+/*
+ * build_rack_letter_counts - Convert rack to letter count array
+ *
+ * Processes the rack structure and populates g_letter_available
+ * with counts of each available letter.
+ *
+ * @param rack_string: Output buffer for rack as string
+ */
+void build_rack_letter_counts(char* rack_string) {
+    int string_idx = 0;
+
+    for (int i = 0; i < RACK_SIZE && g_rack[i].tile_value != 0; i++) {
+        short tile = g_rack[i].tile_value;
+        char lower_letter = tolower(tile);      /* JT[3562] */
+
+        rack_string[string_idx++] = lower_letter;
+    }
+    rack_string[string_idx] = '\0';
+
+    /* Process rack string to build counts */
+    process_rack_string(rack_string);           /* Internal function */
+}
+
+/*
+ * increment_letter_count - Add to letter availability
+ *
+ * @param letter: ASCII letter code
+ */
+static void increment_letter_count(char letter) {
+    int idx = (unsigned char)letter;
+    if (idx < LETTER_ARRAY_SIZE) {
+        g_letter_available[idx]++;
+    }
+}
+```
+
+### Main Search Entry Point
+```c
+/*
+ * initialize_and_search - Main word generation entry point
+ *
+ * Initializes search state, builds letter availability from rack,
+ * then performs DAWG traversal to find valid words.
+ */
+void initialize_and_search(void) {
+    char* word_ptr = g_current_word;    /* A5-9728 */
+    int letter_idx = 0;
+
+    /* Initialize search subsystems */
+    init_dawg_search();                 /* PC-relative at 0x0824 */
+    clear_letter_arrays();              /* PC-relative at 0x00FC */
+    setup_rack_letters();               /* PC-relative at 0x0134 */
+    setup_cross_checks();               /* PC-relative at 0x01D6 */
+    additional_setup();                 /* PC-relative at 0x0176 */
+
+    /* Build combined available letters from rack and board */
+    for (letter_idx = 0; letter_idx < LETTER_ARRAY_SIZE; letter_idx++) {
+        short available = g_letter_available[letter_idx];
+        short used = g_letter_used[letter_idx];
+
+        if (available != 0 || used != 0) {
+            /* Skip blank tile marker (0x3F = '?') */
+            if (letter_idx != BLANK_TILE) {
+                *word_ptr++ = (char)letter_idx;
+            }
+
+            /* Update used count to max of available/used */
+            if (available > used) {
+                g_letter_used[letter_idx] = available;
+            }
+
+            /* Clear available for next phase */
+            g_letter_available[letter_idx] = 0;
+        }
+    }
+
+    *word_ptr = '\0';   /* Null terminate */
+
+    g_word_counter++;   /* Increment words processed */
+
+    perform_validation();   /* PC-relative at 0x01E8 */
+}
+```
+
+### Recursive DAWG Search
+```c
+/*
+ * recursive_dawg_search - Depth-first DAWG traversal
+ *
+ * Recursively traverses DAWG structure, building words from
+ * available letters. Uses backtracking when letters exhausted.
+ *
+ * @param dawg_node_index: Current position in DAWG
+ * @param callback_context: Context for result callback
+ */
+void recursive_dawg_search(long dawg_node_index, void* callback_context) {
+    long* dawg_base = (long*)g_dawg_base_ptr;   /* A5-11960 */
+    char* search_pos;
+    long dawg_entry;
+    char letter;
+    short* letter_avail;
+
+    /* Check word limit */
+    if (g_found_count >= MAX_VALID_WORDS) {
+        return;     /* Hit 1000 word limit */
+    }
+
+    /* Advance search pointer */
+    g_search_ptr++;
+    search_pos = (char*)g_search_ptr;
+
+    /* Check if at end of pattern */
+    if (*search_pos == '\0') {
+        /* End of pattern - check if valid word */
+        check_and_add_word(dawg_node_index, callback_context);
+        g_search_ptr--;     /* Backtrack */
+        return;
+    }
+
+    /* Validate node */
+    if (dawg_node_index == 0) {
+        g_search_ptr--;
+        return;
+    }
+
+    /* Traverse DAWG siblings */
+    while (1) {
+        /* Get DAWG entry: node * 4 + base */
+        dawg_entry = dawg_base[dawg_node_index];
+        dawg_node_index++;      /* Prepare for next sibling */
+
+        /* Extract letter from entry (bits 0-7) */
+        letter = (char)(dawg_entry & DAWG_LETTER_MASK);
+
+        /* Check if this letter is available */
+        letter_avail = &g_letter_available[(unsigned char)letter];
+
+        if (*letter_avail > 0) {
+            /* Use this letter */
+            (*letter_avail)--;
+
+            /* Store letter in result */
+            char* result_pos = (char*)g_result_ptr;
+            *result_pos = letter;
+            g_result_ptr++;
+
+            /* Extract child index and recurse */
+            long child_index = dawg_entry >> DAWG_CHILD_SHIFT;
+            int is_end_of_word = (dawg_entry & DAWG_END_OF_WORD) != 0;
+
+            recursive_dawg_search(child_index, (void*)(long)is_end_of_word);
+
+            /* Backtrack: restore letter */
+            g_result_ptr--;
+            result_pos = (char*)g_result_ptr;
+            *result_pos = '\0';
+            (*letter_avail)++;
+        }
+        else if (g_blank_count > 0) {
+            /* Try using a blank tile as this letter */
+            g_blank_count--;
+
+            char* result_pos = (char*)g_result_ptr;
+            *result_pos = letter;   /* uncertain: may store differently */
+            g_result_ptr++;
+
+            long child_index = dawg_entry >> DAWG_CHILD_SHIFT;
+            int is_end_of_word = (dawg_entry & DAWG_END_OF_WORD) != 0;
+
+            recursive_dawg_search(child_index, (void*)(long)is_end_of_word);
+
+            /* Backtrack: restore blank */
+            g_result_ptr--;
+            result_pos = (char*)g_result_ptr;
+            *result_pos = '\0';
+            g_blank_count++;
+        }
+
+        /* Check if last sibling (bit 9) */
+        if (dawg_entry & DAWG_LAST_SIBLING) {
+            break;      /* No more siblings */
+        }
+    }
+
+    g_search_ptr--;     /* Backtrack search position */
+}
+```
+
+### Word Collection
+```c
+/*
+ * add_word_to_results - Store valid word in results
+ *
+ * Called when a valid word is found during DAWG traversal.
+ * Enforces 1000-word limit.
+ *
+ * @param word: Null-terminated word string
+ */
+void add_word_to_results(char* word) {
+    if (g_found_count >= MAX_VALID_WORDS) {
+        return;     /* At capacity */
+    }
+
+    init_add_word();            /* JT[1738] */
+    process_valid_word(word);   /* Internal function */
+    g_found_count++;
+}
+
+/*
+ * validate_against_constraints - Check word against cross-checks
+ *
+ * Validates that the found word satisfies all cross-check
+ * requirements for perpendicular words.
+ *
+ * @param dawg_node: DAWG node for end of word
+ * @param context: Validation context
+ * @return: 1 if valid, 0 if fails constraints
+ */
+int validate_against_constraints(long dawg_node, void* context) {
+    /* Check if has cross-check requirements */
+    if (context == NULL) {
+        return 1;   /* No constraints */
+    }
+
+    /* Validate cross-checks */
+    if (!check_perpendicular_1()) {     /* PC-relative */
+        return 0;
+    }
+
+    if (!check_perpendicular_2()) {     /* PC-relative */
+        return 0;
+    }
+
+    /* Verify word exists in dictionary */
+    if (check_dictionary(g_result_word)) {  /* JT[802] */
+        return 1;   /* Word exists, don't add (already played) */
+    }
+
+    /* Word is new and valid - add to results */
+    add_word_to_results(g_result_word);
+
+    return 1;
+}
+```
+
+### Letter Array Merge
+```c
+/*
+ * merge_letter_arrays - Combine available, used, and cross-check arrays
+ *
+ * Merges the various letter tracking arrays to produce final
+ * availability counts for word generation.
+ */
+void merge_letter_arrays(void) {
+    for (int i = 0; i < LETTER_ARRAY_SIZE; i++) {
+        short merged = g_letter_used[i] + g_letter_available[i];
+
+        /* Apply cross-check constraints */
+        short cross_constraint = g_cross_check[i];
+        if (cross_constraint < merged) {
+            merged = cross_constraint;
+        }
+
+        /* Apply rack constraints */
+        short rack_constraint = g_rack_count[i];
+        if (rack_constraint < merged) {
+            merged = rack_constraint;
+        }
+
+        /* Store final availability */
+        g_letter_available[i] = merged;
+    }
+
+    /* Continue with validation */
+    perform_dawg_validation();      /* PC-relative */
+    secondary_validation();         /* PC-relative */
+
+    /* Bounds check */
+    if (g_bounds_counter >= 8 || g_bounds_counter < 0) {
+        bounds_check_error();       /* JT[418] */
+    }
+}
+```
+
+### Cross-Check Setup
+```c
+/*
+ * setup_cross_checks - Build cross-check constraint arrays
+ *
+ * Analyzes board state to determine which letters are valid
+ * at each position considering perpendicular word requirements.
+ */
+void setup_cross_checks(void) {
+    /* Clear cross-check array */
+    memset(g_cross_check, 0, 256);      /* A5-9442 */
+
+    /* Process cross letters buffer */
+    process_string(g_cross_letters);    /* PC-relative */
+    uppercase_string(g_cross_letters);  /* JT[2034] */
+
+    /* Build cross-check counts */
+    char* ptr = g_cross_letters;
+    while (*ptr != '\0') {
+        int idx = (unsigned char)*ptr;
+        g_cross_check[idx]++;
+        ptr++;
+    }
+
+    /* Clear counter and get string length */
+    g_cross_counter = 0;                /* A5-9316 */
+    g_cross_length = strlen(g_cross_letters);   /* JT[3522] */
+}
+```
+
 ## Confidence: HIGH
 
 Clear word validation patterns:

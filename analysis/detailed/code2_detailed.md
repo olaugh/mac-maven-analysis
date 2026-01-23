@@ -349,3 +349,326 @@ The patterns are clear Mac Toolbox usage:
 - Window update event handling with Begin/EndUpdate
 - Handle locking for drawing
 - Standard File dialog
+
+---
+
+## Speculative C Translation
+
+```c
+/* CODE 2 - Speculative C Translation */
+/* Resource & Data Loading */
+
+/*============================================================
+ * Type Definitions for DAWG Resource
+ *============================================================*/
+typedef struct DAWGHeader {
+    long magic;              /* Offset 0: Header/magic number */
+    long node_count;         /* Offset 4: Number of DAWG nodes */
+    long edge_count;         /* Offset 8: Number of edges */
+    /* Offset 12+: Actual DAWG data */
+} DAWGHeader;
+
+typedef struct GameWindow {
+    /* Standard WindowRecord fields... */
+    char data[814];          /* Unknown fields 0-813 */
+    char rack_display[17];   /* Offset 814: Current rack for display */
+} GameWindow;
+
+/*============================================================
+ * Function 0x0000 - Initialize Game Resources
+ * JT Offset: 80(A5)
+ *============================================================*/
+void init_game_resources(void) {
+    SFReply file_reply;              /* -16(A6) local variable */
+    Point dialog_position = {0, 0};
+
+    /* Show Standard File dialog - possibly for dictionary file */
+    /* A971 trap at 0x000C */
+    SFGetFile(dialog_position,      /* where */
+              "\p",                  /* prompt (empty) */
+              NULL,                  /* fileFilter */
+              0,                     /* numTypes */
+              NULL,                  /* typeList */
+              NULL,                  /* dlgHook */
+              &file_reply);          /* reply -> -16(A6) */
+
+    /* Initialize preferences from global storage */
+    init_preferences(&g_pref_data);  /* JT[3170] at 0x0018 */
+
+    /* Set up string buffer with 1KB capacity */
+    setup_string_buffer(
+        (char*)(A5_BASE + 138),      /* destination at A5+138 */
+        0x0400                        /* 1024 bytes */
+    );                               /* JT[3202] at 0x0024 */
+}
+
+/*============================================================
+ * Function 0x002C - Window Update Event Handler
+ * Pascal calling convention (caller cleans 12 bytes)
+ *============================================================*/
+pascal Boolean handle_window_event(
+    long unused_param,               /* 8(A6) - not used */
+    EventRecord *the_event,          /* 12(A6) -> A4 */
+    WindowPtr game_window            /* 16(A6) -> A3 */
+) {
+    GrafPtr saved_port;              /* local variable */
+    Rect clip_rect;                  /* local for clipping */
+
+    /* Check event type */
+    if (the_event->what == updateEvt) {  /* CMPI.W #6 at 0x003C */
+        /* Verify the update is for our window */
+        if ((WindowPtr)the_event->message != game_window) {
+            return false;
+        }
+
+        /* Save current port and switch to our window */
+        GetPort(&saved_port);        /* A873 trap */
+        SetPort(game_window);        /* A922 trap */
+
+        /* Begin update processing */
+        BeginUpdate(game_window);    /* A978 trap at 0x0058 */
+        /* Uses visRgn at offset 24 of window */
+
+        /* Get clipping rectangle */
+        /* -12(A6) to -4(A6) used for rect */
+        clip_rect = game_window->portRect;  /* uncertain */
+
+        /* Erase the board area */
+        EraseRect(&g_board_rect);    /* A884 at 0x007C */
+
+        /* Lock DAWG handle for safe access during draw */
+        HLock(g_dawg_handle);        /* A029 at 0x0082 */
+
+        /* Get pointer to window data */
+        GameWindow *win_data = (GameWindow*)*g_dawg_handle;
+
+        /* Draw board content - rack display at offset 814 */
+        short rack_len = strlen(win_data->rack_display);  /* JT[3522] */
+        draw_rack_display(win_data->rack_display, rack_len);
+
+        /* Unlock handle */
+        HUnlock(g_dawg_handle);      /* A02A at 0x00A8 */
+
+        /* End update processing */
+        EndUpdate(game_window);      /* A923 at 0x00AC */
+
+        /* Check flag for special handling */
+        if (g_event_flag == 0) {     /* TST.W at 0x00AE */
+            do_board_refresh();      /* JSR 202(PC) */
+            return true;
+        }
+        return false;
+    }
+
+    /* Not an update event - check for input events */
+    if (g_event_flag != 0) {         /* TST.W at 0x00C6 */
+        /* Intercept mouse and key events during certain states */
+        if (the_event->what == mouseDown ||   /* CMPI.W #1 */
+            the_event->what == keyDown) {     /* CMPI.W #3 */
+            return true;  /* Event handled/intercepted */
+        }
+    }
+
+    return false;  /* Let event pass through */
+}
+
+/*============================================================
+ * Function 0x00F0 - Load DAWG Dictionary Data
+ *============================================================*/
+void load_dawg_data(const char *resource_name /* 8(A6) */) {
+    Handle dawg_handle;              /* -4(A6), stored in A4 */
+
+    /* Try to load named resource */
+    dawg_handle = load_named_resource(
+        resource_name,               /* 8(A6) */
+        0                            /* resource ID */
+    );                               /* JT[3386] at 0x0100 */
+
+    if (dawg_handle == NULL) {       /* BNE.S $0134 */
+        /* Resource load failed - use built-in defaults */
+        g_dawg_ptr = g_default_dawg_ptr;     /* A5-24030 = A5-24792 */
+        /* uncertain: additional fallback setup */
+
+        /* Point to common data area */
+        char *common = (char*)(A5_BASE - 24026);  /* LEA at 0x011E */
+        /* Initialize with defaults */
+        return;
+    }
+
+    /* Resource loaded successfully - parse DAWG header */
+    DAWGHeader *header = (DAWGHeader*)*dawg_handle;
+
+    /* Extract size fields */
+    g_dawg_node_count = header->node_count;  /* offset 4 -> A5-8588 */
+    g_dawg_edge_count = header->edge_count;  /* offset 8 -> A5-8592 */
+
+    /* Point to actual DAWG data after header */
+    g_dawg_data_ptr = (char*)header + 12;    /* LEA 12(A4) at 0x0140 */
+
+    /* Validate the DAWG data */
+    /* Check that node_count has certain bits set */
+    if ((g_dawg_node_count & 0x0800) == 0) {  /* uncertain bit check */
+        fatal_bounds_error();                 /* JT[418] at 0x0164 */
+    }
+
+    /* Check edge_count byte 3 equals 'a' (0x61) - magic validation */
+    if (((g_dawg_edge_count >> 24) & 0xFF) != 0x61) {
+        fatal_bounds_error();                 /* JT[418] at 0x017C */
+    }
+}
+
+/*============================================================
+ * Function 0x0186 - Allocate Game Buffers
+ *============================================================*/
+void allocate_game_buffers(void) {
+    long available_memory;           /* D7 */
+
+    /*
+     * Allocate fixed-size working buffers
+     * These are used for various game operations:
+     * - Move generation scratch space
+     * - Search state storage
+     * - Cross-check data
+     */
+
+    /* Main state buffer - 3584 bytes */
+    g_state_buffer = NewPtr(0x0E00);     /* 0x018A */
+
+    /* Six 2304-byte buffers for move candidates and search */
+    /* These may be parallel search buffers for h/v directions */
+    g_move_buffer_1 = NewPtr(0x0900);    /* 0x0196 -> A5-12532 */
+    g_move_buffer_2 = NewPtr(0x0900);    /* 0x01A2 -> A5-12528 */
+    g_move_buffer_3 = NewPtr(0x0900);    /* 0x01AE -> A5-12524 */
+    g_move_buffer_4 = NewPtr(0x0900);    /* 0x01BA -> A5-12520 */
+    g_move_buffer_5 = NewPtr(0x0900);    /* 0x01C6 -> A5-12516 */
+    g_move_buffer_6 = NewPtr(0x0900);    /* 0x01D2 -> A5-12512 */
+
+    /*
+     * Calculate dynamic search buffer size
+     * The search algorithm needs working memory proportional
+     * to dictionary size and search depth
+     */
+    available_memory = FreeMem();        /* JT[1682] at 0x01DE */
+
+    /* Clamp to reasonable range: 8KB minimum, ~33KB maximum */
+    if (available_memory > 0x2000) {     /* 8KB */
+        available_memory = 0x2000;
+    }
+    if (available_memory > 0x80CE) {     /* ~33KB */
+        available_memory = 0x80CE;
+    }
+
+    /* Allocate search buffer */
+    g_search_buffer = NewPtr(available_memory);  /* 0x0208 */
+    g_search_buffer_size = available_memory;     /* 0x0212 */
+
+    /* Fatal error if allocation failed - game cannot run */
+    if (g_search_buffer == NULL) {       /* TST.L at 0x0216 */
+        fatal_bounds_error();            /* JT[418] at 0x021C */
+    }
+
+    /* Large DAWG working buffer - 17KB */
+    /* Used for traversal state during word generation */
+    g_dawg_work_buffer = NewPtr(0x4400); /* 0x0220 */
+
+    /*
+     * Initialize from low-memory globals
+     * $0910/$0911 may be cursor/system state
+     */
+    /* uncertain: some low-memory setup */
+
+    /* Load DAWG dictionary (recursive call) */
+    load_dawg_data(NULL);                /* JSR -336(PC) at 0x023E */
+
+    /* Initialize game data structures */
+    init_game_data();                    /* JT[770] at 0x0244 */
+}
+
+/*============================================================
+ * Function 0x0250 - Copy Indexed Data Structure
+ *============================================================*/
+void copy_indexed_data_struct(
+    void *source_ptr,                /* 8(A6) */
+    short data_index,                /* 12(A6) */
+    short param1,                    /* 14(A6) */
+    short param2                     /* 16(A6) */
+) {
+    /* Build local parameter struct on stack */
+    struct {
+        void *ptr;                   /* -8(A6) */
+        short field1;                /* -4(A6) */
+        short field2;                /* -2(A6) */
+    } local_params;
+
+    local_params.ptr = source_ptr;
+    local_params.field1 = param1;
+    local_params.field2 = param2;
+
+    /* Copy indexed data to global buffer */
+    copy_indexed_entry(
+        &g_source_table,             /* A5-28634, source */
+        (char*)(A5_BASE + 114),      /* A5+114, destination */
+        data_index,
+        &local_params
+    );                               /* JT[3218] at 0x0276 */
+}
+
+/*============================================================
+ * Function 0x027E - Iterate Data Processing
+ *============================================================*/
+short process_data_iterator(
+    void *context,                   /* 8(A6) */
+    struct DataIterator *iter        /* 12(A6) -> A4 */
+) {
+    /*
+     * DataIterator structure:
+     *   Offset 0: void* current_ptr
+     *   Offset 4: short type_index
+     *   Offset 6: short done_flag
+     */
+
+    short result;                    /* -2(A6) */
+
+    /* Initial processing call */
+    process_data_entry(
+        context,
+        iter->type_index,            /* 4(A4) */
+        iter->current_ptr            /* (A4) */
+    );                               /* JT[3290] at 0x0292 */
+
+    get_data_value(context, iter->type_index);  /* JT[3234] */
+
+    /* Main iteration loop */
+    do {
+        /* Push callback reference - uncertain purpose */
+        /* A991 trap - possibly GetResource variant */
+
+        /* Check termination condition */
+        if (/* some condition */ 0) {  /* uncertain */
+            break;
+        }
+
+        /* Process current entry */
+        process_single_entry(
+            context,
+            iter->type_index,
+            iter->current_ptr
+        );                           /* JT[1602] at 0x02C2 */
+
+        /* Advance to next entry */
+        void *next_ptr = get_next_entry(iter->current_ptr);  /* JT[2050] */
+
+        /* Copy result to global storage */
+        copy_to_global(next_ptr, iter->current_ptr);         /* JT[3490] */
+
+        /* Check done flag */
+        if (iter->done_flag != 0) {  /* TST.W 6(A4) at 0x02D8 */
+            break;
+        }
+
+        /* Check if data continues (null terminator) */
+    } while (*(char*)iter->current_ptr != '\0');  /* TST.B (A0) */
+
+    return result;
+}
+```

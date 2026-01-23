@@ -297,3 +297,264 @@ Clear window management patterns:
 - Buffer pointer switching
 - Window creation and display
 - Standard Mac Toolbox calls
+
+---
+
+## Speculative C Translation
+
+```c
+/* CODE 6 - Speculative C Translation */
+/* Window & Display Management */
+
+/*============================================================
+ * Data Structures
+ *============================================================*/
+
+/* Main window handle structure - 1070 bytes */
+typedef struct WindowData {
+    char reserved[770];              /* Offset 0-769: various fields */
+    short direction_mode;            /* Offset 770 (0x302): 0=horiz, 1=both, 2=alt */
+    short buffer_select_flag;        /* Offset 772 (0x304): toggle flag */
+    short reserved2[2];              /* Offset 774-777 */
+    short ui_flag_1;                 /* Offset 778 */
+    short visibility_flag;           /* Offset 780 (0x30C) */
+    short ui_flag_2;                 /* Offset 782 */
+    short ui_flag_3;                 /* Offset 784 */
+    char rack_display[17];           /* Offset 786 */
+    char reserved3[11];              /* Padding to 814 */
+    char board_data[256];            /* Offset 814+: board/game data */
+} WindowData;
+
+/*============================================================
+ * Global Variables
+ *============================================================*/
+extern Handle g_main_handle;         /* A5-8584: Main window handle */
+
+/* Source data pointers */
+extern void* g_ptr1;                 /* A5-8596 */
+extern void* g_ptr2;                 /* A5-8588 */
+extern void* g_ptr3;                 /* A5-8600 */
+extern void* g_ptr4;                 /* A5-8592 */
+
+/* Display data pointers (set by update_display_pointers) */
+extern void* g_display_ptr1;         /* A5-11960 */
+extern void* g_display_ptr2;         /* A5-11956 */
+extern void* g_display_ptr3;         /* A5-11952 */
+extern void* g_display_ptr4;         /* A5-11948 */
+extern void* g_display_ptr5;         /* A5-11940 */
+
+/* Board direction buffers */
+extern void* g_field_14;             /* A5-15514 */
+extern void* g_field_22;             /* A5-15522 */
+extern void* g_current_ptr;          /* A5-15498 */
+
+/*============================================================
+ * Function 0x0000 - Update Display Pointers
+ * JT offset: 168(A5)
+ *
+ * Sets up display pointers based on current direction mode.
+ * Direction determines whether displaying h, v, or both directions.
+ *============================================================*/
+void update_display_pointers(void) {
+    WindowData *win = (WindowData*)*g_main_handle;
+
+    short direction = win->direction_mode;  /* Offset 770 */
+
+    switch (direction) {
+    case 0:
+        /* Horizontal only - single direction display */
+        g_display_ptr1 = g_ptr1;     /* A5-8596 -> A5-11960 */
+        g_display_ptr2 = g_ptr2;     /* A5-8588 -> A5-11956 */
+        g_display_ptr3 = NULL;       /* Terminate list */
+        break;
+
+    case 2:
+        /* Alternate horizontal - uses second buffer set */
+        g_display_ptr1 = g_ptr3;     /* A5-8600 -> A5-11960 */
+        g_display_ptr2 = g_ptr4;     /* A5-8592 -> A5-11956 */
+        g_display_ptr3 = NULL;
+        break;
+
+    case 1:
+        /* Both directions - combines buffer sets */
+        g_display_ptr1 = g_ptr1;
+        g_display_ptr2 = g_ptr2;
+        g_display_ptr3 = g_ptr3;     /* A5-8600 -> A5-11952 */
+        g_display_ptr4 = g_ptr4;     /* A5-8592 -> A5-11948 */
+        g_display_ptr5 = NULL;       /* Terminate */
+        break;
+
+    default:
+        /* Invalid direction - assert */
+        bounds_check_error();        /* JT[418] at 0x005C */
+    }
+}
+
+/*============================================================
+ * Function 0x0062 - Initialize Game Window
+ * Frame size: 258 bytes
+ *============================================================*/
+void init_game_window(void) {
+    char string_buffer[256];         /* -256(A6) */
+    short time_value;                /* -258(A6) */
+    short setup_flag;                /* D7 */
+    short control_index;             /* D6 */
+
+    /* Check if already initialized */
+    if (check_init_status()) {       /* JSR 722(PC) at 0x006A */
+        goto show_if_needed;
+    }
+
+    /* Do setup */
+    do_setup_call();                 /* JSR 578(PC) at 0x0074 */
+
+    /* Clear string buffer */
+    string_buffer[0] = '\0';
+
+    /* Load string resources */
+    GetIndString(string_buffer,      /* JT[122] at 0x008A */
+                 0x00020000,          /* Resource type/ID */
+                 0x03FA);             /* String ID 1018 */
+
+    GetIndString(string_buffer,      /* JT[122] at 0x00A8 */
+                 0x00020001,
+                 0x03F9);             /* String ID 1017 */
+
+    /* Parse time value from string */
+    sscanf(string_buffer,            /* JT[2074] at 0x00B8 */
+           g_format_string,           /* A5-28510 */
+           &time_value);
+
+    /* Validate and clamp time value */
+    setup_flag = 1;
+    if (time_value < 700) {          /* CMPI.W #700 at 0x00C0 */
+        time_value = 700;             /* Minimum 700 (7 seconds?) */
+        setup_flag = 18;
+    }
+    else if (time_value > 2100) {    /* CMPI.W #2100 at 0x00D4 */
+        time_value = 2100;            /* Maximum 2100 (21 seconds?) */
+    }
+
+    /* Set up window controls (loop for controls 4 down to 0) */
+    WindowData *win = (WindowData*)*g_main_handle;
+
+    for (control_index = 4; control_index >= 0; control_index--) {
+        /* Calculate control offset: 192 * index */
+        short offset = 192 * control_index;  /* MULS.W at 0x00EA */
+
+        /* Set control value */
+        /* uncertain: exact field access */
+        /* *(short*)(((char*)win) + offset + 10) = setup_flag; */
+    }
+
+    /* Draw and show window */
+    draw_something(&g_some_rect);    /* JSR 696(PC) at 0x011A */
+    HUnlock(g_main_handle);          /* A9AA at 0x0122 */
+    ShowWindow((WindowPtr)g_main_handle, true);  /* A994 at 0x0126 */
+
+show_if_needed:
+    /* Additional visibility check/update if needed */
+    return;
+}
+
+/*============================================================
+ * Function 0x020E - Toggle Active Buffer (Direction Switch)
+ * JT offset: (varies)
+ *
+ * Toggles between horizontal (g_field_22) and vertical (g_field_14)
+ * search directions. Used when player wants to change word direction.
+ *============================================================*/
+void toggle_active_buffer(void) {
+    WindowData *win = (WindowData*)*g_main_handle;
+
+    if (win->buffer_select_flag != 0) {  /* TST.W 772(A0) at 0x0214 */
+        /* Flag set -> switch to horizontal (field_22) */
+        g_current_ptr = &g_field_22;     /* LEA -15522(A5) at 0x021A */
+        win->buffer_select_flag = 0;      /* Clear flag */
+    } else {
+        /* Flag clear -> switch to vertical (field_14) */
+        g_current_ptr = &g_field_14;     /* LEA -15514(A5) at 0x022E */
+        win->buffer_select_flag = 1;      /* Set flag */
+    }
+}
+
+/*============================================================
+ * Function 0x02B8 - Create Main Window
+ *============================================================*/
+void create_main_window(void) {
+    Handle h;
+
+    /* Allocate 1070-byte handle for window data */
+    h = NewHandle(0x042E);           /* A322 at 0x02BE, size = 1070 */
+
+    if (h == NULL) {                 /* BNE.S $02EE at 0x02C6 */
+        /* Allocation failed - set up error state */
+        g_error_ptr = g_fallback_ptr;  /* A5-24030 = A5-27736 */
+        /* ... error handling ... */
+        return;
+    }
+
+    /* Store handle in global */
+    g_main_handle = h;               /* MOVE.L A0,-8584(A5) */
+
+    /* Initialize window data fields */
+    WindowData *win = (WindowData*)*h;
+
+    win->visibility_flag = 1;        /* MOVE.W #1,780(A0) at 0x02F4 */
+    win->ui_flag_1 = 1;              /* MOVE.W #1,778(A0) at 0x030C */
+    win->ui_flag_3 = 1;              /* MOVE.W #1,784(A0) at 0x0318 */
+
+    /* Create actual window using resource */
+    WindowPtr window = GetNewWindow(
+        g_resource_ref,              /* A5-3512 */
+        'prfs',                      /* Resource type 'prfs' at 0x0322 */
+        0,                           /* Resource ID */
+        (Ptr)h                       /* Storage */
+    );                               /* A9AB at 0x032E */
+
+    /* Bring to front */
+    SelectWindow(window);            /* A999 at 0x033A */
+}
+
+/*============================================================
+ * Function 0x038A - Toggle Window Visibility
+ *============================================================*/
+void toggle_window_visibility(void) {
+    WindowData *win = (WindowData*)*g_main_handle;
+
+    /* Toggle visibility flag (0 <-> 1) */
+    short new_state;
+    if (win->visibility_flag == 0) { /* TST.W 780(A0) at 0x0390 */
+        new_state = 1;                /* SEQ/NEG at 0x0394-0x0396 */
+    } else {
+        new_state = 0;
+    }
+
+    win->visibility_flag = new_state; /* MOVE.W D0,780(A0) at 0x03A0 */
+
+    /* Trigger redraw */
+    redraw_window();                 /* JT[1266] at 0x03A4 */
+}
+
+/*============================================================
+ * Direction Mode Summary
+ *
+ * The direction_mode field (offset 770) controls display:
+ *
+ * Mode 0: Horizontal only
+ *   - Uses g_ptr1, g_ptr2
+ *   - For horizontal word display
+ *
+ * Mode 1: Both directions
+ *   - Uses all four pointers
+ *   - For showing both h/v possibilities
+ *
+ * Mode 2: Alternate horizontal
+ *   - Uses g_ptr3, g_ptr4
+ *   - Alternate buffer for comparison?
+ *
+ * The buffer_select_flag (offset 772) toggles between:
+ *   - g_field_14: Vertical/hook-before buffer
+ *   - g_field_22: Horizontal/hook-after buffer
+ *============================================================*/
+```

@@ -869,3 +869,629 @@ Clear board management patterns:
 - Board serialization
 - Tile counting and validation
 - Shuffle algorithm for randomization
+
+---
+
+## Speculative C Translation
+
+### Global Data Structures
+
+```c
+#define BOARD_WIDTH     17    /* 15 playable + 2 border */
+#define BOARD_SIZE      289   /* 17 * 17 */
+#define MAX_WORD_LEN    33
+
+/* Board arrays */
+char  g_board_letters[BOARD_SIZE];   /* A5-17154 (g_state1): Letter at each cell */
+short g_board_scores[BOARD_SIZE];    /* A5-16610 (g_state2): Score at each cell */
+
+/* Pointer offsets for playable area (skip border row) */
+#define BOARD_PLAYABLE  (g_board_letters + BOARD_WIDTH)  /* A5-17137 */
+#define SCORES_PLAYABLE (g_board_scores + BOARD_WIDTH)
+
+/* Word buffers */
+char  g_word_buffer[MAX_WORD_LEN];   /* A5-2762: Current word being processed */
+char  g_current_word[MAX_WORD_LEN];  /* A5-15514 (g_field_14): Word being played */
+char  g_cross_word[MAX_WORD_LEN];    /* A5-15522 (g_field_22): Cross word */
+
+/* Game state */
+short g_empty_cell_count;            /* A5-20010: Empty cells in word path */
+short g_game_state;                  /* A5-19470: Game state machine */
+void (*g_move_callback)(void*);      /* A5-19474: Move application callback */
+
+/* Letter tracking */
+char  g_letter_counts[256];          /* A5-23218: Count of each letter available */
+char  g_blank_count;                 /* A5-23155: Number of blank tiles */
+long  g_special_flag_1;              /* A5-23416: Special condition 1 */
+long  g_special_flag_2;              /* A5-23420: Special condition 2 */
+char  g_dawg_info[88];               /* A5-23488: Extended DAWG info */
+char* g_rack_ptr;                    /* A5-26158: Pointer to current rack */
+char  g_letter_primes[128];          /* A5-27374: Prime value per letter */
+short g_letter_values[128];          /* A5-27630: Point value per letter */
+```
+
+### Function 0x0000 - Count Empty Cells in Word Path
+
+```c
+/*
+ * count_empty_cells - Count how many empty cells the word will fill
+ *
+ * @param move: Move structure with word and position
+ *
+ * Updates g_empty_cell_count with the number of tiles that will
+ * be placed (not counting existing board tiles the word overlaps).
+ */
+void count_empty_cells(Move* move) {
+    g_empty_cell_count = 0;
+
+    /* Get word string from move (offset 32) */
+    char* word = move->word;
+
+    /* Get starting position */
+    int row = move->row;       /* Offset 33 */
+    int direction = move->col; /* Offset 32 - actually direction */
+
+    /* Calculate board position */
+    int offset = row * BOARD_WIDTH + direction;
+    char* board_ptr = &g_board_letters[offset];
+
+    /* Walk through word, counting empty cells */
+    while (*word) {
+        if (*board_ptr == 0) {
+            /* Cell is empty - will place a tile here */
+            g_empty_cell_count++;
+        }
+        /* If cell has a letter, word uses existing tile */
+
+        word++;
+        board_ptr++;  /* Move along board in word direction */
+    }
+}
+```
+
+### Function 0x0048 - Count Tiles in Row
+
+```c
+/*
+ * count_tiles_in_row - Count non-empty cells in a board row
+ *
+ * @param row: Row number (0-16)
+ * @param board_base: Base of board array
+ * Returns: Number of tiles in that row
+ */
+int count_tiles_in_row(short row, char* board_base) {
+    int count = 0;
+
+    /* Calculate row start (offset by 17*row, then adjust for border) */
+    int offset = row * BOARD_WIDTH;
+    char* row_ptr = board_base - BOARD_SIZE + offset;  /* A5-17155 adjusted */
+
+    /* Count non-zero cells */
+    for (int i = 0; i < BOARD_WIDTH; i++) {
+        if (row_ptr[i] != 0) {
+            count++;
+        }
+    }
+
+    return count + 1;  /* uncertain: +1 adjustment */
+}
+```
+
+### Function 0x0074 - Calculate Search Bounds
+
+```c
+/*
+ * calc_search_bounds - Determine valid search range for position
+ *
+ * @param position: Current position (row or column)
+ * @param max_out: Output for maximum bound
+ * @param min_out: Output for minimum bound
+ *
+ * For positions 0-15: search forward to edge
+ * For positions 16+: search backward from position
+ */
+void calc_search_bounds(short position, short* max_out, short* min_out) {
+    if (position < 16) {
+        /* Normal position - search to end of board */
+        *max_out = 15;       /* Last playable column/row */
+        *min_out = position; /* Start from current position */
+    } else {
+        /* Edge position - search backward */
+        *max_out = position;
+        *min_out = -15;      /* Search up to 15 cells back */
+    }
+}
+```
+
+### Function 0x00AE - Check Board State Validity
+
+```c
+/*
+ * is_board_state_valid - Check if current board state is valid
+ *
+ * Returns: 1 if valid, 0 if invalid
+ */
+int is_board_state_valid(void) {
+    /* Check if g_field_22 (cross word) is set */
+    if (g_cross_word[0] != 0) {
+        /* Check if g_field_14 (current word) is also set */
+        if (g_current_word[0] != 0) {
+            /* Both set - check game state */
+            if (g_game_state == 6) {
+                return 1;  /* State 6 is valid */
+            }
+            if (g_game_state == 2) {
+                /* State 2 - need additional validation */
+                int extra_valid = additional_state_check();  /* PC-relative */
+                if (extra_valid) {
+                    return 1;
+                }
+                return 0;  /* Failed extra check */
+            }
+            return 0;  /* Invalid state combination */
+        }
+    }
+
+    return 1;  /* Default: valid */
+}
+```
+
+### Function 0x00DA - Count Tiles on Board
+
+```c
+/*
+ * count_total_board_tiles - Count all tiles currently on the board
+ *
+ * Returns: Total number of tiles on board (0-100 typically)
+ */
+int count_total_board_tiles(void) {
+    int count = 0;
+    char* board_ptr = BOARD_PLAYABLE;  /* Skip border row */
+    char* board_end = &g_board_letters[BOARD_SIZE - BOARD_WIDTH];  /* A5-16882 */
+
+    while (board_ptr < board_end) {
+        if (*board_ptr != 0) {
+            count++;
+        }
+        board_ptr++;
+    }
+
+    return count;
+}
+```
+
+### Function 0x0104 / 0x0114 - Tile Count Checks
+
+```c
+/*
+ * is_board_nearly_full - Check if 80+ tiles on board
+ * Returns: 1 if <= 79 tiles (not nearly full)
+ */
+int is_board_nearly_full(void) {
+    int tile_count = count_total_board_tiles();
+    return (tile_count <= 79);
+}
+
+/*
+ * is_board_mostly_full - Check if 86+ tiles on board
+ * Returns: 1 if >= 86 tiles (mostly full)
+ */
+int is_board_mostly_full(void) {
+    int tile_count = count_total_board_tiles();
+    return (tile_count >= 86);
+}
+```
+
+### Function 0x0124 - Get Letter Value with Cap
+
+```c
+/*
+ * get_capped_letter_value - Get letter point value, capped at 100
+ *
+ * @param letter: Letter character code
+ * Returns: Point value (capped if >= 100)
+ */
+int get_capped_letter_value(short letter) {
+    /* Look up value in table (word-sized entries) */
+    int value = g_letter_values[letter];
+
+    if (value < 100) {
+        return value;
+    }
+
+    /* Value >= 100: divide by 100 */
+    return value / 100;
+}
+```
+
+### Function 0x0180 - Apply Move to Board (Main)
+
+```c
+/*
+ * apply_move_to_board - Place tiles on board for a move
+ *
+ * @param move: Move structure with word and position
+ * @param rack: Current player's rack
+ * @param validate_flag: If true, perform full validation
+ * Returns: Result code in local variable
+ *
+ * This is the main function for actually placing a word on the board.
+ * It updates g_state1 (letters) and g_state2 (scores).
+ */
+long apply_move_to_board(Move* move, char* rack, short validate_flag) {
+    char local_move_buffer[34];      /* -34(A6): Local move copy */
+    char local_buffer_1[1024];       /* -1082(A6): Validation buffer 1 */
+    char local_buffer_2[1024];       /* -2106(A6): Validation buffer 2 */
+    short rack_length;               /* -2136(A6): Length of rack */
+    short local_vars[16];            /* Various local calculations */
+    long result;                     /* -18(A6): Result code */
+
+    /* Get word from move (offset 32) */
+    char* word_ptr = &move->word[0];
+
+    /* Copy first character to word buffer */
+    g_word_buffer[0] = *word_ptr;
+    int buffer_idx = 1;
+
+    if (!validate_flag) {
+        goto skip_validation;
+    }
+
+    /* Full validation mode */
+    validate_move_placement(move, local_buffer_2, local_buffer_1);  /* JT[2530] */
+
+    /* Clear extended DAWG info (88 bytes) */
+    memset(g_dawg_info, 0, 88);  /* JT[426] */
+
+    /* Save original state */
+    /* ... save various A5-relative values to locals ... */
+
+    /* Get rack length */
+    rack_length = strlen(rack);  /* JT[3522] */
+
+    /* Check each letter a-z for availability */
+    for (int letter = 'a'; letter <= 'z'; letter++) {
+        int letter_count = g_letter_counts[letter];
+
+        if (letter_count == 0) {
+            continue;  /* No tiles of this letter */
+        }
+
+        int playable = check_letter_playable(letter);  /* JT[2002] */
+        /* ... process based on playability ... */
+    }
+
+    /* Check for special conditions (6+ of certain tiles) */
+    /* uncertain: exact conditions */
+    if (/* condition involving D6 */ 0 >= 6) {
+        g_special_flag_1 = 1;
+    }
+    if (/* condition involving D4 */ 0 >= 6) {
+        g_special_flag_2 = 1;
+    }
+
+skip_validation:
+    /* Clear game state */
+    g_game_state = 0;
+
+    /* Copy move structure to local buffer */
+    memcpy(local_move_buffer, move, 34);
+
+    /* Validate the move */
+    result = validate_complete_move(local_move_buffer, rack,
+                                    &local_vars[0]);  /* JT[2442] */
+
+    /* Call callback if registered */
+    if (g_move_callback != NULL) {
+        g_move_callback(local_move_buffer);
+    }
+
+    /* Get position info */
+    int current_letter = *word_ptr;
+    int row = move->row;
+
+    /* Calculate bounds for placement */
+    short max_bound, min_bound;
+    calc_search_bounds(row, &max_bound, &min_bound);
+
+    /* Calculate board array offsets */
+    int letter_offset = current_letter * BOARD_WIDTH;
+    char* letter_row = &g_board_letters[letter_offset];
+
+    int score_offset = current_letter * (BOARD_WIDTH * 2);
+    short* score_row = (short*)((char*)g_board_scores + score_offset);
+
+    /* Place each letter of the word */
+    while (*word_ptr) {
+        char letter = *word_ptr;
+
+        /* Check if cell is empty */
+        if (*letter_row == 0) {
+            /* Empty cell - place a tile */
+
+            /* Check if we have this letter */
+            if (g_letter_counts[(unsigned char)letter] > 0) {
+                /* Use regular tile */
+                g_letter_counts[(unsigned char)letter]--;
+            } else if (g_blank_count > 0) {
+                /* Use blank tile */
+                g_blank_count--;
+            } else {
+                /* No tile available - error */
+                bounds_error();  /* JT[418] */
+            }
+
+            /* Store position in word buffer */
+            g_word_buffer[buffer_idx++] = row;  /* uncertain: what's stored */
+
+            /* Place letter on board */
+            *letter_row = letter;
+
+            /* Store score (0 for blank, letter value otherwise) */
+            if (g_letter_counts[(unsigned char)letter] >= 0) {  /* Was regular tile */
+                *score_row = g_letter_values[(unsigned char)letter];
+            } else {
+                *score_row = 0;  /* Blank has 0 score */
+            }
+        }
+
+        /* Move to next position */
+        word_ptr++;
+        letter_row++;
+        score_row++;
+    }
+
+    return result;
+}
+```
+
+### Function 0x063E - Undo Move from Board
+
+```c
+/*
+ * undo_move_from_board - Remove tiles placed by a move
+ *
+ * @param original_content: String to restore (or marker)
+ *
+ * This reverses the effect of apply_move_to_board().
+ * Uses g_word_buffer to know which cells were modified.
+ */
+void undo_move_from_board(char* original_content) {
+    int buffer_idx = 1;
+
+    /* Get first position from word buffer */
+    int first_pos = g_word_buffer[0];
+
+    if (first_pos == 0) {
+        /* Empty word buffer - verify marker */
+        if (g_word_buffer[1] != 0xFF) {
+            bounds_error();  /* JT[418] */
+        }
+
+        /* Verify board is actually clear at position */
+        if (g_board_letters[0] != 0) {
+            /* Check word buffer length */
+            int buf_len = strlen(&g_word_buffer[1]);  /* JT[3522] */
+            if (buf_len != 0) {
+                bounds_error();  /* JT[418] */
+            }
+        }
+
+        /* Decrement game state */
+        g_game_state--;
+
+        /* Clear first row (17 bytes) */
+        memset(g_board_letters, 0, BOARD_WIDTH);  /* JT[426] */
+        return;
+    }
+
+    /* Calculate board pointers for this row */
+    int letter_offset = first_pos * BOARD_WIDTH;
+    char* letter_row = &g_board_letters[letter_offset];
+
+    int score_offset = first_pos * (BOARD_WIDTH * 2);
+    short* score_row = (short*)((char*)g_board_scores + score_offset);
+
+    /* Loop through each position that was modified */
+    while (1) {
+        int col = g_word_buffer[buffer_idx];
+        if (col <= 0) break;
+
+        /* Calculate bounds */
+        short max_bound, min_bound;
+        calc_search_bounds(col, &max_bound, &min_bound);
+
+        /* Clear the cell */
+        letter_row[col] = 0;
+        score_row[col] = 0;
+
+        buffer_idx++;
+    }
+
+    /* Restore original content */
+    strcpy(&g_word_buffer[buffer_idx], original_content);  /* JT[3490] */
+}
+```
+
+### Function 0x071A - Expand Rack to Letters
+
+```c
+/*
+ * expand_rack_to_letters - Convert rack to full letter string
+ *
+ * @param output: Buffer to receive expanded rack
+ *
+ * The rack may be compressed (e.g., "ABC" with counts).
+ * This expands it to full string (e.g., "AAABBBCCC").
+ */
+void expand_rack_to_letters(char* output) {
+    char* rack = g_rack_ptr;  /* A5-26158 */
+
+    while (*rack) {
+        int letter = (unsigned char)*rack;
+        int count = g_letter_counts[letter];
+
+        /* Output this letter 'count' times */
+        for (int i = 0; i < count; i++) {
+            *output++ = letter;
+        }
+
+        rack++;
+    }
+
+    *output = '\0';  /* Null terminate */
+}
+```
+
+### Function 0x07DC - Shuffle Board Letters
+
+```c
+/*
+ * shuffle_tiles - Randomize tile order using Fisher-Yates shuffle
+ *
+ * @param output: Buffer for shuffled tiles
+ *
+ * Uses the game's random number generator (JT[1458], JT[1762]).
+ */
+void shuffle_tiles(char* output) {
+    char tile_buffer[128];      /* -128(A6): Local tile buffer */
+    long random_state[2];       /* -136(A6): Random state */
+
+    /* Calculate rack value (number of tiles available) */
+    int rack_value = calculate_rack_value(tile_buffer);
+
+    int output_length = strlen(output);  /* JT[3522] */
+
+    /* Check if shuffle is needed */
+    if ((8 - output_length) >= rack_value) {
+        /* Not enough tiles to shuffle meaningfully */
+        goto cleanup;
+    }
+
+    /* Initialize random generator */
+    init_random(random_state);  /* JT[1690] */
+
+    /* Fisher-Yates shuffle */
+    for (int i = rack_value - 1; i > 0; i--) {
+        /* Generate random index 0 to i */
+        long rand1 = get_random_long();  /* JT[1458] */
+        long rand2 = get_random_long();  /* JT[1762] */
+        long combined = rand1 + rand2;
+        int j = modulo_long(combined, rack_value);  /* JT[82] */
+
+        /* Swap elements i and j */
+        char temp = tile_buffer[i];
+        tile_buffer[i] = tile_buffer[j];
+        tile_buffer[j] = temp;
+    }
+
+    /* ... additional processing ... */
+
+cleanup:
+    /* Clear first row of board */
+    memset(g_board_letters, 0, BOARD_WIDTH);  /* JT[426] */
+}
+```
+
+### Function 0x08BA - Serialize Board State
+
+```c
+/*
+ * serialize_board_state - Convert current board to string representation
+ *
+ * @param output: Buffer to receive serialized state
+ * Returns: Number of characters written
+ *
+ * This creates a compact representation of the board state
+ * for saving or transmitting.
+ */
+int serialize_board_state(char* output) {
+    char prime_buffer[128];     /* -128(A6): Working buffer */
+    char* output_start = output;
+    int row, col;
+
+    /* Copy letter primes to local buffer */
+    memcpy(prime_buffer, g_letter_primes, 128);  /* JT[3466] */
+
+    /* Process each cell on the board */
+    for (row = 0; row < 16; row++) {
+        char* board_row = &g_board_letters[row * BOARD_WIDTH];
+        short* score_row = &g_board_scores[row * BOARD_WIDTH];
+
+        for (col = 0; col < 16; col++) {
+            char letter = board_row[col];
+
+            if (letter == 0) {
+                continue;  /* Empty cell */
+            }
+
+            /* Check if blank (score == 0 but has letter) */
+            if (score_row[col] == 0) {
+                if (row != 0) {  /* uncertain: special case for row 0 */
+                    prime_buffer[63]--;  /* Decrement blank count */
+                }
+            } else {
+                prime_buffer[(unsigned char)letter]--;  /* Decrement letter count */
+            }
+        }
+    }
+
+    /* Process g_field_22 (cross word) */
+    for (char* p = g_cross_word; *p; p++) {
+        prime_buffer[(unsigned char)*p]--;
+    }
+
+    /* Process g_field_14 (current word) */
+    for (char* p = g_current_word; *p; p++) {
+        prime_buffer[(unsigned char)*p]--;
+    }
+
+    /* Output remaining tiles (what's in the rack/bag) */
+    char* rack = g_rack_ptr;
+    while (*rack) {
+        int letter = (unsigned char)*rack;
+        int count = prime_buffer[letter];
+
+        while (count > 0) {
+            *output++ = letter;
+            count--;
+        }
+
+        rack++;
+    }
+
+    *output = '\0';
+
+    return output - output_start;
+}
+```
+
+### Function 0x098E - Clear Letter Counts
+
+```c
+/*
+ * reset_letter_counts - Clear and reinitialize letter counts
+ *
+ * @param new_letters: String of letters to count
+ *
+ * Clears counts for rack letters, then counts new letters.
+ */
+void reset_letter_counts(char* new_letters) {
+    char* rack = g_rack_ptr;
+
+    /* Clear counts for current rack letters */
+    while (*rack) {
+        int letter = (unsigned char)*rack;
+        g_letter_counts[letter] = 0;
+        rack++;
+    }
+
+    /* Count new letters */
+    char* p = new_letters;
+    while (*p) {
+        int letter = (unsigned char)*p;
+        g_letter_counts[letter]++;
+        p++;
+    }
+}
+```

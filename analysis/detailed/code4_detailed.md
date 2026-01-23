@@ -194,3 +194,168 @@ The patterns are unmistakable:
 - LFSR random generator with 0x40000000 feedback tap
 - Euclidean GCD algorithm calling JT[98] for modulo
 - Simple seed management at A5-3524
+
+---
+
+## Speculative C Translation
+
+```c
+/* CODE 4 - Speculative C Translation */
+/* Random Number Generator & GCD */
+
+/*============================================================
+ * Global Variables
+ *============================================================*/
+long g_random_seed;                  /* A5-3524: LFSR state */
+
+/*============================================================
+ * Function 0x0000 - Get Random Number (LFSR)
+ * JT offset: 1424(A5)
+ *
+ * Implements a 31-bit Linear Feedback Shift Register
+ * This is a Galois LFSR with feedback polynomial
+ *============================================================*/
+long get_random(void) {
+    long seed = g_random_seed;       /* D7 = A5-3524 */
+    long feedback;                   /* D0 */
+
+    /*
+     * LFSR feedback calculation
+     * The feedback tap is at bit 30 (0x40000000)
+     *
+     * Original assembly uses shift-and-test pattern:
+     *   LSR.L #4,D0     ; seed >> 4
+     *   ... XOR/EOR operations ...
+     *
+     * This implements: if (parity of tapped bits is odd) feedback = 0x40000000
+     */
+
+    /* Check parity of feedback taps - uncertain exact polynomial */
+    long test_bits = seed >> 4;      /* LSR.L #4,D0 at 0x0008 */
+
+    /* XOR with original to check feedback condition */
+    /* The exact tap positions are uncertain from disassembly */
+    if ((seed ^ test_bits) & 0x02400001) {  /* uncertain mask */
+        feedback = 0;                 /* MOVEQ #0,D0 at 0x001A */
+    } else {
+        feedback = 0x40000000;        /* MOVE.L #$40000000,D0 at 0x0014 */
+    }
+
+    /* Shift right by 1 and add feedback */
+    long new_seed = (seed >> 1) + feedback;  /* LSR.L #1,D1; ADD.L D0,D1 */
+
+    /* Store new state */
+    g_random_seed = new_seed;        /* MOVE.L D1,-3524(A5) at 0x0022 */
+
+    return new_seed;                 /* Return in D0 */
+}
+
+/*============================================================
+ * Function 0x002C - Set Random Seed
+ * JT offset: 1432(A5)
+ *
+ * Initializes the LFSR with a seed value.
+ * Note: Seed should be non-zero for proper LFSR operation
+ *============================================================*/
+void set_random_seed(long seed /* 8(A6) */) {
+    g_random_seed = seed;            /* Direct store to A5-3524 */
+}
+
+/*============================================================
+ * Function 0x003A - Greatest Common Divisor (Euclidean)
+ *
+ * Computes GCD using the Euclidean algorithm.
+ * Uses JT[98] for modulo operation (from CODE 1).
+ *
+ * Possible uses in Maven:
+ * - Simplifying score ratios in evaluation
+ * - Reducing fractions for display
+ * - Statistical normalization in AI
+ *============================================================*/
+long gcd(long a /* 8(A6), D7 */, long b /* 12(A6), D6 */) {
+    long temp;                       /* D5 */
+
+    /* Ensure a >= b by swapping if needed */
+    if (b > a) {                     /* CMP.L D7,D6; BLE.S at 0x004A */
+        temp = a;                    /* MOVE.L D7,D5 at 0x004E */
+        a = b;                       /* MOVE.L D6,D7 at 0x0050 */
+        b = temp;                    /* MOVE.L D5,D6 at 0x0052 */
+    }
+
+    /* Euclidean algorithm: gcd(a,b) = gcd(b, a mod b) */
+    while (a != 0) {                 /* TST.L D7; BNE.S at 0x005E */
+        long remainder = modulo(a, b);  /* JT[98] at 0x0058 */
+        /* Note: assembly has args reversed - a%b vs b%a */
+        /* Actual operation: remainder = a % b */
+
+        a = remainder;               /* MOVE.L D0,D7 at 0x005C */
+        /* Implicit: swap(a,b) happens via register reuse */
+
+        /* The loop effectively does:
+         * while (remainder != 0) {
+         *     a = b;
+         *     b = remainder;
+         *     remainder = a % b;
+         * }
+         */
+    }
+
+    return b;                        /* MOVE.L D6,D0 at 0x0062 */
+}
+
+/*============================================================
+ * Alternative GCD Implementation (cleaner logic)
+ *============================================================*/
+long gcd_clean(long a, long b) {
+    /* Swap to ensure a >= b */
+    if (b > a) {
+        long t = a; a = b; b = t;
+    }
+
+    /* Euclidean algorithm */
+    while (b != 0) {
+        long r = a % b;  /* modulo via JT[98] */
+        a = b;
+        b = r;
+    }
+
+    return a;
+}
+
+/*============================================================
+ * LFSR Analysis
+ *
+ * The LFSR appears to be a maximal-length 31-bit generator.
+ * Period: 2^31 - 1 = 2,147,483,647
+ *
+ * Feedback polynomial (speculative):
+ *   x^31 + x^30 + 1  (uses 0x40000000 tap)
+ *
+ * This is a common choice for 31-bit LFSR:
+ * - Fast (single shift + conditional add)
+ * - Good statistical properties
+ * - Full period for any non-zero seed
+ *============================================================*/
+
+/*
+ * Usage in Maven (speculative):
+ *
+ * 1. Tile Bag Shuffling:
+ *    for (i = 0; i < 100; i++) {
+ *        int j = get_random() % 100;
+ *        swap(bag[i], bag[j]);
+ *    }
+ *
+ * 2. AI Move Randomization:
+ *    // Among moves with equal score, pick randomly
+ *    if (score == best_score) {
+ *        if (get_random() & 1) {
+ *            best_move = current_move;
+ *        }
+ *    }
+ *
+ * 3. Reproducible Games:
+ *    // For testing/replay
+ *    set_random_seed(game_number);
+ */
+```

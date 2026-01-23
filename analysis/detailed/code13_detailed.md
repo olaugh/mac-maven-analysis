@@ -323,6 +323,264 @@ void play_sound(short param, char async_flag) {
 | A949 | GetResource - Load resource |
 | A9EB | SetRect / InsetRect - Rectangle operations |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 13 - Player/Direction Management
+ * Handles player move direction toggling and sound playback.
+ */
+
+#include <MacTypes.h>
+#include <Sound.h>
+
+/*========== Constants ==========*/
+#define PLAYER_DATA_SIZE        192     /* Bytes per player data block */
+#define MAX_DIRECTION           19      /* Maximum normal direction value */
+#define FLAG_ARRAY_SIZE         256     /* Cyclic flag array size */
+#define SOUND_RESOURCE_ID       5       /* Sound resource ID */
+
+/*========== Data Structures ==========*/
+
+/* Player data block (192 bytes each, 2 players) */
+typedef struct PlayerData {
+    char padding1[10];
+    short move_direction;               /* Offset 10: Current move direction */
+    char remaining[180];                /* Remaining player data */
+} PlayerData;
+
+/* Window data structure (partial) */
+typedef struct WindowData {
+    char padding[768];
+    short toggle_state;                 /* Offset 768: Direction toggle state */
+    short current_player;               /* Offset 770: Active player (0 or 1) */
+    char more_padding[16];
+    PlayerData players[2];              /* Offset 786: Player data blocks */
+} WindowData;
+
+/*========== Global Variables (A5-relative) ==========*/
+extern Handle  g_window_handle;         /* A5-8584: Main window handle */
+extern char*   g_flag_array_ptr;        /* A5-7452: 256-byte flag array */
+extern short   g_cycle_counter;         /* A5-7454: Counter (0-255) */
+extern void*   g_dawg_field;            /* A5-23056: DAWG search field */
+extern short   g_result_count;          /* A5-23220: Search result count */
+extern void*   g_search_area_data;      /* A5-24180: Search area data */
+```
+
+### Direction Toggle Functions
+```c
+/*
+ * handle_direction_change - Process direction input
+ *
+ * If direction > 19, toggles the direction mode state.
+ * Otherwise, updates the current player's move direction.
+ *
+ * @param new_direction: New direction value or toggle command
+ */
+void handle_direction_change(short new_direction) {
+    WindowData** window_handle = (WindowData**)g_window_handle;
+    WindowData* window_data = *window_handle;
+
+    if (new_direction > MAX_DIRECTION) {
+        /* Toggle mode - flip direction state */
+        /* SEQ/NEG.B pattern: 0 -> 1, non-zero -> 0 */
+        short current_state = window_data->toggle_state;
+        window_data->toggle_state = (current_state == 0) ? 1 : 0;
+
+        /* Update display with new toggle state */
+        update_toggle_display(new_direction, window_data->toggle_state);
+    }
+    else {
+        /* Normal direction change */
+        short player_index = window_data->current_player;
+        PlayerData* player = &window_data->players[player_index];
+
+        /* Clear old direction indicator */
+        short old_direction = player->move_direction;
+        update_direction_indicator(old_direction, 0);   /* 0 = hide */
+
+        /* Set new direction */
+        player->move_direction = new_direction;
+
+        /* Show new direction indicator */
+        update_direction_indicator(new_direction, 1);   /* 1 = show */
+    }
+}
+
+/*
+ * get_player_direction - Get current player's direction
+ *
+ * @return: Direction value for current player
+ */
+short get_player_direction(void) {
+    WindowData** wh = (WindowData**)g_window_handle;
+    WindowData* w = *wh;
+
+    short player = w->current_player;
+    return w->players[player].move_direction;
+}
+```
+
+### Cyclic Update Check
+```c
+/*
+ * check_and_update_cyclic - Process cyclic flag array
+ *
+ * Cycles through a 256-entry flag array. When a flag is set,
+ * triggers an update function. Wraps counter at 256.
+ *
+ * @param update_param: Parameter to pass to update function
+ */
+void check_and_update_cyclic(void* update_param) {
+    /* Wrap counter at 256 */
+    if (g_cycle_counter >= FLAG_ARRAY_SIZE) {
+        g_cycle_counter = 0;
+    }
+
+    short current_index = g_cycle_counter;
+    g_cycle_counter++;
+
+    /* Check if flag is set at this index */
+    if (g_flag_array_ptr[current_index] != 0) {
+        update_function(update_param);      /* JT[2114] */
+    }
+}
+```
+
+### Direction-Based Search
+```c
+/*
+ * get_direction_search_area - Calculate search area for direction
+ *
+ * Determines the search area based on current player's direction.
+ * Uses a 256-byte position array for complex direction patterns.
+ *
+ * @param param1: First search parameter
+ * @param param2: Second search parameter
+ * @return: Pointer to DAWG search field
+ */
+void* get_direction_search_area(void* param1, void* param2) {
+    char local_buffer[256];             /* Stack frame: -256 bytes */
+    Rect local_rect;                    /* Stack frame: -266 bytes */
+    WindowData** wh = (WindowData**)g_window_handle;
+    WindowData* w = *wh;
+
+    /* Get current player's direction */
+    short player = w->current_player;
+    short direction = w->players[player].move_direction;
+
+    /* Setup drawing rectangle */
+    SetRect(&local_rect, 0x20, 0x0E, 0, 0);  /* uncertain: exact values */
+    InsetRect(&local_rect, 2, 2);
+
+    if (direction == 1) {
+        /* Direction 1 - special handling */
+        void* result = direction_search_special(param1, param2, 0);  /* JT[2754] */
+        return result;
+    }
+
+    /* Other directions - general handling */
+    g_flag_array_ptr = local_buffer;
+
+    /* Clear local buffer */
+    memset(local_buffer, 0, 256);           /* JT[426] */
+
+    /* Validate direction bounds */
+    if (direction >= MAX_DIRECTION) {
+        bounds_check_error();               /* JT[418] */
+    }
+
+    /* Build position array based on direction */
+    short count = 0;
+    short position = 0;
+
+    while (count < /* direction-specific limit */) {
+        /* Wrap position at 256 */
+        if (position >= FLAG_ARRAY_SIZE) {
+            position -= FLAG_ARRAY_SIZE;
+        }
+
+        /* Check for collision */
+        if (local_buffer[position] != 0) {
+            bounds_check_error();           /* JT[418] - conflict */
+        }
+
+        /* Mark this position */
+        local_buffer[position] = 1;
+        count++;
+
+        /* Advance by 17 (diagonal pattern) */
+        position += 17;     /* uncertain: exact increment */
+    }
+
+    /* Perform search in area */
+    perform_area_search(param1, 642);       /* JT[2130] */
+
+    /* Clear result count */
+    g_result_count = 0;                     /* A5-23220 */
+
+    return g_dawg_field;                    /* A5-23056 */
+}
+```
+
+### Sound Playback
+```c
+/*
+ * play_game_sound - Play sound effect
+ *
+ * Loads and plays a sound resource using Mac Sound Manager.
+ *
+ * @param sound_param: Sound parameter (passed to SndPlay)
+ * @param async_flag: If true, play asynchronously
+ */
+void play_game_sound(short sound_param, Boolean async_flag) {
+    Handle sound_handle;
+
+    /* Get sound resource */
+    sound_handle = GetResource('snd ', SOUND_RESOURCE_ID);
+
+    if (sound_handle != NULL) {
+        /* Play the sound
+         * SndPlay(channel, sndHandle, async)
+         * Channel NULL = use system channel */
+        SndPlay(NULL, (SndListHandle)sound_handle, async_flag);
+    }
+}
+```
+
+### Toggle State Utilities
+```c
+/*
+ * toggle_boolean_field - Generic boolean toggle
+ *
+ * Uses the SEQ/NEG.B 68K idiom to toggle a boolean:
+ * - If current value is 0, set to -1 (0xFFFF)
+ * - If current value is non-zero, set to 0
+ *
+ * @param field_ptr: Pointer to short field to toggle
+ * @return: New value after toggle
+ */
+short toggle_boolean_field(short* field_ptr) {
+    short current = *field_ptr;
+    short new_value = (current == 0) ? -1 : 0;
+    *field_ptr = new_value;
+    return new_value;
+}
+
+/*
+ * get_player_data_offset - Calculate offset to player data
+ *
+ * @param player_index: Player number (0 or 1)
+ * @return: Byte offset from window data base
+ */
+long get_player_data_offset(short player_index) {
+    /* Players start at offset 786 (after fixed window fields)
+     * Each player block is 192 bytes
+     * Direction is at offset 10 within player block */
+    return 786 + (player_index * PLAYER_DATA_SIZE);
+}
+```
+
 ## Confidence: HIGH
 
 Clear direction management patterns:

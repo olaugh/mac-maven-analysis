@@ -285,3 +285,427 @@ The structure is clear:
 - Multiple nested searches (PC-relative calls)
 - Compare and bounds checking
 - Result returned via global pointer
+
+---
+
+## Speculative C Translation
+
+### Data Structures
+
+```c
+/*
+ * DAWG Node Structure (Directed Acyclic Word Graph)
+ *
+ * A DAWG is a compressed dictionary representation.
+ * Each node represents a letter, with edges to child nodes.
+ *
+ * Node encoding (speculative - typically 4 bytes):
+ *   - Letter (5 bits or 1 byte)
+ *   - End-of-word flag (1 bit)
+ *   - Last-child flag (1 bit)
+ *   - Child pointer (21-26 bits)
+ */
+typedef struct DAWGNode {
+    /* uncertain: exact bit packing */
+    unsigned int letter : 5;      /* The letter at this node */
+    unsigned int is_word_end : 1; /* This completes a valid word */
+    unsigned int is_last_child : 1; /* Last sibling at this level */
+    unsigned int child_offset : 25; /* Pointer to first child */
+} DAWGNode;
+
+/*
+ * DAWG Info Structure - 34 bytes
+ * This is the g_dawg_info structure copied to local storage
+ */
+typedef struct DAWGInfo {
+    void* root_ptr;           /* +0: Root of DAWG tree */
+    void* current_node;       /* +4: Current position in tree */
+    char current_word[16];    /* +8: Word being built */
+    short word_length;        /* +24: Current word length */
+    short flags;              /* +26: Search flags */
+    long score;               /* +28: Accumulated score */
+    short extra;              /* +32: Extra data */
+} DAWGInfo;
+
+#define DAWG_INFO_SIZE  34
+#define SEARCH_LIMIT    127
+
+/* Global variables */
+void* g_state_ptr;            /* A5-2770: Current state pointer */
+void* g_end_ptr;              /* A5-11980: End comparison pointer */
+void* g_secondary_ptr;        /* A5-11976: Secondary pointer */
+short g_secondary_counter;    /* A5-11974: Counter */
+short g_failed_flag;          /* A5-12540: Search failed indicator */
+char g_work_buffer[256];      /* A5-17420: 256-byte work buffer */
+short g_search_limit;         /* A5-23026: Maximum search depth */
+char g_dawg_field[340];       /* A5-23056: DAWG result field */
+char g_dawg_info[34];         /* A5-23090: DAWG configuration */
+short g_counter_index;        /* A5-23674: Counter/index value */
+void* g_common_ptr;           /* A5-24026: Common data pointer */
+void* g_primary_ptr;          /* A5-24030: Primary pointer */
+void* g_base_ptr;             /* A5-25752: Base pointer */
+```
+
+### Function 0x0000 - Quick Validity Check
+
+```c
+/*
+ * is_valid_state - Quick check if search state is valid
+ *
+ * Returns: 1 if valid and should continue, 0 to stop
+ */
+int is_valid_state(void) {
+    /* Compare state pointer with end pointer */
+    if (g_state_ptr == g_end_ptr) {
+        return 0;  /* At end - stop */
+    }
+
+    /* Check byte at offset 26 in state structure */
+    char* state = (char*)g_state_ptr;
+    if (state[26] == 0) {
+        return 1;  /* Flags clear - continue */
+    }
+
+    return 0;  /* Flags set - stop */
+}
+```
+
+### Function 0x001C - Setup Common State
+
+```c
+/*
+ * setup_common_state - Initialize common pointers for search
+ *
+ * Returns: 1 on success
+ */
+int setup_common_state(void) {
+    /* Copy base pointer to primary */
+    g_primary_ptr = g_base_ptr;  /* A5-24030 = A5-25752 */
+
+    /* Manipulate counter */
+    /* uncertain: exact manipulation of A5-23674 */
+
+    /* Get common pointer */
+    void* common = &g_common_ptr;  /* A5-24026 */
+
+    /* uncertain: additional setup */
+
+    return 1;
+}
+```
+
+### Function 0x004A - Main Search with Comparison
+
+```c
+/*
+ * search_with_compare - Search DAWG with string comparison
+ *
+ * @param search_param: Parameter for search initialization
+ * Returns: 1 if match found, 0 otherwise
+ */
+int search_with_compare(void* search_param) {
+    int result = 0;
+
+    /* Initialize for search */
+    init_search_function(search_param);  /* JT[2810] */
+
+    /* Set search limit */
+    g_search_limit = SEARCH_LIMIT;  /* 127 */
+
+    /* Bounds check on counter */
+    if (g_counter_index >= 8 || g_counter_index < 0) {
+        bounds_error();  /* JT[418] */
+    }
+
+    /* Calculate offset from counter */
+    /* uncertain: exact calculation */
+
+    /* Check if current position is empty */
+    if (is_empty_position()) {
+        /* Empty - call empty handler */
+        empty_handler(CONSTANT_2258);  /* JT[2618] */
+        return result;
+    }
+
+    /* Non-empty - compare strings */
+    int cmp = strcmp(g_primary_ptr, g_base_ptr);  /* JT[3506] */
+
+    if (cmp == 0) {
+        /* Strings match */
+        result = 1;
+    } else {
+        /* Different - update state */
+        if (g_counter_index <= 0) {
+            bounds_error();  /* JT[418] */
+        }
+
+        /* uncertain: state update logic */
+    }
+
+    return result;
+}
+```
+
+### Function 0x014A - Main Traversal (Core DAWG Walker)
+
+This is the heart of the DAWG traversal - the largest function with 1766 bytes of local variables.
+
+```c
+/*
+ * main_dawg_traversal - Core DAWG tree walking function
+ *
+ * @param search_param: Search parameter/constraint
+ * Returns: Pointer to result field, or NULL on failure
+ *
+ * This function:
+ * 1. Copies g_dawg_info to local storage for thread safety
+ * 2. Clears working buffers
+ * 3. Walks the DAWG tree matching letters
+ * 4. Builds up valid words
+ * 5. Returns results in g_dawg_field
+ */
+void* main_dawg_traversal(void* search_param) {
+    /*
+     * Large local buffer layout:
+     *   -1766 to -1762: 4 bytes - unknown
+     *   -1762 to -1758: 4 bytes - state pointer
+     *   -1758 to -1754: 4 bytes - counter
+     *   -1754 to -1720: 34 bytes - local copy of g_dawg_info
+     *   -1720 to 0: ~1720 bytes - search state stack, word buffer, etc.
+     */
+    char local_buffer[1766];
+    DAWGInfo* local_dawg_info = (DAWGInfo*)&local_buffer[1766 - 34];
+    short* state_counter = (short*)&local_buffer[1766 - 38];
+    void** state_ptr = (void**)&local_buffer[1766 - 42];
+
+    /* Copy g_dawg_info to local storage (34 bytes) */
+    /* This allows recursive/nested searches without corrupting global state */
+    memcpy(local_dawg_info, g_dawg_info, DAWG_INFO_SIZE);
+
+    /* Clear state */
+    *state_counter = 0;
+
+    /* Initialize state pointer */
+    init_state_pointer(state_ptr);  /* JT[1690] */
+
+    /* Clear DAWG field result area (340 bytes = 10 moves * 34 bytes) */
+    memset(g_dawg_field, 0, 340);  /* JT[426] */
+
+    /* Run internal search */
+    int found = internal_dawg_search(search_param);  /* PC-relative call */
+
+    if (!found) {
+        /* Search found nothing - set failure flag and return */
+        g_failed_flag = 1;
+        return g_dawg_field;
+    }
+
+    /* Process results */
+    process_dawg_results();    /* PC-relative call at +1220 */
+    finalize_search();         /* PC-relative call at -174 */
+
+    /* Clear work buffer (256 bytes) */
+    memset(g_work_buffer, 0, 256);  /* JT[426] */
+
+    /* Continue with extended processing... */
+    /* uncertain: remaining ~400 lines of code */
+
+    return g_dawg_field;
+}
+```
+
+### DAWG Traversal Helper Functions
+
+```c
+/*
+ * traverse_to_letter - Move to child node for given letter
+ *
+ * @param current: Current DAWG node
+ * @param letter: Letter to find
+ * Returns: Child node for letter, or NULL if not found
+ */
+DAWGNode* traverse_to_letter(DAWGNode* current, char letter) {
+    /* uncertain: exact node structure and traversal */
+
+    if (current == NULL) {
+        return NULL;
+    }
+
+    /* Get first child */
+    DAWGNode* child = get_first_child(current);
+
+    /* Search siblings for matching letter */
+    while (child != NULL) {
+        if (get_letter(child) == letter) {
+            return child;  /* Found it */
+        }
+
+        if (child->is_last_child) {
+            break;  /* No more siblings */
+        }
+
+        child = get_next_sibling(child);
+    }
+
+    return NULL;  /* Letter not found */
+}
+
+/*
+ * is_complete_word - Check if current node marks end of valid word
+ */
+int is_complete_word(DAWGNode* node) {
+    return node->is_word_end;
+}
+
+/*
+ * build_word_recursive - Recursively build words from DAWG
+ *
+ * @param node: Current DAWG node
+ * @param word_buffer: Buffer to build word into
+ * @param depth: Current recursion depth
+ * @param rack: Available letters (rack + board)
+ * @param callback: Function to call for each valid word
+ */
+void build_word_recursive(DAWGNode* node,
+                          char* word_buffer,
+                          int depth,
+                          char* rack,
+                          void (*callback)(char* word)) {
+    if (node == NULL || depth > g_search_limit) {
+        return;
+    }
+
+    /* Add this letter to word */
+    word_buffer[depth] = get_letter(node);
+    word_buffer[depth + 1] = '\0';
+
+    /* Check if this is a complete valid word */
+    if (is_complete_word(node)) {
+        callback(word_buffer);
+    }
+
+    /* Get first child for deeper traversal */
+    DAWGNode* child = get_first_child(node);
+
+    /* Try each child that we have letters for */
+    while (child != NULL) {
+        char needed_letter = get_letter(child);
+
+        if (has_letter(rack, needed_letter)) {
+            /* Remove letter from rack temporarily */
+            remove_letter(rack, needed_letter);
+
+            /* Recurse */
+            build_word_recursive(child, word_buffer, depth + 1,
+                                 rack, callback);
+
+            /* Restore letter */
+            add_letter(rack, needed_letter);
+        }
+
+        if (child->is_last_child) {
+            break;
+        }
+        child = get_next_sibling(child);
+    }
+}
+```
+
+### Search State Management
+
+```c
+/*
+ * The search uses a large stack frame to maintain state:
+ *
+ * 1. Local copy of g_dawg_info prevents corruption during
+ *    nested searches (e.g., checking cross-words while
+ *    building main word)
+ *
+ * 2. Word buffer accumulates letters as we traverse
+ *
+ * 3. State stack tracks position in DAWG for backtracking
+ *
+ * 4. Results stored in g_dawg_field (340 bytes = 10 moves)
+ */
+typedef struct SearchState {
+    DAWGNode* node;           /* Current DAWG position */
+    int rack_index;           /* Which rack letter we're using */
+    int word_length;          /* Letters placed so far */
+    long accumulated_score;   /* Score for this path */
+} SearchState;
+
+#define MAX_SEARCH_DEPTH 15   /* Max word length */
+
+/*
+ * Stack-based iterative traversal (alternative to recursion)
+ */
+void iterative_dawg_search(void* constraint) {
+    SearchState stack[MAX_SEARCH_DEPTH];
+    int stack_top = 0;
+
+    /* Initialize with root */
+    stack[0].node = get_dawg_root();
+    stack[0].rack_index = 0;
+    stack[0].word_length = 0;
+    stack[0].accumulated_score = 0;
+
+    while (stack_top >= 0) {
+        SearchState* current = &stack[stack_top];
+
+        /* Try next letter/child */
+        DAWGNode* next_child = try_next_child(current);
+
+        if (next_child != NULL) {
+            /* Push new state */
+            stack_top++;
+            stack[stack_top].node = next_child;
+            stack[stack_top].word_length = current->word_length + 1;
+            /* ... copy other state ... */
+        } else {
+            /* Pop - backtrack */
+            stack_top--;
+        }
+
+        /* Check for valid word at current position */
+        if (is_complete_word(current->node)) {
+            record_valid_word(current);
+        }
+    }
+}
+```
+
+### Usage in Move Generation
+
+```c
+/*
+ * DAWG is used throughout move generation:
+ *
+ * 1. Word Validation: Check if a word exists in dictionary
+ *    - Traverse DAWG following letters
+ *    - Word exists if we reach end-of-word marker
+ *
+ * 2. Word Generation: Find all words makeable from rack
+ *    - Start at root, try each rack letter
+ *    - Recursively build all valid words
+ *
+ * 3. Anchor Search: Find words through anchor squares
+ *    - Pre-traverse DAWG for prefix before anchor
+ *    - Continue traversal using rack letters
+ *
+ * 4. Cross-Check: Verify perpendicular words are valid
+ *    - Build cross-word from board letters + placed tile
+ *    - Traverse DAWG to verify
+ */
+int validate_word(char* word) {
+    DAWGNode* node = get_dawg_root();
+
+    for (char* p = word; *p; p++) {
+        node = traverse_to_letter(node, *p);
+        if (node == NULL) {
+            return 0;  /* No path for this letter */
+        }
+    }
+
+    return is_complete_word(node);
+}
+```

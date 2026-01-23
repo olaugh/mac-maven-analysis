@@ -293,3 +293,242 @@ This is standard 68K C runtime code (THINK C pattern). The signatures are unmist
 - Register save/restore with MOVEM
 - Division algorithm with sign handling
 - Table-driven dispatch for switch statements
+
+---
+
+## Speculative C Translation
+
+```c
+/* CODE 1 - Speculative C Translation */
+/* Runtime Initialization & Math Library */
+
+/*============================================================
+ * Application Entry Point (0x0000-0x0042)
+ * Called by the Segment Loader after CODE 0 sets up A5 world
+ *============================================================*/
+
+/* This is compiler-generated startup code, not user-written */
+void _start(void) {
+    /* Header data at 0x0000-0x0007 is parsed by loader */
+    /* Above A5 size: 0x01BA (442 bytes) */
+    /* Below A5 size: 0x0000 */
+
+    *(short*)0x0A4A = 0;   /* Clear low-memory global (CurApName?) */
+
+    init_toolbox();         /* JSR 52(PC) - initialize Mac Toolbox */
+    init_globals();         /* JSR 36(PC) - zero application globals */
+
+    /* Set up C runtime environment */
+    short return_value = 0;
+    /* Push argc/argv equivalent for main() */
+
+    /* Call through jump table to initialization routine */
+    typedef void (*init_func_t)(void);
+    init_func_t init = (init_func_t)(*(long*)(A5 + 108));  /* uncertain */
+
+    /* Call main application */
+    typedef void (*main_func_t)(void);
+    main_func_t app_main = *(main_func_t*)(g_globals + 108);
+    app_main();
+}
+
+/*============================================================
+ * Toolbox Initialization (0x0044-0x00A4)
+ * Standard Mac startup sequence
+ *============================================================*/
+void init_toolbox(void) {
+    /* Standard Toolbox initialization sequence */
+    InitGraf(&qd.thePort);   /* uncertain - not visible in disasm */
+    InitFonts();
+    InitWindows();
+    InitMenus();             /* A9A0 trap at 0x005C */
+    TEInit();
+    InitDialogs(NULL);       /* A9A0 trap at 0x004E */
+
+    FlushEvents(everyEvent, 0);  /* A9A3 trap at 0x008A */
+    InitCursor();
+}
+
+/*============================================================
+ * Switch Statement Dispatch (0x00A6-0x00CE)
+ * Compiler-generated helper for switch statements
+ *============================================================*/
+
+/* 0x00A6 - Linear search dispatch (for sparse case values) */
+/* Called via BSR from switch statement, table follows call */
+void __switch_linear(void) {
+    /* Called with: D0 = selector value */
+    /* Return address points to dispatch table */
+
+    /* Table format:
+     *   word: case_count
+     *   word: default_offset
+     *   repeated: word case_value, word handler_offset
+     */
+
+    /* Example C equivalent for what this enables: */
+    /*
+     * switch (selector) {  // selector in D0
+     *   case 5: goto handler_5;
+     *   case 100: goto handler_100;
+     *   case 203: goto handler_203;
+     *   default: goto default_handler;
+     * }
+     */
+}
+
+/* 0x00CE - Range dispatch (for dense sequential cases) */
+void __switch_range(void) {
+    /* Called with: D0 = selector value */
+
+    /* Table format:
+     *   word: min_value
+     *   word: max_value
+     *   word[max-min+1]: handler_offsets
+     *   word: default_offset
+     */
+
+    /* C equivalent:
+     * if (selector < min || selector > max) goto default;
+     * goto jump_table[selector - min];
+     */
+}
+
+/*============================================================
+ * 32-bit Unsigned Multiply (0x00EA-0x011E)
+ * JT offset: 66(A5)
+ *============================================================*/
+unsigned long multiply_32bit(unsigned long a /* 4(A7) */,
+                              unsigned long b /* 8(A7) */) {
+    /*
+     * 68000 only has 16x16->32 multiply (MULU/MULS)
+     * This implements: (ah*2^16 + al) * (bh*2^16 + bl)
+     *                = ah*bh*2^32 + (ah*bl + al*bh)*2^16 + al*bl
+     *
+     * Since we only need 32-bit result, ah*bh term overflows and is ignored
+     */
+
+    unsigned short a_high = (unsigned short)(a >> 16);  /* SWAP D2 */
+    unsigned short a_low  = (unsigned short)(a & 0xFFFF);
+    unsigned short b_high = (unsigned short)(b >> 16);  /* SWAP D5 */
+    unsigned short b_low  = (unsigned short)(b & 0xFFFF);
+
+    unsigned long result = (unsigned long)a_low * b_low;           /* low * low */
+    result += ((unsigned long)a_high * b_low) << 16;   /* cross product 1 */
+    result += ((unsigned long)a_low * b_high) << 16;   /* cross product 2 */
+    /* a_high * b_high would overflow 32 bits, ignored */
+
+    return result;  /* D0 */
+}
+
+/*============================================================
+ * Signed Division - Quotient (0x0120-0x013E)
+ * JT offset: 90(A5)
+ *============================================================*/
+long divide_signed_quotient(long dividend /* D0 */, long divisor /* D1 */) {
+    long quotient, remainder;
+    divide_with_sign_handling(dividend, divisor, &quotient, &remainder);
+    return quotient;  /* D0 */
+}
+
+/*============================================================
+ * Signed Division - Remainder (0x0140-0x0160)
+ * JT offset: 98(A5)
+ *============================================================*/
+long divide_signed_remainder(long dividend, long divisor) {
+    long quotient, remainder;
+    divide_with_sign_handling(dividend, divisor, &quotient, &remainder);
+    return remainder;  /* Moved from D1 to D0 at 0x0158 */
+}
+
+/*============================================================
+ * Sign Handling for Division (0x01A4-0x01D0)
+ * Converts signed division to unsigned, adjusts result signs
+ *============================================================*/
+void divide_with_sign_handling(long dividend /* D0 */,
+                                long divisor /* D1 */,
+                                long *quotient_out,
+                                long *remainder_out) {
+    int negate_quotient = 0;
+    int negate_remainder = 0;
+
+    /* Handle negative dividend */
+    if (dividend < 0) {              /* TST.L D0; BPL.S $01C4 */
+        dividend = -dividend;         /* NEG.L D0 */
+        negate_quotient = 1;
+        negate_remainder = 1;
+
+        if (divisor < 0) {           /* TST.L D1; BPL.S $01B8 */
+            /* Both negative: quotient positive, remainder negative */
+            divisor = -divisor;       /* NEG.L D1 */
+            negate_quotient = 0;      /* Quotient stays positive */
+        }
+        /* else: dividend neg, divisor pos -> both results negative */
+    } else {
+        /* Dividend positive */
+        if (divisor < 0) {           /* TST.L D1; BPL.S $01D2 */
+            divisor = -divisor;       /* NEG.L D1 */
+            negate_quotient = 1;      /* Quotient negative */
+        }
+        /* else: both positive -> both results positive */
+    }
+
+    /* Call unsigned division core */
+    unsigned long uquot, urem;
+    divide_unsigned((unsigned long)dividend, (unsigned long)divisor,
+                    &uquot, &urem);
+
+    *quotient_out = negate_quotient ? -(long)uquot : (long)uquot;
+    *remainder_out = negate_remainder ? -(long)urem : (long)urem;
+}
+
+/*============================================================
+ * Unsigned Division Core (0x01D2-0x023E)
+ * Implements 32-bit / 32-bit -> 32-bit quotient, 32-bit remainder
+ *============================================================*/
+void divide_unsigned(unsigned long dividend /* D0 */,
+                      unsigned long divisor /* D1 */,
+                      unsigned long *quotient_out,
+                      unsigned long *remainder_out) {
+
+    const unsigned long WORD_MASK = 0x0000FFFF;  /* D7 */
+
+    /* Quick check: divisor > dividend means quotient = 0 */
+    if (divisor > dividend) {        /* CMP.L D1,D0; BLS.S $01E2 */
+        *quotient_out = 0;            /* MOVEQ #0,D0 */
+        *remainder_out = dividend;    /* MOVE.L D0,D1 */
+        return;
+    }
+
+    /* Fast path: if dividend fits in 16 bits, use DIVU */
+    if (dividend <= WORD_MASK) {     /* CMP.L D7,D0; BHI.S $01F2 */
+        /* 32/16 divide using hardware instruction */
+        unsigned long temp = dividend / (unsigned short)divisor;  /* DIVU.W */
+        *quotient_out = temp & 0xFFFF;
+        *remainder_out = dividend % (unsigned short)divisor;
+        return;
+    }
+
+    /* Medium path: if divisor fits in 16 bits */
+    if (divisor <= WORD_MASK) {      /* CMP.L D7,D1; BHI.S $0210 */
+        /* Optimized 32/16 divide with 32-bit dividend */
+        /* ... uses two DIVU instructions ... */
+        /* uncertain about exact algorithm */
+        return;
+    }
+
+    /* Slow path: full 32/32 shift-and-subtract */
+    /* Normalize by right-shifting both until divisor fits in 16 bits */
+    unsigned long d0_copy = dividend;  /* D2 */
+    unsigned long d1_copy = divisor;   /* D3 */
+
+    while (divisor > WORD_MASK) {    /* CMP.L D7,D1; BHI.S $0214 */
+        dividend >>= 1;               /* LSR.L #1,D0 */
+        divisor >>= 1;                /* LSR.L #1,D1 */
+    }
+
+    /* Now divisor fits, do approximation and correct */
+    /* ... complex correction logic follows ... */
+    /* uncertain about exact implementation details */
+}
+```

@@ -767,3 +767,603 @@ Complex score calculation logic with:
 - Direction-aware table selection at offset 0x019A-0x01BA
 
 Some disassembly artifacts (garbled instructions at complex addressing modes) but overall algorithm flow is well-understood.
+
+---
+
+## Speculative C Translation
+
+### Header File (code39_synergy.h)
+
+```c
+/*
+ * CODE 39 - Letter Combination Scoring (Synergy Tables)
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * This module generates and scores letter pair/triple combinations
+ * for move evaluation. Uses the massive 9632-byte stack frame for
+ * exhaustive combination enumeration.
+ */
+
+#ifndef CODE39_SYNERGY_H
+#define CODE39_SYNERGY_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+/*
+ * ESTR (Extended Score Table Record) - 18 bytes per entry
+ * Used for letter synergy lookup
+ */
+typedef struct ESTREntry {
+    int16_t base_value;         /* +0: Base synergy value */
+    int16_t synergy_bonus1;     /* +2: First synergy bonus */
+    int16_t synergy_bonus2;     /* +4: Second synergy bonus */
+    int16_t synergy_bonus3;     /* +6: Third synergy bonus */
+    int16_t synergy_bonus4;     /* +8: Fourth synergy bonus */
+    int16_t synergy_bonus5;     /* +10: Fifth synergy bonus */
+    int16_t synergy_bonus6;     /* +12: Sixth synergy bonus */
+    int16_t synergy_bonus7;     /* +14: Seventh synergy bonus */
+    int16_t position_mult;      /* +16: Position multiplier */
+} ESTREntry;
+
+/* Score table pointers (6 tables total) */
+typedef struct ScoreTables {
+    ESTREntry* horiz_base;      /* A5-12532: Horizontal base scores */
+    ESTREntry* horiz_letter;    /* A5-12528: Horizontal letter bonuses */
+    ESTREntry* horiz_position;  /* A5-12524: Horizontal position mults */
+    ESTREntry* vert_base;       /* A5-12520: Vertical base scores */
+    ESTREntry* vert_letter;     /* A5-12516: Vertical letter bonuses */
+    ESTREntry* vert_position;   /* A5-12512: Vertical position mults */
+} ScoreTables;
+
+/*
+ * Global variables (A5-relative)
+ */
+extern ScoreTables  g_score_tables;
+extern uint16_t*    g_letter_pair_table;  /* A5-13060: Letter pair entries */
+extern uint16_t     g_letter_pair_count;  /* A5-13062: Number of pairs */
+extern int32_t*     g_results_array;      /* A5-22698: Combination results */
+extern int16_t*     g_results_score;      /* A5-22696: Result scores */
+extern uint8_t      g_rack_size_adj;      /* A5-26152: Rack size adjustment */
+
+/* Processed flag for letter pair entries */
+#define PAIR_PROCESSED_FLAG  0x0080
+
+/* Function prototypes */
+void init_letter_pair_search(void* param, char* rack, int position,
+                            int32_t* out1, int32_t* out2);
+void full_combination_analysis(int direction, void* position);
+int get_pair_scores(uint16_t pair, int16_t* score_out1, int16_t* score_out2);
+int extended_score_calculation(uint16_t pair1, uint16_t pair2,
+                              int16_t* out1, int16_t* out2);
+int combined_score_wrapper(uint16_t pair, uint16_t direction,
+                          int16_t* out1, int16_t* out2);
+
+#endif /* CODE39_SYNERGY_H */
+```
+
+### Implementation File (code39_synergy.c)
+
+```c
+/*
+ * CODE 39 - Letter Combination Scoring Implementation
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * This is the most memory-intensive function in Maven, using
+ * a 9632-byte stack frame for exhaustive move generation.
+ *
+ * Key concepts:
+ * - Letter pairs encode two letters in a 16-bit value
+ * - 0x80 bit marks pairs as processed
+ * - 6 score tables (3 horiz + 3 vert) provide synergy values
+ * - Multi-pass algorithm for combination generation
+ */
+
+#include "code39_synergy.h"
+
+/* External JT functions */
+extern void init_rack_info(char* rack);              /* JT[3522] */
+extern int16_t get_crosscheck_value(uint16_t entry, uint16_t mask); /* JT[2474] */
+extern int compare_scores(uint16_t a, uint16_t b, uint16_t c);      /* JT[2482] */
+extern void init_position_for_scoring(void* pos);    /* JT[2730] */
+extern void bounds_error(void);                       /* JT[418] */
+
+/*
+ * Local stack frame structure for full_combination_analysis
+ * Total: 9632 bytes
+ */
+typedef struct CombinationFrame {
+    int32_t local_scores[2400];      /* Score cache (9600 bytes) */
+    uint16_t valid_pairs[65];        /* Valid pair indices (130 bytes) */
+    int16_t score_table1_local;      /* -9596: Local copy */
+    int16_t score_table2_local;      /* -9610: Local copy */
+    int16_t score_table3_local;      /* -9604: Local copy */
+    uint16_t pair_count;             /* -9606: Valid pair count */
+    uint16_t processed_mask;         /* -9612: Processing mask */
+    uint16_t counter1;               /* -9622: Iteration counter */
+    int32_t results_ptr;             /* -9592: Results array pointer */
+    /* Additional working buffers */
+} CombinationFrame;
+
+/*
+ * init_letter_pair_search - Function at 0x0000
+ *
+ * Initializes letter pair search, finding valid pairs from
+ * the current rack and calculating their scores.
+ *
+ * Parameters:
+ *   param - Initial parameter (uncertain purpose)
+ *   rack - Player's rack letters
+ *   position - Board position being evaluated
+ *   out1, out2 - Output score pointers
+ */
+void init_letter_pair_search(void* param, char* rack, int position,
+                            int32_t* out1, int32_t* out2)
+{
+    uint16_t processed_mask = PAIR_PROCESSED_FLAG;
+    int16_t combined_mask;
+    int i;
+
+    /* Initialize rack information */
+    init_rack_info(rack);
+
+    /* Adjust for rack size */
+    /* uncertain - A5-26152 adjustment */
+
+    /* Clear output pointers */
+    *out1 = 0;
+    *out2 = 0;
+
+    /*
+     * Iterate through letter pair table
+     */
+    for (i = 0; i < g_letter_pair_count; i++) {
+        uint16_t entry = g_letter_pair_table[i];
+
+        /* Skip if already processed */
+        if (entry & processed_mask) {
+            continue;
+        }
+
+        /* Skip if no result for this pair */
+        if (g_results_array[i] == 0) {
+            continue;
+        }
+
+        /* Get cross-check value for this entry */
+        int16_t cross_val = get_crosscheck_value(entry, 0x7F);
+        cross_val |= processed_mask;  /* Mark as processed */
+
+        /* Extract letter from entry */
+        int letter = entry & 0x7F;  /* uncertain - low 7 bits */
+
+        /* Validate combination */
+        if ((cross_val | letter) == 0) {
+            bounds_error();
+        }
+
+        /*
+         * Look up scores from multiple tables
+         * Index = entry * 18 (ESTR record size)
+         */
+        int idx = (cross_val * 18) & 0xFFFF;  /* uncertain scaling */
+
+        int score1 = g_score_tables.horiz_base[idx / 18].base_value;
+        int score2 = g_score_tables.horiz_letter[idx / 18].base_value;
+
+        /* Get result array score component */
+        int16_t result_score = g_results_score[i];
+
+        /*
+         * Compare scores and determine best
+         */
+        int cmp = compare_scores(processed_mask, cross_val, combined_mask);
+
+        if (cmp == 0x7F) {
+            /* Maximum score case - add position component */
+            int pos_score = g_score_tables.horiz_position[idx / 18].position_mult;
+
+            if (pos_score > 0) {
+                /* Update with position-enhanced score */
+                /* uncertain - complex score table interaction */
+            }
+        }
+
+        /* Update outputs if better */
+        if (score1 + score2 > *out1) {
+            *out1 = score1 + score2;
+        }
+    }
+}
+
+/*
+ * full_combination_analysis - Function at 0x018C
+ *
+ * Performs exhaustive analysis of all letter combinations.
+ * Uses the massive 9632-byte stack frame for working storage.
+ *
+ * This is a multi-pass algorithm:
+ * Pass 1: Collect valid letter pairs
+ * Pass 2: Generate pair combinations
+ * Pass 3: Calculate base scores
+ * Pass 4+: Extended scoring for longer combinations
+ *
+ * Parameters:
+ *   direction - 0=vertical, non-zero=horizontal
+ *   position - Board position data
+ */
+void full_combination_analysis(int direction, void* position)
+{
+    /* Allocate massive stack frame */
+    int32_t local_scores[2400];
+    uint16_t valid_pairs[65];
+    uint16_t combinations[1024];  /* 2048 bytes / 2 */
+
+    ESTREntry* score_table1;
+    ESTREntry* score_table2;
+    ESTREntry* score_table3;
+
+    int pair_count;
+    int combo_count;
+    int i, j;
+    uint16_t processed_mask = PAIR_PROCESSED_FLAG;
+
+    /*
+     * Select score tables based on direction
+     */
+    if (direction) {
+        /* Horizontal - use horiz tables */
+        score_table1 = g_score_tables.horiz_base;
+        score_table2 = g_score_tables.horiz_letter;
+        score_table3 = g_score_tables.horiz_position;
+    } else {
+        /* Vertical - use vert tables */
+        score_table1 = g_score_tables.vert_base;
+        score_table2 = g_score_tables.vert_letter;
+        score_table3 = g_score_tables.vert_position;
+    }
+
+    /* Initialize position and rack */
+    init_position_for_scoring(position);
+    init_rack_info((char*)position);  /* uncertain - position contains rack? */
+
+    /*
+     * PASS 1: Collect valid letter pairs
+     * Filter out processed pairs and those without results
+     */
+    pair_count = 0;
+
+    for (i = 0; i < g_letter_pair_count; i++) {
+        uint16_t entry = g_letter_pair_table[i];
+
+        /* Validate entry format */
+        if ((entry | 0x7F) != 0x7F) {
+            bounds_error();
+        }
+
+        /* Skip if processed */
+        if (entry & processed_mask) {
+            continue;
+        }
+
+        /* Store valid pair */
+        valid_pairs[pair_count++] = entry;
+    }
+
+    /*
+     * PASS 2: Generate all pair combinations
+     * Nested loops create pairwise combinations
+     */
+    combo_count = 0;
+
+    for (i = 0; i < pair_count; i++) {
+        uint16_t pair1 = valid_pairs[i];
+
+        for (j = 0; j < pair_count; j++) {
+            uint16_t pair2 = valid_pairs[j];
+
+            /* Combine pairs */
+            uint16_t combined = pair1 | pair2;
+
+            /* Check if result exists for combination */
+            /* uncertain - indexing into results array */
+            if (g_results_array[combined & 0x1FF] == 0) {
+                continue;
+            }
+
+            /* Get cross-check value */
+            int16_t cross_val = get_crosscheck_value(pair1, 0x7F);
+            cross_val |= processed_mask;
+
+            /* Store combination */
+            combinations[combo_count * 2] = cross_val;
+            combinations[combo_count * 2 + 1] = pair2;
+            combo_count++;
+        }
+    }
+
+    /*
+     * PASS 3: Calculate base scores for combinations
+     */
+    for (i = 0; i < combo_count; i++) {
+        uint16_t combo = combinations[i * 2];
+        int idx = (combo * 18) & 0xFFFF;  /* ESTR index */
+
+        /* Sum scores from all three tables */
+        local_scores[i] = score_table1[idx / 18].base_value
+                        + score_table2[idx / 18].base_value
+                        + score_table3[idx / 18].position_mult;
+    }
+
+    /*
+     * PASS 4+: Extended scoring for longer combinations
+     * Iteratively refine scores for 3, 4, 5, 6, 7 letter combos
+     */
+    int iteration_mask = 1;
+    int iteration_counter = 1;
+    int max_iterations = 7;  /* Max rack size */
+
+    while (iteration_counter <= max_iterations) {
+        /* Clear mask for new iteration */
+        iteration_mask = 0;
+
+        /* Process combinations at this depth */
+        for (i = 0; i < combo_count; i++) {
+            uint16_t combo = combinations[i * 2];
+            int idx = (combo * 18) & 0xFFFF;
+
+            /* Add next level scores */
+            local_scores[i] += score_table1[idx / 18].synergy_bonus1
+                             + score_table2[idx / 18].synergy_bonus1
+                             + score_table3[idx / 18].synergy_bonus1;
+
+            /* uncertain - complex iteration logic */
+        }
+
+        iteration_counter++;
+        iteration_mask <<= 1;
+    }
+
+    /*
+     * Final aggregation
+     * Update valid_pairs with final scores
+     */
+    for (i = 0; i < pair_count; i++) {
+        uint16_t pair = valid_pairs[i];
+        int idx = (pair * 18) & 0xFFFF;
+
+        /* Calculate final score */
+        int final_score = score_table1[idx / 18].base_value
+                        + score_table2[idx / 18].position_mult
+                        + score_table3[idx / 18].position_mult;
+
+        /* Store in appropriate output location */
+        /* uncertain - where results are stored */
+    }
+}
+
+/*
+ * get_pair_scores - Function at 0x0516
+ *
+ * Gets the score components for a letter pair.
+ *
+ * Parameters:
+ *   pair - Letter pair value
+ *   score_out1 - Output for first score component
+ *   score_out2 - Output for second score component
+ *
+ * Returns:
+ *   Combined score value
+ */
+int get_pair_scores(uint16_t pair, int16_t* score_out1, int16_t* score_out2)
+{
+    int idx = (pair * 18) & 0xFFFF;
+
+    *score_out1 = 0;
+
+    /* Look up in position table (table 3) */
+    *score_out2 = g_score_tables.horiz_position[idx / 18].position_mult;
+
+    /* Get letter table value (table 2) */
+    int16_t letter_score = g_score_tables.horiz_letter[idx / 18].base_value;
+
+    int base_score;
+    if (letter_score == 0) {
+        /* Use negated value */
+        base_score = 0;  /* -0 = 0 */
+    } else {
+        /* Use vertical table 2 at fixed offset */
+        base_score = g_score_tables.vert_letter[2286 / 18].base_value;
+    }
+
+    /* Combine scores */
+    int result = g_score_tables.horiz_base[idx / 18].base_value
+               + g_score_tables.vert_letter[2286 / 18].base_value
+               + base_score;
+
+    return result;
+}
+
+/*
+ * extended_score_calculation - Function at 0x0572
+ *
+ * Calculates extended scores for a pair of letter pairs,
+ * used for multi-letter combination evaluation.
+ *
+ * Parameters:
+ *   pair1 - First letter pair
+ *   pair2 - Second letter pair
+ *   out1, out2 - Output score pointers
+ *
+ * Returns:
+ *   Best score found
+ */
+int extended_score_calculation(uint16_t pair1, uint16_t pair2,
+                              int16_t* out1, int16_t* out2)
+{
+    int idx1 = (pair1 * 18) & 0xFFFF;
+    int idx2 = (pair2 * 18) & 0xFFFF;
+
+    ESTREntry* entry1 = &g_score_tables.horiz_letter[idx1 / 18];
+    ESTREntry* entry2 = &g_score_tables.vert_letter[idx2 / 18];
+
+    int32_t vert_base = (int32_t)g_score_tables.vert_letter;
+    int32_t horiz_base = (int32_t)g_score_tables.horiz_base;
+
+    /* Get initial values */
+    int16_t val1 = entry1->base_value;
+    int16_t val2 = entry2->base_value;
+
+    /* Handle zero case */
+    int16_t adjusted;
+    if (val2 == 0) {
+        adjusted = -val2;  /* Negate (still 0) */
+    } else {
+        adjusted = val1;
+    }
+
+    /* Store initial results */
+    *out1 = entry1->position_mult;
+    *out2 = entry2->position_mult;
+
+    /*
+     * Iterate through synergy bonuses (7 iterations)
+     */
+    int best_score = val1;
+    int iteration;
+
+    for (iteration = 7; iteration > 0; iteration--) {
+        /* Check if table entry at current offset is zero */
+        if (((int16_t*)((char*)vert_base + idx1))[iteration] == 0) {
+            /* Calculate adjusted score */
+            int adj_score = entry1->position_mult + adjusted;
+
+            if (adj_score > best_score) {
+                best_score = adj_score;
+                *out1 = ((int16_t*)((char*)horiz_base + idx1))[iteration];
+            }
+        }
+
+        /* Similar check for second pair */
+        if (((int16_t*)((char*)horiz_base + idx2))[iteration] == 0) {
+            /* Similar adjustment for second pair */
+            /* uncertain - exact calculation */
+        }
+    }
+
+    return best_score;
+}
+
+/*
+ * combined_score_wrapper - Function at 0x0688
+ *
+ * Wrapper function that combines multiple score lookups
+ * for a letter pair with direction consideration.
+ *
+ * Parameters:
+ *   pair - Letter pair value
+ *   direction - Direction index
+ *   out1, out2 - Output score pointers
+ *
+ * Returns:
+ *   Combined score
+ */
+int combined_score_wrapper(uint16_t pair, uint16_t direction,
+                          int16_t* out1, int16_t* out2)
+{
+    /* Call extended calculation */
+    int result = extended_score_calculation(pair, direction, out1, out2);
+
+    /* Calculate index for direction */
+    int dir_idx = (direction * 18) & 0xFFFF;
+
+    ESTREntry* vert_pos = &g_score_tables.vert_position[dir_idx / 18];
+    ESTREntry* vert_base = &g_score_tables.vert_base[dir_idx / 18];
+    ESTREntry* horiz_base = &g_score_tables.horiz_base[(pair * 18) / 18];
+
+    /* Get values from multiple tables */
+    int16_t val1 = vert_pos->base_value;
+    int16_t val2 = vert_base->base_value;
+
+    /* Combine */
+    int combined = val1 + val2 + horiz_base->position_mult;
+
+    /* Check if equal to position table */
+    if (combined != vert_pos->position_mult) {
+        return result;
+    }
+
+    /* Equal case - calculate alternate */
+    int alt_score = horiz_base->base_value + val1 - result;
+    *out1 = alt_score;
+
+    return result;
+}
+```
+
+### Key Algorithmic Notes
+
+```
+STACK FRAME (9632 bytes):
+=========================
+The massive stack frame contains:
+- local_scores[2400]: 9600 bytes for score caching
+- valid_pairs[65]: ~130 bytes for pair indices
+- combinations[~1000]: ~2000 bytes for pair combinations
+- Various local variables and counters
+
+This is the most memory-intensive function in Maven.
+
+ESTR (Extended Score Table Record):
+===================================
+18-byte records indexed by letter pair value:
++0-1:   Base value
++2-15:  Seven synergy bonus values (one per rack position)
++16-17: Position multiplier
+
+Six tables (3 horizontal + 3 vertical) provide:
+- Base scores for letter combinations
+- Letter-specific synergy bonuses
+- Position-dependent multipliers
+
+LETTER PAIR ENCODING:
+=====================
+16-bit values encoding two letters:
+- Bits 0-6: First letter (0-63)
+- Bit 7: Processed flag (0x80)
+- Bits 8-14: Second letter
+- Bit 15: Additional flag
+
+MULTI-PASS ALGORITHM:
+=====================
+Pass 1: Filter valid pairs from g_letter_pair_table
+Pass 2: Generate pairwise combinations (O(n^2))
+Pass 3: Calculate base scores from tables
+Pass 4-7: Iteratively add synergy bonuses for depth 3-7
+
+DIRECTION HANDLING:
+===================
+- direction=0: Use vertical tables (hook-before)
+- direction!=0: Use horizontal tables (hook-after)
+
+This distinction matters because premium square
+patterns differ by orientation.
+
+SYNERGY CONCEPTS:
+=================
+High synergy combinations (positive bonuses):
+- QU (Q+U together)
+- ING, TION, NESS (common endings)
+- High-frequency letter pairs (TH, HE, IN, ER)
+
+Low synergy combinations (negative or zero):
+- Multiple high-point tiles (Q+X+Z)
+- Duplicate vowels or consonants
+- Rare letter combinations
+
+INTEGRATION:
+============
+- Feeds scores to CODE 32's move evaluation
+- Uses rack analysis from CODE 42
+- Results cached by CODE 36
+```

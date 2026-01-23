@@ -354,6 +354,331 @@ CODE 17 provides text editing support:
 | A5-3268 | Scroll bar title |
 | A5-3512 | Scroll proc pointer |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 17 - Text Editing & Windows
+ * TextEdit management, scrollable windows, file loading.
+ */
+
+#include <MacTypes.h>
+#include <TextEdit.h>
+#include <Controls.h>
+#include <Windows.h>
+#include <Files.h>
+#include <StandardFile.h>
+
+/*========== Constants ==========*/
+#define TEXT_FILE_TYPE          'TEXT'
+#define FILE_READ_BUFFER_SIZE   10000   /* Max file read size */
+#define LINES_PER_PAGE          8       /* Lines to scroll per page */
+
+/*========== Data Structures ==========*/
+
+/* Text window data structure */
+typedef struct TextWindowData {
+    char padding[156];
+    ControlHandle scroll_bar;       /* Offset 156: Scroll bar control */
+    TEHandle te_handle;             /* Offset 160: TextEdit handle */
+    short flags;                    /* Offset 164: Window flags */
+    short mode;                     /* Offset 166: Edit mode */
+} TextWindowData;
+
+/*========== Global Variables (A5-relative) ==========*/
+extern ProcPtr  g_scroll_proc;          /* A5-3512: Scroll action proc */
+extern Str255   g_scroll_title;         /* A5-3268: Scroll bar title */
+```
+
+### File Loading
+```c
+/*
+ * load_text_from_file - Load text file into TextEdit field
+ *
+ * Presents Standard File dialog, reads selected file,
+ * and sets content in TextEdit record.
+ *
+ * @param window: Window containing TextEdit field
+ * @param file_info: StandardFileReply structure
+ * @return: true if file loaded successfully
+ */
+Boolean load_text_from_file(WindowPtr window, StandardFileReply* file_info) {
+    char file_buffer[FILE_READ_BUFFER_SIZE];    /* 10KB stack buffer */
+    long bytes_to_read;
+    long bytes_read;
+    short file_ref_num;
+    OSErr err;
+    OSType file_types[1];
+    TextWindowData* window_data;
+    TEHandle te;
+
+    bytes_to_read = FILE_READ_BUFFER_SIZE;
+    file_types[0] = TEXT_FILE_TYPE;
+
+    /* Present Standard File dialog */
+    StandardGetFile(NULL, 1, file_types, file_info);    /* JT[1554] */
+
+    if (!file_info->sfGood) {
+        return false;   /* User cancelled */
+    }
+
+    /* Open file for reading */
+    err = FSOpen(file_info->sfFile.name,
+                 file_info->sfFile.vRefNum,
+                 &file_ref_num);                /* JT[2842] */
+
+    if (err != noErr) {
+        bounds_check_error();                   /* JT[418] */
+        return false;
+    }
+
+    /* Get TextEdit handle from window */
+    window_data = (TextWindowData*)window;
+    te = window_data->te_handle;                /* Offset 160 */
+
+    /* Read file contents */
+    err = FSRead(file_ref_num, &bytes_to_read, file_buffer);    /* JT[2858] */
+
+    if (err == noErr || err == eofErr) {
+        /* Set text in TextEdit */
+        TESetText(file_buffer, bytes_to_read, te);
+    }
+
+    /* Close file */
+    FSClose(file_ref_num);                      /* JT[2850] */
+
+    return true;
+}
+```
+
+### Scroll Handling
+```c
+/*
+ * handle_scroll_event - Process scroll bar interaction
+ *
+ * Handles line up/down and page up/down scrolling.
+ *
+ * @param part_code: Control part that was clicked
+ * @param window_handle: Handle to window with scroll bar
+ */
+void handle_scroll_event(short part_code, Handle window_handle) {
+    TextWindowData* window_data;
+    TEHandle te;
+    short line_height;
+    short scroll_delta;
+    short current_value;
+
+    if (part_code == 0) {
+        return;     /* No scroll needed */
+    }
+
+    window_data = (TextWindowData*)*window_handle;
+    te = window_data->te_handle;
+
+    /* Verify scroll bar position matches */
+    /* uncertain: exact validation at offset 156 */
+
+    /* Get line height from TE record */
+    line_height = (**te).lineHeight;            /* TE offset 24 */
+
+    /* Determine scroll amount based on part code */
+    switch (part_code) {
+        case kControlUpButtonPart:      /* Line up (20) */
+            scroll_delta = -line_height;
+            break;
+
+        case kControlDownButtonPart:    /* Line down (21) */
+            scroll_delta = line_height;
+            break;
+
+        case kControlPageUpPart:        /* Page up (22) */
+            scroll_delta = -(line_height * LINES_PER_PAGE);
+            break;
+
+        case kControlPageDownPart:      /* Page down (23) */
+            scroll_delta = line_height * LINES_PER_PAGE;
+            break;
+
+        default:
+            bounds_check_error();       /* JT[418] */
+            return;
+    }
+
+    /* Get current scroll position */
+    current_value = GetControlValue(window_data->scroll_bar);
+
+    /* Update scroll bar */
+    SetControlValue(window_data->scroll_bar, current_value + scroll_delta);
+
+    /* Update TextEdit display */
+    update_te_display(window_data);
+}
+
+/*
+ * update_te_display - Synchronize TextEdit with scroll bar
+ *
+ * Scrolls TextEdit content to match scroll bar position.
+ *
+ * @param window_data: Window data with TE and scroll bar
+ */
+void update_te_display(TextWindowData* window_data) {
+    TEHandle te = window_data->te_handle;
+    short line_height;
+    short current_te_scroll;
+    short scroll_bar_value;
+    short delta_lines;
+    short delta_pixels;
+
+    /* Get current TE scroll position */
+    current_te_scroll = get_te_scroll_position(te);     /* PC-relative */
+
+    /* Get scroll bar value */
+    scroll_bar_value = GetControlValue(window_data->scroll_bar);
+
+    /* Get line height */
+    line_height = (**te).lineHeight;
+
+    /* Calculate difference in lines */
+    delta_lines = scroll_bar_value - current_te_scroll - 1;
+    delta_pixels = delta_lines * line_height;
+
+    if (delta_pixels != 0) {
+        /* Update scroll bar to actual position */
+        SetControlValue(window_data->scroll_bar, scroll_bar_value);
+
+        /* Scroll TextEdit */
+        TEScroll(0, delta_pixels, te);
+    }
+}
+```
+
+### TextEdit Utilities
+```c
+/*
+ * get_text_length - Get length of text in TextEdit
+ *
+ * @param te: TextEdit handle
+ * @return: Text length in characters
+ */
+short get_text_length(TEHandle te) {
+    TEPtr te_ptr = *te;
+    short length = te_ptr->teLength;            /* TE offset 8 */
+    /* uncertain: may subtract selStart at offset 0 */
+    return length;
+}
+
+/*
+ * scroll_and_update_te - Scroll TE and update scroll bar
+ *
+ * Synchronizes TextEdit scroll position with scroll bar,
+ * clamping values to valid ranges.
+ *
+ * @param te: TextEdit handle
+ * @param window_data: Window data structure
+ */
+void scroll_and_update_te(TEHandle te, TextWindowData* window_data) {
+    short line_height;
+    short min_scroll = 0;
+    short max_scroll;
+    short current_scroll;
+    TEPtr te_ptr = *te;
+
+    /* Clear selection */
+    TESetSelect(0, 0, te);
+
+    /* Get scroll info */
+    current_scroll = get_te_scroll_position(te);
+    line_height = te_ptr->lineHeight;
+
+    /* Calculate max scroll from TE metrics */
+    /* uncertain: exact calculation */
+    max_scroll = te_ptr->nLines - (te_ptr->viewRect.bottom - te_ptr->viewRect.top) / line_height;
+    max_scroll *= line_height;
+
+    /* Clamp min scroll */
+    if (current_scroll < 0) {
+        current_scroll = 0;
+    }
+
+    /* Clamp max scroll */
+    if (max_scroll < 0) {
+        max_scroll = 0;
+    }
+
+    /* Update scroll bar range if changed */
+    short old_max = GetControlMaximum(window_data->scroll_bar);
+    if (old_max != max_scroll) {
+        SetControlMaximum(window_data->scroll_bar, max_scroll);
+    }
+
+    short old_value = GetControlValue(window_data->scroll_bar);
+    if (old_value != current_scroll) {
+        SetControlValue(window_data->scroll_bar, current_scroll);
+    }
+}
+```
+
+### Window Creation
+```c
+/*
+ * create_text_window - Create scrollable text window
+ *
+ * Creates a window with TextEdit field and scroll bar.
+ *
+ * @param window: Base window pointer
+ */
+void create_text_window(WindowPtr window) {
+    Rect dest_rect, view_rect;
+    TEHandle te;
+    ControlHandle scroll;
+    TextWindowData* window_data = (TextWindowData*)window;
+
+    /* Save port and get window rect */
+    SetPort(window);
+
+    /* Get port bounds */
+    view_rect = window->portRect;
+
+    /* Setup TextEdit destination rectangle */
+    dest_rect = view_rect;
+    InsetRect(&dest_rect, 4, 4);                /* Inset by 4 pixels */
+
+    /* Adjust for scroll bar width */
+    dest_rect.right -= 15;
+
+    /* Create TextEdit record */
+    te = TENew(&dest_rect, &view_rect);
+
+    /* Setup text attributes */
+    /* uncertain: exact attributes set */
+
+    /* Store TE handle in window data */
+    window_data->te_handle = te;                /* Offset 160 */
+
+    /* Create scroll bar */
+    Rect scroll_rect;
+    scroll_rect.left = view_rect.right - 16;
+    scroll_rect.right = view_rect.right;
+    scroll_rect.top = view_rect.top;
+    scroll_rect.bottom = view_rect.bottom;
+
+    scroll = NewControl(
+        window,
+        &scroll_rect,
+        g_scroll_title,                         /* A5-3268 */
+        true,                                   /* visible */
+        0,                                      /* value */
+        0,                                      /* min */
+        0,                                      /* max (updated later) */
+        scrollBarProc,
+        0                                       /* refCon */
+    );
+
+    /* Store scroll bar in window data */
+    window_data->scroll_bar = scroll;           /* Offset 156 */
+}
+```
+
 ## Confidence: HIGH
 
 Standard Mac TextEdit patterns:

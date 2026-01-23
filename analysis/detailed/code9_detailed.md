@@ -183,3 +183,217 @@ CODE 9 contains standard runtime functions:
 ## Confidence: HIGH
 
 This is clearly a runtime support library. The patterns are consistent with THINK C's generated code for standard library wrappers.
+
+---
+
+## Speculative C Translation
+
+```c
+/* CODE 9 - Speculative C Translation */
+/* Runtime Support Library */
+
+/*============================================================
+ * Global Variables
+ *============================================================*/
+extern void *g_temp_ptr;             /* A5-23670: temporary pointer storage */
+extern Cursor g_custom_cursor;       /* A5-3396: custom cursor data */
+
+/* Low-memory globals (Mac OS) */
+#define TICKS  (*(long*)0x016A)      /* System tick count */
+
+/*============================================================
+ * Function 0x0000 - Wrapper for JT[2866]
+ * JT offset: 1440(A5)
+ *
+ * Reformats parameters and calls another function.
+ *============================================================*/
+void wrapper_2866(
+    short param1,                    /* 8(A6) */
+    void *param2_ptr,                /* 10(A6) - passed by reference */
+    long param3                      /* 14(A6) */
+) {
+    /* Reformat parameters and call */
+    some_function_2866(
+        param3,                      /* Reordered: param3 first */
+        param2_ptr,                  /* param2 by reference */
+        param1,                      /* param1 */
+        0                            /* Added: 0 flag */
+    );                               /* JT[2866] at 0x0012 */
+}
+
+/*============================================================
+ * Function 0x001A - Read Low-Memory Global
+ * JT offset: 1448(A5)
+ *
+ * Reads a value from low memory or PC-relative data.
+ *============================================================*/
+long read_low_memory(void *address /* 8(A6) */) {
+    long result;                     /* -4(A6) */
+
+    /* Read from specified low-memory address */
+    /* uncertain: exact mechanism (PC-relative or absolute) */
+    result = *(long*)address;
+
+    return result;
+}
+
+/*============================================================
+ * Function 0x002E - Get Screen Width
+ * JT offset: 1456(A5)
+ *
+ * Returns screen width constant (320 for original Mac).
+ *============================================================*/
+short get_screen_width(void) {
+    return get_dimension(320);       /* JT[482] with 0x140 */
+}
+
+/*============================================================
+ * Function 0x003A - Swap Global Pointer
+ * JT offset: 1464(A5)
+ *
+ * Atomically swaps a global pointer, saving old value.
+ * Useful for save/restore context patterns.
+ *============================================================*/
+void swap_global_ptr(
+    void **save_location,            /* 8(A6) - where to save old value */
+    void *new_value                  /* 12(A6) - new value to set */
+) {
+    /* Save current value */
+    *save_location = g_temp_ptr;     /* MOVE.L -23670(A5),(A0) */
+
+    /* Set new value */
+    g_temp_ptr = new_value;          /* MOVE.L 12(A6),-23670(A5) */
+}
+
+/*============================================================
+ * Function 0x0050 - Set Global Pointer
+ * JT offset: 1472(A5)
+ *============================================================*/
+void set_global_ptr(void *value /* 8(A6) */) {
+    g_temp_ptr = value;              /* Direct store to A5-23670 */
+}
+
+/*============================================================
+ * Function 0x005E - Set Custom Cursor
+ * JT offset: 1480(A5)
+ *
+ * Sets cursor to a predefined custom cursor.
+ *============================================================*/
+void set_custom_cursor(void) {
+    SetCursor(&g_custom_cursor);     /* A851 trap at 0x0062 */
+}
+
+/*============================================================
+ * Function 0x0066 - Initialize Cursor (Reset to Arrow)
+ * JT offset: 1488(A5)
+ *============================================================*/
+void init_cursor(void) {
+    InitCursor();                    /* A850 trap */
+}
+
+/*============================================================
+ * Function 0x006A - Open Graphics Port
+ * JT offset: 1496(A5)
+ *============================================================*/
+short open_port(void) {
+    return OpenPort(0);              /* A861 trap, return result */
+}
+
+/*============================================================
+ * Function 0x0072 - Get Current Tick Count
+ * JT offset: 1504(A5)
+ *
+ * Reads the system tick count (1/60th second intervals).
+ *============================================================*/
+void get_ticks(long *dest /* 8(A6) */) {
+    *dest = TICKS;                   /* Read from low-memory $016A */
+}
+
+/*============================================================
+ * Function 0x0082 - Calculate Elapsed Time
+ * JT offset: 1512(A5)
+ *
+ * Calculates elapsed time since a start point, rounded to
+ * half-second intervals. Used for timing game moves.
+ *
+ * Returns: (current_ticks - start_ticks + 30) / 60
+ *============================================================*/
+long get_elapsed_time(long start_ticks /* 8(A6) */) {
+    long current = TICKS;            /* MOVE.L $016A,D0 at 0x008A */
+    long elapsed = current - start_ticks;  /* SUB.L at 0x008E */
+
+    /*
+     * Add 30 for rounding (half of 60), then divide by 60.
+     * This gives elapsed time in approximately 1-second units.
+     */
+    return (elapsed + 30) / 60;      /* JT[90] division at 0x0098 */
+}
+
+/*============================================================
+ * Function 0x00A0 - Allocate New Handle
+ * JT offset: 1520(A5)
+ *
+ * Wrapper for Memory Manager NewHandle trap.
+ *============================================================*/
+Handle new_handle_wrapper(long size /* 8(A6) */) {
+    Handle h;
+
+    /* Call NewHandle trap */
+    h = NewHandle(size);             /* A11E or A122 trap at 0x00A8 */
+
+    return h;                        /* Return in D0 */
+}
+
+/*============================================================
+ * Function 0x00B0 - Dispose Pointer
+ * JT offset: 1528(A5)
+ *
+ * Wrapper for Memory Manager DisposePtr trap.
+ *============================================================*/
+void dispose_ptr_wrapper(Ptr p /* 8(A6) */) {
+    DisposePtr(p);                   /* A01F trap at 0x00B8 */
+}
+
+/*============================================================
+ * Runtime Library Summary
+ *
+ * CODE 9 provides these common services:
+ *
+ * Memory Management:
+ * - new_handle_wrapper()    - Allocate relocatable block
+ * - dispose_ptr_wrapper()   - Free non-relocatable block
+ * - (others)                - BlockMove, etc.
+ *
+ * Timing:
+ * - get_ticks()             - Read system tick count
+ * - get_elapsed_time()      - Calculate elapsed seconds
+ *
+ * Cursor Management:
+ * - set_custom_cursor()     - Display custom cursor
+ * - init_cursor()           - Reset to arrow cursor
+ *
+ * Global State:
+ * - swap_global_ptr()       - Save/restore pattern
+ * - set_global_ptr()        - Direct setter
+ *
+ * Screen Info:
+ * - get_screen_width()      - Returns 320 for classic Mac
+ *
+ * These functions are called throughout Maven via the
+ * jump table, providing a consistent API for common
+ * operations.
+ *============================================================*/
+
+/*============================================================
+ * Mac Low Memory Addresses Reference
+ *
+ * $016A - Ticks:      System tick count (1/60 sec)
+ * $0102 - ScrVRes:    Screen vertical resolution
+ * $0104 - ScrHRes:    Screen horizontal resolution
+ * $0106 - ScreenRow:  Bytes per screen row
+ * $0824 - ExpandMem:  Expanded memory pointer
+ *
+ * Classic Mac used low memory for system globals because
+ * there was no MMU for memory protection.
+ *============================================================*/
+```

@@ -345,3 +345,298 @@ The move ranking patterns are clear:
 - Consistent table management with 10 entries
 - Score comparison and update logic
 - Standard priority-based ranking approach
+
+---
+
+## Speculative C Translation
+
+### Data Structures
+
+```c
+/* Move entry structure - 34 bytes */
+typedef struct MoveEntry {
+    char word_tiles[16];       /* 0-15: Tiles placed on board */
+    long main_score;           /* 16-19: Primary move score */
+    long positional_value;     /* 20-23: Strategic/positional component */
+    long bonus_points;         /* 24-27: Bingo bonus, etc. */
+    short move_flags;          /* 28-29: Status flags (0x7F = special) */
+    short board_position;      /* 30-31: Encoded board position */
+    char row_index;            /* 32: Row (0-14, 0=center for first move) */
+    char col_index;            /* 33: Column index */
+} MoveEntry;
+
+/* Global variables */
+long g_score_table1[10];       /* A5-1616: Primary score ranking table */
+long g_score_table2[10];       /* A5-1576: Secondary score ranking table */
+long g_score_range1_low;       /* A5-1580: Range 1 threshold */
+long g_score_range2_low;       /* A5-1540: Range 2 threshold */
+short g_entry_count;           /* A5-12540: Current entries in tables */
+long g_best_score;             /* A5-23074: Current best score found */
+MoveEntry g_best_move;         /* A5-23090: Best move entry (34 bytes) */
+MoveEntry g_move_buffer[10];   /* A5-23056: Move storage buffer */
+char g_results_buffer[512];    /* A5-22698: Results working buffer */
+char g_cache_buffer[512];      /* A5-12496: Move cache buffer */
+long g_compare_move1;          /* A5-12504: First comparison pointer */
+long g_compare_move2;          /* A5-12500: Second comparison pointer */
+short g_tile_count;            /* A5-20010: Tiles in current move */
+```
+
+### Function 0x0000 - Primary Move Evaluator
+
+```c
+/*
+ * evaluate_and_rank_move - Evaluate a candidate move and submit for ranking
+ *
+ * This function checks if a move should be added to the top-10 best moves list.
+ * It handles special cases like first-move validation and flagged moves.
+ *
+ * @param candidate_move: Pointer to move entry being evaluated
+ */
+void evaluate_and_rank_move(MoveEntry *candidate_move) {
+    long range1_threshold, range2_threshold;
+    short eval_result1, eval_result2;
+    int count_in_range1, count_in_range2;
+
+    /* Special case: Single tile on opening move needs center validation */
+    if (g_tile_count == 1 && candidate_move->row_index > 15) {
+        /* uncertain: row > 15 might indicate off-center placement */
+        if (!validate_single_tile_placement(candidate_move)) {
+            return;  /* Invalid opening move */
+        }
+    }
+
+    /* Handle flagged moves (pre-evaluated or special) */
+    if (candidate_move->move_flags != 0) {
+        /* Flagged moves bypass normal evaluation - direct comparison */
+        if (candidate_move->main_score > g_best_score) {
+            /* Copy 34 bytes to best move storage */
+            memcpy(&g_best_move, candidate_move, 34);
+        }
+        return;
+    }
+
+    /* Normal evaluation path */
+    range1_threshold = g_score_range1_low;
+    range2_threshold = g_score_range2_low;
+
+    /* Call range evaluation - returns 0 on success */
+    if (evaluate_score_ranges(candidate_move,
+                              &range1_threshold, &range2_threshold,
+                              &eval_result1, &eval_result2) != 0) {
+        return;  /* Move failed evaluation criteria */
+    }
+
+    /* Count how many entries already beat this score in table 1 */
+    count_in_range1 = 0;
+    for (int i = 0; i < g_entry_count && i < 10; i++) {
+        if (range1_threshold <= g_score_table1[i]) {
+            break;
+        }
+        count_in_range1++;
+    }
+
+    /* Count entries in table 2 */
+    count_in_range2 = 0;
+    for (int i = 0; i < g_entry_count && i < 10; i++) {
+        if (range2_threshold <= g_score_table2[i]) {
+            break;
+        }
+        count_in_range2++;
+    }
+
+    /* Update entry count if not full */
+    if (g_entry_count < 10) {
+        g_entry_count++;
+    }
+
+    /* Insert into table 1 if there's room */
+    if (count_in_range1 < 10) {
+        /* uncertain: exact insertion logic */
+        update_score_table(g_score_table1, count_in_range1, range1_threshold);
+    }
+
+    /* Insert into table 2 if there's room */
+    if (count_in_range2 < 10) {
+        update_score_table(g_score_table2, count_in_range2, range2_threshold);
+    }
+
+    /* Calculate component scores based on move type */
+    if (candidate_move->row_index == 0) {
+        /* First move (center square) - use comparison function */
+        short score1 = get_comparison_score(g_compare_move1);
+        short score2 = get_comparison_score(g_compare_move2);
+        candidate_move->positional_value = score1;
+        candidate_move->bonus_points = score2 - score1;
+    } else {
+        /* Normal move - scores already calculated */
+        /* uncertain: exact component calculation */
+        candidate_move->positional_value = candidate_move->main_score;
+        candidate_move->bonus_points = eval_result2;
+    }
+
+    /* Submit for ranking - scores negated for min-heap behavior */
+    /* Lower (more negative) = better ranking priority */
+    rank_move_in_list(candidate_move, -range1_threshold, -range2_threshold);
+}
+```
+
+### Function 0x01AE - Simple Ranking Callback
+
+```c
+/*
+ * simple_rank_move - Quick evaluation for simpler move ranking
+ *
+ * Used when full evaluation isn't needed - just scores and ranks.
+ *
+ * @param move_entry: Move to evaluate
+ * @param score_context: Context for score calculation
+ */
+void simple_rank_move(MoveEntry *move_entry, long score_context) {
+    /* Get score from context */
+    short calculated_score = get_comparison_score(score_context);
+
+    /* Set minimal component values */
+    move_entry->positional_value = 0;
+    move_entry->bonus_points = 1;  /* Minimal bonus to differentiate ties */
+
+    /* Rank with same score for both criteria (no secondary sort) */
+    long negated_score = -calculated_score;
+    rank_move_in_list(move_entry, negated_score, negated_score);
+}
+```
+
+### Function 0x02B4 - Main Move Comparison Entry Point
+
+```c
+/*
+ * compare_and_rank_moves - Compare two moves and perform full ranking
+ *
+ * Main entry point for move comparison. Allocates buffer for 10 moves.
+ *
+ * @param move1: First move to compare
+ * @param move2: Second move to compare
+ */
+void compare_and_rank_moves(MoveEntry *move1, MoveEntry *move2) {
+    MoveEntry local_buffer[10];  /* 340 bytes on stack */
+    short comparison_result;
+
+    /* Quick comparison first */
+    if (quick_move_compare(move1, move2, NULL) == 0) {
+        /* Moves appear identical - detailed compare needed */
+        comparison_result = detailed_move_compare(move1, move2, local_buffer);
+
+        if (comparison_result == 0) {
+            /* Still identical - check special conditions */
+            if (check_evaluation_condition()) {
+                /* Special case: identical moves, use comparison scores */
+                memset(local_buffer, 0, 34);
+                local_buffer[0].move_flags = 0x7F;  /* Special flag */
+
+                short score1 = get_comparison_score(g_compare_move1);
+                short score2 = get_comparison_score(g_compare_move2);
+                short diff = score2 - score1;
+
+                /* uncertain: exact score assignment */
+                rank_move_in_list(&local_buffer[0], score1, score1);
+            } else {
+                /* Use alternate handler */
+                alternate_move_handler(move1, move2);
+            }
+            return;
+        }
+    }
+
+    /* Moves are different - full ranking analysis */
+    g_compare_move1 = (long)move1;
+    g_compare_move2 = (long)move2;
+
+    /* Initialize score tables to "empty" value */
+    /* 0xF4143E00 = -200,000,000 - any valid score will be greater */
+    for (int i = 0; i < 10; i++) {
+        g_score_table1[i] = -200000000L;
+        g_score_table2[i] = -200000000L;
+    }
+
+    /* Clear best move storage */
+    memset(&g_best_move, 0, 34);
+    g_callback_ptr = NULL;  /* uncertain: callback purpose */
+
+    /* Process each move in detailed comparison result */
+    for (int i = 0; i < comparison_result; i++) {
+        process_move_entry(&local_buffer[i]);
+        evaluate_and_rank_move(&local_buffer[i]);
+    }
+
+    /* Handle special case of exactly 10 different moves */
+    if (comparison_result == 10) {
+        special_case_handler();
+        finalize_search(2794);  /* uncertain: magic number */
+    }
+
+    /* Prepare output buffer */
+    memset(local_buffer, 0, 34);
+    local_buffer[0].move_flags = 0x7F;
+    evaluate_and_rank_move(&local_buffer[0]);
+
+    /* If best move was found, copy to output */
+    if (g_best_move.move_flags != 0) {
+        /* uncertain: which output location */
+        copy_move_result(&g_best_move, move2);
+    }
+
+    /* Finalize comparison */
+    finalize_comparison(move1, move2);
+    commit_ranking_result(move1, move2);
+
+    /* Verify results match inputs */
+    if (g_compare_move1 != (long)move1 || g_compare_move2 != (long)move2) {
+        error_handler();
+    }
+
+    completion_callback(2786);  /* uncertain: callback ID */
+}
+```
+
+### Function 0x0426 - Search Area Initialization
+
+```c
+/*
+ * initialize_ranking_system - Set up ranking system for new search
+ *
+ * Clears all buffers and counters before starting a new move search.
+ *
+ * @param search_context: Context/parameters for the search
+ */
+void initialize_ranking_system(long search_context) {
+    /* Set up search context */
+    setup_search_context(search_context);
+
+    /* Reset entry counter */
+    g_entry_count = 0;
+
+    /* Additional initialization */
+    additional_search_init();
+
+    /* Clear move storage buffer - 340 bytes (10 * 34) */
+    memset(g_move_buffer, 0, 340);
+
+    /* Clear results buffer - 512 bytes */
+    memset(g_results_buffer, 0, 512);
+
+    /* Clear cache buffer - 512 bytes */
+    memset(g_cache_buffer, 0, 512);
+}
+```
+
+### Algorithm Notes
+
+The move ranking system uses a dual-table approach:
+
+1. **Score Table 1**: Primary ranking by raw point value
+2. **Score Table 2**: Secondary ranking by strategic value (position, leave quality, etc.)
+
+The magic value `-200,000,000` (0xF4143E00) initializes empty table slots. Any valid Scrabble score (typically 0-1700+) will be greater than this sentinel value.
+
+Scores are **negated** before ranking because the system uses a priority structure where smaller values have higher priority. Negating converts "highest score = best" into "most negative = highest priority".
+
+The `0x7F` flag in `move_flags` appears to indicate a "special" or "synthetic" move entry used for tie-breaking or placeholder purposes.

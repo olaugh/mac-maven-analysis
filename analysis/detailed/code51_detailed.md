@@ -310,3 +310,277 @@ Standard Mac CODE resource patterns:
 - Event-based dispatch with fallback chain
 - Error checking on load failures
 - Boolean conversion using standard 68K idiom
+
+---
+
+## Speculative C Translation
+
+### Type Definitions
+
+```c
+/* Procedure pointer types */
+typedef void (*GenericProcPtr)(Handle code_resource);
+typedef void (*EventProcPtr)(Handle code_resource, EventRecord *event);
+
+/* CODE resource entry offsets */
+#define kMainEntryOffset       7    /* Primary procedure */
+#define kSecondaryEntryOffset  24   /* Secondary/alternate procedure */
+
+/* Global state */
+Rect g_window_rect;                 /* A5-1450: Window position tracking */
+```
+
+### Function 0x0000 - Get Procedure Entry Point (offset 24)
+
+```c
+/*
+ * get_proc_entry_24 - Get procedure pointer at entry offset 24
+ *
+ * Retrieves the secondary entry point from a CODE resource.
+ * This is typically used for cleanup or alternate functionality.
+ *
+ * @param code_resource: Handle to loaded CODE resource
+ * @return: Pointer to procedure, calls error handler if not found
+ */
+GenericProcPtr get_proc_entry_24(Handle code_resource) {
+    GenericProcPtr entry_point;
+
+    /* Get entry at offset 24 (0x18) */
+    /* JT[506] = GetCodeEntry - resolves offset to actual address */
+    entry_point = (GenericProcPtr)GetCodeEntry(code_resource,
+                                                kSecondaryEntryOffset);
+
+    /* Validate entry point */
+    if (entry_point == NULL) {
+        error_handler();  /* JT[418] - fatal error */
+        /* Does not return */
+    }
+
+    return entry_point;
+}
+```
+
+### Function 0x0026 - Check Procedure Loaded (offset 7)
+
+```c
+/*
+ * is_proc_loaded - Check if CODE resource procedure is available
+ *
+ * Tests whether the main procedure entry point is valid,
+ * indicating the CODE resource is properly loaded.
+ *
+ * @param code_resource: Handle to CODE resource
+ * @return: Mac Boolean (-1 = TRUE, 0 = FALSE)
+ */
+Boolean is_proc_loaded(Handle code_resource) {
+    GenericProcPtr entry_point;
+
+    /* Get entry at offset 7 */
+    entry_point = (GenericProcPtr)GetCodeEntry(code_resource,
+                                                kMainEntryOffset);
+
+    /*
+     * Convert to Mac Boolean using standard 68K idiom:
+     * SNE sets D0.B to 0xFF if non-zero
+     * NEG.B + EXT gives -1 (0xFFFFFFFF) for TRUE
+     */
+    if (entry_point != NULL) {
+        return -1;  /* TRUE in Mac convention */
+    }
+    return 0;  /* FALSE */
+}
+```
+
+### Function 0x0044 - Call Procedure (offset 7)
+
+```c
+/*
+ * call_procedure - Load and execute CODE resource procedure
+ *
+ * Gets the main entry point and invokes it, passing the CODE
+ * resource handle as the parameter. This allows the procedure
+ * to access its own resource for data or further loading.
+ *
+ * @param code_resource: Handle to CODE resource containing the procedure
+ */
+void call_procedure(Handle code_resource) {
+    GenericProcPtr proc_address;
+
+    /* Get procedure at offset 7 */
+    proc_address = (GenericProcPtr)GetCodeEntry(code_resource,
+                                                 kMainEntryOffset);
+
+    /* Validate */
+    if (proc_address == NULL) {
+        error_handler();  /* JT[418] */
+        return;
+    }
+
+    /* Call the procedure with CODE handle as parameter */
+    /* This is the key pattern - procedure receives its own CODE handle */
+    (*proc_address)(code_resource);
+}
+```
+
+### Function 0x0070 - Handle Event With Procedure Dispatch
+
+```c
+/*
+ * handle_event_with_proc - Dispatch event through procedure chain
+ *
+ * Implements a fallback dispatch chain for event handling:
+ * 1. If already handled (modifier bit), skip to position storage
+ * 2. Try primary handler if procedure has special flag
+ * 3. Try alternate handler
+ * 4. Fall back to default handler
+ * 5. Always store window position from event
+ *
+ * @param code_resource: Handle to CODE resource
+ * @param event: Pointer to EventRecord to process
+ */
+void handle_event_with_proc(Handle code_resource, EventRecord *event) {
+    Boolean handled = false;
+
+    /* Check if event modifier bit 0 is set (already handled) */
+    if (event->modifiers & 0x0001) {
+        goto store_position;  /* Skip dispatch, just store position */
+    }
+
+    /* Check procedure load status with flag test */
+    if (is_proc_loaded(code_resource) & 0x80) {
+        /*
+         * Bit 7 set indicates special handling mode
+         * uncertain: exact meaning of bit 7 flag
+         */
+        primary_handler(code_resource);  /* JT[3066] */
+        handled = true;
+    } else {
+        /* Try alternate handler first */
+        /* JT[3114] returns non-zero if handled */
+        if (alternate_handler_1(code_resource) != 0) {
+            handled = true;
+        } else {
+            /* Fall back to default handler */
+            default_handler(code_resource);  /* JT[3130] */
+        }
+    }
+
+store_position:
+    /* Store window position from event location */
+    /* JT[3122] = store_window_rect */
+    store_window_rect(code_resource, event->where, &g_window_rect);
+}
+```
+
+### Function 0x00CC - Simple Default Handler Call
+
+```c
+/*
+ * simple_default_call - Direct call to default handler
+ *
+ * Bypasses the dispatch chain and calls default handler directly.
+ * Used when caller knows no special handling is needed.
+ *
+ * @param code_resource: Handle to CODE resource
+ */
+void simple_default_call(Handle code_resource) {
+    default_handler(code_resource);  /* JT[3130] */
+}
+```
+
+### Function 0x00DC - Alternate Handler Call
+
+```c
+/*
+ * alternate_handler_call - Direct call to alternate handler
+ *
+ * Calls the secondary alternate handler (JT[3074]).
+ * Different from alternate_handler_1 (JT[3114]).
+ *
+ * @param code_resource: Handle to CODE resource
+ */
+void alternate_handler_call(Handle code_resource) {
+    alternate_handler_2(code_resource);  /* JT[3074] */
+}
+```
+
+### GetCodeEntry Implementation (Speculative)
+
+```c
+/*
+ * GetCodeEntry - Internal CODE resource entry point resolver
+ *
+ * This is the JT[506] function that resolves CODE resource
+ * entry points. The offset is into the CODE resource data.
+ *
+ * @param code_resource: Handle to CODE resource
+ * @param entry_offset: Byte offset to entry point
+ * @return: Procedure pointer, or NULL if invalid
+ */
+ProcPtr GetCodeEntry(Handle code_resource, short entry_offset) {
+    /* uncertain: exact implementation */
+
+    if (code_resource == NULL) {
+        return NULL;
+    }
+
+    /* Lock handle to get stable pointer */
+    HLock(code_resource);
+
+    /* The CODE resource contains executable code */
+    /* Entry offset is added to resource data pointer */
+    unsigned char *code_data = (unsigned char*)*code_resource;
+
+    /* Check if offset is within resource bounds */
+    long resource_size = GetHandleSize(code_resource);
+    if (entry_offset >= resource_size) {
+        HUnlock(code_resource);
+        return NULL;
+    }
+
+    /* Return pointer to code at offset */
+    /* uncertain: may need additional relocation handling */
+    ProcPtr entry = (ProcPtr)(code_data + entry_offset);
+
+    HUnlock(code_resource);
+    return entry;
+}
+```
+
+### Event Handler Chain Summary
+
+```
+Event Received
+     |
+     v
++--------------------+
+| Modifier bit 0 set?|--Yes--> Store Position --> Done
++--------------------+
+     | No
+     v
++--------------------+
+| is_proc_loaded()   |
+| returns bit 7 set? |--Yes--> primary_handler() --> Store --> Done
++--------------------+
+     | No
+     v
++--------------------+
+| alternate_handler_1|--Success--> Store Position --> Done
+| returns non-zero?  |
++--------------------+
+     | No
+     v
++--------------------+
+| default_handler()  |--> Store Position --> Done
++--------------------+
+```
+
+### Jump Table Handler Summary
+
+| JT Offset | Handler | Purpose |
+|-----------|---------|---------|
+| 3066 | primary_handler | Main procedure when loaded with flag |
+| 3074 | alternate_handler_2 | Secondary alternate path |
+| 3114 | alternate_handler_1 | First fallback attempt |
+| 3122 | store_window_rect | Save window position |
+| 3130 | default_handler | Final fallback handler |

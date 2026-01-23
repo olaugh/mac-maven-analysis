@@ -1267,3 +1267,528 @@ Clear SANE floating-point patterns:
 - Position-based lookups
 - Letter value tables
 - Standard Scrabble scoring rules
+
+---
+
+## Speculative C Translation
+
+### Header File (code35.h)
+
+```c
+/*
+ * CODE 35 - SANE Floating-Point Score Calculation
+ *
+ * Extended precision arithmetic for precise score evaluation.
+ * Uses Apple's SANE (Standard Apple Numerics Environment).
+ */
+
+#ifndef CODE35_H
+#define CODE35_H
+
+#include <Types.h>
+#include <SANE.h>
+
+/* 80-bit extended precision type */
+typedef extended80 ExtendedScore;
+
+/* Move structure with scoring components */
+typedef struct {
+    char        word[32];       /* Word being played */
+    char        direction;      /* 0=horizontal, 1=vertical */
+    char        row;            /* Starting row */
+    char        column;         /* Starting column */
+    char        present_flag;   /* Word present on board flag */
+    long        base_score;     /* Base word score */
+    long        bonus_score;    /* Bonus points (bingo, etc.) */
+    ExtendedScore extended_score; /* High-precision score */
+} MoveData;
+
+/* Check if position is within valid bounds (lower) */
+Boolean check_position_lower_bound(short position);
+
+/* Check if position is within valid bounds (upper) */
+Boolean check_position_upper_bound(short position);
+
+/* Calculate extended precision product */
+void calculate_extended_product(ExtendedScore *result, ExtendedScore *input);
+
+/* Main score calculation for a move */
+void calculate_move_score(MoveData *move);
+
+/* Sum word values with optional filtering */
+long sum_word_values(short *values_ptr, short *filter_ptr, Boolean use_filter);
+
+/* Full score calculation with detailed breakdown */
+long full_score_calculation(MoveData *move, short *score_breakdown, short *value_breakdown);
+
+/* Calculate per-tile position scores */
+long calculate_per_tile_scores(short *positions_out, short *values_out);
+
+#endif /* CODE35_H */
+```
+
+### Implementation (code35.c)
+
+```c
+/*
+ * CODE 35 - SANE FP Score Calculation Implementation
+ *
+ * Speculative C translation based on disassembly analysis.
+ */
+
+#include "code35.h"
+#include <SANE.h>
+#include <string.h>
+
+/* Global variables referenced via A5 offsets */
+extern short     g_board_size;              /* A5-10914 */
+extern void     *g_position_table;          /* A5-10904 */
+extern char      g_char_class_table[128];   /* A5-1064 */
+extern short     g_letter_values[128];      /* A5-27630 */
+extern short     g_letter_primes[128];      /* A5-27374 */
+extern char     *g_current_rack;            /* A5-15498 */
+extern char      g_state1[17][17];          /* A5-17154 */
+extern short     g_state2[17][17];          /* A5-16610 */
+extern Boolean   g_game_flag;               /* A5-17010 */
+extern short     g_bonus_table[20][4];      /* A5-2422 */
+extern short     g_bingo_bonus_table[10];   /* A5-24866 */
+extern short     g_bingo_adjustment;        /* A5-24850 */
+
+/*============================================================
+ * Function 0x0000 - Check Position Lower Bound
+ *
+ * Validates that a position is within board bounds (>0, <size)
+ * and checks additional validity flag in position table.
+ *============================================================*/
+Boolean check_position_lower_bound(short position)
+{
+    typedef struct {
+        long  data[2];
+        char  flags;    /* Byte 6 */
+        char  flags2;   /* Byte 7 */
+    } PositionEntry;
+
+    PositionEntry *table = (PositionEntry *)g_position_table;
+
+    /* Bounds check */
+    if (position <= 0 || position >= g_board_size) {
+        return false;
+    }
+
+    /* Check validity flag in position table */
+    return (table[position].flags != 0);
+}
+
+/*============================================================
+ * Function 0x0030 - Check Position Upper Bound
+ *
+ * Similar bounds check but uses different validity flag.
+ *============================================================*/
+Boolean check_position_upper_bound(short position)
+{
+    typedef struct {
+        long  data[2];
+        char  flags;
+        char  flags2;
+    } PositionEntry;
+
+    PositionEntry *table = (PositionEntry *)g_position_table;
+
+    if (position < 0) {
+        return true;  /* /* uncertain */ Negative returns true */
+    }
+
+    if (position >= g_board_size) {
+        return false;
+    }
+
+    /* Check alternate validity flag */
+    return (table[position].flags2 != 0);
+}
+
+/*============================================================
+ * Function 0x0060 - Calculate Extended Product
+ *
+ * Performs extended precision multiplication with overflow
+ * handling. Uses SANE for 80-bit arithmetic.
+ *============================================================*/
+void calculate_extended_product(ExtendedScore *result, ExtendedScore *input)
+{
+    ExtendedScore local_ext1;
+    ExtendedScore local_ext2;
+    ExtendedScore work_buffer;
+    long multiplier = 0;
+    long iteration_count = 0;
+    long overflow_flag = 0;
+
+    /* Copy input to local extended */
+    memcpy(&local_ext1, input, sizeof(ExtendedScore));
+
+    /* Convert to extended format */
+    /* /* uncertain */ SANE conversion sequence */
+    x2x(&local_ext1, &local_ext1);
+
+    /* Count significant bits in multiplier */
+    while (multiplier != 0) {
+        multiplier >>= 1;
+        iteration_count++;
+    }
+
+    /* Handle overflow case */
+    if (overflow_flag) {
+        /* Set to maximum representable value */
+        local_ext2.exponent = 0x3FFF;  /* Max exponent */
+        local_ext2.mantissa[0] = 0x80000000;
+        local_ext2.mantissa[1] = 0;
+
+        /* Multiply by overflow value */
+        fmulx(&local_ext2, &local_ext1);
+    }
+
+    /* Iterative refinement loop (max 5 iterations) */
+    for (int i = 0; i < 5; i++) {
+        memcpy(&work_buffer, input, sizeof(ExtendedScore));
+
+        /* Divide step */
+        fdivx(&local_ext1, &work_buffer);
+
+        /* Multiply accumulator */
+        fmulx(&local_ext1, &local_ext1);
+
+        /* /* uncertain */ Comparison and conditional addition */
+        /* Compare with threshold constant */
+    }
+
+    /* Copy result back */
+    memcpy(result, &local_ext1, sizeof(ExtendedScore));
+}
+
+/*============================================================
+ * Function 0x0168 - Score Calculation Main
+ *
+ * Calculates detailed score for a move using SANE extended
+ * precision arithmetic.
+ *============================================================*/
+void calculate_move_score(MoveData *move)
+{
+    ExtendedScore score_extended;
+    ExtendedScore work_ext1, work_ext2;
+
+    if (move == NULL) {
+        return;
+    }
+
+    /* Check minimum score threshold */
+    if (move->base_score < 20) {
+        /* Score too low - clear extended */
+        memset(&score_extended, 0, sizeof(ExtendedScore));
+        return;
+    }
+
+    /* Convert base score to extended */
+    /* SANE operation 0x280E: Move extended */
+    memcpy(&score_extended, &move->base_score, sizeof(long));
+
+    /* Setup calculation buffers */
+    memcpy(&work_ext1, ((char*)move) + 10, sizeof(ExtendedScore));
+
+    /* Divide operation (SANE 0x0006) */
+    fdivx(&score_extended, &work_ext1);
+
+    /* Multiply stages (SANE 0x0004) */
+    fmulx(&work_ext1, &work_ext1);
+
+    /* Subtract operation (SANE 0x0006) */
+    fsubx(&score_extended, &work_ext1);
+
+    /* Add components (SANE 0x0002) */
+    faddx(&work_ext1, &work_ext2);
+
+    /* Call helper for extended product */
+    calculate_extended_product(&work_ext1, &work_ext1);
+
+    /* Round to integer (SANE 0x000D) */
+    /* /* uncertain */ Final conversion back to integer score */
+
+    /* Store result in move structure */
+    move->bonus_score = (long)work_ext1.mantissa[0];  /* /* uncertain */ */
+}
+
+/*============================================================
+ * Function 0x0310 - Sum Word Values
+ *
+ * Sums word values from pointer array with optional filtering.
+ *============================================================*/
+long sum_word_values(short *values_ptr, short *filter_ptr, Boolean use_filter)
+{
+    long sum = 0;
+    short value, filter_value;
+
+    /* Validate pointers */
+    if (values_ptr == NULL || filter_ptr == NULL) {
+        /* bounds_error() */
+        return 0;
+    }
+
+    /* Sum loop */
+    while ((filter_value = *filter_ptr++) != 0) {
+        value = *values_ptr++;
+
+        if (use_filter) {
+            /* /* uncertain */ Filter check function call */
+            /* if (!filter_check(filter_value)) continue; */
+        }
+
+        sum += value;
+    }
+
+    return sum;
+}
+
+/*============================================================
+ * Function 0x0368 - Full Score Calculation
+ *
+ * Complete score calculation with all components:
+ * - Base word score
+ * - Cross-word scores
+ * - Bonus squares
+ * - Bingo bonus (7+ letters)
+ * - Q/QU handling
+ * - Rack leave evaluation
+ *============================================================*/
+long full_score_calculation(MoveData *move, short *score_breakdown, short *value_breakdown)
+{
+    long total_score = 0;
+    short letter_count;
+    short row, col;
+    char direction;
+    char *word_ptr;
+    short word_multiplier = 1;
+    short letter_score;
+    short cross_word_score;
+    short tiles_placed = 0;
+    short blank_count = 0;
+    short playable_count = 0;
+    char letter_buffer[128];
+
+    /* Initialize from rack */
+    /* JT[2410] - setup */
+    /* JT[2394] - get_letter_info */
+    letter_count = /* get_letter_info(letter_buffer) */ 7;
+
+    /* Check game state */
+    if (!g_game_flag) {
+        /* No active game - calculate from move only */
+        if (move->present_flag) {
+            int word_len = strlen(move->word);
+            /* JT[66] - multiply by base */
+            total_score = word_len * 28;  /* /* uncertain */ base multiplier */
+        }
+    }
+
+    /* Get word info */
+    if (!move->present_flag) {
+        goto finalize;
+    }
+
+    direction = move->direction;
+    row = move->row;
+
+    /* Main scoring loop through word */
+    word_ptr = move->word;
+    while (*word_ptr) {
+        char letter = *word_ptr;
+
+        /* Validate letter */
+        if (g_char_class_table[(unsigned char)letter] >= 0) {
+            /* bounds_error(); */
+        }
+
+        /* Bounds check position */
+        if (row < 1 || row > 30 || col < 1 || col > 15) {
+            /* bounds_error(); */
+        }
+
+        /* Check if cell occupied */
+        if (g_state1[row][col] != 0) {
+            /* Cell occupied - verify letter matches */
+            if (g_state1[row][col] != letter) {
+                /* bounds_error(); */
+            }
+        } else {
+            /* Empty cell - placing tile */
+            tiles_placed++;
+
+            /* Calculate cross-word score */
+            if (row != 1 && row != 16) {
+                /* Check adjacent cells for cross-words */
+                if (g_state1[row-1][col] || g_state1[row+1][col]) {
+                    /* Has adjacent - forms cross word */
+                    /* /* uncertain */ Cross-word scoring logic */
+                }
+            }
+
+            /* Check bonus squares */
+            for (int b = 0; b < 20; b++) {
+                if (g_bonus_table[b][0] == letter &&
+                    g_bonus_table[b][1] == 0 &&  /* Type 0 = letter bonus */
+                    g_bonus_table[b][2] == row) {
+                    letter_score = g_bonus_table[b][3];
+                    break;
+                }
+            }
+        }
+
+        word_ptr++;
+        col++;
+    }
+
+    /* Apply word multiplier */
+    total_score *= word_multiplier;
+
+    /* Store marker in breakdown */
+    if (score_breakdown) {
+        *score_breakdown++ = 20000;  /* Marker value */
+    }
+
+    /* Process rack for leave evaluation */
+    /* JT[2370] - process_rack */
+
+    /* Count rack letters */
+    for (char *rack = g_current_rack; *rack; rack++) {
+        char c = *rack;
+        /* JT[2002] - is_playable */
+        if (/* is_playable(c) */ 1) {
+            playable_count++;
+        } else if (c == '?') {
+            blank_count++;
+        }
+    }
+
+    /* Calculate bingo bonus (7+ tiles) */
+    if (letter_count > 7 && letter_count < 17) {
+        short bingo_bonus = g_bingo_bonus_table[letter_count - 7];
+        bingo_bonus -= g_bingo_adjustment;
+        total_score += bingo_bonus;
+
+        if (score_breakdown) {
+            *score_breakdown++ = -33;  /* Bingo marker */
+        }
+    }
+
+    /* Q handling - check for Q without U */
+    if (strchr(g_current_rack, 'q') && !strchr(g_current_rack, 'u')) {
+        /* Q without U - penalty */
+        short penalty = 10 * tiles_placed;  /* /* uncertain */ penalty calc */
+        total_score -= penalty;
+
+        if (score_breakdown) {
+            *score_breakdown++ = -4;  /* Q penalty marker */
+        }
+    }
+
+finalize:
+    /* Cleanup */
+    /* JT[2378] - cleanup */
+    /* JT[2410] - reset */
+
+    return total_score;
+}
+
+/*============================================================
+ * Function 0x0A44 - Calculate Per-Tile Scores
+ *
+ * Iterates through board positions calculating individual
+ * tile contribution scores.
+ *============================================================*/
+long calculate_per_tile_scores(short *positions_out, short *values_out)
+{
+    typedef struct {
+        long  data[2];
+        char  valid_flag;  /* Byte 4 */
+        char  reserved;
+        char  row;         /* Byte 6 */
+        char  col;         /* Byte 7 */
+    } PositionInfo;
+
+    PositionInfo *pos_table = (PositionInfo *)g_position_table;
+    long total = 0;
+    short position;
+    short row, col;
+    char letter;
+    short tile_score;
+
+    for (position = 1; position < g_board_size; position++) {
+        /* Check if position valid */
+        if (!pos_table[position].valid_flag) {
+            continue;
+        }
+
+        row = pos_table[position].row;
+        col = pos_table[position].col;
+
+        /* Get letter at position */
+        letter = g_state1[row][col];
+        if (letter == 0) {
+            continue;  /* Empty cell */
+        }
+
+        /* Get score from state2 or calculate from letter value */
+        if (g_state2[row][col] != 0) {
+            tile_score = g_state2[row][col];
+        } else {
+            tile_score = g_letter_values[(unsigned char)letter];
+        }
+
+        /* Special handling for Q */
+        if (letter == 'q') {
+            /* /* uncertain */ Q value adjustment based on word length */
+            /* Divide by 2 if not single letter */
+            tile_score /= 2;
+        }
+
+        /* Store results */
+        if (positions_out) {
+            *positions_out++ = position;
+        }
+        if (values_out) {
+            *values_out++ = tile_score;
+        }
+
+        total += tile_score;
+    }
+
+    /* Terminate outputs */
+    if (positions_out) *positions_out = 0;
+    if (values_out) *values_out = 0;
+
+    return total;
+}
+```
+
+### Key Implementation Notes
+
+1. **SANE Operations**: The code heavily uses Apple's SANE for extended precision (80-bit) floating-point arithmetic. Operations include:
+   - `faddx` - Extended add
+   - `fsubx` - Extended subtract
+   - `fmulx` - Extended multiply
+   - `fdivx` - Extended divide
+   - `x2x` - Convert to extended
+
+2. **Score Components**:
+   - Base word score (letter values * positions)
+   - Cross-word scores (perpendicular words formed)
+   - Bonus square multipliers (DL, TL, DW, TW)
+   - Bingo bonus (50 points for using all 7 tiles)
+   - Q/QU handling (penalty for Q without U)
+   - Rack leave evaluation (value of remaining tiles)
+
+3. **Breakdown Markers**: The score breakdown uses negative marker values:
+   - `-1`: Terminator
+   - `-2`: Per-letter average marker
+   - `-3`: QU bonus marker
+   - `-4`: Q penalty marker
+   - `-5` to `-11`: Individual letter markers
+   - `-32`: Primary score marker
+   - `-33`: Bingo bonus marker
+   - `20000`: Word score marker

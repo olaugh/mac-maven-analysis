@@ -820,3 +820,565 @@ Complex cross-check logic with:
 - 0x80 flag used to mark processed entries (same as CODE 39)
 
 Some disassembly artifacts (garbled complex addressing modes) but algorithm patterns are clearly recognizable as Appel-Jacobson cross-check generation.
+
+---
+
+## Speculative C Translation
+
+### Header File (code43_crosscheck.h)
+
+```c
+/*
+ * CODE 43 - Cross-Check Set Generation
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * Implements Appel-Jacobson cross-check generation:
+ * - Builds validity masks for each board position
+ * - Determines valid letters for perpendicular words
+ * - Caches results for move generation efficiency
+ */
+
+#ifndef CODE43_CROSSCHECK_H
+#define CODE43_CROSSCHECK_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+/* Cross-check cache entry (6 bytes) */
+typedef struct CrossCheckCache {
+    uint16_t valid;             /* +0: Non-zero if computed */
+    uint32_t letter_mask;       /* +2: Valid letter mask */
+} CrossCheckCache;
+
+/* Move entry structure for linked list */
+typedef struct MoveListEntry {
+    struct MoveListEntry* next; /* +0: Link to next entry */
+    uint8_t  reserved[9];       /* +4: Reserved */
+    uint8_t  row;               /* +10: Board row */
+    uint8_t  col;               /* +11: Board column */
+    uint8_t  tile;              /* +12: Tile value */
+    uint8_t  direction;         /* +13: Direction byte */
+    /* Additional fields */
+} MoveListEntry;
+
+/*
+ * Global variables (A5-relative)
+ */
+extern CrossCheckCache g_crosscheck_cache[8];  /* A5-1664: 48 bytes */
+extern uint8_t*   g_dawg_table_base;           /* A5-12536: DAWG table pointer */
+extern uint8_t    g_threshold;                 /* A5-12605: Threshold value */
+extern uint8_t    g_temp_counts[128];          /* A5-12668: Temporary buffer */
+extern uint16_t*  g_letter_pair_table;         /* A5-13060: Letter pairs */
+extern uint16_t   g_letter_pair_count;         /* A5-13062: Pair count */
+extern uint8_t    g_state1[544];               /* A5-17154: Board state */
+extern uint8_t    g_crossword_valid[1024];     /* A5-19470: Cross-word validity */
+extern int32_t*   g_results_array;             /* A5-22698: Results */
+extern uint8_t    g_compare_threshold;         /* A5-23155: Comparison value */
+extern uint32_t   g_rack_mask;                 /* A5-26154: Rack letter mask */
+extern int16_t    g_score_table[128];          /* A5-27630: Score lookup */
+
+/* Processed flag */
+#define CROSSCHECK_PROCESSED  0x0080
+
+/* Board dimensions */
+#define BOARD_ROW_SIZE  17
+#define DAWG_ROW_SIZE   68   /* 17 columns * 4 bytes */
+
+/* Function prototypes */
+uint32_t get_crosscheck_for_position(void* move, void* position);
+void clear_crosscheck_cache(void);
+void build_crosscheck_table(void);
+void swap_crosscheck_entries(char* rack);
+void init_crosscheck_tables(MoveListEntry* move_list);
+
+#endif /* CODE43_CROSSCHECK_H */
+```
+
+### Implementation File (code43_crosscheck.c)
+
+```c
+/*
+ * CODE 43 - Cross-Check Set Generation Implementation
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * Appel-Jacobson cross-check algorithm:
+ * For each empty board position, determine which letters
+ * can be legally played based on perpendicular word constraints.
+ */
+
+#include "code43_crosscheck.h"
+#include <string.h>
+
+/* External JT functions */
+extern void memset_jt(void* dest, int val, size_t size);  /* JT[426] */
+extern char* get_dawg_node(uint16_t entry);               /* JT[2450] */
+extern int16_t get_crosscheck_value(uint16_t e, uint16_t m); /* JT[2474] */
+extern void init_rack_info(char* rack);                   /* JT[3522] */
+extern char* strchr_jt(char* s, int c);                   /* JT[3514] */
+extern void bounds_error(void);                           /* JT[418] */
+
+/*
+ * get_crosscheck_for_position - Function at 0x0000
+ *
+ * Gets the cross-check mask for a specific board position.
+ * Uses caching to avoid recomputation.
+ *
+ * Parameters:
+ *   move - Move data (contains direction)
+ *   position - Position data (contains row/col)
+ *
+ * Returns:
+ *   Mask of valid letters ANDed with rack mask
+ */
+uint32_t get_crosscheck_for_position(void* move, void* position)
+{
+    uint8_t* move_bytes = (uint8_t*)move;
+    uint8_t* pos_bytes = (uint8_t*)position;
+    uint8_t direction;
+    int cache_index;
+    CrossCheckCache* cached;
+    uint32_t valid_mask;
+
+    /* Get direction byte */
+    direction = move_bytes[13];
+
+    /* Calculate cache index from direction */
+    cache_index = direction & 0x07;  /* 0-7 */
+
+    cached = &g_crosscheck_cache[cache_index];
+
+    /* Check if already computed */
+    if (cached->valid != 0) {
+        /* Return cached result ANDed with rack */
+        return g_rack_mask & cached->letter_mask;
+    }
+
+    /*
+     * Not cached - compute cross-check
+     */
+    int row = pos_bytes[32];
+    int col = pos_bytes[33];
+
+    /* Get board position */
+    uint8_t* board_ptr = &g_state1[row * BOARD_ROW_SIZE + col];
+
+    /* Get DAWG lookup table position */
+    uint32_t* dawg_ptr = (uint32_t*)(g_dawg_table_base +
+                         row * DAWG_ROW_SIZE + col * 4);
+
+    /*
+     * Build cross-check mask by scanning perpendicular
+     */
+    valid_mask = 0;
+    uint8_t* scan_board = board_ptr;
+    uint32_t* scan_dawg = dawg_ptr;
+
+    while (*scan_board != 0) {
+        if (*scan_board == 0) {  /* Empty cell */
+            /* Add valid letters from DAWG */
+            valid_mask |= *scan_dawg;
+        }
+
+        scan_board++;
+        scan_dawg++;
+    }
+
+    /* Store in cache */
+    cached->letter_mask = valid_mask;
+    cached->valid = 1;
+
+    /* Return ANDed with rack mask */
+    return g_rack_mask & valid_mask;
+}
+
+/*
+ * clear_crosscheck_cache - Function at 0x00A6
+ *
+ * Clears the cross-check cache (48 bytes).
+ */
+void clear_crosscheck_cache(void)
+{
+    memset_jt(g_crosscheck_cache, 0, 48);
+}
+
+/*
+ * build_crosscheck_table - Function at 0x00B6
+ *
+ * Builds the full cross-check table from letter pairs.
+ * Iterates through all letter pairs and computes valid
+ * cross-word combinations.
+ */
+void build_crosscheck_table(void)
+{
+    int i;
+    uint16_t entry;
+    char* dawg_node;
+    char* p;
+    char letter;
+    uint16_t combined;
+
+    /* Clear temporary count buffer */
+    memset_jt(g_temp_counts, 0, 128);
+
+    /*
+     * Process each letter pair entry
+     */
+    for (i = 0; i < g_letter_pair_count; i++) {
+        entry = g_letter_pair_table[i];
+
+        /* Get DAWG node for this entry */
+        dawg_node = get_dawg_node(entry);
+
+        /* Count valid letters from DAWG node */
+        for (p = dawg_node; *p != 0; p++) {
+            letter = *p;
+            g_temp_counts[(unsigned char)letter]++;
+        }
+
+        /* Check threshold */
+        if (g_temp_counts[0] >= g_compare_threshold) {
+            goto clear_counts;  /* Below threshold - skip */
+        }
+
+        /*
+         * Process valid letter combinations
+         */
+        for (p = dawg_node; *p != 0; p++) {
+            letter = *p;
+
+            /* Skip blank ('?') */
+            if (letter == '?') {
+                continue;
+            }
+
+            /* Skip if same as next letter */
+            if (p[1] == letter) {
+                continue;
+            }
+
+            /* Build combined entry */
+            combined = entry;
+            int count = g_temp_counts[(unsigned char)letter];
+
+            /* Check cross-word validity */
+            /* uncertain - exact validity check */
+            if (g_crossword_valid[combined & 0x3FF] == 0) {
+                continue;
+            }
+
+            /* Get cross-check mask */
+            uint16_t mask = ~(get_crosscheck_value(letter, count));
+            mask &= 0x7F;  /* Mask to 7 bits */
+            combined |= mask;
+
+            /* Compare with existing and update if better */
+            int score = g_score_table[letter * 2];
+
+            /* uncertain - result array indexing */
+            if (score > g_results_array[combined]) {
+                g_results_array[combined] = score;
+            }
+        }
+
+    clear_counts:
+        /* Clear counts for next iteration */
+        for (p = dawg_node; *p != 0; p++) {
+            g_temp_counts[(unsigned char)*p] = 0;
+        }
+    }
+}
+
+/*
+ * swap_crosscheck_entries - Function at 0x01D8
+ *
+ * Swaps cross-check entries between tables based on
+ * letter pair processing.
+ *
+ * Parameters:
+ *   rack - Player's rack letters
+ */
+void swap_crosscheck_entries(char* rack)
+{
+    int i;
+    uint16_t entry;
+    uint16_t processed_mask = CROSSCHECK_PROCESSED;
+    uint16_t* table_ptr;
+    int32_t temp;
+
+    /* Initialize rack info */
+    init_rack_info(rack);
+
+    /*
+     * First pass: Swap entries
+     */
+    table_ptr = g_letter_pair_table;
+
+    for (i = 0; i < g_letter_pair_count; i++) {
+        entry = *table_ptr;
+
+        /* Skip if processed */
+        if (entry & processed_mask) {
+            table_ptr++;
+            continue;
+        }
+
+        /* Get cross-check value */
+        int16_t cross_val = get_crosscheck_value(entry, 0x7F);
+        cross_val |= processed_mask;  /* Mark processed */
+
+        /* Validate */
+        if (cross_val < 0) {
+            table_ptr++;
+            continue;
+        }
+
+        /*
+         * Swap values between tables
+         * uncertain - exact table addresses
+         */
+        int32_t idx1 = entry;
+        int32_t idx2 = cross_val;
+
+        /* Swap first pair */
+        temp = g_results_array[idx1];
+        g_results_array[idx1] = g_results_array[idx2];
+        g_results_array[idx2] = temp;
+
+        /* Swap second pair (secondary cache) */
+        /* Similar swap for another table */
+
+        table_ptr++;
+    }
+
+    /*
+     * Check for blank tile handling
+     */
+    if (strchr_jt(rack, '?') != NULL) {
+        /* Has blank - additional processing */
+        /* Internal function call */
+    }
+
+    /*
+     * Second pass: Update result entries
+     */
+    table_ptr = g_letter_pair_table;
+
+    for (i = 0; i < g_letter_pair_count; i++) {
+        entry = *table_ptr;
+
+        /* Get cached value */
+        int32_t cached = g_results_array[entry];  /* uncertain indexing */
+
+        if (cached == 0) {
+            /* Check results array */
+            if (g_results_array[entry] == 0) {
+                goto store_result;
+            }
+
+            /* Get adjusted value */
+            /* uncertain - adjustment calculation */
+        }
+
+    store_result:
+        /* Store final value */
+        /* Validate result */
+        if (g_results_array[entry] < 0) {
+            bounds_error();
+        }
+
+        table_ptr++;
+    }
+}
+
+/*
+ * init_crosscheck_tables - Function at 0x0310
+ *
+ * Initializes cross-check tables from a move list.
+ * Main entry point for cross-check generation.
+ *
+ * Parameters:
+ *   move_list - Linked list of moves to process
+ */
+void init_crosscheck_tables(MoveListEntry* move_list)
+{
+    MoveListEntry* current;
+    int direction;
+    int row, col;
+    uint8_t* board_ptr;
+    uint32_t* dawg_ptr;
+    uint32_t rack_mask;
+
+    /* Clear main DAWG table (17408 bytes) */
+    memset_jt(g_dawg_table_base, 0, 0x4400);
+
+    /*
+     * Process each move in the list
+     */
+    current = move_list;
+
+    while (current != NULL) {
+        direction = current->direction;
+
+        /* Validate direction (0-7) */
+        if (direction < 0 || direction >= 8) {
+            bounds_error();
+        }
+
+        row = direction;  /* uncertain - actual row source */
+
+        /* Validate row (0-31) */
+        if (row < 0 || row >= 32) {
+            bounds_error();
+        }
+
+        /* Get rack mask for this position */
+        rack_mask = g_rack_mask;  /* uncertain - per-position mask */
+
+        /* Get actual row from move */
+        row = current->row;
+
+        /* Validate row */
+        if (row < 0 || row >= 31) {
+            bounds_error();
+        }
+
+        /* Skip row 0 */
+        if (row == 0) {
+            goto next_move;
+        }
+
+        /* Get column */
+        col = current->col;
+
+        /* Validate column (1-15) */
+        if (col <= 0 || col >= 15) {
+            bounds_error();
+        }
+
+        /* Calculate board index */
+        board_ptr = &g_state1[row * BOARD_ROW_SIZE + col];
+
+        /* Calculate DAWG table index */
+        dawg_ptr = (uint32_t*)(g_dawg_table_base +
+                   direction * 0x880 +  /* 2176 bytes per direction */
+                   row * DAWG_ROW_SIZE);
+
+        /* Get tile value */
+        uint8_t tile = current->tile;
+
+        /* Set cross-check at column boundary */
+        if (col != 1) {
+            dawg_ptr[-1] |= rack_mask;
+        }
+
+        /*
+         * Scan forward from position
+         */
+        int scan_row = row;
+        uint32_t* forward_dawg = dawg_ptr;
+        uint8_t* forward_board = board_ptr;
+
+        while (scan_row < 31 && scan_row < 16) {
+            /* Check if cell empty */
+            if (*forward_board == 0) {
+                /* Validate column */
+                if (col <= 0 || col >= 16) {
+                    bounds_error();
+                }
+
+                /* OR in rack mask */
+                *forward_dawg |= rack_mask;
+            }
+
+            /* Continue scanning for cross-words */
+            /* uncertain - forward loop completion */
+
+            scan_row++;
+            forward_board += BOARD_ROW_SIZE;
+            forward_dawg += DAWG_ROW_SIZE / 4;
+        }
+
+        /*
+         * Scan backward from position
+         */
+        scan_row = row - 1;  /* Start one back */
+
+        while (scan_row > 0 && scan_row > 15) {
+            /* Similar backward scan */
+            /* uncertain - backward loop details */
+
+            scan_row--;
+        }
+
+        /* Set end boundary */
+        if (col != 16) {
+            /* OR in rack mask at end */
+            /* uncertain - exact end position */
+        }
+
+    next_move:
+        current = current->next;
+    }
+
+    /* Post-processing */
+    build_crosscheck_table();  /* or internal call at PC+10 */
+}
+```
+
+### Key Algorithmic Notes
+
+```
+APPEL-JACOBSON CROSS-CHECKS:
+============================
+For each empty board position:
+1. Check perpendicular direction for existing tiles
+2. If no tiles: all 26 letters valid (mask = 0xFFFFFFFF)
+3. If tiles exist: query DAWG for valid extensions
+
+The cross-check mask is a 32-bit value where:
+- Bit N set = letter N is valid at this position
+- Final mask is ANDed with rack_mask to filter by available tiles
+
+DAWG TABLE LAYOUT:
+==================
+Total size: 17408 bytes (0x4400)
+- 8 direction variants (0x880 = 2176 bytes each)
+- Within each: 17 rows * 68 bytes per row
+- 68 bytes = 17 columns * 4 bytes per column
+
+4 bytes per cell stores the valid letter mask for that position.
+
+CACHE STRUCTURE:
+================
+8 cache entries at A5-1664 (48 bytes total)
+Each entry: 6 bytes (2 valid flag + 4 letter mask)
+Indexed by direction (0-7)
+
+TWO-PASS ALGORITHM:
+===================
+Pass 1 (build_crosscheck_table):
+- Iterate through letter pair table
+- Count valid letters from DAWG
+- Check threshold and validity
+- Update results array
+
+Pass 2 (swap_crosscheck_entries):
+- Swap entries between primary/secondary tables
+- Handle blank tiles specially
+- Finalize result values
+
+BOUNDARY HANDLING:
+==================
+- Row 0 and 16 are borders (skipped)
+- Columns 1-15 are playable
+- Direction-specific boundary checks (0x1F, 0x10)
+- Proper error handling via JT[418]
+
+INTEGRATION:
+============
+CODE 43 is central to move generation:
+- CODE 38: Uses cross-check masks for filtering
+- CODE 40: Caches cross-check results
+- CODE 42: Validates against cross-check masks
+- CODE 44: Coordinates cross-check generation
+```

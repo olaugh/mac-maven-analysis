@@ -188,3 +188,204 @@ This is why it's called by 12 different CODE segments - it provides essential sy
 ## Confidence: HIGH
 
 The string manipulation patterns are clear and match known Classic Mac conventions. The system detection code follows standard Gestalt patterns.
+
+---
+
+## Speculative C Translation
+
+### Header File (code34.h)
+
+```c
+/*
+ * CODE 34 - String and System Utilities
+ *
+ * Low-level string manipulation and system environment detection.
+ * Called by many other CODE segments for basic functionality.
+ */
+
+#ifndef CODE34_H
+#define CODE34_H
+
+#include <Types.h>
+
+/* Convert Pascal string to C string in-place, returns pointer past end */
+char* pascal_to_c_string_inplace(unsigned char *pascal_str);
+
+/* Shift Pascal string content left, converting to C-style */
+char* shift_string_left(char *str);
+
+/* Check system environment and capabilities via Gestalt */
+Boolean check_system_capabilities(void);
+
+/* Initialize environment configuration block */
+void init_environment_block(void *env_buffer);
+
+#endif /* CODE34_H */
+```
+
+### Implementation (code34.c)
+
+```c
+/*
+ * CODE 34 - String and System Utilities Implementation
+ *
+ * Speculative C translation based on disassembly analysis.
+ * Uses /* uncertain */ comments where behavior is unclear.
+ */
+
+#include "code34.h"
+#include <Memory.h>
+#include <Gestalt.h>
+
+/*============================================================
+ * Function 0x0000 - Pascal to C String Conversion (In-Place)
+ *
+ * Takes a Pascal string (length byte prefix) and converts it
+ * to a C string (null terminated) in place by shifting bytes.
+ * Returns pointer past the end of the string.
+ *============================================================*/
+char* pascal_to_c_string_inplace(unsigned char *pascal_str)
+{
+    char *current_ptr = (char *)pascal_str;
+    char *content_start = current_ptr + 1;  /* Skip length byte */
+    char previous_char = 0;
+    char current_char;
+
+    /* Rotate bytes: move length to end, shift content left */
+    do {
+        current_char = *current_ptr;
+        *current_ptr++ = previous_char;
+        previous_char = current_char;
+    } while (current_char != 0);
+
+    /* /* uncertain */ Return value may be end pointer or length */
+    return current_ptr;
+}
+
+/*============================================================
+ * Function 0x001C - Shift String Left
+ *
+ * Shifts characters of a string left by one position,
+ * effectively removing the first character (length byte).
+ *============================================================*/
+char* shift_string_left(char *str)
+{
+    int length = (unsigned char)str[0];
+    int i;
+
+    for (i = 0; i < length; i++) {
+        str[i] = str[i + 1];
+    }
+    str[length] = '\0';  /* Null terminate */
+
+    return str;
+}
+
+/*============================================================
+ * Function 0x0036 - Check System Capabilities
+ *
+ * Detects system capabilities using ROM version checks and
+ * Gestalt calls. Returns TRUE if system meets requirements.
+ *============================================================*/
+Boolean check_system_capabilities(void)
+{
+    short *rom_version_ptr = (short *)0x028E;  /* Low-memory ROM version */
+    OSErr err;
+    long gestalt_response;
+
+    /* Check for 128K ROM (indicated by negative value) */
+    if (*rom_version_ptr < 0) {
+        return false;  /* 128K ROM - limited capabilities */
+    }
+
+    /* Check for specific system features via Gestalt */
+    /* /* uncertain */ Selector 0x0090 - possibly gestaltSystemVersion */
+    err = Gestalt(0x0090, &gestalt_response);
+    if (err != noErr) {
+        return false;
+    }
+
+    /* /* uncertain */ Selector 0x009F - possibly gestaltQuickdrawVersion */
+    err = Gestalt(0x009F, &gestalt_response);
+    if (err != noErr || gestalt_response == 0) {
+        return false;
+    }
+
+    return true;
+}
+
+/*============================================================
+ * Environment Configuration Block Structure
+ *
+ * Used by init_environment_block to store system state.
+ *============================================================*/
+typedef struct {
+    short field_0;          /* Initial value: 2 */
+    short field_2;          /* System type indicator (-2, -1, 1, 2) */
+    short field_4;          /* /* uncertain */ Additional flags */
+    char  reserved[10];     /* Padding/reserved fields */
+} EnvironmentBlock;
+
+/*============================================================
+ * Function 0x005E - Initialize Environment Block
+ *
+ * Initializes a configuration block based on detected system
+ * state. Checks ROM version, unit table, and system flags.
+ *============================================================*/
+void init_environment_block(void *env_buffer)
+{
+    EnvironmentBlock *env = (EnvironmentBlock *)env_buffer;
+    short *rom_version_ptr = (short *)0x028E;
+    short **unit_table_ptr = (short **)0x02AE;
+    short *system_flag_ptr = (short *)0x0B22;
+    short *unit_table;
+
+    /* Default initialization */
+    env->field_0 = 2;
+    env->field_2 = -2;
+
+    unit_table = *unit_table_ptr;
+
+    /* Check unit table entry at byte 9 */
+    if (((char *)unit_table)[9] == (char)0xFF) {
+        return;  /* Special marker - keep defaults */
+    }
+
+    /* Check byte 8 of unit table for system type */
+    if (((char *)unit_table)[8] > 0) {
+        /* /* uncertain */ Positive value indicates specific configuration */
+        env->field_2 = 0;
+        /* Additional checks would follow here */
+    } else {
+        /* Non-positive value - check ROM version */
+        env->field_2 = -1;
+
+        if (*rom_version_ptr >= 0) {
+            /* Not 128K ROM */
+            env->field_2 = 1;
+
+            /* Check additional system flag */
+            if (*system_flag_ptr < 0) {
+                env->field_2 = 2;
+            }
+        }
+    }
+}
+```
+
+### Key Implementation Notes
+
+1. **String Conversion Pattern**: The `pascal_to_c_string_inplace` function uses a classic rotate-and-shift technique common in 68K Mac code. The length byte gets rotated through to become the null terminator.
+
+2. **Low-Memory Globals**: The function accesses several low-memory globals:
+   - `0x028E` (ROMBase) - Identifies ROM version
+   - `0x02AE` (UnitTable) - Device driver table pointer
+   - `0x0B22` - Unknown system flag (/* uncertain */)
+
+3. **Gestalt Selectors**: The exact meaning of selectors 0x0090 and 0x009F is uncertain. They may be checking for system version and QuickDraw capabilities.
+
+4. **Return Values**: The environment block's `field_2` appears to encode a system capability level:
+   - -2: Default/unknown
+   - -1: Basic system (128K ROM)
+   - 1: Enhanced system
+   - 2: Full capabilities

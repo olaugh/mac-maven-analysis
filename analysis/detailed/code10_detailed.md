@@ -179,3 +179,199 @@ Standard Mac UI patterns:
 - Alert/dialog display
 - Cursor management
 - Callback-based event processing
+
+---
+
+## Speculative C Translation
+
+```c
+/* CODE 10 - Speculative C Translation */
+/* Cursor & Dialog Support */
+
+/*============================================================
+ * Global Variables
+ *============================================================*/
+extern char g_cursor_state;          /* A5-10464: current cursor ID */
+
+/* Cursor ID constants (speculative) */
+#define CURSOR_ARROW    0            /* Standard arrow cursor */
+#define CURSOR_IBEAM    1            /* Text insertion cursor */
+#define CURSOR_WATCH    2            /* Wait/busy cursor */
+#define CURSOR_CROSS    3            /* Crosshair cursor */
+#define CURSOR_CUSTOM   128          /* Application-defined cursor */
+
+/*============================================================
+ * Function 0x0000 - Show Alert Dialog
+ * JT offset: 352(A5)
+ * Frame size: 256 bytes (Str255 buffer)
+ *
+ * Displays a standard Mac alert with text from string resource.
+ *============================================================*/
+void show_alert_dialog(short string_id /* uncertain param */) {
+    Str255 alert_text;               /* -256(A6), Pascal string buffer */
+
+    /* Get alert text from string resource */
+    /* Resource ID 128 is the STR# resource containing alert strings */
+    GetIndString(alert_text,         /* A949 trap at 0x000A */
+                 128,                 /* STR# resource ID */
+                 string_id);          /* String index */
+
+    /* Set up ParamText for the alert */
+    /* ParamText substitutes ^0, ^1, ^2, ^3 placeholders */
+    ParamText(alert_text,            /* A946 trap at 0x0014 */
+              NULL,                   /* ^1 substitution (unused) */
+              NULL,                   /* ^2 substitution (unused) */
+              NULL);                  /* ^3 substitution (unused) */
+
+    /* Display the alert dialog */
+    /* The alert resource (ALRT) defines the dialog appearance */
+    Alert(string_id,                 /* A9B6 trap at 0x001C */
+          NULL);                      /* filterProc = NULL (no custom filter) */
+}
+
+/*============================================================
+ * Function 0x0022 - Set Cursor from Global State
+ * JT offset: 360(A5)
+ *
+ * Sets the cursor based on the current g_cursor_state global.
+ * Used to restore cursor after operations that change it.
+ *============================================================*/
+void set_cursor_from_state(void) {
+    short cursor_id;
+
+    /* Read cursor state from global */
+    cursor_id = (short)g_cursor_state;  /* MOVE.B -10464(A5),D0 */
+
+    /* Set the cursor via jump table function */
+    set_cursor(cursor_id);           /* JT[274] at 0x002E */
+}
+
+/*============================================================
+ * Function 0x0036 - Clear Cursor (Reset to Arrow)
+ * JT offset: 368(A5)
+ *
+ * Resets cursor to the standard arrow cursor.
+ * Called when leaving a region that had a custom cursor.
+ *============================================================*/
+void clear_cursor(void) {
+    set_cursor(CURSOR_ARROW);        /* JT[274] with 0 */
+}
+
+/*============================================================
+ * Function 0x0044 - Process Event with Callback
+ * JT offset: 376(A5)
+ *
+ * Main event processing function that:
+ * 1. Checks for pending events
+ * 2. Processes events if found
+ * 3. Yields time to system (cooperative multitasking)
+ * 4. Looks up and calls registered callback
+ *
+ * This is the core of Maven's event loop for UI objects.
+ *============================================================*/
+void process_event_with_callback(void *object /* 8(A6), stored in A4 */) {
+    typedef void (*CallbackFunc)(void*);
+    CallbackFunc callback;           /* A3 */
+    short event_result;
+
+    /* Check if there's a pending event for this object */
+    event_result = check_event(object);  /* JT[1610] at 0x0052 */
+
+    if (event_result != 0) {         /* TST.W D0; BEQ.S at 0x005A */
+        /* Event pending - process it */
+        event_result = process_event(object);  /* JT[1610] again at 0x005E */
+
+        /* Yield time to other processes */
+        /* SystemTask allows other apps to run (cooperative multitasking) */
+        /* uncertain: exact trap usage */
+        SystemTask();                /* A9B7 trap at 0x0064 */
+    }
+
+    /*
+     * Look up registered callback for this object
+     * Callback type 7 is used (purpose uncertain - possibly "idle" callback)
+     */
+    callback = (CallbackFunc)lookup_callback(
+        object,                      /* Object to look up */
+        7                            /* Callback type */
+    );                               /* JT[506] at 0x0070 */
+
+    /* Call the callback if one is registered */
+    if (callback != NULL) {          /* TST/BEQ at 0x0076-0x007A */
+        callback(object);            /* JSR (A3) at 0x007E */
+    }
+}
+
+/*============================================================
+ * Callback System (speculative)
+ *
+ * Maven appears to use a callback registration system where:
+ * - Objects can register callbacks for various event types
+ * - JT[506] (lookup_callback) retrieves the callback function
+ * - Callback types include:
+ *   - Type 7: Idle/background processing
+ *   - Other types: Unknown
+ *
+ * This pattern is common in Mac event-driven applications,
+ * allowing modular handling of different event types.
+ *============================================================*/
+
+/*============================================================
+ * Cursor Management Summary
+ *
+ * Cursor changes throughout the application:
+ *
+ * 1. Arrow (0): Default, most UI areas
+ * 2. Watch/Wait: During AI thinking
+ * 3. I-Beam: Over text fields
+ * 4. Custom: Over game board squares
+ *
+ * The g_cursor_state global tracks the "intended" cursor,
+ * which can differ from the actual cursor during temporary
+ * changes (like showing watch during processing).
+ *
+ * set_cursor_from_state() restores the intended cursor
+ * after a temporary change.
+ *============================================================*/
+
+/*============================================================
+ * Alert Dialog Flow
+ *
+ * 1. Get localized string from STR# 128 resource
+ * 2. Set up ParamText for substitution
+ * 3. Display alert using ALRT resource
+ * 4. Wait for user dismissal
+ *
+ * Common alert strings (speculative):
+ * - "Cannot find dictionary"
+ * - "Invalid move"
+ * - "Memory allocation failed"
+ * - "Are you sure you want to resign?"
+ *============================================================*/
+
+/*============================================================
+ * Event Loop Integration
+ *
+ * process_event_with_callback() is called repeatedly in
+ * Maven's main event loop:
+ *
+ * while (game_running) {
+ *     WaitNextEvent(everyEvent, &event, sleep, NULL);
+ *
+ *     switch (event.what) {
+ *         case mouseDown:
+ *             // Handle click
+ *             break;
+ *         case keyDown:
+ *             // Handle key
+ *             break;
+ *         // ...
+ *     }
+ *
+ *     // Process callbacks for active UI elements
+ *     for each (object in active_objects) {
+ *         process_event_with_callback(object);
+ *     }
+ * }
+ *============================================================*/
+```

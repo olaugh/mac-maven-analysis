@@ -372,3 +372,454 @@ Clear search coordination patterns:
 - Callback registration for different phases
 - Score tracking with best-score updates
 - Position validity checking
+
+---
+
+## Speculative C Translation
+
+### Data Structures
+
+```c
+/*
+ * Search context - 34 bytes
+ */
+typedef struct SearchContext {
+    char data[34];  /* Matches g_dawg_info size */
+} SearchContext;
+
+/*
+ * Move candidate structure - shared with CODE 27/28
+ */
+typedef struct MoveCandidate {
+    struct MoveCandidate* next;  /* +0 */
+    short position_data1;        /* +0 alternate interpretation */
+    short position_data2;        /* +2 */
+    short flags;                 /* +4 */
+    char reserved[18];           /* +6 to +23 */
+    char cross_word_flag;        /* +24 */
+    char direction;              /* +25 */
+    char valid_flag;             /* +26 */
+    char reserved2;              /* +27 */
+    char processed_flag;         /* +28 */
+    char extension_flag;         /* +29 */
+    short player_id;             /* +30 */
+    short position_data3;        /* +32 or word area */
+} MoveCandidate;
+
+/* Global variables */
+void (*g_callback_1)(void*);     /* A5-12504: Primary callback */
+void (*g_callback_2)(void*);     /* A5-12500: Secondary callback */
+short g_search_direction;        /* A5-2778: Current search direction */
+short g_search_result_dir;       /* A5-2776: Result direction */
+short g_search_result_val;       /* A5-2772: Result value */
+long* g_result_ptr_1;            /* A5-2774: Result pointer 1 */
+long g_best_score_1;             /* A5-23040: Best score tracking 1 */
+long g_best_score_2;             /* A5-23006: Best score tracking 2 / anchor */
+short g_extension_flag;          /* A5-23062: Extension found flag */
+long g_cross_word_found;         /* A5-23066: Cross-word found flag */
+char g_dawg_info[34];            /* A5-23090: DAWG search info */
+char g_vertical_results[512];    /* A5-22698: Vertical search results */
+```
+
+### Function 0x0000 - Initialize and Search
+
+```c
+/*
+ * init_and_search - Entry point for search initialization
+ *
+ * @param context: Search context pointer
+ * @param param2: Secondary parameter
+ * @param param3: Tertiary parameter
+ * @param param4: Quaternary parameter
+ */
+void init_and_search(void* context, void* param2, void* param3, void* param4) {
+    SearchContext local_buffer;  /* -34(A6) */
+
+    /* Initialize the context */
+    initialize_context(context, &local_buffer);  /* JT[2290] */
+
+    /* Run main search with all parameters */
+    main_search(&local_buffer, param2, param3, param4);  /* JT[2610] */
+}
+```
+
+### Function 0x0028 - Setup Horizontal Search
+
+```c
+/*
+ * setup_horizontal_search - Configure for horizontal word search
+ *
+ * @param callback1: First callback function
+ * @param callback2: Second callback function
+ *
+ * This sets up the search to find words placed horizontally
+ * (left to right). Uses "hook after" strategy.
+ */
+void setup_horizontal_search(void (*callback1)(void*),
+                             void (*callback2)(void*)) {
+    /* Store callbacks in globals */
+    g_callback_1 = callback1;  /* A5-12504 */
+    g_callback_2 = callback2;  /* A5-12500 */
+
+    /* Setup search with rack */
+    setup_search(callback2);  /* JT[2410] - push rack */
+    additional_setup();        /* JT[2434] */
+
+    /* Register horizontal callback (hook-after position) */
+    /* 2162(A5) is the horizontal search handler address */
+    set_search_callback(HORIZONTAL_CALLBACK);  /* JT[2242] */
+}
+```
+
+### Function 0x0050 - Process Horizontal Move
+
+```c
+/*
+ * process_horizontal_move - Score a horizontal word placement
+ *
+ * @param candidate: Move candidate to process
+ *
+ * This function:
+ * 1. Validates the candidate hasn't been processed
+ * 2. Initializes DAWG info for the position
+ * 3. Runs the search with callbacks
+ * 4. Updates candidate with results
+ */
+void process_horizontal_move(MoveCandidate* candidate) {
+    /* Skip if already processed */
+    if (candidate->processed_flag != 0) {
+        return;
+    }
+
+    /* Skip if flags indicate already handled */
+    if (candidate->flags != 0) {
+        return;
+    }
+
+    /* Must be marked valid */
+    if (candidate->valid_flag == 0) {
+        return;
+    }
+
+    /* Clear DAWG info (34 bytes) */
+    memset(g_dawg_info, 0, 34);  /* JT[426] */
+
+    /* Store position info for search */
+    g_best_score_1 = (long)candidate->position_data2;
+    g_best_score_2 = (long)candidate->position_data1;
+
+    /* Store direction */
+    g_search_direction = (short)candidate->direction;
+
+    /* Run internal search with both callbacks */
+    internal_search(
+        candidate,
+        g_callback_1,
+        CROSS_CHECK_CALLBACK,  /* 2170(A5) */
+        g_callback_2
+    );
+
+    /* Store results back to candidate */
+    candidate->position_data2 = (short)g_best_score_1;  /* A5-23038 value */
+    candidate->position_data1 = (short)g_best_score_2;  /* A5-23004 value */
+
+    /* Check if extension was found */
+    if (g_extension_flag != 0) {
+        candidate->extension_flag = 1;
+    }
+
+    /* Check if cross-word was found */
+    if (g_cross_word_found != 0) {
+        candidate->cross_word_flag = 1;
+    }
+}
+```
+
+### Function 0x00CE - Evaluate Position Score
+
+```c
+/*
+ * evaluate_position_score - Calculate score for a word position
+ *
+ * @param position_data: Position information structure
+ *
+ * This is called during search to evaluate how good a position is.
+ * Updates global best-score trackers.
+ */
+void evaluate_position_score(void* position_data) {
+    char* pos = (char*)position_data;
+    short* cross_word_ptr;       /* A4: Cross-word area pointer */
+    long score_1, score_2;       /* D6, D7: Score calculations */
+
+    /* Set found flag */
+    g_cross_word_found = 1;
+
+    /* Get cross-word area (offset 28 in structure) */
+    cross_word_ptr = (short*)(pos + 28);
+
+    /* Check if there's a cross-word to score */
+    if (*cross_word_ptr != 0) {
+        /* Get score from callback */
+        int callback_score = get_score_from_callback(g_callback_1);  /* JT[2122] */
+
+        /* Add to base score */
+        long base_score = *(long*)(pos + 16);
+        score_1 = base_score + callback_score;
+        score_2 = score_1;
+    } else {
+        /* No cross-word - calculate from position */
+        short local_adj_1, local_adj_2;
+        short player_id = *(short*)(pos + 30);
+
+        calculate_position_adjustment(
+            player_id,
+            g_search_direction,
+            &local_adj_1,
+            &local_adj_2
+        );  /* JT[2666] */
+
+        long base_score = *(long*)(pos + 16);
+        score_1 = base_score - local_adj_1;
+        score_2 = score_1;
+
+        score_2 += local_adj_1;
+        score_1 -= local_adj_2;
+
+        /* Bounds check */
+        if (score_2 > score_1) {
+            bounds_error();  /* JT[418] */
+        }
+    }
+
+    /* Update best scores if this is better */
+    if (score_2 > g_best_score_1) {
+        g_extension_flag = *cross_word_ptr;
+        g_best_score_1 = score_2;
+    }
+
+    if (score_1 > g_best_score_2) {
+        g_extension_flag = *cross_word_ptr;
+        g_best_score_2 = score_1;
+    }
+}
+```
+
+### Function 0x015A - Setup Vertical Search
+
+```c
+/*
+ * setup_vertical_search - Configure for vertical word search
+ *
+ * @param callback1: First callback (note: swapped from horizontal)
+ * @param callback2: Second callback
+ *
+ * This sets up the search to find words placed vertically
+ * (top to bottom). Uses "hook before" strategy.
+ *
+ * Note: Callback order is SWAPPED compared to horizontal search!
+ */
+void setup_vertical_search(void (*callback1)(void*),
+                           void (*callback2)(void*)) {
+    /* Store callbacks - NOTE: order is swapped! */
+    g_callback_1 = callback2;  /* A5-12504 = param2 */
+    g_callback_2 = callback1;  /* A5-12500 = param1 */
+
+    /* Setup search with rack */
+    setup_search(callback1);  /* JT[2410] - use first param */
+    additional_setup();        /* JT[2434] */
+
+    /* Register vertical callback (hook-before position) */
+    /* 2186(A5) is the vertical search handler address */
+    set_search_callback(VERTICAL_CALLBACK);  /* JT[2242] */
+}
+```
+
+### Function 0x0182 - Process Vertical Move
+
+```c
+/*
+ * process_vertical_move - Score a vertical word placement
+ *
+ * @param candidate: Move candidate to process
+ *
+ * This has additional complexity compared to horizontal:
+ * - Clears a 512-byte results array
+ * - Uses different search ranges based on flags
+ * - May update the search callback if improvement found
+ */
+void process_vertical_move(MoveCandidate* candidate) {
+    short min_range, max_range;  /* D6, D7: Search range limits */
+    char local_buffer[10];       /* -10(A6): Local work buffer */
+
+    /* Skip if processed or has extension */
+    if (candidate->processed_flag != 0) {
+        return;
+    }
+    if (candidate->extension_flag != 0) {
+        return;
+    }
+
+    /* Skip if flags set or not valid */
+    if (candidate->flags != 0) {
+        return;
+    }
+    if (candidate->valid_flag == 0) {
+        return;
+    }
+
+    /* Clear vertical results buffer (512 bytes) */
+    memset(g_vertical_results, 0, 512);  /* JT[426] */
+
+    /* Run internal search */
+    internal_search(
+        candidate,
+        g_callback_2,
+        VERTICAL_CHECK_CALLBACK,  /* 2194(A5) */
+        g_callback_2
+    );
+
+    /* Determine search range based on cross-word flag */
+    if (candidate->cross_word_flag != 0) {
+        min_range = 1;
+        max_range = 2;
+    } else {
+        min_range = 8;
+        max_range = 8;
+    }
+
+    /* Extended search with range */
+    extended_search(
+        candidate,
+        g_callback_2,
+        min_range,
+        max_range,
+        local_buffer,
+        &g_result_ptr_1,
+        &g_search_result_dir
+    );  /* JT[2642] */
+
+    /* Check if improvement found */
+    short result_diff = local_buffer[8] - candidate->position_data1;
+
+    if (g_result_ptr_1 != NULL) {
+        /* Found improvement - register update callback */
+        set_search_callback(UPDATE_CALLBACK);  /* JT[2242], 2138(A5) */
+    }
+}
+```
+
+### Function 0x0224 - Check Position Validity
+
+```c
+/*
+ * check_position_validity - Verify a position is valid for placement
+ *
+ * @param position: Position data structure
+ *
+ * Checks various flags and bounds to ensure the position
+ * is suitable for word placement.
+ */
+void check_position_validity(void* position) {
+    char* pos = (char*)position;
+    short* result_ptr;           /* A4: Result area pointer */
+
+    /* Get result area (offset 8) */
+    result_ptr = (short*)(pos + 8);
+
+    /* Compare with global limit */
+    if (*result_ptr > g_result_ptr_1) {
+        /* Exceeds limit - skip */
+    }
+
+    /* Check processed flag */
+    if (pos[28] != 0) {
+        return;  /* Already processed */
+    }
+
+    /* Check extension flag */
+    if (pos[29] != 0) {
+        return;  /* Has extension */
+    }
+
+    /* Check main flags */
+    if (*(short*)(pos + 4) != 0) {
+        return;  /* Flags set */
+    }
+
+    /* Check direction compatibility */
+    short direction = (short)pos[25];
+    short combined = direction | g_search_result_dir;
+
+    if (combined != direction) {
+        return;  /* Direction mismatch */
+    }
+
+    /* Position is valid - update result */
+    *result_ptr = g_search_result_val;
+}
+```
+
+### Search Callback Addresses
+
+```c
+/*
+ * Callback addresses (offsets from A5)
+ *
+ * These are function pointers stored at fixed offsets:
+ */
+#define HORIZONTAL_CALLBACK    2162  /* Horizontal word handler */
+#define CROSS_CHECK_CALLBACK   2170  /* Cross-word checking */
+#define VERTICAL_CALLBACK      2186  /* Vertical word handler */
+#define VERTICAL_CHECK_CALLBACK 2194 /* Vertical cross-check */
+#define UPDATE_CALLBACK        2138  /* Update best position */
+```
+
+### Search Coordination Flow
+
+```c
+/*
+ * Complete search flow for move generation:
+ *
+ * 1. Setup Phase:
+ *    - Call setup_horizontal_search() or setup_vertical_search()
+ *    - Registers appropriate callbacks
+ *
+ * 2. Candidate Processing:
+ *    - For each anchor position on the board:
+ *      a. Create MoveCandidate
+ *      b. Call process_horizontal_move() or process_vertical_move()
+ *      c. Callback evaluates position scores
+ *
+ * 3. Score Evaluation:
+ *    - evaluate_position_score() is called for each valid word
+ *    - Updates g_best_score_1 and g_best_score_2
+ *    - Sets extension and cross-word flags
+ *
+ * 4. Result Collection:
+ *    - Best positions tracked in global variables
+ *    - Results fed to CODE 28's sorted move array
+ *
+ * Note: Horizontal and vertical searches are independent.
+ * The board transpose (CODE 22) allows reusing horizontal
+ * logic for vertical searches.
+ */
+void run_complete_search(char* rack, MoveCandidate* candidates, int count) {
+    /* Run horizontal search */
+    setup_horizontal_search(score_callback, filter_callback);
+    for (int i = 0; i < count; i++) {
+        process_horizontal_move(&candidates[i]);
+    }
+
+    /* Transpose board for vertical search */
+    transpose_board();
+
+    /* Run vertical search */
+    setup_vertical_search(score_callback, filter_callback);
+    for (int i = 0; i < count; i++) {
+        process_vertical_move(&candidates[i]);
+    }
+
+    /* Transpose back */
+    transpose_board();
+}
+```

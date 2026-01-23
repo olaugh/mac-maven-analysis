@@ -360,3 +360,347 @@ Clear array management patterns:
 - Score calculation from letter values
 - Sentinel value for search state
 - Standard search/callback pattern
+
+---
+
+## Speculative C Translation
+
+### Data Structures
+
+```c
+/*
+ * Move structure - stored in sorted array
+ * Size: 34 bytes per entry
+ */
+typedef struct Move {
+    struct Move* next;      /* +0: Linked list pointer (unused in array mode) */
+    long score_data;        /* +4: Combined score info */
+    char flags;             /* +8: Move flags */
+    char row;               /* +9: Starting row */
+    char col;               /* +10: Starting column */
+    char direction;         /* +11: 0=horizontal, 1=vertical */
+    char length;            /* +12: Word length */
+    char id;                /* +13: Move ID */
+    short reserved;         /* +14: Padding */
+    long base_score;        /* +16: Base tile score */
+    long bonus_score;       /* +20: Bonus points (bingo, etc.) */
+    long extra_score;       /* +24: Cross-word score */
+    char flags2;            /* +28: Secondary flags */
+    char special;           /* +29: Special placement flag */
+    short player_id;        /* +30: Player index */
+    char word[2];           /* +32: Word data (variable length) */
+} Move;
+
+#define MOVE_SIZE       34
+#define MAX_MOVES       10
+#define ARRAY_SIZE      (MAX_MOVES * MOVE_SIZE)  /* 340 bytes */
+
+/* Global variables */
+Move g_move_array[MAX_MOVES];   /* A5-23056: Sorted move array */
+long g_min_score;               /* A5-2782: Minimum score in array */
+short g_move_count;             /* A5-12540: Current number of moves */
+char g_current_word[32];        /* A5-15514: g_field_14 */
+char g_cross_word[32];          /* A5-15522: g_field_22 */
+long g_sentinel_marker;         /* A5-23040: Search state sentinel */
+short g_secondary_counter;      /* A5-20010: Secondary counter */
+short g_letter_values[128];     /* A5-27630: Letter point values */
+```
+
+### Function 0x0000 - Insert Move into Sorted Array
+
+```c
+/*
+ * insert_move_sorted - Insert a move into the sorted best-moves array
+ *
+ * @param new_move: Move to insert
+ *
+ * The array is sorted by total score (descending).
+ * If array is full (10 moves), worst move is discarded.
+ * Only valid moves that beat the minimum score are kept.
+ */
+void insert_move_sorted(Move* new_move) {
+    /* Calculate total score for the new move */
+    long new_score = new_move->base_score +
+                     new_move->bonus_score +
+                     new_move->extra_score;
+
+    /* Quick rejection: array full and new score isn't better than worst */
+    if (g_move_count >= MAX_MOVES) {
+        if (new_score <= g_min_score) {
+            return;  /* Don't bother - won't make the cut */
+        }
+    }
+
+    /* Validate the move (check if legal placement) */
+    if (!validate_move(new_move)) {  /* JT[2762] */
+        return;  /* Invalid move */
+    }
+
+    /* Find insertion position in sorted array */
+    Move* insert_pos;
+
+    if (g_move_count >= MAX_MOVES) {
+        /* Array full - find where new move fits by score */
+        insert_pos = g_move_array;
+
+        while (insert_pos < &g_move_array[MAX_MOVES]) {
+            long entry_score = insert_pos->base_score +
+                               insert_pos->bonus_score +
+                               insert_pos->extra_score;
+
+            if (entry_score < new_score) {
+                break;  /* Found insertion point */
+            }
+            insert_pos++;
+        }
+    } else {
+        /* Array not full - find position and increment count */
+        insert_pos = g_move_array;
+        Move* end_of_used = &g_move_array[g_move_count];
+
+        while (insert_pos < end_of_used) {
+            long entry_score = insert_pos->base_score +
+                               insert_pos->bonus_score +
+                               insert_pos->extra_score;
+
+            if (entry_score < new_score) {
+                break;  /* Found insertion point */
+            }
+            insert_pos++;
+        }
+
+        g_move_count++;  /* Increment move count */
+    }
+
+    /* Calculate how many entries need to shift */
+    int entries_to_shift = (&g_move_array[g_move_count - 1]) - insert_pos;
+
+    /* Shift entries down to make room */
+    if (entries_to_shift > 0) {
+        memmove(insert_pos + 1, insert_pos,
+                entries_to_shift * MOVE_SIZE);  /* JT[3466] */
+    }
+
+    /* Copy new move into position */
+    memcpy(insert_pos, new_move, MOVE_SIZE);
+
+    /* Update minimum score tracker (last entry in array) */
+    Move* last_entry = &g_move_array[g_move_count - 1];
+    g_min_score = last_entry->base_score +
+                  last_entry->bonus_score +
+                  last_entry->extra_score;
+}
+```
+
+### Function 0x00E6 - Calculate Word Score
+
+```c
+/*
+ * calculate_word_score - Sum letter values for a word string
+ *
+ * @param word: Null-terminated word string
+ * Returns: Total point value of all letters
+ *
+ * This calculates the raw letter score without multipliers.
+ * Used for comparing moves and validating scores.
+ */
+int calculate_word_score(char* word) {
+    int total_score = 0;    /* D7: Accumulated score */
+    char letter;            /* D6: Current letter */
+
+    while ((letter = *word++) != '\0') {
+        /* Look up letter value in table */
+        /* Table is at A5-27630, indexed by letter * 2 (word-sized entries) */
+        unsigned char letter_idx = (unsigned char)letter;
+        int letter_value = g_letter_values[letter_idx];
+
+        total_score += letter_value;
+    }
+
+    return total_score;
+}
+```
+
+### Function 0x0116 - Process Move Search
+
+```c
+#define SENTINEL_VALUE  0xF4143E00L  /* -200000000 decimal */
+
+/*
+ * process_move_search - Coordinate move generation search
+ *
+ * @param search_context: Context for the search
+ * @param result_callback: Function to call with results
+ *
+ * This is the main entry point for finding valid moves.
+ * It:
+ * 1. Initializes search state
+ * 2. Clears the move array
+ * 3. Runs primary search
+ * 4. Falls back to alternate search if needed
+ * 5. Calculates score differentials
+ */
+void process_move_search(void* search_context,
+                         void (*result_callback)(Move*)) {
+    char local_buffer[132];     /* -132(A6): Local work buffer */
+    Move local_move;            /* -182(A6): Local move structure */
+    short search_count;         /* D4: Number of positions searched */
+    short score_diff;           /* -528(A6): Score differential */
+
+    /* Initialize search */
+    setup_search(search_context);  /* JT[2410] */
+
+    search_count = get_search_count(&local_buffer);  /* JT[2394] */
+
+    additional_setup();  /* JT[2458] */
+
+    /* Clear the move array (10 entries * 34 bytes = 340 bytes) */
+    memset(g_move_array, 0, ARRAY_SIZE);  /* JT[426] */
+
+    /* Clear local move buffer */
+    memset(&local_move, 0, MOVE_SIZE);  /* JT[426] */
+
+    /* Reset counters */
+    g_move_count = 0;
+    g_secondary_counter = 0;
+
+    /* Set sentinel marker for search state */
+    g_sentinel_marker = SENTINEL_VALUE;
+
+    /* Run primary search */
+    int found = run_primary_search();  /* JT[2354] */
+
+    if (found) {
+        /* Primary search found results - process them */
+        process_search_results(result_callback);  /* JT[2490] */
+    } else {
+        /* Try alternate search method */
+        found = run_alternate_search();  /* JT[2362] */
+
+        if (found) {
+            /* Calculate score differential between fields */
+            char* field_to_use;
+
+            if (search_context == g_current_word) {
+                field_to_use = g_cross_word;  /* A5-15522 */
+            } else {
+                field_to_use = g_current_word;  /* A5-15514 */
+            }
+
+            /* Calculate word scores */
+            int field_score = calculate_word_score(field_to_use);
+            score_diff = -field_score;  /* Negate */
+
+            int context_score = calculate_word_score(search_context);
+            score_diff += context_score;
+
+            /* Store differential in local move */
+            local_move.base_score = score_diff;
+
+            /* Call callback with result */
+            result_callback(&local_move);
+        }
+    }
+
+    /* Cleanup */
+    cleanup_search(result_callback);  /* JT[2618] */
+
+    /* Verify sentinel (detect memory corruption) */
+    if (g_sentinel_marker != SENTINEL_VALUE) {
+        /* Sentinel corrupted - clear and return */
+        g_sentinel_marker = 0;
+        return;
+    }
+
+    g_sentinel_marker = 0;
+
+    /* Extended search for positions >= 17 */
+    if (search_count >= 17) {
+        /* Continue with extended position search... */
+        /* uncertain: additional 150 lines of processing */
+    }
+}
+```
+
+### Helper Functions
+
+```c
+/*
+ * get_move_at_rank - Get the Nth best move from array
+ *
+ * @param rank: 0 = best, 1 = second best, etc.
+ * Returns: Pointer to move, or NULL if rank > count
+ */
+Move* get_move_at_rank(int rank) {
+    if (rank < 0 || rank >= g_move_count) {
+        return NULL;
+    }
+    return &g_move_array[rank];
+}
+
+/*
+ * clear_move_array - Reset the move array to empty
+ */
+void clear_move_array(void) {
+    memset(g_move_array, 0, ARRAY_SIZE);
+    g_move_count = 0;
+    g_min_score = 0x7FFFFFFF;  /* Max positive value */
+}
+
+/*
+ * dump_top_moves - Debug output of best moves
+ */
+void dump_top_moves(short file_handle) {
+    char buffer[80];
+
+    for (int i = 0; i < g_move_count; i++) {
+        Move* m = &g_move_array[i];
+        long total = m->base_score + m->bonus_score + m->extra_score;
+
+        sprintf(buffer, "%d. Score: %ld  Pos: (%d,%d) Dir: %s\r",
+                i + 1,
+                total / 100,  /* Convert centipoints to points */
+                m->row, m->col,
+                m->direction ? "V" : "H");
+
+        write_string_to_file(file_handle, buffer);
+    }
+}
+```
+
+### Usage Flow
+
+```c
+/*
+ * Typical move generation flow:
+ *
+ * 1. User plays tiles / AI thinking
+ * 2. process_move_search() is called
+ * 3. For each valid word found:
+ *    a. Create Move structure with position and word
+ *    b. Call CODE 32 to calculate full score with leave values
+ *    c. Call insert_move_sorted() to add to best list
+ * 4. After search completes:
+ *    a. g_move_array contains top 10 moves, sorted
+ *    b. g_move_array[0] is the best move
+ *    c. AI plays best move or shows user the options
+ */
+void generate_and_rank_moves(char* rack) {
+    /* Clear previous results */
+    clear_move_array();
+
+    /* Run move generation */
+    process_move_search(g_current_word, score_and_insert_callback);
+
+    /* Best move is now at g_move_array[0] */
+    if (g_move_count > 0) {
+        Move* best = &g_move_array[0];
+        printf("Best move: %s at (%d,%d) for %ld points\n",
+               best->word,
+               best->row, best->col,
+               (best->base_score + best->bonus_score + best->extra_score) / 100);
+    } else {
+        printf("No valid moves found\n");
+    }
+}
+```

@@ -332,3 +332,566 @@ The repetitive pattern with different bit masks is unmistakable:
 - First 14 functions are DAWG bit field accessors
 - Remaining functions are standard C string library
 - The `A5-808` global for strtok confirms this is a C runtime implementation
+
+---
+
+## Speculative C Translation
+
+### Part 1: DAWG Flag Accessor Functions
+
+```c
+/*
+ * DAWG (Directed Acyclic Word Graph) Entry Structure
+ *
+ * Each DAWG node is accessed at an offset from the A5 globals base.
+ * The flag byte contains navigation and word-ending information.
+ *
+ * Flag byte bit layout:
+ *   Bit 7 (0x80): End-of-word marker - this node completes a valid word
+ *   Bit 6 (0x40): Unknown flag (possibly word continuation)
+ *   Bit 5 (0x20): Case flag (used with letter toggle)
+ *   Bit 4 (0x10): Unknown flag
+ *   Bit 3 (0x08): Unknown flag
+ *   Bit 2 (0x04): Unknown flag
+ *   Bit 1 (0x02): Unknown flag (with bit 0: sibling info)
+ *   Bit 0 (0x01): Last sibling marker - no more siblings at this level
+ */
+
+/* Global DAWG data base pointer (conceptually A5) */
+extern char *g_dawg_base;
+
+/*
+ * dawg_get_flags_D0 - Get combined flags (bits 4,6,7)
+ * Mask: 0x00D0
+ * JT offset: 3424
+ *
+ * @param dawg_offset: Offset to DAWG entry from base
+ * @return: Flag bits masked with 0xD0
+ */
+short dawg_get_flags_D0(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x00D0);
+}
+
+/*
+ * dawg_get_flags_C0 - Get high flags (bits 6,7)
+ * Mask: 0x00C0
+ * JT offset: 3432
+ */
+short dawg_get_flags_C0(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x00C0);
+}
+
+/*
+ * dawg_get_sibling_flags - Get sibling/terminal flags (bits 0,1)
+ * Mask: 0x0003
+ * JT offset: 3440
+ *
+ * Used to determine if this is the last sibling at current level.
+ */
+short dawg_get_sibling_flags(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x0003);
+}
+
+/*
+ * dawg_get_flag_10 - Get single flag (bit 4)
+ * Mask: 0x0010
+ * JT offset: 3448
+ */
+short dawg_get_flag_10(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x0010);
+}
+
+/*
+ * dawg_get_flags_D8 - Get combined flags (bits 3,4,6,7)
+ * Mask: 0x00D8
+ * JT offset: 3456
+ */
+short dawg_get_flags_D8(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x00D8);
+}
+
+/*
+ * dawg_is_end_of_word - Check end-of-word marker (bit 7)
+ * Mask: 0x0080
+ * JT offset: 3464
+ *
+ * Returns non-zero if this DAWG node represents a complete valid word.
+ */
+short dawg_is_end_of_word(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x0080);
+}
+
+/*
+ * dawg_get_flags_DC - Get combined flags (bits 2,3,4,6,7)
+ * Mask: 0x00DC
+ * JT offset: 3472
+ */
+short dawg_get_flags_DC(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x00DC);
+}
+
+/*
+ * dawg_get_flag_08 - Get single flag (bit 3)
+ * Mask: 0x0008
+ * JT offset: 3480
+ */
+short dawg_get_flag_08(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x0008);
+}
+
+/*
+ * dawg_get_flags_06 - Get flags (bits 1,2)
+ * Mask: 0x0006
+ * JT offset: 3488
+ */
+short dawg_get_flags_06(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x0006);
+}
+
+/*
+ * dawg_get_flag_40 - Get single flag (bit 6)
+ * Mask: 0x0040
+ * JT offset: 3496
+ */
+short dawg_get_flag_40(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x0040);
+}
+
+/*
+ * dawg_get_flags_30 - Get flags (bits 4,5)
+ * Mask: 0x0030
+ * JT offset: 3504
+ */
+short dawg_get_flags_30(unsigned char dawg_offset) {
+    char flags_byte = g_dawg_base[dawg_offset];
+    return (short)(flags_byte & 0x0030);
+}
+```
+
+### Special DAWG Accessor Functions
+
+```c
+/*
+ * dawg_conditional_case_toggle_bit7 - Toggle case if bit 7 set
+ * JT offset: 3512 (approximate)
+ *
+ * If the DAWG entry has bit 7 (end-of-word) set, toggles the case
+ * of the input letter by XORing with 0x20 (ASCII case bit).
+ *
+ * @param dawg_offset: Offset to DAWG entry
+ * @param letter: ASCII letter to potentially toggle
+ * @return: Original or case-toggled letter
+ */
+short dawg_conditional_case_toggle_bit7(unsigned char dawg_offset,
+                                         short letter) {
+    char flags_byte = g_dawg_base[dawg_offset];
+
+    /* Check if bit 7 (sign bit when treated as signed) is set */
+    if (flags_byte < 0) {  /* BPL.S branches if positive (bit 7 clear) */
+        return letter ^ 0x0020;  /* Toggle ASCII case bit */
+    }
+
+    return letter;
+}
+
+/*
+ * dawg_conditional_case_toggle_bit6 - Toggle case if bit 6 set
+ * JT offset: 3520 (approximate)
+ *
+ * Similar to above but checks bit 6 instead of bit 7.
+ *
+ * @param dawg_offset: Offset to DAWG entry
+ * @param letter: ASCII letter to potentially toggle
+ * @return: Original or case-toggled letter
+ */
+short dawg_conditional_case_toggle_bit6(unsigned char dawg_offset,
+                                         short letter) {
+    char flags_byte = g_dawg_base[dawg_offset];
+
+    /* Check bit 6 explicitly */
+    if (flags_byte & 0x40) {
+        return letter ^ 0x0020;  /* Toggle ASCII case bit */
+    }
+
+    return letter;
+}
+```
+
+### Part 2: Standard C String Library Implementation
+
+```c
+/*
+ * memcpy - Copy memory block
+ *
+ * Standard C library function implemented in 68K assembly.
+ *
+ * @param dest: Destination buffer
+ * @param src: Source buffer
+ * @param count: Number of bytes to copy
+ * @return: Destination pointer
+ */
+void* memcpy(void *dest, const void *src, size_t count) {
+    unsigned char *d = (unsigned char*)dest;
+    const unsigned char *s = (const unsigned char*)src;
+
+    while (count > 0) {
+        *d++ = *s++;
+        count--;
+    }
+
+    return dest;
+}
+
+/*
+ * memmove - Copy with overlap handling
+ *
+ * Handles overlapping source and destination.
+ */
+void* memmove(void *dest, const void *src, size_t count) {
+    unsigned char *d = (unsigned char*)dest;
+    const unsigned char *s = (const unsigned char*)src;
+
+    if (count == 0) return dest;
+
+    /* Check for overlap requiring reverse copy */
+    if (s < d && d < s + count) {
+        /* Copy backwards */
+        d += count;
+        s += count;
+        while (count > 0) {
+            *--d = *--s;
+            count--;
+        }
+    } else {
+        /* Copy forwards */
+        while (count > 0) {
+            *d++ = *s++;
+            count--;
+        }
+    }
+
+    return dest;
+}
+
+/*
+ * memcmp - Compare memory blocks
+ */
+int memcmp(const void *s1, const void *s2, size_t count) {
+    const unsigned char *p1 = (const unsigned char*)s1;
+    const unsigned char *p2 = (const unsigned char*)s2;
+
+    while (count > 0) {
+        if (*p1 != *p2) {
+            return (*p1 < *p2) ? -1 : 1;
+        }
+        p1++;
+        p2++;
+        count--;
+    }
+
+    return 0;  /* Equal */
+}
+
+/*
+ * memset - Fill memory with byte value
+ */
+void* memset(void *dest, int value, size_t count) {
+    unsigned char *d = (unsigned char*)dest;
+    unsigned char byte_val = (unsigned char)value;
+
+    while (count > 0) {
+        *d++ = byte_val;
+        count--;
+    }
+
+    return dest;
+}
+
+/*
+ * memchr - Find byte in memory block
+ */
+void* memchr(const void *s, int c, size_t count) {
+    const unsigned char *p = (const unsigned char*)s;
+    unsigned char byte_val = (unsigned char)c;
+
+    while (count > 0) {
+        if (*p == byte_val) {
+            return (void*)p;
+        }
+        p++;
+        count--;
+    }
+
+    return NULL;
+}
+
+/*
+ * strlen - Get string length
+ */
+size_t strlen(const char *s) {
+    size_t len = 0;
+
+    while (*s++ != '\0') {
+        len++;
+    }
+
+    return len;
+}
+
+/*
+ * strcpy - Copy string
+ */
+char* strcpy(char *dest, const char *src) {
+    char *result = dest;
+
+    while ((*dest++ = *src++) != '\0') {
+        /* Copy including null terminator */
+    }
+
+    return result;
+}
+
+/*
+ * strncpy - Copy string with length limit
+ */
+char* strncpy(char *dest, const char *src, size_t count) {
+    char *result = dest;
+
+    while (count > 0) {
+        if (*src != '\0') {
+            *dest++ = *src++;
+        } else {
+            *dest++ = '\0';  /* Pad with nulls */
+        }
+        count--;
+    }
+
+    return result;
+}
+
+/*
+ * strcat - Concatenate strings
+ */
+char* strcat(char *dest, const char *src) {
+    char *result = dest;
+
+    /* Find end of dest */
+    while (*dest != '\0') {
+        dest++;
+    }
+
+    /* Copy src */
+    while ((*dest++ = *src++) != '\0') {
+        /* Copy including null */
+    }
+
+    return result;
+}
+
+/*
+ * strncat - Concatenate with length limit
+ */
+char* strncat(char *dest, const char *src, size_t count) {
+    char *result = dest;
+
+    /* Find end of dest */
+    while (*dest != '\0') {
+        dest++;
+    }
+
+    /* Copy up to count chars from src */
+    while (count > 0 && *src != '\0') {
+        *dest++ = *src++;
+        count--;
+    }
+
+    *dest = '\0';  /* Always null-terminate */
+
+    return result;
+}
+
+/*
+ * strcmp - Compare strings
+ */
+int strcmp(const char *s1, const char *s2) {
+    while (*s1 == *s2) {
+        if (*s1 == '\0') {
+            return 0;  /* Equal */
+        }
+        s1++;
+        s2++;
+    }
+
+    return (*s1 < *s2) ? -1 : 1;
+}
+
+/*
+ * strncmp - Compare strings with length limit
+ */
+int strncmp(const char *s1, const char *s2, size_t count) {
+    while (count > 0) {
+        if (*s1 != *s2) {
+            return (*s1 < *s2) ? -1 : 1;
+        }
+        if (*s1 == '\0') {
+            return 0;  /* Equal (both ended) */
+        }
+        s1++;
+        s2++;
+        count--;
+    }
+
+    return 0;  /* Equal for first count chars */
+}
+
+/*
+ * strchr - Find character in string
+ */
+char* strchr(const char *s, int c) {
+    char ch = (char)c;
+
+    while (*s != '\0') {
+        if (*s == ch) {
+            return (char*)s;
+        }
+        s++;
+    }
+
+    /* Check for searching for null terminator */
+    if (ch == '\0') {
+        return (char*)s;
+    }
+
+    return NULL;
+}
+
+/*
+ * strrchr - Find last occurrence of character
+ */
+char* strrchr(const char *s, int c) {
+    char ch = (char)c;
+    const char *last = NULL;
+
+    while (*s != '\0') {
+        if (*s == ch) {
+            last = s;
+        }
+        s++;
+    }
+
+    if (ch == '\0') {
+        return (char*)s;
+    }
+
+    return (char*)last;
+}
+
+/*
+ * strpbrk - Find any character from set in string
+ */
+char* strpbrk(const char *s, const char *accept) {
+    while (*s != '\0') {
+        const char *a = accept;
+        while (*a != '\0') {
+            if (*s == *a) {
+                return (char*)s;
+            }
+            a++;
+        }
+        s++;
+    }
+
+    return NULL;
+}
+
+/*
+ * strstr - Find substring in string
+ */
+char* strstr(const char *haystack, const char *needle) {
+    if (*needle == '\0') {
+        return (char*)haystack;
+    }
+
+    while (*haystack != '\0') {
+        const char *h = haystack;
+        const char *n = needle;
+
+        while (*n != '\0' && *h == *n) {
+            h++;
+            n++;
+        }
+
+        if (*n == '\0') {
+            return (char*)haystack;  /* Found */
+        }
+
+        haystack++;
+    }
+
+    return NULL;
+}
+
+/* Global state for strtok */
+static char *g_strtok_ptr;  /* A5-808 */
+
+/*
+ * strtok - Tokenize string
+ */
+char* strtok(char *str, const char *delim) {
+    char *token_start;
+
+    /* Use saved position if str is NULL */
+    if (str == NULL) {
+        str = g_strtok_ptr;
+        if (str == NULL) {
+            return NULL;  /* No more tokens */
+        }
+    }
+
+    /* Clear saved position */
+    g_strtok_ptr = NULL;
+
+    /* Skip leading delimiters */
+    while (*str != '\0' && strchr(delim, *str) != NULL) {
+        str++;
+    }
+
+    if (*str == '\0') {
+        return NULL;  /* No token found */
+    }
+
+    token_start = str;
+
+    /* Find end of token */
+    while (*str != '\0' && strchr(delim, *str) == NULL) {
+        str++;
+    }
+
+    if (*str != '\0') {
+        /* Save position for next call */
+        g_strtok_ptr = str + 1;
+        *str = '\0';  /* Terminate token */
+    }
+
+    return token_start;
+}
+```
+
+### Why DAWG Accessors Are Critical
+
+Every DAWG traversal operation needs to:
+1. Check end-of-word flag (0x80) to know if current path forms valid word
+2. Check sibling flags (0x03) to know when to stop iterating siblings
+3. Get combined flags for navigation decisions
+
+The case-toggle functions (0x0134, 0x015A) suggest the DAWG stores case information as flags rather than in the letter data itself, allowing compact representation.

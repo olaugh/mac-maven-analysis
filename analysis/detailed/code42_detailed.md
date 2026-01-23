@@ -626,3 +626,462 @@ Recursive scoring pattern with:
 - Backtracking support with filter restoration
 
 Some disassembly artifacts (garbled complex addressing modes) but algorithm structure is clearly a depth-first enumeration with pruning.
+
+---
+
+## Speculative C Translation
+
+### Header File (code42_rack_analysis.h)
+
+```c
+/*
+ * CODE 42 - Rack Analysis and Letter Scoring
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * Analyzes rack letters for scoring potential using
+ * recursive depth-first enumeration with pruning.
+ */
+
+#ifndef CODE42_RACK_ANALYSIS_H
+#define CODE42_RACK_ANALYSIS_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+/*
+ * Global variables (A5-relative)
+ */
+extern uint16_t  g_blank_tracking;       /* A5-1668: Blank tile tracking */
+extern uint16_t  g_letter_value_sum;     /* A5-1666: Total letter values */
+extern char      g_letter_buffer[128];   /* A5-1696: Filtered letter buffer */
+extern int16_t   g_crosscheck1[48];      /* A5-17404: Cross-check array 1 */
+extern int16_t   g_crosscheck2[48];      /* A5-17500: Cross-check array 2 */
+extern int16_t   g_letter_scores[128];   /* A5-26024: Letter point values */
+extern char*     g_rack;                 /* A5-26158: Current rack pointer */
+
+/* Unprocessed marker for cross-check arrays */
+#define CROSSCHECK_UNPROCESSED  0xFFFF
+
+/* Function prototypes */
+void init_rack_analysis(char* filter, char* output);
+int16_t filtered_letter_score(int32_t* score_table, uint16_t filter);
+int16_t recursive_evaluate(int32_t* score_table, uint16_t filter,
+                          char* work_buf, char* letters,
+                          int depth, int max_depth);
+
+#endif /* CODE42_RACK_ANALYSIS_H */
+```
+
+### Implementation File (code42_rack_analysis.c)
+
+```c
+/*
+ * CODE 42 - Rack Analysis and Letter Scoring Implementation
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * Recursive letter evaluation for move scoring:
+ * 1. Filter rack letters by validity
+ * 2. Enumerate subsets recursively (depth 0-7)
+ * 3. Calculate scores for valid combinations
+ * 4. Support backtracking for optimal search
+ */
+
+#include "code42_rack_analysis.h"
+
+/* External JT functions */
+extern void bounds_error(void);  /* JT[418] */
+
+/*
+ * init_rack_analysis - Function at 0x0000
+ *
+ * Initializes rack analysis by filtering valid letters
+ * and setting up cross-check arrays.
+ *
+ * Parameters:
+ *   filter - 128-byte validity filter (non-zero = valid)
+ *   output - Output buffer for filtered letters
+ */
+void init_rack_analysis(char* filter, char* output)
+{
+    char* letter_buf = g_letter_buffer;
+    char* rack = g_rack;
+    int letter_value;
+    int i;
+
+    /* Clear counters */
+    g_blank_tracking = 0;
+    g_letter_value_sum = 0;
+
+    /*
+     * Iterate through rack, filtering by validity
+     */
+    while (*rack != 0) {
+        char letter = *rack;
+
+        /* Check if letter passes filter */
+        if (filter[(unsigned char)letter] != 0) {
+            /* Valid - add to output */
+            *output++ = letter;
+
+            /* Get letter value from filter */
+            letter_value = filter[(unsigned char)letter];
+            g_letter_value_sum += letter_value;
+
+            /* Check for special handling (value == 1) */
+            if (letter_value == 1) {
+                /* Track blank tiles */
+                g_blank_tracking++;
+            } else {
+                /* Store in letter buffer */
+                *letter_buf++ = letter;
+            }
+        }
+
+        rack++;
+    }
+
+    /* Null terminate both buffers */
+    *output = 0;
+    *letter_buf = 0;
+
+    /*
+     * Initialize cross-check arrays
+     * Mark all entries as unprocessed (0xFFFF)
+     */
+    int count = g_letter_value_sum;
+
+    /* Bounds check */
+    if (count > 48) {  /* Max array size */
+        bounds_error();
+    }
+
+    for (i = 0; i < count; i++) {
+        g_crosscheck2[i] = CROSSCHECK_UNPROCESSED;
+    }
+}
+
+/*
+ * filtered_letter_score - Function at 0x00A4
+ *
+ * Calculates score for letters after applying filter mask.
+ * Uses recursive evaluation for combination enumeration.
+ *
+ * Parameters:
+ *   score_table - Pointer to letter score lookup table
+ *   filter - 16-bit filter mask for letter selection
+ *
+ * Returns:
+ *   Best score found for filtered combination
+ */
+int16_t filtered_letter_score(int32_t* score_table, uint16_t filter)
+{
+    char local_buffer[160];
+    char work_buffer[32];
+    char* out;
+    char* src;
+    int iterations;
+    uint16_t blank_mask;
+    uint16_t letter_filter;
+    int16_t base_total;
+
+    /*
+     * Count bits in blank mask (intersection with filter)
+     */
+    iterations = 7;  /* Start at max rack size */
+    blank_mask = g_blank_tracking & filter;
+
+    while (blank_mask != 0) {
+        iterations--;
+        blank_mask &= (blank_mask - 1);  /* Clear lowest bit */
+    }
+
+    if (iterations < 0) {
+        bounds_error();
+    }
+
+    /*
+     * Invert filter for letter selection
+     * Letters NOT marked as blanks
+     */
+    letter_filter = filter & ~g_blank_tracking;
+
+    /*
+     * Check for empty result
+     */
+    if (letter_filter == 0) {
+        /* No letters - calculate default based on iterations */
+        /* uncertain - exact default calculation */
+        return iterations * 10;  /* Placeholder */
+    }
+
+    /*
+     * Initialize base total
+     * 123 appears to be a magic base value
+     */
+    base_total = 123;
+
+    /*
+     * Filter letters into local buffer, subtracting scores
+     */
+    out = local_buffer;
+    src = g_letter_buffer;
+
+    while (*src != 0) {
+        char letter = *src;
+
+        /* Copy to local buffer */
+        *out++ = letter;
+
+        /* Look up and subtract score */
+        int16_t letter_score = ((int8_t*)score_table)[(unsigned char)letter];
+        base_total -= letter_score;
+
+        src++;
+    }
+
+    /* Add terminator marker ('{' = 0x7B) */
+    *out++ = '{';
+    *out = 0;
+
+    /*
+     * Call recursive evaluator
+     */
+    return recursive_evaluate(
+        score_table,
+        letter_filter,
+        work_buffer,
+        local_buffer,
+        0,              /* Starting depth */
+        iterations      /* Max depth */
+    );
+}
+
+/*
+ * recursive_evaluate - Function at 0x0162
+ *
+ * Recursively evaluates letter combinations using depth-first
+ * search with filter-based pruning.
+ *
+ * Parameters:
+ *   score_table - Letter score lookup table
+ *   filter - Current filter mask (bits cleared as letters used)
+ *   work_buf - Work buffer for current combination
+ *   letters - Remaining letters to process
+ *   depth - Current recursion depth
+ *   max_depth - Maximum depth (letters to place)
+ *
+ * Returns:
+ *   Best score found, or 0 if invalid
+ */
+int16_t recursive_evaluate(int32_t* score_table, uint16_t filter,
+                          char* work_buf, char* letters,
+                          int depth, int max_depth)
+{
+    int16_t accumulated_score;
+    char* word_ptr;
+    char* prev_ptr;
+    char current_letter;
+    int16_t letter_score;
+    int16_t best_score;
+    int count;
+
+    /*
+     * Check depth limit
+     */
+    if (depth > max_depth) {
+        return 0;  /* Exceeded - invalid */
+    }
+
+    /*
+     * BASE CASE: At max depth
+     * Calculate final score for this combination
+     */
+    if (depth == max_depth) {
+        /* Filter must be empty at max depth */
+        if (filter != 0) {
+            return 0;  /* Still have filter bits - invalid */
+        }
+
+        /* Null terminate work buffer */
+        *work_buf = 0;
+
+        /* Initialize score calculation */
+        accumulated_score = depth + 1;  /* Base value */
+
+        /* Walk through accumulated word */
+        word_ptr = work_buf - depth;  /* Point to start */
+        prev_ptr = word_ptr - 1;
+
+        while (*word_ptr != 0) {
+            current_letter = *word_ptr;
+
+            /* Skip if same as next letter (avoid double counting) */
+            if (*(word_ptr + 1) != current_letter) {
+                /* Look up letter score */
+                letter_score = ((int8_t*)score_table)[(unsigned char)current_letter];
+
+                /* Add to accumulated score via lookup */
+                accumulated_score += g_letter_scores[letter_score];
+            }
+
+            prev_ptr = word_ptr;
+            word_ptr++;
+        }
+
+        return accumulated_score;
+    }
+
+    /*
+     * Check if any letters remain
+     */
+    if (*letters == 0) {
+        return 0;  /* No more letters */
+    }
+
+    /*
+     * CASE: No filter remaining
+     * Sum all remaining letters
+     */
+    if (filter == 0) {
+        int16_t remaining_sum = 0;
+        char* p = letters;
+
+        /* Sum remaining letter scores */
+        while (*p != 0) {
+            letter_score = ((int8_t*)score_table)[(unsigned char)*p];
+            remaining_sum += letter_score;
+            p++;
+        }
+
+        /* Check if enough potential to reach target */
+        int remaining_depth = max_depth - depth;
+        if (remaining_sum < remaining_depth) {
+            return 0;  /* Not enough points */
+        }
+
+        /* Calculate score for remaining */
+        *work_buf = 0;
+        accumulated_score = depth + remaining_depth;
+
+        /* Similar scoring loop for remaining letters */
+        word_ptr = letters;
+        while (*word_ptr != 0) {
+            current_letter = *word_ptr;
+
+            if (*(word_ptr + 1) != current_letter) {
+                letter_score = ((int8_t*)score_table)[(unsigned char)current_letter];
+                accumulated_score += g_letter_scores[letter_score];
+            }
+
+            word_ptr++;
+        }
+
+        return accumulated_score;
+    }
+
+    /*
+     * RECURSIVE CASE: Filter active
+     * Check if current letter passes filter
+     */
+    current_letter = *letters;
+
+    /* uncertain - exact filter check mechanism */
+    /* Check letter against filter mask */
+    uint32_t letter_mask = 1 << (current_letter & 0x1F);  /* uncertain */
+
+    if ((filter & letter_mask) == 0) {
+        return 0;  /* Filtered out */
+    }
+
+    /*
+     * Try combinations with this letter
+     */
+    best_score = 0;
+    count = 0;
+    letter_score = ((int8_t*)score_table)[(unsigned char)current_letter];
+
+    while (count < letter_score) {
+        /* Recursive call with updated filter */
+        uint16_t new_filter = filter & ~(1 << count);  /* Clear bit */
+
+        int16_t result = recursive_evaluate(
+            score_table,
+            new_filter,
+            work_buf + 1,
+            letters + 1,
+            depth + 1,
+            max_depth
+        );
+
+        /* Store letter in work buffer */
+        *work_buf = current_letter;
+
+        /* Track best score */
+        if (result > best_score) {
+            best_score = result;
+        }
+
+        count++;
+    }
+
+    return best_score;
+}
+```
+
+### Key Algorithmic Notes
+
+```
+RECURSIVE ENUMERATION:
+======================
+Depth-first search through letter combinations:
+- depth 0: Initial call, 0 letters placed
+- depth 1-6: Intermediate states
+- depth 7: Base case, full rack evaluated
+
+FILTER-BASED PRUNING:
+=====================
+16-bit filter mask tracks which positions are filled:
+- Bit set = position available
+- Bit clear = position filled
+- Filter must be 0 at max depth for valid combination
+
+SCORE CALCULATION:
+==================
+Base value + sum of letter scores:
+- Base value = depth + 1 (or 123 in some paths)
+- Each unique letter adds g_letter_scores[letter_value]
+- Skip duplicate adjacent letters
+
+BLANK HANDLING:
+===============
+Blank tiles tracked separately in g_blank_tracking.
+Filter is masked with ~g_blank_tracking to exclude blanks
+from normal letter processing.
+
+CROSS-CHECK ARRAYS:
+===================
+Two 48-entry arrays (96 bytes total) at A5-17404/17500.
+Initialized to 0xFFFF (unprocessed).
+Updated during evaluation to cache results.
+
+INTEGRATION WITH CODE 39:
+=========================
+CODE 42 provides:
+- Filtered letter lists
+- Letter counts (g_letter_value_sum)
+- Blank tracking (g_blank_tracking)
+
+CODE 39 uses these for letter pair generation
+and synergy scoring.
+
+BACKTRACKING:
+=============
+Work buffer accumulates current combination.
+On return from recursion, previous state is preserved
+in work_buf allowing exploration of alternatives.
+
+TERMINATOR CHARACTER:
+=====================
+'{' (0x7B) used as special terminator in local_buffer.
+Distinguishes end of letters from null terminator.
+```

@@ -184,3 +184,254 @@ The 42-byte size makes this one of the smallest CODE resources, containing just 
 1. Minimal code segment loading overhead
 2. Frequent invocation from multiple callers
 3. Fast memory footprint when loaded
+
+---
+
+## Speculative C Translation
+
+### Primary Function Implementation
+
+```c
+/*
+ * string_equal - Compare two null-terminated strings for equality
+ *
+ * This is a simple equality check, not a full strcmp. Returns
+ * boolean result (0 or 1) rather than ordering (-1, 0, +1).
+ *
+ * Optimized for the common case of checking if two strings match,
+ * without needing to know which comes first alphabetically.
+ *
+ * @param str1: First null-terminated string
+ * @param str2_or_len: Second string pointer (note: word-sized parameter)
+ * @return: 1 if strings are equal, 0 if different
+ */
+short string_equal(const char *str1, const char *str2) {
+    /*
+     * Note: The disassembly shows MOVEA.W 12(A6),A3 which loads
+     * a word-sized value into A3. This is unusual for a pointer.
+     *
+     * Possible interpretations:
+     * 1. Near pointer (first 32KB of memory)
+     * 2. Offset from some base address
+     * 3. Disassembly artifact
+     *
+     * For this translation, we assume normal pointer semantics.
+     */
+
+    /* Compare characters until mismatch or end of str1 */
+    while (*str1 != '\0') {
+        if (*str1 != *str2) {
+            return 0;  /* Mismatch found - strings differ */
+        }
+        str1++;
+        str2++;
+    }
+
+    /* str1 has ended - check if str2 also ended */
+    if (*str2 == '\0') {
+        return 1;  /* Both strings ended at same point - equal */
+    }
+
+    return 0;  /* str2 is longer - strings differ */
+}
+```
+
+### Reconstructed Assembly Logic
+
+```c
+/*
+ * string_equal_asm_equivalent - Assembly-faithful implementation
+ *
+ * This version more closely mirrors the 68K assembly structure
+ * with explicit pointer advancement and testing.
+ */
+short string_equal_asm_equivalent(const char *str1, const char *str2) {
+    const char *current1 = str1;
+    const char *current2 = str2;
+
+    /* Main comparison loop */
+compare_loop:
+    /* Add offset between pointers if needed */
+    /* uncertain: the MOVEA.W suggests possible offset calculation */
+    current2 += (long)current1;  /* uncertain: this line */
+
+    /* Test and advance str1 */
+    if (*current1++ == '\0') {
+        goto check_str2_end;
+    }
+
+    /* If we reach here, characters didn't match or still comparing */
+    /* uncertain: exact branch condition */
+    return 0;  /* Not equal */
+
+check_str2_end:
+    /* Check if str2 also reached end */
+    if (*current2 == '\0') {
+        return 1;  /* Equal */
+    }
+
+    /* Continue loop or return not equal */
+    /* uncertain: exact control flow */
+    return 0;
+}
+```
+
+### Alternate Interpretation: Length-Limited Compare
+
+```c
+/*
+ * string_equal_with_length - Alternative if second param is length
+ *
+ * If the word-sized second parameter is actually a length limit,
+ * this would be the implementation.
+ *
+ * @param str1: First string
+ * @param max_len: Maximum characters to compare
+ * @return: 1 if equal within length, 0 if different
+ */
+short string_equal_with_length(const char *str1, short max_len) {
+    const char *ptr = str1;
+    short remaining = max_len;
+
+    /* Compare up to max_len characters */
+    while (remaining > 0) {
+        if (*ptr == '\0') {
+            return 1;  /* Reached end within limit - equal */
+        }
+        ptr++;
+        remaining--;
+    }
+
+    /* Reached length limit */
+    return 0;  /* uncertain: return value at limit */
+}
+```
+
+### Usage Examples
+
+```c
+/*
+ * Example: Dictionary word lookup
+ *
+ * Check if a played word exists in the word list.
+ */
+Boolean is_valid_word(const char *word, const char **dictionary, int dict_size) {
+    for (int i = 0; i < dict_size; i++) {
+        if (string_equal(word, dictionary[i])) {
+            return true;  /* Found in dictionary */
+        }
+    }
+    return false;  /* Not a valid word */
+}
+
+/*
+ * Example: Command parsing
+ *
+ * Match user input against known commands.
+ */
+void process_command(const char *input) {
+    if (string_equal(input, "NEW")) {
+        start_new_game();
+    } else if (string_equal(input, "HINT")) {
+        show_hint();
+    } else if (string_equal(input, "PASS")) {
+        pass_turn();
+    } else if (string_equal(input, "EXCHANGE")) {
+        begin_exchange();
+    } else {
+        show_error("Unknown command");
+    }
+}
+
+/*
+ * Example: Resource name matching
+ *
+ * Find a named resource in the resource chain.
+ */
+Handle find_named_resource(const char *name, ResType type) {
+    short count = Count1Resources(type);
+
+    for (short i = 1; i <= count; i++) {
+        Handle h = Get1IndResource(type, i);
+        Str255 res_name;
+
+        GetResInfo(h, NULL, NULL, res_name);
+
+        /* Convert Pascal string to C and compare */
+        char c_name[256];
+        pascal_to_c(res_name, c_name);
+
+        if (string_equal(name, c_name)) {
+            return h;
+        }
+    }
+
+    return NULL;
+}
+```
+
+### Performance Notes
+
+```c
+/*
+ * Performance Characteristics:
+ *
+ * Time Complexity: O(n) where n = min(strlen(str1), strlen(str2))
+ * Space Complexity: O(1) - only register variables
+ *
+ * Optimizations:
+ * - Early exit on first mismatch
+ * - No separate length calculation
+ * - Minimal register usage (A3, A4, D0)
+ * - No function call overhead (small, likely inlined)
+ *
+ * Comparison with CODE 52 strcmp:
+ *
+ * |              | CODE 54 string_equal | CODE 52 strcmp |
+ * |--------------|----------------------|----------------|
+ * | Return value | 0 (false) or 1 (true)| -1, 0, or +1   |
+ * | Use case     | Equality testing     | Sorting/ordering|
+ * | Speed        | Slightly faster*     | Standard       |
+ * | Code size    | 42 bytes             | ~40 bytes      |
+ *
+ * * Faster because it doesn't need to determine ordering,
+ *   just equality. Can skip the comparison result logic.
+ */
+```
+
+### Why This Exists Separately from strcmp
+
+```c
+/*
+ * Design Decision Analysis:
+ *
+ * Maven has both this equality function (CODE 54) and a full strcmp
+ * (CODE 52). The reasons for having both:
+ *
+ * 1. FREQUENCY OF USE
+ *    Equality checks are extremely common in Scrabble:
+ *    - Word validation against dictionary
+ *    - Command parsing
+ *    - Resource lookup
+ *    - Configuration matching
+ *
+ *    Having a dedicated equality function keeps these fast.
+ *
+ * 2. SEGMENT LOADING
+ *    At 42 bytes, CODE 54 is tiny. It can be loaded quickly
+ *    and stays resident without wasting memory.
+ *
+ * 3. SEMANTIC CLARITY
+ *    Callers checking equality don't need to compare against 0:
+ *
+ *    // With strcmp (CODE 52):
+ *    if (strcmp(word, target) == 0) { ... }
+ *
+ *    // With string_equal (CODE 54):
+ *    if (string_equal(word, target)) { ... }
+ *
+ * 4. COMPILER/LINKER DECISION
+ *    May have been a separate compilation unit that the linker
+ *    placed in its own segment.
+ */
+```

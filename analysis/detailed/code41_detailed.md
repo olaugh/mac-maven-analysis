@@ -447,3 +447,433 @@ Clear Mac Toolbox Dialog Manager patterns:
 - Event filtering with ModalDialog
 - DITL resource management
 - Proper coordinate conversion for clicks
+
+---
+
+## Speculative C Translation
+
+### Header File (code41_dialog.h)
+
+```c
+/*
+ * CODE 41 - Dialog Manager Interface
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * Provides dialog box management using Mac Toolbox:
+ * - Modal dialog creation and display
+ * - Event handling for user interaction
+ * - DITL resource management
+ */
+
+#ifndef CODE41_DIALOG_H
+#define CODE41_DIALOG_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+/* Mac Toolbox types (simplified) */
+typedef void* DialogPtr;
+typedef void* Handle;
+typedef void* WindowPtr;
+typedef uint32_t ResType;
+typedef int16_t OSErr;
+
+typedef struct Point {
+    int16_t v;  /* Vertical */
+    int16_t h;  /* Horizontal */
+} Point;
+
+typedef struct Rect {
+    int16_t top;
+    int16_t left;
+    int16_t bottom;
+    int16_t right;
+} Rect;
+
+typedef struct EventRecord {
+    int16_t what;           /* Event type */
+    uint32_t message;       /* Event message */
+    uint32_t when;          /* Timestamp */
+    Point where;            /* Mouse location */
+    uint16_t modifiers;     /* Modifier keys */
+} EventRecord;
+
+/* Dialog callback function type */
+typedef int (*DialogCallback)(DialogPtr dialog, void* userdata);
+
+/* Dialog data structure */
+typedef struct DialogData {
+    uint8_t  reserved[168];
+    int16_t  default_button;   /* +168: Default button item */
+    /* Additional fields */
+} DialogData;
+
+/*
+ * Global variables (A5-relative)
+ */
+extern int32_t   g_dialog_refcon;       /* A5-1242: Dialog refCon storage */
+extern void*     g_stored_data;         /* A5-3512: Stored dialog data */
+extern void*     g_standard_callback;   /* A5+3162: Standard callback */
+extern int16_t   g_dialog_counter;      /* A5-23674: Dialog counter */
+extern uint8_t   g_common_data[256];    /* A5-24026: Common dialog data */
+extern uint8_t   g_dialog_copy[256];    /* A5-24030: Dialog copy buffer */
+extern int32_t   g_dialog_state;        /* A5-27732: Dialog state */
+
+/* Event type constants */
+#define nullEvent       0
+#define mouseDown       1
+#define keyDown         3
+#define autoKey         5
+#define updateEvt       6
+#define activateEvt     8
+
+/* Window part codes */
+#define inDrag          3
+
+/* Key codes */
+#define kEnterKey       3
+#define kReturnKey      13
+
+/* Function prototypes */
+void simple_modal_dialog(void* param);
+int create_dialog_with_callback(int16_t dialog_id, void* title,
+                               DialogCallback callback, void* userdata);
+void standard_dialog(int16_t dialog_id, void* userdata);
+int16_t read_dialog_value(int16_t item, Handle* item_handle);
+bool dialog_event_handler(int16_t* item_hit, EventRecord* event, DialogData* data);
+void alert_dialog(void* param);
+
+#endif /* CODE41_DIALOG_H */
+```
+
+### Implementation File (code41_dialog.c)
+
+```c
+/*
+ * CODE 41 - Dialog Manager Interface Implementation
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * Standard Mac Toolbox dialog handling patterns.
+ */
+
+#include "code41_dialog.h"
+
+/* Mac Toolbox Traps (would be actual trap calls) */
+extern void InitCursor(void);                          /* A850 */
+extern void GlobalToLocal(Point* pt);                  /* A873 */
+extern int16_t FindWindow(Point pt, WindowPtr* win);   /* A92C */
+extern bool DialogSelect(WindowPtr win, Point pt,
+                        bool extend, int16_t* item);   /* A96C */
+extern DialogPtr NewDialog(void* storage, Rect* bounds,
+                          void* title, bool visible,
+                          int32_t procID, WindowPtr behind,
+                          bool goAway, int32_t refCon,
+                          Handle items);               /* A97D */
+extern void CloseDialog(DialogPtr dialog);             /* A983 */
+extern void ModalDialog(void* filterProc,
+                       int16_t* itemHit);              /* A98B */
+extern void GetDialogItem(DialogPtr dialog, int16_t item,
+                         int16_t* type, Handle* handle,
+                         Rect* box);                   /* A991 */
+extern Handle GetResource(ResType type, int16_t id);   /* via JT */
+extern void DetachResource(Handle h);                  /* via JT */
+
+/* External JT functions */
+extern void setup_dialog_jt(void* param, void* buffer);  /* JT[2010] */
+extern void setup_dialog(DialogPtr dialog);              /* JT[530] */
+extern void pre_dispose(DialogPtr dialog);               /* JT[538] */
+extern void handle_dialog_event(EventRecord* event);     /* JT[546] */
+extern void idle_dialog(EventRecord* event, void* data); /* JT[554] */
+extern void set_port(DialogPtr dialog);                  /* JT[474] */
+extern void draw_dialog(DialogPtr dialog);               /* JT[3138] */
+extern void release_ditl(DialogPtr d, int16_t id, ResType t); /* JT[3354] */
+extern void bounds_error(void);                          /* JT[418] */
+
+/*
+ * simple_modal_dialog - Function at 0x0000
+ *
+ * Displays a simple modal dialog.
+ *
+ * Parameters:
+ *   param - Dialog parameter
+ */
+void simple_modal_dialog(void* param)
+{
+    char buffer[256];
+    int16_t itemHit;
+
+    setup_dialog_jt(param, buffer);
+
+    /* Run modal dialog with no filter */
+    ModalDialog(NULL, &itemHit);
+}
+
+/*
+ * create_dialog_with_callback - Function at 0x001E
+ *
+ * Creates and displays a dialog with a user callback.
+ *
+ * Parameters:
+ *   dialog_id - DITL resource ID
+ *   title - Dialog title (Pascal string)
+ *   callback - User callback function
+ *   userdata - Data passed to callback
+ *
+ * Returns:
+ *   Callback return value
+ */
+int create_dialog_with_callback(int16_t dialog_id, void* title,
+                               DialogCallback callback, void* userdata)
+{
+    Rect bounds;
+    Handle ditl_handle;
+    DialogPtr dialog;
+    int result;
+
+    /* Initialize cursor to arrow */
+    InitCursor();
+
+    /* Get DITL (Dialog Item List) resource */
+    ditl_handle = GetResource('DITL', dialog_id);
+    if (ditl_handle == NULL) {
+        bounds_error();
+    }
+
+    /* Detach resource for modification */
+    DetachResource(ditl_handle);
+
+    /*
+     * Create dialog window
+     * procID 0x08050100 = movable modal dialog
+     */
+    dialog = NewDialog(
+        NULL,               /* storage - allocate new */
+        &bounds,            /* bounds rect */
+        title,              /* title string */
+        true,               /* visible */
+        0x08050100,         /* procID (movable modal) */
+        (WindowPtr)-1,      /* behind - in front */
+        false,              /* goAwayFlag */
+        g_dialog_refcon,    /* refCon */
+        ditl_handle         /* items list */
+    );
+
+    /* Setup and display */
+    setup_dialog(dialog);
+    set_port(dialog);
+    draw_dialog(dialog);
+
+    /* Call user callback */
+    result = callback(dialog, userdata);
+
+    /* Cleanup */
+    set_port(NULL);  /* Reset port */
+    release_ditl(dialog, dialog_id, 'DITL');
+    pre_dispose(dialog);
+    CloseDialog(dialog);
+
+    return result;
+}
+
+/*
+ * standard_dialog - Function at 0x00D4
+ *
+ * Wrapper for common dialog pattern using standard callback.
+ *
+ * Parameters:
+ *   dialog_id - DITL resource ID
+ *   userdata - User data
+ */
+void standard_dialog(int16_t dialog_id, void* userdata)
+{
+    create_dialog_with_callback(
+        dialog_id,
+        g_stored_data,         /* Title from A5-3512 */
+        g_standard_callback,   /* Callback at A5+3162 */
+        userdata
+    );
+}
+
+/*
+ * read_dialog_value - Function at 0x00F0
+ *
+ * Reads value from a dialog item.
+ *
+ * Parameters:
+ *   item - Item number
+ *   item_handle - Output handle
+ *
+ * Returns:
+ *   Item type
+ */
+int16_t read_dialog_value(int16_t item, Handle* item_handle)
+{
+    int16_t item_type;
+    Rect item_box;
+
+    GetDialogItem(NULL, item, &item_type, item_handle, &item_box);
+
+    return item_type;
+}
+
+/*
+ * dialog_event_handler - Function at 0x011C
+ *
+ * Handles events for a modal dialog.
+ *
+ * Parameters:
+ *   item_hit - Output: Item that was clicked/activated
+ *   event - Event record
+ *   data - Dialog data structure
+ *
+ * Returns:
+ *   true if event was handled
+ */
+bool dialog_event_handler(int16_t* item_hit, EventRecord* event, DialogData* data)
+{
+    int16_t what = event->what;
+    WindowPtr win;
+    Point local_pt;
+    int16_t part;
+
+    switch (what) {
+        case keyDown:
+        case autoKey:
+        {
+            /* Key event - check for Enter/Return */
+            char key = event->message & 0xFF;
+
+            if (key == kEnterKey || key == kReturnKey) {
+                /* Check if default button exists */
+                if (data->default_button != 0) {
+                    /* Simulate click on default button */
+                    *item_hit = data->default_button;
+                    return true;  /* Handled */
+                }
+            }
+
+            /* Let dialog handle other keys */
+            handle_dialog_event(event);
+            break;
+        }
+
+        case updateEvt:
+        case activateEvt:
+            /* Redraw dialog */
+            handle_dialog_event(event);
+            break;
+
+        case mouseDown:
+        {
+            /* Find which window/part was clicked */
+            part = FindWindow(event->where, &win);
+
+            if (part == inDrag) {
+                /* Click in drag region - track */
+                local_pt = event->where;
+                GlobalToLocal(&local_pt);
+
+                /* Let DialogSelect handle it */
+                if (DialogSelect(win, local_pt, false, item_hit)) {
+                    return false;  /* Item selected */
+                }
+            } else {
+                handle_dialog_event(event);
+            }
+            break;
+        }
+
+        case nullEvent:
+            /* Idle processing */
+            idle_dialog(event, data);
+            break;
+
+        default:
+            break;
+    }
+
+    /* Clear event */
+    event->what = 0;
+
+    return false;
+}
+
+/*
+ * alert_dialog - Function at 0x024C
+ *
+ * Displays an alert-style dialog.
+ *
+ * Parameters:
+ *   param - Alert parameter
+ */
+void alert_dialog(void* param)
+{
+    int16_t itemHit;
+
+    /* Run modal dialog */
+    ModalDialog(NULL, &itemHit);
+
+    /* Internal processing */
+    /* uncertain - calls internal helper at PC-348 */
+
+    /* Update globals */
+    g_dialog_copy[0] = g_dialog_state;  /* uncertain mapping */
+    g_dialog_counter--;
+
+    /* Additional state updates */
+    /* uncertain - complex state management */
+}
+```
+
+### Key Algorithmic Notes
+
+```
+MAC TOOLBOX INTEGRATION:
+========================
+Uses standard Dialog Manager traps:
+- NewDialog (A97D): Create dialog window
+- CloseDialog (A983): Dispose dialog
+- ModalDialog (A98B): Run event loop
+- GetDialogItem (A991): Read item info
+- DialogSelect (A96C): Handle item selection
+
+DIALOG CREATION SEQUENCE:
+=========================
+1. InitCursor() - Reset to arrow
+2. GetResource('DITL', id) - Load item list
+3. DetachResource() - Allow modification
+4. NewDialog() - Create window
+5. setup_dialog() - Initialize fields
+6. SetPort() + DrawDialog() - Display
+7. User callback - Handle interaction
+8. CloseDialog() - Cleanup
+
+EVENT HANDLING:
+===============
+Standard Mac event loop pattern:
+- nullEvent (0): Idle processing
+- mouseDown (1): Click handling with FindWindow
+- keyDown (3): Key input, Enter/Return → default button
+- autoKey (5): Key repeat
+- updateEvt (6): Redraw
+- activateEvt (8): Focus change
+
+DEFAULT BUTTON:
+===============
+Stored at offset +168 in DialogData.
+Enter/Return key simulates click on default button.
+Item number returned via item_hit parameter.
+
+CALLBACK PATTERN:
+=================
+DialogCallback(DialogPtr dialog, void* userdata):
+- Called after dialog displayed
+- Returns int value (dialog result)
+- Standard callback at A5+3162
+
+COORDINATE CONVERSION:
+======================
+Mouse events come in global coordinates.
+GlobalToLocal() converts for dialog-relative handling.
+DialogSelect() expects local coordinates.
+```

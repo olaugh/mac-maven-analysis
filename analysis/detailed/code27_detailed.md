@@ -326,3 +326,372 @@ Clear linked list management:
 - Position comparison for matching
 - Data copying between structures
 - List building with bounds checking
+
+---
+
+## Speculative C Translation
+
+### Data Structures
+
+```c
+/*
+ * Candidate structure - represents a potential move
+ * Size: 34 bytes
+ */
+typedef struct Candidate {
+    struct Candidate* next;  /* +0: Linked list pointer */
+    long score_data;         /* +4: Primary score information */
+    char flags;              /* +8: Status flags */
+    char row;                /* +9: Board row (1-15) */
+    char col;                /* +10: Board column (1-15) */
+    char direction;          /* +11: 0=horizontal, 1=vertical */
+    char word_length;        /* +12: Length of word */
+    char candidate_id;       /* +13: Unique ID for this candidate */
+    short reserved;          /* +14: Padding */
+    long base_score;         /* +16: Score before adjustments */
+    long bonus_score;        /* +20: Bonus points */
+    long extra_score;        /* +24: Additional scoring info */
+    char flags2;             /* +28: Secondary flags */
+    char special_flag;       /* +29: Special placement indicator */
+    short player_id;         /* +30: Which player (0 or 1) */
+    char word_data[2];       /* +32: Start of word string (variable length) */
+} Candidate;
+
+/* Global variables */
+Candidate* g_candidate_head;  /* A5-2786: Head of candidate linked list */
+char* g_secondary_array;      /* A5-2926: Secondary candidate storage */
+short g_candidate_counter;    /* A5-12540: Current candidate count */
+```
+
+### Function 0x0000 - Iterate Candidates with Callback
+
+```c
+/*
+ * iterate_candidates - Apply callback function to each candidate
+ *
+ * @param callback: Function to call for each candidate
+ *
+ * This is a simple linked list traversal with function callback.
+ * Used for operations like scoring all candidates, filtering, etc.
+ */
+typedef void (*CandidateCallback)(Candidate* candidate);
+
+void iterate_candidates(CandidateCallback callback) {
+    Candidate* current = g_candidate_head;  /* A5-2786 */
+
+    while (current != NULL) {
+        /* Call the callback with this candidate */
+        callback(current);
+
+        /* Move to next candidate */
+        current = current->next;
+    }
+}
+```
+
+### Function 0x0022 - Evaluate Candidate Scores
+
+```c
+/*
+ * evaluate_candidates - Score and filter candidates against input
+ *
+ * @param input_candidate: Reference candidate to compare against
+ * @param threshold1: Score threshold for filtering (pointer)
+ * @param threshold2: Secondary score threshold (pointer)
+ * @param found_flag: Output flag indicating match found (pointer)
+ *
+ * This function:
+ * 1. Iterates through all candidates
+ * 2. Compares each to the input candidate
+ * 3. Calculates score differentials
+ * 4. Filters out candidates below thresholds
+ * 5. Reorders list based on scores
+ */
+void evaluate_candidates(Candidate* input_candidate,
+                         long* threshold1,
+                         long* threshold2,
+                         short* found_flag) {
+    long best_score_1 = 200000000L;  /* D5: 0x0BEBC200 - large initial value */
+    long best_score_2 = 200000000L;  /* D6: same */
+    long accumulated_diff;           /* D4: Accumulated score difference */
+    short match_count = 0;           /* D7: Number of matches found */
+
+    *found_flag = 0;  /* Clear output flag */
+
+    setup_evaluation();  /* JT[2738] */
+
+    Candidate** prev_ptr = &g_candidate_head;  /* A4: Previous node's next ptr */
+    Candidate* current = g_candidate_head;     /* A3: Current candidate */
+
+    while (current != NULL) {
+        /* Compare positions - are they the same move location? */
+        int same_position = compare_candidates(current, input_candidate);  /* JT[2722] */
+
+        if (!same_position) {
+            /* Different position - skip to next */
+            prev_ptr = &current->next;
+            current = current->next;
+            continue;
+        }
+
+        /* Same position - calculate score differential */
+        long score_diff;
+
+        if (current->flags != 0) {
+            /* Flagged candidate - special scoring */
+            /* uncertain: exact player data lookup */
+            short player = input_candidate->player_id;
+            void* player_data = get_player_data(player);  /* A5-13318 offset */
+
+            score_diff = input_candidate->base_score - current->score_data;
+            accumulated_diff += score_diff;
+            *found_flag = 1;
+        } else {
+            /* Normal candidate scoring */
+            short local_adj_1, local_adj_2;
+            calculate_position_adjustment(
+                input_candidate->player_id,
+                current->row,
+                &local_adj_1,
+                &local_adj_2
+            );  /* JT[2666] */
+
+            score_diff = input_candidate->base_score - current->score_data;
+            accumulated_diff += score_diff;
+            accumulated_diff += local_adj_1;
+            accumulated_diff -= local_adj_2;
+        }
+
+        /* Track best scores */
+        if (accumulated_diff < best_score_2) {
+            best_score_2 = accumulated_diff;
+        }
+        if (score_diff < best_score_1) {
+            best_score_1 = score_diff;
+        }
+
+        /* Check if candidate passes thresholds */
+        if (accumulated_diff >= *threshold1 || score_diff >= *threshold2) {
+            /* Below threshold - remove from list */
+            prev_ptr = &current->next;
+            current = current->next;
+            continue;
+        }
+
+        /* Passes thresholds - relink into list */
+        /* uncertain: exact relinking logic */
+        *prev_ptr = current->next;
+        current->next = g_candidate_head;
+        g_candidate_head = current;
+        match_count = 1;
+
+        current = *prev_ptr;
+    }
+
+    /* Update output thresholds with best found */
+    *threshold1 = best_score_1;
+    *threshold2 = best_score_2;
+}
+```
+
+### Function 0x0148 - Compare Two Positions
+
+```c
+/*
+ * positions_equal - Check if two candidates are at the same board position
+ *
+ * @param cand1: First candidate
+ * @param cand2: Second candidate
+ * Returns: 1 if same position, 0 if different
+ *
+ * Two candidates are at the "same position" if they have matching:
+ *   - Row (where word starts)
+ *   - Column (where word starts)
+ *   - Direction (horizontal vs vertical)
+ *   - Word length
+ */
+int positions_equal(Candidate* cand1, Candidate* cand2) {
+    /* Compare row */
+    if (cand1->row != cand2->row) {
+        return 0;
+    }
+
+    /* Compare column */
+    if (cand1->col != cand2->col) {
+        return 0;
+    }
+
+    /* Compare direction */
+    if (cand1->direction != cand2->direction) {
+        return 0;
+    }
+
+    /* Compare word length */
+    if (cand1->word_length != cand2->word_length) {
+        return 0;
+    }
+
+    /* All match - same position */
+    return 1;
+}
+```
+
+### Function 0x018E - Copy Candidate Data
+
+```c
+/*
+ * copy_candidate_data - Copy selected fields from source to destination
+ *
+ * @param dest: Destination candidate structure
+ * @param source: Source candidate to copy from
+ *
+ * Note: This doesn't copy all fields - just the essential ones
+ * for creating a summary or reference copy.
+ */
+void copy_candidate_data(Candidate* dest, Candidate* source) {
+    /* Copy flags from offset 29 to offset 8 */
+    dest->flags = source->special_flag;  /* +29 -> +8 */
+
+    /* Copy base score */
+    dest->score_data = source->base_score;  /* +16 -> +4 */
+
+    /* Copy column (from word data area) */
+    dest->col = source->word_data[0];  /* +32 -> +10 */
+
+    /* Copy direction */
+    dest->direction = source->word_data[1];  /* +33 -> +11 */
+
+    /* Calculate and copy word length */
+    int length = strlen((char*)source);  /* JT[3522] - uncertain: what gets strlen'd */
+    dest->word_length = (char)length;
+
+    /* Copy row (from offset 31 to 9) */
+    dest->row = source->word_data[-1];  /* +31 -> +9 - uncertain indexing */
+}
+```
+
+### Function 0x01D0 - Build Candidate List
+
+```c
+#define MAX_CANDIDATES 256
+
+/*
+ * build_candidate_list - Construct linked list from data array
+ *
+ * @param data_base: Base pointer to candidate data area
+ * Returns: Pointer to head of linked list
+ *
+ * This function:
+ * 1. Clears the global candidate list
+ * 2. Iterates through a data array (going backwards)
+ * 3. Links valid entries into the candidate list
+ * 4. Assigns unique IDs to each candidate
+ */
+Candidate* build_candidate_list(void* data_base) {
+    short count = 0;        /* D6: Number of candidates added */
+    char* current;          /* A2: Current entry pointer */
+
+    /* Calculate start of data area (offset 3584 from base) */
+    current = (char*)data_base + 3584;
+
+    /* Clear the list head */
+    g_candidate_head = NULL;
+
+    /* Iterate backwards through entries */
+    /* uncertain: why backwards iteration? possibly for ordering */
+    while (current > (char*)data_base) {
+        /* Check if this entry is valid */
+        if (((Candidate*)current)->col != 0) {  /* Offset 10 */
+            /* Valid entry - check bounds */
+            if (count >= MAX_CANDIDATES) {
+                bounds_error();  /* JT[418] */
+            }
+
+            /* Assign unique ID */
+            ((Candidate*)current)->candidate_id = (char)count;
+            count++;
+
+            /* Link into list (prepend) */
+            ((Candidate*)current)->next = g_candidate_head;
+            g_candidate_head = (Candidate*)current;
+        }
+
+        /* Move to previous entry (14 bytes back) */
+        current -= 14;  /* uncertain: entry size */
+    }
+
+    /* Additional processing... */
+    /* uncertain: lines 0x028A onward */
+
+    return g_candidate_head;
+}
+```
+
+### Helper Functions
+
+```c
+/*
+ * calculate_total_score - Sum all score components
+ */
+static inline long calculate_total_score(Candidate* cand) {
+    return cand->base_score + cand->bonus_score + cand->extra_score;
+}
+
+/*
+ * is_candidate_better - Compare two candidates by score
+ */
+static inline int is_candidate_better(Candidate* new_cand, Candidate* old_cand) {
+    return calculate_total_score(new_cand) > calculate_total_score(old_cand);
+}
+
+/*
+ * remove_candidate - Unlink a candidate from the list
+ */
+void remove_candidate(Candidate* target) {
+    if (g_candidate_head == target) {
+        g_candidate_head = target->next;
+        return;
+    }
+
+    Candidate* prev = g_candidate_head;
+    while (prev != NULL && prev->next != target) {
+        prev = prev->next;
+    }
+
+    if (prev != NULL) {
+        prev->next = target->next;
+    }
+}
+```
+
+### Usage Example
+
+```c
+/*
+ * Example: Find best move at each position
+ *
+ * During move generation, Maven:
+ * 1. Builds candidate list from all valid placements
+ * 2. Scores each candidate
+ * 3. Filters to best candidates per position
+ * 4. Returns top N moves for user/AI
+ */
+void find_best_moves(void) {
+    /* Build initial candidate list */
+    build_candidate_list(g_move_data_buffer);
+
+    /* Score all candidates */
+    iterate_candidates(score_candidate);
+
+    /* Evaluate and filter */
+    long threshold1 = MAX_SCORE;
+    long threshold2 = MAX_SCORE;
+    short found;
+
+    Candidate* best = g_candidate_head;
+    evaluate_candidates(best, &threshold1, &threshold2, &found);
+
+    /* Top candidates now at front of list */
+    display_top_moves(g_candidate_head, 10);
+}
+```

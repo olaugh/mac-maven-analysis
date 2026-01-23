@@ -425,3 +425,345 @@ The scoring logic is clear:
 - Cross-word calculation
 - 7-tile BINGO bonus
 - Board update sequence
+
+---
+
+## Speculative C Translation
+
+```c
+/* CODE 8 - Speculative C Translation */
+/* Move Scoring & Cross-Check Validation */
+
+/*============================================================
+ * Data Structures
+ *============================================================*/
+
+/* Move information structure */
+typedef struct MoveInfo {
+    char unknown[16];                /* Offset 0-15: unknown fields */
+    char tiles[17];                  /* Offset 16: tiles to play */
+    long score;                      /* Offset 20: calculated score */
+    short reserved;                  /* Offset 24 */
+    short reserved2;                 /* Offset 26 */
+    short flags;                     /* Offset 28: move flags */
+    short bingo_flag;                /* Offset 30: 1 if used all 7 tiles */
+    char row;                        /* Offset 32: row (or row+16 for vertical) */
+    char col;                        /* Offset 33: column */
+} MoveInfo;
+
+/*============================================================
+ * Global Variables
+ *============================================================*/
+extern char g_board[17][17];         /* A5-10388: 17x17 board grid */
+extern char g_board_source[17][17];  /* A5-10099: source/backup board */
+extern char g_state1[544];           /* A5-17154: scoring state 1 */
+extern char g_state2[1088];          /* A5-16610: scoring state 2 */
+extern char g_rack[];                /* A5-15514: current rack */
+extern short g_letter_scores[64];    /* A5-37682: point values per letter */
+extern char g_letter_avail[64];      /* A5-23218: tiles remaining per letter */
+extern char g_blank_count;           /* A5-23155: blanks remaining */
+extern short g_tiles_used;           /* A5-20010: tiles placed this move */
+extern short g_blank1_row;           /* A5-17164: first blank position */
+extern short g_blank1_col;           /* A5-17160 */
+extern short g_blank2_row;           /* A5-17162: second blank position */
+extern short g_blank2_col;           /* A5-17158 */
+
+/* Internal score scaling: scores are *100 internally */
+#define BINGO_BONUS 5000             /* 50 points * 100 */
+
+/*============================================================
+ * Function 0x0000 - Calculate Move Score
+ * JT offset: 328(A5)
+ * Frame size: 64 bytes
+ *============================================================*/
+void calculate_move_score(MoveInfo *move /* 8(A6), stored in A3 */) {
+    /* Local variables */
+    long main_word_score = 0;        /* -36(A6) */
+    long cross_word_total = 0;       /* -52(A6) */
+    int word_multiplier = 1;         /* D7 */
+    char *tiles_ptr = move->tiles;   /* -28(A6) */
+    int step;                        /* -48(A6): 1 for horiz, 17 for vert */
+    int current_pos;                 /* D3 */
+    int row_or_col;                  /* D4 */
+
+    /* Initialize move result fields */
+    move->score = 0;                 /* CLR.L 20(A3) at 0x001E */
+    move->bingo_flag = 0;            /* MOVE.W #0,30(A3) at 0x0024 */
+
+    /* Clear blank position tracking */
+    g_blank1_row = 0;                /* A5-17164 */
+    g_blank1_col = 0;                /* A5-17160 */
+    g_blank2_row = 0;                /* A5-17162 */
+    g_blank2_col = 0;                /* A5-17158 */
+    g_tiles_used = 0;                /* A5-20010 */
+
+    /* Get starting position */
+    char start_row = move->row;      /* offset 32 */
+    if (start_row == 0) {            /* TST.B D3; BEQ at 0x0054 */
+        return;  /* No move to score */
+    }
+
+    /*
+     * Direction encoding:
+     * - row < 16: Horizontal move (step = 1)
+     * - row >= 16: Vertical move (step = 17, actual row = row - 16)
+     */
+    if (start_row < 16) {            /* CMPI.B #16,D3 at 0x005C */
+        /* Horizontal move */
+        current_pos = start_row * 17 + move->col;
+        step = 1;                    /* MOVEQ #1,D1 at 0x007E */
+        row_or_col = start_row;
+    } else {
+        /* Vertical move */
+        int actual_row = start_row - 16;
+        current_pos = move->col * 17 + actual_row;
+        step = 17;                   /* MOVEQ #17,D1 at 0x00AC */
+        row_or_col = move->col;
+    }
+
+    /* Process each tile in the move */
+    int tile_index = 0;
+    while (tiles_ptr[tile_index] != '\0') {
+        char tile = tiles_ptr[tile_index];
+
+        /* Check if this square is empty (new tile placement) */
+        if (g_board[current_pos / 17][current_pos % 17] == 0) {
+            /* New tile - count it */
+            g_tiles_used++;          /* ADDQ.W #1 at 0x0160 */
+
+            /* Get letter value */
+            int letter_index = tile;
+            if (tile == '?') {       /* Blank tile */
+                /* Track blank positions */
+                if (g_blank1_row == 0) {
+                    g_blank1_row = current_pos / 17;
+                    g_blank1_col = current_pos % 17;
+                } else {
+                    g_blank2_row = current_pos / 17;
+                    g_blank2_col = current_pos % 17;
+                }
+                letter_index = 63;   /* Blank has index 63 */
+            }
+
+            /* Get base letter score */
+            short letter_score = g_letter_scores[letter_index];
+
+            /* Get square multiplier (DL=2, TL=3, etc) */
+            /* uncertain: exact lookup method */
+            int square_mult = get_square_letter_multiplier(current_pos);
+            main_word_score += letter_score * square_mult;
+
+            /* Check for word multiplier squares (DW, TW) */
+            int word_mult = get_square_word_multiplier(current_pos);
+            word_multiplier *= word_mult;
+
+            /* Calculate cross-word score if applicable */
+            long cross_score = calculate_cross_word_score(
+                current_pos,
+                step == 1 ? 17 : 1,  /* perpendicular direction */
+                letter_score
+            );
+            cross_word_total += cross_score;
+        }
+
+        /* Move to next position */
+        current_pos += step;
+        tile_index++;
+    }
+
+    /* Apply word multiplier to main word */
+    main_word_score *= word_multiplier;
+
+    /* Check for BINGO (all 7 tiles used) */
+    short rack_length = strlen(g_rack);  /* JT[3522] at 0x033A */
+
+    if (g_tiles_used == rack_length) {   /* All rack tiles used */
+        if (g_tiles_used == 7) {         /* CMPI.W #7 at 0x034A */
+            cross_word_total += BINGO_BONUS;  /* Add 50-point bonus */
+        }
+        move->bingo_flag = 1;            /* Mark as bingo */
+    }
+
+    /* Store final score */
+    move->score = main_word_score + cross_word_total;
+}
+
+/*============================================================
+ * Cross-Word Score Calculation Helper
+ *============================================================*/
+static long calculate_cross_word_score(
+    int main_pos,                    /* Position of new tile */
+    int cross_step,                  /* Step in perpendicular direction */
+    short new_tile_score             /* Score of the new tile */
+) {
+    long cross_score = 0;
+    int pos;
+
+    /* Scan backward to find start of cross-word */
+    pos = main_pos - cross_step;
+    while (pos >= 0 && g_board[pos / 17][pos % 17] != 0) {
+        /* Add existing tile's score */
+        /* uncertain: exact score lookup */
+        cross_score += g_state2[(pos - 1) * 34];  /* approximate */
+        pos -= cross_step;
+    }
+
+    /* Scan forward to find end of cross-word */
+    pos = main_pos + cross_step;
+    while (pos < 289 && g_board[pos / 17][pos % 17] != 0) {
+        /* Add existing tile's score */
+        cross_score += g_state2[(pos - 1) * 34];
+        pos += cross_step;
+    }
+
+    /* If there were adjacent tiles, this forms a cross-word */
+    if (cross_score > 0) {
+        /* Add the new tile's contribution */
+        /* Note: letter multipliers apply, but word multipliers don't
+           affect existing tiles in cross-words */
+        cross_score += new_tile_score;
+    }
+
+    return cross_score;
+}
+
+/*============================================================
+ * Function 0x0370 - Validate Move Placement
+ * JT offset: 336(A5)
+ * Frame size: 152 bytes
+ *============================================================*/
+short validate_move_placement(MoveInfo *move /* 8(A6) */) {
+    short valid = 1;                 /* D7 = 1 initially */
+    char local_avail[64];            /* Local copy of letter availability */
+
+    /* Initialize validation state */
+    setup_validation(&g_rack);       /* JT[2410] at 0x0396 */
+
+    /* Copy letter availability for tracking */
+    memcpy(local_avail, g_letter_avail, 64);
+
+    /* Check each tile in the move */
+    for (int i = 0; move->tiles[i] != '\0'; i++) {
+        char tile = move->tiles[i];
+        char upper_tile = toupper(tile);  /* JT[3554] at 0x03F2 */
+
+        /* Check if this letter is available in rack */
+        if (local_avail[upper_tile] > 0) {
+            /* Use a regular tile */
+            local_avail[upper_tile]--;    /* SUBQ.B #1 at 0x041E */
+        }
+        else if (g_blank_count > 0) {
+            /* Use a blank tile */
+            g_blank_count--;              /* SUBQ.B #1 at 0x0414 */
+        }
+        else {
+            /* No tile available - invalid move */
+            valid = 0;                    /* MOVEQ #0,D7 at 0x03E6 */
+            break;
+        }
+    }
+
+    /* If tiles are valid, check word in dictionary */
+    if (valid) {
+        /* Clear DAWG info structure */
+        memset(&g_dawg_info, 0, 34);     /* JT[426] at 0x047E */
+
+        /* Perform dictionary lookup */
+        valid = check_word_in_dawg(move->tiles);  /* uncertain */
+    }
+
+    return valid;
+}
+
+/*============================================================
+ * Function 0x0714 - Apply Move to Board
+ * JT offset: 344(A5)
+ * Frame size: 140 bytes
+ *============================================================*/
+void apply_move_to_board(
+    MoveInfo *move,                  /* 8(A6), stored in A4 */
+    short update_display,            /* 12(A6) */
+    short debug_mode                 /* 14(A6) */
+) {
+    char output_buffer[132];         /* -132(A6) */
+    int row, col, step;
+
+    /* Check if move exists */
+    if (move->row == 0) {            /* TST.B 32(A4) at 0x0720 */
+        /* No move - possibly output debug info */
+        if (debug_mode) {            /* TST.W 14(A6) at 0x0726 */
+            short len = strlen(g_dawg_info);  /* JT[3522] */
+            sprintf(output_buffer, g_format_str, /* ... */);  /* JT[2066] */
+        }
+        return;
+    }
+
+    /* Decode position and direction */
+    if (move->row < 16) {            /* CMPI.B #16 at 0x0766 */
+        /* Horizontal move */
+        row = move->row;             /* D7 = row */
+        col = move->col;             /* D6 = col */
+        step = 0;                    /* D5 = 0 (horizontal step indicator) */
+    } else {
+        /* Vertical move */
+        col = move->col;             /* D7 = col (used as row for calc) */
+        row = move->row - 16 + 1;    /* D6 = actual row (adjusted) */
+        step = 1;                    /* D5 = 1 (vertical step indicator) */
+    }
+
+    /* Place each tile on the board */
+    int tile_idx = 0;
+    while (move->tiles[tile_idx] != '\0') {
+        /* Calculate board position: row * 17 + col */
+        int board_offset = row * 17 + col;
+
+        /* Check if square is empty */
+        if (g_board[row][col] == 0) {   /* TST.B at 0x07D4 */
+            /* Place new tile */
+            g_board[row][col] = move->tiles[tile_idx];  /* MOVE.B at 0x0844 */
+
+            /* Update display for this cell */
+            update_cell_display(row, col);   /* JT[986] at 0x0870 */
+        }
+
+        /* Advance to next position */
+        if (step == 0) {
+            col++;  /* Horizontal: move right */
+        } else {
+            row++;  /* Vertical: move down */
+        }
+        tile_idx++;
+    }
+
+    /* Copy board state for next iteration */
+    memcpy(g_board, g_board_source, 289);  /* JT[3466] at 0x0900 */
+
+    /* Update game state */
+    update_board_state();            /* JT[1338] at 0x0904 */
+
+    /* Redraw entire board */
+    redraw_board();                  /* JT[962] at 0x0908 */
+}
+
+/*============================================================
+ * Scrabble Scoring Summary
+ *
+ * Letter scores (standard US Scrabble):
+ *   1 point:  A, E, I, O, U, L, N, S, T, R
+ *   2 points: D, G
+ *   3 points: B, C, M, P
+ *   4 points: F, H, V, W, Y
+ *   5 points: K
+ *   8 points: J, X
+ *   10 points: Q, Z
+ *   0 points: Blank (?)
+ *
+ * Board multipliers:
+ *   DL (Double Letter): 2x letter score
+ *   TL (Triple Letter): 3x letter score
+ *   DW (Double Word):   2x word score
+ *   TW (Triple Word):   3x word score
+ *
+ * Bingo bonus: 50 points for using all 7 tiles
+ *============================================================*/
+```

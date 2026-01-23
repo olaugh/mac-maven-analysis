@@ -211,3 +211,204 @@ The function flow is clear:
 - Turn order setup based on parameter
 - Game mode assignment
 - Standard return pattern
+
+---
+
+## Speculative C Translation
+
+```c
+/* CODE 5 - Speculative C Translation */
+/* Game State Setup */
+
+/*============================================================
+ * Global Variables
+ *============================================================*/
+
+/* Board direction buffers - used for cross-check searches */
+extern void* g_field_14;             /* A5-15514: "hook-before" buffer */
+extern void* g_field_22;             /* A5-15522: "hook-after" buffer */
+
+/* Active search direction pointer */
+extern void* g_current_ptr;          /* A5-15498: points to active buffer */
+
+/* Section sizes for DAWG navigation */
+extern long g_size1;                 /* A5-15506 */
+extern long g_size2;                 /* A5-15502 */
+
+/* 17x17 position lookup table (likely bonus squares or anchors) */
+extern char g_lookup_tbl[289];       /* A5-10388: 17*17 = 289 bytes */
+extern char g_lookup_source[289];    /* A5-10099: source data */
+
+/* Game state */
+extern short g_game_mode;            /* A5-8604: current turn/state */
+extern short g_some_flag;            /* A5-9810: game flag */
+
+/* Game mode constants */
+#define GAME_MODE_IDLE        0      /* New/no game */
+#define GAME_MODE_HUMAN_TURN  2      /* Human player's turn */
+#define GAME_MODE_CPU_TURN    3      /* Computer's turn */
+#define GAME_MODE_LOADED      8      /* Loaded saved game */
+
+/*============================================================
+ * Function 0x0000 - Setup Game State
+ * JT offset: 160(A5)
+ * Frame size: 1152 bytes (used for temporary board state?)
+ *============================================================*/
+int setup_game_state(
+    void* player1_board,             /* 8(A6)  - First player's board data */
+    void* player2_board,             /* 12(A6) - Second player's board data */
+    long section2_size,              /* 16(A6) - DAWG section 2 size */
+    long section1_size,              /* 20(A6) - DAWG section 1 size */
+    short computer_goes_first        /* 24(A6) - Non-zero if computer first */
+) {
+    /* Large local frame - 1152 bytes, possibly for board copy */
+    char local_board_state[1152];    /* -1152(A6), 0xFB80 */
+
+    /*
+     * PHASE 1: Parameter Validation
+     */
+
+    /* Validate board pointers */
+    short valid = validate_params(player1_board, player2_board);  /* JT[1354] */
+
+    if (valid != 0) {                /* TST.W D0; BEQ.S at 0x0014 */
+        /*
+         * Validation failed - show error dialog with code 0x3FF (1023)
+         * This could be:
+         * - "Invalid board data"
+         * - "Dictionary not loaded"
+         * - "Memory allocation failed"
+         */
+        short user_choice = show_error_dialog(0x03FF);  /* JT[1418] at 0x001A */
+
+        if (user_choice == 0) {      /* TST.W D0; BNE.S at 0x0022 */
+            return 0;                 /* User cancelled - return failure */
+        }
+        /* User clicked OK/Continue - proceed anyway */
+    }
+
+    /*
+     * PHASE 2: Subsystem Initialization
+     */
+
+    /* Initialize display, memory, and other subsystems */
+    init_subsystem();                /* JT[658] at 0x002A */
+
+    /*
+     * PHASE 3: Board Buffer Setup
+     *
+     * Copy player board data to the two global buffers:
+     * - g_field_14: Used for "hook-before" searches (left/top anchors)
+     * - g_field_22: Used for "hook-after" searches (right/bottom anchors)
+     */
+
+    copy_to_global(&g_field_14, player1_board);  /* JT[3490] at 0x0036 */
+    copy_to_global(&g_field_22, player2_board);  /* JT[3490] at 0x0042 */
+
+    /* Synchronize game state after buffer setup */
+    state_update();                  /* JT[1362] at 0x0046 */
+
+    /*
+     * PHASE 4: Store DAWG Section Sizes
+     *
+     * These sizes control DAWG navigation boundaries
+     */
+    g_size2 = section2_size;         /* MOVE.L 16(A6),-15502(A5) at 0x004A */
+    g_size1 = section1_size;         /* MOVE.L 20(A6),-15506(A5) at 0x0050 */
+
+    /*
+     * PHASE 5: Post-Search Initialization
+     */
+    post_search_init();              /* JT[1258] at 0x0056 */
+    some_init();                     /* JT[1018] at 0x005A */
+
+    /*
+     * PHASE 6: Copy Position Lookup Table
+     *
+     * 17x17 = 289 bytes, likely contains:
+     * - Bonus square information (DL, TL, DW, TW)
+     * - Anchor positions for word placement
+     * - Valid starting positions
+     */
+    memcpy(g_lookup_tbl,             /* JT[3466] at 0x006A */
+           g_lookup_source,           /* A5-10099 */
+           289);                      /* 0x121 = 17*17 */
+
+    /*
+     * PHASE 7: Set Turn Order
+     *
+     * The active player's buffer is stored in g_current_ptr.
+     * Process both buffers, but set state based on who goes first.
+     */
+
+    if (computer_goes_first != 0) {  /* TST.W 24(A6); BEQ.S at 0x0076 */
+        /*
+         * Computer goes first:
+         * - g_current_ptr points to g_field_14 (computer's perspective)
+         * - Process computer's buffer first
+         * - Set game mode to CPU_TURN (3)
+         */
+        g_current_ptr = &g_field_14;     /* LEA/MOVE.L at 0x0078-0x007C */
+
+        process_buffer(&g_field_14);      /* JT[2402] at 0x0084 */
+        process_buffer(&g_field_22);      /* JT[2402] at 0x008C */
+
+        g_game_mode = GAME_MODE_CPU_TURN; /* MOVE.W #3 at 0x0090 */
+    } else {
+        /*
+         * Human goes first:
+         * - g_current_ptr points to g_field_22 (human's perspective)
+         * - Process human's buffer first
+         * - Set game mode to HUMAN_TURN (2)
+         */
+        g_current_ptr = &g_field_22;     /* LEA/MOVE.L at 0x009A-0x009E */
+
+        process_buffer(&g_field_22);      /* JT[2402] at 0x00A6 */
+        process_buffer(&g_field_14);      /* JT[2402] at 0x00AE */
+
+        g_game_mode = GAME_MODE_HUMAN_TURN; /* MOVE.W #2 at 0x00B2 */
+    }
+
+    /*
+     * PHASE 8: Final Setup
+     */
+
+    /* Final state synchronization */
+    state_update();                  /* JT[1362] at 0x00BA */
+
+    /* Complete initialization */
+    final_init();                    /* JT[298] at 0x00BE */
+
+    /* Clear game flag (purpose uncertain - maybe "game in progress"?) */
+    g_some_flag = 0;                 /* CLR.W -9810(A5) at 0x00C2 */
+
+    return 1;                        /* Success */
+}
+
+/*============================================================
+ * Analysis Notes
+ *
+ * Turn Order Logic:
+ * The function sets up two board perspectives:
+ * 1. g_field_14 - Computer/AI perspective
+ * 2. g_field_22 - Human player perspective
+ *
+ * The g_current_ptr indicates whose turn it is.
+ * Both buffers are processed regardless, but the order
+ * and active pointer determine initial game state.
+ *
+ * 17x17 Lookup Table:
+ * Standard Scrabble board is 15x15, but adding a 1-cell
+ * border on each side gives 17x17, which simplifies
+ * boundary checking during word validation.
+ *
+ * The table likely encodes:
+ * - 0: Empty/normal square
+ * - 1: Double Letter Score
+ * - 2: Triple Letter Score
+ * - 3: Double Word Score
+ * - 4: Triple Word Score
+ * - 5: Center star
+ * - 255 or -1: Board edge (out of bounds)
+ *============================================================*/
+```

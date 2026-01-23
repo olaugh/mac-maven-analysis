@@ -294,3 +294,408 @@ Clear move history formatting patterns:
 - Score tracking for both players
 - Win/loss determination
 - Resource-based storage with 'HIST' type
+
+---
+
+## Speculative C Translation
+
+### Data Structures
+
+```c
+/* SANE 80-bit extended precision type */
+typedef struct {
+    unsigned char bytes[10];
+} Extended80;
+
+/* Move entry in game state - 10 bytes */
+typedef struct MoveEntry {
+    long word_data;            /* 0-3: Word/tile information */
+    long score_data;           /* 4-7: Score information */
+    short flags;               /* 8-9: Move flags (bingo, exchange, pass) */
+} MoveEntry;
+
+/* History entry stored in HIST resource - 8 bytes */
+typedef struct HistoryEntry {
+    short move_number;         /* 0-1: Sequential move number */
+    short player;              /* 2-3: Player 0 or 1 */
+    short score;               /* 4-5: Points scored */
+    short flags;               /* 6-7: Special indicators */
+} HistoryEntry;
+
+/* Game state structure (partial) */
+typedef struct GameState {
+    char reserved[768];        /* 0-767: Other game data */
+    short game_over_flag;      /* 768: Non-zero if game ended */
+    short current_move_index;  /* 770: Current position in move list */
+    MoveEntry moves[];         /* 772+: Variable-length move array */
+} GameState;
+
+/* Global variables */
+Handle g_game_state_handle;    /* A5-8584: Handle to GameState */
+short g_resource_file_ref;     /* A5-3512: Application resource file ref */
+char g_score_buffer1[32];      /* A5-8504: First score format buffer */
+char g_score_buffer2[32];      /* A5-23312: Second score format buffer */
+```
+
+### Function 0x0000 - Format Move History Entry
+
+```c
+/*
+ * format_move_history_entry - Format a move for history display
+ *
+ * Creates a formatted string representation of a game move using
+ * standard Scrabble notation. Also maintains the HIST resource
+ * for game history persistence.
+ *
+ * @param move_index: Index of the move to format
+ * @param player: Player number (0 or 1)
+ */
+void format_move_history_entry(long move_index, long player) {
+    /* Local buffers for floating-point operations */
+    Extended80 ext_buffer1;      /* -10(A6) */
+    Extended80 ext_buffer2;      /* -36(A6) */
+    Extended80 ext_buffer3;      /* -46(A6) */
+    Extended80 ext_buffer4;      /* -56(A6) */
+    Extended80 ext_buffer5;      /* -66(A6) */
+    short score_diff;            /* -48(A6) */
+    long temp_long;              /* -8(A6) */
+    short temp_word;             /* -2(A6) */
+
+    GameState *game_state;
+    Handle hist_handle;
+    HistoryEntry *hist_entry;
+    MoveEntry *move_ptr;
+    char move_notation[64];
+
+    /* Lock game state for access */
+    HLock(g_game_state_handle);
+    game_state = *(GameState**)g_game_state_handle;
+
+    /* Get move count/index from state */
+    short state_move_index = game_state->current_move_index;
+
+    /*--------------------------------------------------
+     * Format player scores using field at offset 770+
+     *--------------------------------------------------*/
+
+    /* uncertain: exact score extraction */
+    format_score_value(game_state, g_score_buffer1, 0);  /* Player 1 */
+    format_score_value(game_state, g_score_buffer2, 1);  /* Player 2 */
+
+    /*--------------------------------------------------
+     * Find or create HIST resource
+     *--------------------------------------------------*/
+
+    hist_handle = GetResource('HIST', 0);
+
+    if (hist_handle == NULL) {
+        /* Create new history resource */
+        hist_handle = NewHandle(0);
+
+        if (hist_handle == NULL) {
+            HUnlock(g_game_state_handle);
+            return;  /* Memory allocation failed */
+        }
+
+        /* Add to resource file for persistence */
+        AddResource(hist_handle, 'HIST', 0, "\p");
+    }
+
+    /* Lock history handle */
+    HLock(hist_handle);
+
+    /* Resize to add new 8-byte entry */
+    SetHandleSize(hist_handle, GetHandleSize(hist_handle) + 8);
+
+    /* Check for memory error */
+    if (MemError() != noErr) {
+        error_handler();  /* JT[418] */
+    }
+
+    /*--------------------------------------------------
+     * Format move number and player
+     *--------------------------------------------------*/
+
+    /* Convert move index to string (max 100) */
+    /* JT[90] = NumToString wrapper */
+    num_to_string(move_index, 100, move_notation);
+
+    /* Add player indicator */
+    num_to_string(player, 100, move_notation + strlen(move_notation));
+
+    /*--------------------------------------------------
+     * Get and format move data
+     *--------------------------------------------------*/
+
+    /* Calculate offset to move entry */
+    /* uncertain: exact offset calculation */
+    long move_offset = state_move_index * sizeof(MoveEntry);
+    move_ptr = (MoveEntry*)((char*)&game_state->moves + move_offset);
+
+    /* Copy 10-byte move entry to local storage */
+    MoveEntry local_move = *move_ptr;
+
+    /*--------------------------------------------------
+     * SANE floating-point score calculations
+     *--------------------------------------------------*/
+
+    /* Convert score to extended precision for accurate formatting */
+    /* SANE operation $200E = FADD extended */
+    long_to_extended(local_move.score_data, &ext_buffer1);
+
+    /* Copy for manipulation */
+    copy_extended(&ext_buffer1, &ext_buffer2);
+
+    /* Perform formatting operations */
+    /* SANE $0002 = FX2I (extended to integer) */
+    extended_to_int(&ext_buffer2, &temp_word);
+
+    /* uncertain: exact sequence of SANE operations */
+    /* Multiple conversions between extended and string formats */
+    extended_add(&ext_buffer1, &ext_buffer3, &ext_buffer4);
+    extended_subtract(&ext_buffer4, &ext_buffer5, &ext_buffer1);
+
+    /* Format score with proper rounding */
+    /* SANE $000D = FX2S (extended to string) */
+    extended_to_string(&ext_buffer1, g_score_buffer1);
+
+    /*--------------------------------------------------
+     * Check for game over
+     *--------------------------------------------------*/
+
+    if (game_state->game_over_flag != 0) {
+        /* Game has ended - determine winner */
+
+        /* Get final scores */
+        long player1_score = get_player_score(game_state, 0);
+        long player2_score = get_player_score(game_state, 1);
+
+        /* Compare scores */
+        /* SANE $1004 = FCPXX (compare extended) */
+        if (player1_score > player2_score) {
+            score_diff = (short)(player1_score - player2_score);
+
+            if (player == 0) {
+                format_win_result(score_diff);
+            } else {
+                format_loss_result(score_diff);
+            }
+        } else if (player2_score > player1_score) {
+            score_diff = (short)(player2_score - player1_score);
+
+            if (player == 1) {
+                format_win_result(score_diff);
+            } else {
+                format_loss_result(score_diff);
+            }
+        } else {
+            /* Tie game */
+            format_tie_result();
+        }
+    }
+
+    /*--------------------------------------------------
+     * Store history entry
+     *--------------------------------------------------*/
+
+    /* Get pointer to new entry at end of handle */
+    long hist_size = GetHandleSize(hist_handle);
+    hist_entry = (HistoryEntry*)(*hist_handle + hist_size - 8);
+
+    hist_entry->move_number = (short)move_index;
+    hist_entry->player = (short)player;
+    hist_entry->score = temp_word;  /* Formatted score */
+    hist_entry->flags = local_move.flags;
+
+    /* Mark resource as changed for saving */
+    ChangedResource(hist_handle);
+    WriteResource(hist_handle);
+
+    /*--------------------------------------------------
+     * Cleanup
+     *--------------------------------------------------*/
+
+    HUnlock(hist_handle);
+    ReleaseResource(hist_handle);
+    HUnlock(g_game_state_handle);
+}
+```
+
+### SANE Helper Functions (Speculative)
+
+```c
+/*
+ * SANE (Standard Apple Numerics Environment) wrapper functions
+ *
+ * These call through the A9EB trap (Pack7) with operation codes.
+ */
+
+/* Convert long integer to 80-bit extended */
+void long_to_extended(long value, Extended80 *result) {
+    /* SANE operation $0008 or $2008 = FL2X */
+    SANE_Pack7(0x2008, &value, result);
+}
+
+/* Convert integer to 80-bit extended */
+void int_to_extended(short value, Extended80 *result) {
+    /* SANE operation $0006 or $2004 = FI2X */
+    SANE_Pack7(0x2004, &value, result);
+}
+
+/* Convert 80-bit extended to integer */
+void extended_to_int(Extended80 *source, short *result) {
+    /* SANE operation $0002 or $2002 = FX2I */
+    SANE_Pack7(0x2002, source, result);
+}
+
+/* Add two extended values */
+void extended_add(Extended80 *a, Extended80 *b, Extended80 *result) {
+    /* SANE operation $200E or $2010 = FADDX */
+    SANE_Pack7(0x200E, a, b, result);
+}
+
+/* Subtract extended values */
+void extended_subtract(Extended80 *a, Extended80 *b, Extended80 *result) {
+    /* SANE operation $0016 or $100E = FSUBX */
+    SANE_Pack7(0x100E, a, b, result);
+}
+
+/* Compare extended values */
+short extended_compare(Extended80 *a, Extended80 *b) {
+    /* SANE operation $1004 = FCPXX */
+    short result;
+    SANE_Pack7(0x1004, a, b, &result);
+    return result;
+}
+
+/* Convert extended to decimal string */
+void extended_to_string(Extended80 *source, char *result) {
+    /* SANE operation $000D = FX2S */
+    DecForm format = { FIXEDDECIMAL, 0, 2 };  /* uncertain: format params */
+    SANE_Pack7(0x000D, source, &format, result);
+}
+
+/* Copy extended value */
+void copy_extended(Extended80 *source, Extended80 *dest) {
+    BlockMove(source, dest, 10);
+}
+```
+
+### Move Notation Formatting
+
+```c
+/*
+ * Build standard Scrabble move notation string
+ *
+ * Format examples:
+ *   "1. QUARTZ H8 +92"        - Normal word play
+ *   "2. BINGOES* 15A +83"     - Bingo (7 tiles, 50 pt bonus)
+ *   "3. (exchange 4)"         - Tile exchange
+ *   "4. (pass)"               - Pass turn
+ *   "Game: WIN by 45"         - Final result
+ */
+
+#define MOVE_FLAG_BINGO     0x0001
+#define MOVE_FLAG_EXCHANGE  0x0002
+#define MOVE_FLAG_PASS      0x0004
+
+void format_move_notation(MoveEntry *move, short move_num, char *output) {
+    char *ptr = output;
+
+    /* Move number */
+    ptr += sprintf(ptr, "%d. ", move_num);
+
+    if (move->flags & MOVE_FLAG_PASS) {
+        strcpy(ptr, "(pass)");
+        return;
+    }
+
+    if (move->flags & MOVE_FLAG_EXCHANGE) {
+        short tiles_exchanged = (move->flags >> 8) & 0x0F;
+        sprintf(ptr, "(exchange %d)", tiles_exchanged);
+        return;
+    }
+
+    /* Normal word play */
+    /* uncertain: exact word/position extraction */
+    extract_word_from_move(move, ptr);
+    ptr += strlen(ptr);
+
+    /* Position (e.g., "H8" or "8H") */
+    *ptr++ = ' ';
+    format_board_position(move, ptr);
+    ptr += strlen(ptr);
+
+    /* Score */
+    short score = (short)(move->score_data & 0xFFFF);
+    sprintf(ptr, " +%d", score);
+
+    /* Bingo indicator */
+    if (move->flags & MOVE_FLAG_BINGO) {
+        strcat(output, "*");
+    }
+}
+
+void format_win_result(short point_diff) {
+    /* uncertain: exact output location */
+    sprintf(g_result_buffer, "WIN by %d", point_diff);
+}
+
+void format_loss_result(short point_diff) {
+    sprintf(g_result_buffer, "LOSS by %d", point_diff);
+}
+
+void format_tie_result(void) {
+    strcpy(g_result_buffer, "TIE");
+}
+```
+
+### Resource Management
+
+```c
+/* HIST resource structure in file */
+/*
+ * The HIST resource stores the complete game history:
+ *
+ * Offset 0: HistoryEntry[0] - First move
+ * Offset 8: HistoryEntry[1] - Second move
+ * ...
+ * Offset 8*n: HistoryEntry[n] - nth move
+ *
+ * Each entry is 8 bytes containing:
+ * - Move number (2 bytes)
+ * - Player (2 bytes)
+ * - Score (2 bytes)
+ * - Flags (2 bytes)
+ */
+
+void save_game_history(void) {
+    Handle hist_handle = GetResource('HIST', 0);
+
+    if (hist_handle != NULL) {
+        ChangedResource(hist_handle);
+        WriteResource(hist_handle);
+        UpdateResFile(g_resource_file_ref);
+    }
+}
+
+void clear_game_history(void) {
+    Handle hist_handle = GetResource('HIST', 0);
+
+    if (hist_handle != NULL) {
+        SetHandleSize(hist_handle, 0);
+        ChangedResource(hist_handle);
+    }
+}
+```
+
+### Why SANE Floating-Point?
+
+The code uses 80-bit extended precision for several reasons:
+
+1. **Score Accuracy**: Prevents rounding errors when accumulating scores across many moves
+2. **Statistics**: Enables precise calculation of averages and differentials
+3. **Comparison**: Reliable score comparisons for win/loss determination
+4. **Formatting**: Proper decimal formatting with controlled precision
+
+This is typical for Macintosh applications of this era that needed reliable numeric processing.

@@ -398,6 +398,344 @@ Where:
 | 2826 | GetHandleSize wrapper |
 | 3506 | strcmp - String comparison |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 14 - Move Selection & Comparison
+ * AI move selection, score comparison, and best-move selection.
+ */
+
+#include <MacTypes.h>
+
+/*========== Constants ==========*/
+#define RACK_ENTRY_SIZE         8       /* Bytes per rack tile */
+#define MOVE_STRUCT_SIZE        34      /* Bytes per move structure */
+#define WORD_BUFFER_SIZE        8       /* Max word in move struct */
+
+/* Score difference thresholds */
+#define THRESHOLD_CLOSE         200     /* Difference <= 200 points */
+#define THRESHOLD_MODERATE      500     /* Difference <= 500 points */
+
+/*========== Data Structures ==========*/
+
+/* Rack entry structure (8 bytes) */
+typedef struct RackEntry {
+    short tile_value;           /* Offset 0: Letter value (1-26, 0=blank) */
+    char letter_char;           /* Offset 1: ASCII character (within tile_value) */
+    short played_flag;          /* Offset 2: Non-zero if played this turn */
+    short reserved1;            /* Offset 4: Reserved */
+    short reserved2;            /* Offset 6: Reserved */
+} RackEntry;
+
+/* Move structure (34 bytes) */
+typedef struct MoveData {
+    short flags;                /* Offset 0: Move flags/status */
+    short row;                  /* Offset 2: Board row position */
+    short column;               /* Offset 4: Board column position */
+    short direction;            /* Offset 6: Direction (0=across, 1=down) */
+    char word[WORD_BUFFER_SIZE];/* Offset 8: Word placed (null-terminated) */
+    long bonus_score;           /* Offset 16: Bonus points (multipliers) */
+    long base_score;            /* Offset 20: Base tile score */
+    long extra_score;           /* Offset 24: Leave value, strategic bonus */
+    short tile_count;           /* Offset 28: Number of tiles used */
+    long placement_data;        /* Offset 30: Placement encoding */
+} MoveData;
+
+/* Score comparison result strings */
+typedef struct ComparisonStrings {
+    char* equal_str;            /* A5-7426: "equal" */
+    char* close_str;            /* A5-7420: "close" */
+    char* moderate_str;         /* A5-7414: "moderate" */
+    char* significant_str;      /* A5-7410: "significant" */
+} ComparisonStrings;
+
+/*========== Global Variables (A5-relative) ==========*/
+extern RackEntry g_rack[7];             /* A5-8664: Player's rack (g_flag1) */
+extern char g_field_14[64];             /* A5-15514: General purpose buffer */
+extern long g_search_result;            /* A5-19486: Search result storage */
+extern char g_letter_counts[27];        /* A5-23218: Available letter counts */
+extern short g_bounds_counter;          /* A5-23674: Bounds checking counter */
+extern long g_dawg_compare_ptr;         /* A5-24030: DAWG compare pointer */
+extern long g_dawg_main_ptr;            /* A5-27732: DAWG data pointer */
+extern ComparisonStrings g_strings;     /* String table */
+```
+
+### Rack Buffer Functions
+```c
+/*
+ * copy_rack_to_buffer - Extract rack letters to string buffer
+ *
+ * Iterates through rack entries and builds a string of
+ * available letters.
+ *
+ * @param dest_buffer: Output buffer for rack string
+ * @return: Pointer to buffer (same as input)
+ */
+char* copy_rack_to_buffer(char* dest_buffer) {
+    int buffer_idx = 0;
+    RackEntry* rack_ptr = g_rack;       /* A5-8664 */
+
+    /* Iterate through rack until empty entry */
+    while (rack_ptr->tile_value != 0) {
+        /* Extract letter character from offset 1 */
+        dest_buffer[buffer_idx++] = rack_ptr->letter_char;
+        rack_ptr++;     /* Advance by 8 bytes */
+    }
+
+    dest_buffer[buffer_idx] = '\0';     /* Null terminate */
+    return dest_buffer;
+}
+```
+
+### Move Comparison
+```c
+/*
+ * calculate_total_score - Sum all score components
+ *
+ * @param move: Move structure to score
+ * @return: Total score (base + bonus + extra)
+ */
+long calculate_total_score(MoveData* move) {
+    return move->base_score + move->bonus_score + move->extra_score;
+}
+
+/*
+ * compare_moves - Compare two moves and categorize difference
+ *
+ * Compares total scores and returns a descriptive string
+ * indicating the relative quality.
+ *
+ * @param move1: First move to compare
+ * @param move2: Second move to compare
+ * @return: Description string ("equal", "close", "moderate", "significant")
+ */
+char* compare_moves(MoveData* move1, MoveData* move2) {
+    long score1 = calculate_total_score(move1);
+    long score2 = calculate_total_score(move2);
+
+    /* Check if move1 is better */
+    if (score1 > score2) {
+        return g_strings.significant_str;   /* A5-7410 */
+    }
+
+    /* Check if equal */
+    if (score1 == score2) {
+        return g_strings.equal_str;         /* A5-7426 */
+    }
+
+    /* move2 is better - categorize the difference */
+    long difference = score2 - score1;
+
+    if (difference <= THRESHOLD_CLOSE) {
+        return g_strings.close_str;         /* A5-7420: <= 200 points */
+    }
+
+    if (difference <= THRESHOLD_MODERATE) {
+        return g_strings.moderate_str;      /* A5-7414: <= 500 points */
+    }
+
+    return g_strings.significant_str;       /* A5-7410: > 500 points */
+}
+```
+
+### Search Coordination
+```c
+/*
+ * coordinate_move_search - Main search entry point
+ *
+ * Initializes search state, copies rack to buffer,
+ * performs search, and validates results.
+ */
+void coordinate_move_search(void) {
+    void* local_result_ptr;             /* Stack frame: -4 bytes */
+
+    /* Initialize search subsystems */
+    init_search_internal();             /* PC-relative at 0x0A40 */
+    setup_phase_1();                    /* JT[1082] */
+    setup_phase_2();                    /* JT[1018] */
+
+    /* Copy rack letters to buffer */
+    copy_rack_to_buffer(g_field_14);    /* A5-15514 */
+
+    /* Start the search */
+    start_search();                     /* JT[1706] */
+
+    /* Coordinate search with callback */
+    coordinate_search(690, &local_result_ptr);  /* JT[1722] */
+
+    /* Bounds validation */
+    if (g_bounds_counter >= 8 || g_bounds_counter < 0) {
+        bounds_check_error();           /* JT[418] */
+    }
+
+    /* DAWG comparison for validation */
+    if (strcmp((char*)g_dawg_compare_ptr, (char*)g_dawg_main_ptr) != 0) {
+        handle_mismatch();              /* PC-relative */
+    }
+
+    /* Cleanup */
+    g_search_result = 0;                /* A5-19486 */
+    cleanup_search();                   /* JT[1714] */
+}
+```
+
+### Move Candidate Processing
+```c
+/*
+ * process_move_candidate - Evaluate and store candidate move
+ *
+ * Validates a candidate move, checks letter availability,
+ * and compares with current best move.
+ *
+ * @param candidate: Move candidate to process
+ * @return: 1 if candidate is valid, 0 otherwise
+ */
+int process_move_candidate(MoveData* candidate) {
+    char local_buffer[16];              /* Stack frame */
+    int tiles_used = 0;
+
+    /* Validate candidate */
+    if (!validate_candidate(candidate)) {   /* PC-relative */
+        return 0;   /* Invalid candidate */
+    }
+
+    /* Setup buffers */
+    setup_buffer_1(g_field_14);         /* JT[2410] */
+    setup_buffer_2(g_field_14);         /* JT[2386] */
+
+    /* Check each rack tile */
+    RackEntry* rack_ptr = g_rack;
+    while (rack_ptr->tile_value != 0) {
+        if (rack_ptr->played_flag != 0) {
+            /* Tile was played - update letter counts */
+            char letter = rack_ptr->letter_char;
+            char* count_ptr = &g_letter_counts[(int)letter];
+
+            /* Validate count is non-negative */
+            if (*count_ptr < 0) {
+                bounds_check_error();   /* JT[418] */
+            }
+
+            (*count_ptr)--;     /* Decrement available count */
+            tiles_used++;
+        }
+
+        rack_ptr++;     /* Next tile (8 bytes) */
+    }
+
+    /* Process placement data */
+    setup_buffer_2(local_buffer);       /* JT[2386] */
+    /* uncertain: process candidate->placement_data */
+
+    /* Compare with existing best */
+    int is_better = compare_with_best(candidate);
+
+    if (is_better) {
+        store_as_best(candidate, tiles_used - 1);   /* PC-relative */
+    }
+
+    return 1;
+}
+
+/*
+ * check_valid_position - Validate board position
+ *
+ * Checks if a position is valid for move placement.
+ *
+ * @return: 1 if valid, 0 if invalid
+ */
+int check_valid_position(void) {
+    /* Compare field limit */
+    if (*(long*)g_field_14 != g_field_limit) {
+        /* uncertain: exact comparison logic */
+    }
+
+    /* Check position flag */
+    if (g_field_14[0] == 0) {
+        return 0;   /* Invalid position */
+    }
+
+    /* Validate via JT[1282] */
+    if (!validate_position()) {
+        if (g_validation_flag == 0) {
+            return 1;   /* uncertain: inverted logic? */
+        }
+        return 0;
+    }
+
+    return 0;
+}
+```
+
+### Handle Record Access
+```c
+/*
+ * get_handle_record_count - Count records in handle
+ *
+ * Calculates number of 6-byte records stored in a handle.
+ *
+ * @return: Number of records (handle_size / 6)
+ */
+long get_handle_record_count(void) {
+    long handle_size;
+
+    /* Get handle from window data at offset 202 */
+    void* window_data = g_window_data_ptr;  /* A5-8520 */
+    Handle record_handle = *(Handle*)((char*)window_data + 202);
+
+    /* Get handle size via JT[2826] */
+    handle_size = GetHandleSize(record_handle);
+
+    /* Divide by record size (6 bytes) */
+    return handle_size / 6;
+}
+```
+
+### Move List Processing
+```c
+/*
+ * process_move_list_entry - Process entry from move list
+ *
+ * Extracts move data from list entry, calculates score,
+ * and processes for display or evaluation.
+ *
+ * @param entry: Move list entry to process
+ */
+void process_move_list_entry(void* entry) {
+    char local_buffer[168];             /* Stack frame: -168 bytes */
+    MoveData local_move;                /* Stack frame: -34 bytes */
+    long total_score;
+    long record_count;
+
+    /* Clear local flags */
+    short flag1 = 0;                    /* -160(A6) */
+    short flag2 = 0;                    /* -158(A6) */
+
+    /* Get score from entry */
+    /* uncertain: exact entry structure */
+
+    /* Copy 34-byte move structure */
+    Handle entry_handle = *(Handle*)((char*)entry + 202);
+    char* data_ptr = **entry_handle;
+    data_ptr = *(char**)data_ptr;
+    data_ptr = *(char**)data_ptr;
+
+    /* Block copy 34 bytes */
+    memcpy(&local_move, data_ptr, MOVE_STRUCT_SIZE);
+
+    /* Calculate total score */
+    total_score = calculate_total_score(&local_move);
+
+    /* Get record count */
+    long handle_size = GetHandleSize(*(Handle*)((char*)entry + 202));
+    record_count = handle_size / 6;
+
+    /* Continue processing... */
+    /* uncertain: remaining logic */
+}
+```
+
 ## Confidence: HIGH
 
 Clear move comparison and selection patterns:

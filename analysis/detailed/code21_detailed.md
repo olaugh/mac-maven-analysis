@@ -516,6 +516,542 @@ Process Player Input (0x080A)
  └──────────┘       └──────────┘       └──────────┘
 ```
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 21 - Main UI & Game Logic
+ * Main game interface: board display, tile placement, turn handling.
+ * LARGEST CODE resource (13,718 bytes).
+ */
+
+#include <MacTypes.h>
+
+/*========== Constants ==========*/
+#define BOARD_SIZE              17      /* 15 playable + 2 border */
+#define RACK_SIZE               7       /* Tiles in player's rack */
+#define RACK_ENTRY_SIZE         8       /* Bytes per rack entry */
+#define MAX_WORD_LENGTH         7       /* Max tiles per turn */
+
+/*========== Data Structures ==========*/
+
+/* Rack entry structure (8 bytes each) */
+typedef struct RackEntry {
+    short tile_value;           /* Offset 0: Letter value (1-26, 0=blank) */
+    short played_flag;          /* Offset 2: Non-zero if played this turn */
+    short reserved1;            /* Offset 4: Reserved/padding */
+    short reserved2;            /* Offset 6: Reserved/padding */
+} RackEntry;
+
+/* Letter mapping table entry */
+typedef struct LetterMapEntry {
+    char count;                 /* Number of this letter available */
+} LetterMapEntry;
+
+/*========== Global Variables (A5-relative) ==========*/
+/* Board Arrays */
+extern char   g_lookup_tbl[289];            /* A5-10388: Main board (17x17) */
+extern char   g_working_array1[289];        /* A5-10082: Working copy */
+extern char   g_secondary_board[289];       /* A5-10099: Secondary state */
+extern char   g_working_array2[289];        /* A5-10371: Working copy 2 */
+
+/* Game State */
+extern short  g_game_over;                  /* A5-9810: Game over flag */
+extern short  g_cursor_row;                 /* A5-8624: Cursor row position */
+extern short  g_cursor_col;                 /* A5-8622: Cursor column position */
+extern short  g_move_count;                 /* A5-8636: Tiles played this turn */
+extern short  g_input_flag;                 /* A5-8620: Input pending flag */
+extern short  g_blank_count;                /* A5-23155: Blanks available */
+
+/* Rack */
+extern RackEntry g_rack[RACK_SIZE];         /* A5-8664: Player's rack (g_flag1) */
+extern char   g_letter_map[128];            /* A5-23218: Letter mapping table */
+extern char   g_field_14[64];               /* A5-15514: General string buffer */
+extern char   g_tile_valid[128];            /* A5-4056: Tile validity table */
+
+/* Handles */
+extern Handle g_main_handle;                /* A5-8584: Main window/game handle */
+extern long   g_ai_score;                   /* A5-8614: Last AI move score */
+extern void*  g_dawg_info;                  /* A5-23090: DAWG search state */
+```
+
+### Rack Management
+```c
+/*
+ * copy_rack_to_buffer - Extract rack letters to string buffer
+ *
+ * Iterates through rack structure at offset 786 in main handle,
+ * building a string of available letters with counts from map.
+ *
+ * @param dest: Destination buffer for rack string
+ */
+void copy_rack_to_buffer(char* dest) {
+    char* dest_ptr = dest;
+    char** handle_ptr;
+    char* rack_ptr;
+    char tile;
+    char* map_ptr;
+    int count;
+
+    /* Initialize buffer */
+    init_buffer(dest);                      /* JT[2410] */
+
+    /* Get rack from main handle at offset 786 */
+    handle_ptr = (char**)g_main_handle;     /* A5-8584 */
+    rack_ptr = *handle_ptr + 786;
+
+    /* Process each rack tile */
+    while ((tile = *rack_ptr) != 0) {
+        /* Get count from letter mapping table */
+        map_ptr = &g_letter_map[(int)tile]; /* A5-23218 */
+        count = *map_ptr;
+
+        /* Store multiple copies based on count */
+        for (int i = 0; i < count; i++) {
+            *dest_ptr++ = tile;
+        }
+
+        rack_ptr++;     /* Each entry is at +1 byte offset */
+    }
+
+    *dest_ptr = '\0';   /* Null terminate */
+}
+
+/*
+ * init_board_display - Initialize board and rack display
+ *
+ * Copies rack to buffer, populates rack structure,
+ * clears played flags, and updates display.
+ */
+void init_board_display(void) {
+    int i;
+    int rack_len;
+
+    /* Copy current rack to g_field_14 buffer */
+    copy_rack_to_buffer(g_field_14);
+
+    rack_len = strlen(g_field_14);          /* JT[3522] */
+
+    /* Populate rack entries (7 tiles max) */
+    for (i = 0; i < RACK_SIZE; i++) {
+        if (i < rack_len) {
+            g_rack[i].tile_value = g_field_14[i];
+        } else {
+            g_rack[i].tile_value = 0;       /* Empty slot */
+        }
+        g_rack[i].played_flag = 0;          /* Clear played flag */
+    }
+
+    /* Reset move counter */
+    g_move_count = 0;                       /* A5-8636 */
+
+    /* Update display */
+    update_board_display();                 /* PC-relative at 0x0B4A */
+
+    /* Sync working arrays with lookup table */
+    for (int row = 1; row < 16; row++) {
+        for (int col = 1; col < 16; col++) {
+            int idx = row * BOARD_SIZE + col;
+
+            /* Compare working arrays */
+            if (g_working_array1[idx] != g_working_array2[idx]) {
+                /* Sync and update display */
+                g_working_array2[idx] = g_working_array1[idx];
+                update_cell_display(row, col);  /* JT[986] */
+            }
+        }
+    }
+
+    /* Final refresh calls */
+    refresh_board();                        /* JT[962] */
+    additional_display_update();            /* PC-relative at 0x08FC */
+}
+```
+
+### Tile Placement
+```c
+/*
+ * place_tile_on_board - Place tile at board position
+ *
+ * Handles tile placement including conflict detection,
+ * uppercase conversion, rack tracking, and display updates.
+ *
+ * @param row: Board row (1-15)
+ * @param col: Board column (1-15)
+ * @param tile: Tile character to place
+ * @return: 1 if successful, 0 if failed (conflict)
+ */
+int place_tile_on_board(short row, short col, short tile) {
+    int board_idx;
+    char* board_pos;
+    char existing_tile;
+    char upper_existing;
+    char upper_tile;
+    int i;
+
+    /* Check if game is over */
+    if (g_game_over != 0) {                 /* A5-9810 */
+        return 0;   /* Can't place during game over */
+    }
+
+    /* Calculate board position */
+    board_idx = row * BOARD_SIZE + col;
+    board_pos = &g_secondary_board[board_idx];  /* A5-10099 */
+
+    /* Check if square is occupied */
+    existing_tile = *board_pos;
+    if (existing_tile != 0) {
+        /* Square occupied - check for conflict */
+        upper_existing = toupper(existing_tile);    /* JT[3554] */
+        upper_tile = toupper(tile);
+
+        if (upper_existing != upper_tile) {
+            return 0;   /* Conflict - different letters */
+        }
+        /* Same letter - allow (re-placing existing tile) */
+    }
+
+    /* Convert tile to uppercase for board */
+    upper_tile = toupper(tile);             /* JT[3554] */
+
+    /* Initialize buffer for tracking */
+    init_buffer(g_field_14);                /* JT[2410] */
+
+    /* Clear local tracking vars */
+    short local_flags = 0;                  /* -14(A6) */
+    short local_idx = 0;                    /* -12(A6) */
+
+    /* Find matching tile in rack and mark as played */
+    for (i = 0; i < RACK_SIZE; i++) {
+        if (g_rack[i].tile_value == 0) {
+            break;  /* End of rack */
+        }
+
+        char rack_letter = toupper(g_rack[i].tile_value);  /* JT[3554] */
+
+        /* Check letter map for availability */
+        if (g_letter_map[(int)rack_letter] > 0) {
+            g_letter_map[(int)rack_letter]--;
+
+            /* Mark this rack entry as played */
+            /* uncertain: exact tracking mechanism */
+        }
+    }
+
+    /* Handle blank tiles specially */
+    if (g_blank_count > 0 && is_blank_tile(tile)) {  /* A5-23155 */
+        g_blank_count--;
+        /* uncertain: blank designation logic */
+    }
+
+    /* Place tile on board */
+    *board_pos = tile;
+
+    /* Update main lookup table */
+    board_pos = &g_lookup_tbl[row * BOARD_SIZE + col];  /* A5-10388 */
+    *board_pos = toupper(*board_pos);       /* JT[3554] */
+
+    /* Update cell display */
+    update_cell_display(row, col);          /* JT[986] */
+
+    /* Handle secondary updates for across/down play */
+    /* uncertain: mirror position logic */
+
+    /* Trigger search if enabled */
+    if (/* search enabled flag at 16(A6) */) {
+        init_search(0);                     /* JT[378] */
+        if (/* search successful */) {
+            validate_with_dawg(g_dawg_info);    /* JT[762] */
+        }
+        memset(g_dawg_info, 0, 34);         /* JT[426] - clear 34 bytes */
+    }
+
+    return 1;   /* Success */
+}
+```
+
+### Cursor Management
+```c
+/*
+ * update_cursor_position - Move cursor and update display
+ *
+ * Updates cursor position globals, redraws old and new positions.
+ *
+ * @param new_row: New cursor row
+ * @param new_col: New cursor column
+ */
+void update_cursor_position(short new_row, short new_col) {
+    short old_row, old_col;
+
+    /* Check if cursor already exists */
+    if (g_cursor_row != 0 || g_cursor_col != 0) {
+        /* Save old position */
+        old_row = g_cursor_row;             /* A5-8624 */
+        old_col = g_cursor_col;             /* A5-8622 */
+
+        /* Update to new position */
+        g_cursor_row = new_row;
+        g_cursor_col = new_col;
+
+        /* Redraw old position (remove cursor) */
+        update_cell_display(old_row, old_col);  /* JT[986] */
+
+        /* Redraw new position (show cursor) */
+        update_cell_display(g_cursor_row, g_cursor_col);    /* JT[986] */
+    }
+}
+```
+
+### Word Validation
+```c
+/*
+ * validate_and_score_word - Validate word and calculate score
+ *
+ * Checks that word uses available tiles, validates against
+ * dictionary, and calculates score.
+ *
+ * @param word: Null-terminated word string
+ * @return: Score if valid, 0 if invalid
+ */
+int validate_and_score_word(char* word) {
+    int length;
+    int i;
+    char letter;
+
+    /* Get word length */
+    length = strlen(word);                  /* JT[3522] */
+
+    /* Check maximum length (can't play more than 7 tiles) */
+    if (length > MAX_WORD_LENGTH) {
+        return 0;   /* Too long */
+    }
+
+    /* Validate each letter is available */
+    for (i = 0; i < length; i++) {
+        letter = word[i];
+
+        /* Check tile validity table */
+        if (!g_tile_valid[(int)letter]) {   /* A5-4056 */
+            bounds_check_error();           /* JT[418] */
+            return 0;
+        }
+
+        /* Store uppercase in rack tracking */
+        g_rack[i].tile_value = toupper(letter);     /* JT[3554] */
+    }
+
+    /* Check word in dictionary */
+    if (!check_dictionary(word, 0x03FF)) {  /* JT[1418] */
+        return 0;   /* Not a valid word */
+    }
+
+    /* Calculate and return score */
+    return calculate_word_score(word, NULL);
+}
+```
+
+### AI Turn Processing
+```c
+/*
+ * start_ai_turn - Initiate AI move computation
+ *
+ * Clears game-over state, computes AI move, executes it,
+ * calculates score, and updates display.
+ */
+void start_ai_turn(void) {
+    Move* ai_move;
+    long score;
+
+    /* Clear game-over flag */
+    g_game_over = 0;                        /* A5-9810 */
+
+    /* Compute AI's best move */
+    ai_move = compute_ai_move();            /* PC-relative at 0x1108 */
+
+    /* Execute the move */
+    execute_move(ai_move);                  /* PC-relative at 0x110A */
+
+    /* Calculate final score */
+    score = calculate_final_score();        /* PC-relative at 0x10F8 */
+
+    /* Store AI score */
+    g_ai_score = score;                     /* A5-8614 */
+
+    /* Update display with AI move */
+    display_ai_move();                      /* PC-relative at 0x1068 */
+}
+```
+
+### Player Input Processing
+```c
+/*
+ * process_player_input - Handle player input event
+ *
+ * Validates input, checks game state, optionally shows
+ * AI recommendations.
+ */
+void process_player_input(void) {
+    int valid_input;
+
+    /* Check for valid input */
+    valid_input = check_input_valid();      /* PC-relative at 0x288E */
+
+    if (!valid_input) {
+        /* Show error message */
+        show_error_message(1);              /* PC-relative at 0x0106 */
+        return;
+    }
+
+    /* Check game state */
+    if (g_game_over != 0) {                 /* A5-9810 */
+        /* Game over - check AI recommendation mode */
+        if (!get_ai_recommendation()) {     /* PC-relative at 0x21EA */
+            return;
+        }
+
+        /* Check if field_14 has data */
+        if (g_field_14[0] != 0) {
+            /* Has data - use it */
+            /* uncertain: data usage */
+        }
+        else {
+            /* Need to search for moves */
+            init_search(0);                 /* JT[378] */
+
+            if (/* search found moves */) {
+                /* Get best move */
+                get_best_move(g_dawg_info, 0x7FFF);     /* PC-relative */
+                display_move_suggestion();              /* PC-relative */
+            }
+        }
+    }
+}
+
+/*
+ * show_error_message - Display error to user
+ *
+ * @param error_code: Error code to display
+ */
+static void show_error_message(short error_code) {
+    /* uncertain: exact error display mechanism */
+    /* Likely uses Alert or similar Mac dialog */
+}
+```
+
+### Board State Synchronization
+```c
+/*
+ * sync_board_arrays - Synchronize board state arrays
+ *
+ * Compares working arrays and updates display for changed cells.
+ */
+void sync_board_arrays(void) {
+    char* array1 = g_working_array1;        /* A5-10082 */
+    char* array2 = g_working_array2;        /* A5-10371 */
+
+    for (int row = 1; row <= 15; row++) {
+        for (int col = 1; col <= 15; col++) {
+            int idx = row * BOARD_SIZE + col;
+
+            if (array1[idx] != array2[idx]) {
+                /* Cell changed - sync and update */
+                array2[idx] = array1[idx];
+                update_cell_display(row, col);  /* JT[986] */
+            }
+        }
+    }
+}
+
+/*
+ * validate_board_state - Check board state consistency
+ *
+ * Verifies letter counts and board state match expected values.
+ *
+ * @return: 1 if consistent, 0 if mismatch
+ */
+int validate_board_state(void) {
+    int blank_count = 0;
+    char local_buffer[128];
+    int i;
+
+    /* Clear and fill local buffer */
+    memset(local_buffer, 0, 128);
+
+    /* Process working arrays */
+    for (int row = 1; row <= 15; row++) {
+        for (int col = 1; col <= 15; col++) {
+            char cell = g_working_array2[row * BOARD_SIZE + col];
+
+            if (cell != 0) {
+                /* Check if valid letter */
+                if (!is_valid_letter(cell)) {   /* Check A5-4056 */
+                    /* Blank tile */
+                    local_buffer[0x3F]++;   /* '?' position */
+                }
+                else {
+                    /* Regular letter */
+                    char upper = toupper(cell);     /* JT[3554] */
+                    local_buffer[(int)upper]++;
+                }
+            }
+        }
+    }
+
+    /* Count rack tiles */
+    for (i = 0; i < RACK_SIZE && g_rack[i].tile_value != 0; i++) {
+        short tile = g_rack[i].tile_value;
+        local_buffer[(int)tile]--;
+    }
+
+    /* uncertain: final validation checks */
+    return 1;
+}
+```
+
+### Letter Availability
+```c
+/*
+ * check_letter_available - Check if letter can be played
+ *
+ * Verifies letter is in rack and hasn't been played.
+ *
+ * @param letter: Letter to check
+ * @return: 1 if available, 0 if not
+ */
+int check_letter_available(char letter) {
+    char upper = toupper(letter);           /* JT[3554] */
+
+    /* Check letter map count */
+    if (g_letter_map[(int)upper] <= 0) {
+        return 0;   /* No copies available */
+    }
+
+    return 1;
+}
+
+/*
+ * use_letter_from_rack - Mark letter as used
+ *
+ * Decrements letter count and marks rack entry.
+ *
+ * @param letter: Letter being used
+ */
+void use_letter_from_rack(char letter) {
+    char upper = toupper(letter);
+
+    /* Decrement count in letter map */
+    g_letter_map[(int)upper]--;
+
+    /* Find and mark corresponding rack entry */
+    for (int i = 0; i < RACK_SIZE; i++) {
+        if (g_rack[i].tile_value == letter && g_rack[i].played_flag == 0) {
+            g_rack[i].played_flag = 1;
+            break;
+        }
+    }
+}
+```
+
 ## Confidence: HIGH
 
 CODE 21 is clearly the main game UI with:

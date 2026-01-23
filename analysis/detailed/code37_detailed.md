@@ -723,3 +723,705 @@ Clear DAWG traversal patterns:
 - Recursive traversal for word validation
 - Cross-check set generation for move generation
 - Position constraint checking
+
+---
+
+## Speculative C Translation
+
+### Header File (code37_dawg.h)
+
+```c
+/*
+ * CODE 37 - DAWG Traversal and Word Validation
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * This module implements DAWG (Directed Acyclic Word Graph) operations
+ * for dictionary word validation and cross-check set generation.
+ */
+
+#ifndef CODE37_DAWG_H
+#define CODE37_DAWG_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+/*
+ * DAWG Node Format (4 bytes):
+ * Bits 0-7:   Letter code (a=1, b=2, ..., z=26, ?=63 for blank)
+ * Bit 8:      End-of-word flag (EOW)
+ * Bit 9:      Last-sibling flag
+ * Bits 10-31: Child pointer (22 bits, scaled by 8)
+ */
+typedef uint32_t DAWGNode;
+
+/* DAWG node field extraction macros */
+#define DAWG_LETTER(node)       ((node) & 0xFF)
+#define DAWG_IS_EOW(node)       (((node) >> 8) & 1)
+#define DAWG_IS_LAST(node)      (((node) >> 9) & 1)
+#define DAWG_CHILD_PTR(node)    ((node) >> 10)
+
+/* Cross-check entry per position (4 bytes = 32-bit letter mask) */
+typedef uint32_t CrossCheckMask;
+
+/* Cross-check structure for one row (68 bytes) */
+typedef struct CrossCheckRow {
+    uint32_t flags;                 /* +0: Row flags */
+    CrossCheckMask columns[16];     /* +4: Mask for each column (1-15) */
+    uint32_t padding;               /* +64: Alignment padding */
+} CrossCheckRow;
+
+/*
+ * Global variables (A5-relative)
+ */
+extern int8_t    g_char_class[256];     /* A5-1064: Character classification */
+extern uint8_t   g_row_buffer[17];      /* A5-1714: Row validation buffer */
+extern char      g_valid_letters[64];   /* A5-1778: Valid letter result buffer */
+extern int8_t    g_position_counts[128];/* A5-10632: Position letter counts */
+extern char*     g_rack_ptr_storage;    /* A5-10636: Rack pointer storage */
+extern uint8_t   g_position_data1[34];  /* A5-10704: Position data area 1 */
+extern uint8_t   g_position_data2[34];  /* A5-10738: Position data area 2 */
+extern uint8_t*  g_traversal_ptr;       /* A5-10746: Traversal position pointer */
+extern uint8_t*  g_letter_data_ptr;     /* A5-10750: Letter data pointer */
+extern uint8_t*  g_board_ptr;           /* A5-10754: Board pointer storage */
+extern uint8_t*  g_current_move_ptr;    /* A5-10758: Current move pointer */
+extern uint16_t  g_letter_set_index;    /* A5-10936: Letter set index */
+extern DAWGNode* g_dawg_table[8];       /* A5-11960: DAWG table array */
+extern uint32_t  g_current_dawg_node;   /* A5-11964: Current DAWG node value */
+extern DAWGNode* g_dawg_base_ptr;       /* A5-11968: DAWG base pointer */
+extern uint8_t   g_board_offset[289];   /* A5-17018: Board offset base */
+extern uint8_t   g_state1[544];         /* A5-17154: Board letter array (17*32) */
+extern uint16_t  g_row_counter;         /* A5-17156: Row counter */
+extern CrossCheckRow g_crosschecks[31]; /* A5-22118: Cross-check array */
+extern int8_t    g_letter_counts[128];  /* A5-23218: Letter count array */
+extern char*     g_rack;                /* A5-26158: Current rack pointer */
+extern uint32_t  g_letter_masks[64];    /* A5-26542: Letter mask table */
+
+/* Position constraints */
+extern int8_t g_constraint1[32];        /* A5-27127 */
+extern int8_t g_constraint2[32];        /* A5-26583 */
+extern int8_t g_constraint3[32];        /* A5-27093 */
+extern int8_t g_constraint4[32];        /* A5-26549 */
+
+/* Letter data base */
+extern uint8_t g_letter_data[256];      /* A5-27110 */
+
+/* Function prototypes */
+void init_position_tracking(void* input_data);
+void setup_board_context(char* rack, uint8_t* move_struct);
+void generate_crosscheck_sets(void);
+uint32_t traverse_dawg_for_word(char* word);
+char* find_valid_letters_for_position(char* prefix, char* expected_letters);
+
+#endif /* CODE37_DAWG_H */
+```
+
+### Implementation File (code37_dawg.c)
+
+```c
+/*
+ * CODE 37 - DAWG Traversal and Word Validation Implementation
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * The DAWG is the core dictionary data structure enabling
+ * efficient word lookup and move generation.
+ */
+
+#include "code37_dawg.h"
+#include <string.h>
+
+/* External Toolbox/JT functions */
+extern void memset_jt(void* dest, int val, size_t size);  /* JT[426] */
+extern int memcmp_jt(void* a, void* b, size_t size);      /* JT[3450] */
+extern void memmove_jt(void* dest, void* src, size_t sz); /* JT[3466] */
+extern int is_playable(int letter);                        /* JT[2002] */
+extern void calc_position(int row, int col, int* out1, int* out2); /* JT[2338] */
+extern void bounds_error(void);                            /* JT[418] */
+
+/*
+ * init_position_tracking - Function at 0x0000
+ *
+ * Initializes the board position tracking structures.
+ * Called when the board state changes and cross-checks
+ * need to be regenerated.
+ *
+ * Parameters:
+ *   input_data - Data to copy/validate
+ */
+void init_position_tracking(void* input_data)
+{
+    uint16_t local_buffer[48];  /* 96 bytes / 2 = 48 words */
+    int i;
+
+    /* Check if board state has changed (544 bytes = 17*32) */
+    if (memcmp_jt(g_state1, input_data, 544) == 0) {
+        /* No changes - just initialize word array */
+        goto init_word_array;
+    }
+
+    /* Board changed - reinitialize position tracking */
+    /* Copy and validate input */
+    /* uncertain - internal helper at PC+172 */
+
+    g_row_counter = 7;  /* Reset counter */
+
+    /* Clear position data areas */
+    memset_jt(g_position_data2, 0, 34);
+    memset_jt(g_position_data1, 0, 34);
+
+    /* Setup move structure direction */
+    g_current_move_ptr[32] = 8;  /* Direction = horizontal */
+
+    /* Adjust traversal pointer */
+    g_traversal_ptr = g_current_move_ptr - 1;
+
+    /* Initialize board tracking */
+    g_board_ptr = &g_board_offset[0];
+
+    /* Setup initial position */
+    /* Call internal setup at PC+2018 with position 8 */
+
+    /* Initialize letter data pointer */
+    g_letter_data_ptr = g_letter_data;
+
+    /*
+     * Main initialization loop - process DAWG table
+     */
+    int index = 0;
+    DAWGNode** dawg_ptr = g_dawg_table;
+
+    while (1) {
+        g_dawg_base_ptr = (DAWGNode*)(*dawg_ptr);
+        g_letter_set_index = index;
+
+        /* Get child pointer from table */
+        uint32_t child_ptr = (uint32_t)g_dawg_table[index];  /* uncertain */
+        if (child_ptr == 0) {
+            break;  /* End of table */
+        }
+
+        g_current_dawg_node = child_ptr;
+
+        /* Process this DAWG node - call internal function at PC+430 */
+        /* process_dawg_node(child_ptr); */
+
+        index++;
+        dawg_ptr++;
+    }
+
+init_word_array:
+    /* Initialize local word array with -1 markers */
+    for (i = 0; i < 31; i++) {
+        local_buffer[i] = 0xFFFF;  /* Mark as invalid */
+    }
+
+    /* Process words - call internal function at PC+1772 */
+    /* process_words(local_buffer, input_data); */
+}
+
+/*
+ * setup_board_context - Function at 0x00D2
+ *
+ * Sets up the board context for move evaluation.
+ * Copies letter counts and initializes position data.
+ *
+ * Parameters:
+ *   rack - Pointer to player's rack letters
+ *   move_struct - Pointer to move structure (34 bytes)
+ */
+void setup_board_context(char* rack, uint8_t* move_struct)
+{
+    /* Clear position data array (128 bytes) */
+    memset_jt(g_position_counts, 0, 128);
+
+    /* Store move pointer */
+    g_current_move_ptr = move_struct;
+
+    /* Clear move structure */
+    memset_jt(move_struct, 0, 34);
+
+    /* Copy letter counts to position counts */
+    memmove_jt(g_position_counts, g_letter_counts, 128);
+
+    /* Store rack pointer */
+    g_rack_ptr_storage = rack;
+}
+
+/*
+ * generate_crosscheck_sets - Function at 0x010E
+ *
+ * Generates cross-check sets for all board positions.
+ * A cross-check set contains the valid letters that can
+ * be played at a position based on perpendicular words.
+ *
+ * This is the Appel-Jacobson cross-check generation algorithm.
+ */
+void generate_crosscheck_sets(void)
+{
+    int row, col;
+    uint32_t row_above_offset, row_below_offset;
+
+    /* Validate that we have new row data */
+    if (memcmp_jt(g_row_buffer, g_state1, 17) == 0) {
+        bounds_error();  /* Should not be identical */
+    }
+
+    /*
+     * Process each row (1-30, with 0 and 31 being borders)
+     */
+    CrossCheckRow* crosscheck_row = g_crosschecks;
+    uint32_t board_row_ptr = (uint32_t)&g_state1[17];  /* Skip border */
+
+    for (row = 1; row < 31; row++) {
+        /*
+         * Get pointers to row above and below for cross-check calculation
+         */
+        if (row == 1 || row == 16) {
+            /* First/last playable row - use default buffer */
+            row_above_offset = (uint32_t)g_row_buffer;
+        } else {
+            row_above_offset = (uint32_t)&g_state1[(row - 1) * 17];
+        }
+
+        g_board_ptr = (uint8_t*)board_row_ptr;
+
+        if (row == 15 || row == 30) {
+            row_below_offset = (uint32_t)g_row_buffer;
+        } else {
+            row_below_offset = (uint32_t)&g_state1[(row + 1) * 17];
+        }
+
+        /*
+         * Process each column in this row
+         */
+        CrossCheckMask* crosscheck_ptr = &crosscheck_row->columns[0];
+
+        for (col = 1; col < 16; col++) {
+            uint8_t* board_cell = g_board_ptr + col;
+
+            /* Check if cell is occupied */
+            if (*board_cell != 0) {
+                /* Cell has a letter - cross-check is that letter's mask */
+                uint8_t letter = *board_cell;
+                *crosscheck_ptr = g_letter_masks[letter * 2];  /* uncertain - *8 or *2 */
+                goto next_column;
+            }
+
+            /* Check if adjacent cells (above/below) are empty */
+            uint8_t* above = (uint8_t*)(row_above_offset + col);
+            uint8_t* below = (uint8_t*)(row_below_offset + col);
+
+            if (*above == 0 && *below == 0) {
+                /* No adjacent letters - all letters valid */
+                *crosscheck_ptr = 0xFFFFFFFF;  /* All bits set */
+                goto next_column;
+            }
+
+            /*
+             * Has adjacent letter - compute cross-check from DAWG
+             */
+            int16_t crossword_row, crossword_col;
+            calc_position(row, col, &crossword_row, &crossword_col);
+
+            /* Calculate cross-word starting position */
+            uint32_t crossword_offset = crossword_row * 17 + crossword_col;
+            uint8_t* crossword_ptr = &g_state1[crossword_offset] - 1;
+
+            /* Find start of cross-word (scan backwards to empty) */
+            while (*crossword_ptr != 0) {
+                crossword_ptr--;
+            }
+            crossword_ptr++;  /* Step forward to first letter */
+
+            /* Clear cross-check mask */
+            *crosscheck_ptr = 0;
+
+            /*
+             * Query DAWG for valid letters
+             * find_valid_letters_for_position returns letters that
+             * form valid words when added at this position
+             */
+            char* valid = find_valid_letters_for_position(
+                (char*)crossword_ptr,
+                (char*)(g_rack + 1)
+            );
+
+            /* OR each valid letter's mask into cross-check */
+            while (*valid != 0) {
+                uint8_t letter = *valid++;
+                *crosscheck_ptr |= g_letter_masks[letter * 2];  /* uncertain */
+            }
+
+        next_column:
+            crosscheck_ptr++;
+        }
+
+        /* Advance to next row */
+        crosscheck_row++;  /* +68 bytes */
+        board_row_ptr += 17;
+    }
+}
+
+/*
+ * traverse_dawg_for_word - Function at 0x0368
+ *
+ * Traverses the DAWG to find a word, returning the node
+ * at the end of the word (or -1 if not found).
+ *
+ * Parameters:
+ *   word - Null-terminated string to look up
+ *
+ * Returns:
+ *   DAWG node index at end of word, or -1 if not found
+ */
+uint32_t traverse_dawg_for_word(char* word)
+{
+    uint8_t current_letter = *word;
+
+    if (current_letter == 0) {
+        /* Empty word - return root node */
+        return g_current_dawg_node;
+    }
+
+    uint32_t node_index = g_current_dawg_node;
+
+    while (1) {
+        /* Get DAWG node at current index */
+        uint32_t node_offset = node_index * 8;  /* 8 bytes per entry in table */
+        DAWGNode node = *(DAWGNode*)((uint8_t*)g_dawg_base_ptr + node_offset);
+
+        uint8_t node_letter = DAWG_LETTER(node);
+
+        /* Check for letter match */
+        if (node_letter == current_letter) {
+            /* Match found - get child pointer */
+            node_index = DAWG_CHILD_PTR(node);
+
+            /* Advance to next letter in word */
+            word++;
+            current_letter = *word;
+
+            if (current_letter == 0) {
+                /* End of word - return current node */
+                return node_index;
+            }
+
+            if (node_index == 0) {
+                /* No children but more letters - not found */
+                return (uint32_t)-1;
+            }
+
+            continue;
+        }
+
+        /* Check if this is last sibling */
+        if (DAWG_IS_LAST(node)) {
+            return (uint32_t)-1;  /* Not found */
+        }
+
+        /* Check if we've passed the target letter */
+        if (node_letter > current_letter) {
+            return (uint32_t)-1;  /* Not found (list is sorted) */
+        }
+
+        /* Try next sibling */
+        node_index++;
+    }
+}
+
+/*
+ * find_valid_letters_for_position - Function at 0x03CA
+ *
+ * Finds all letters that can be played at a position to form
+ * valid cross-words. Used for cross-check generation.
+ *
+ * Parameters:
+ *   prefix - Letters before the position (cross-word prefix)
+ *   expected_letters - Letters to check (from rack)
+ *
+ * Returns:
+ *   Pointer to buffer containing valid letters (null-terminated)
+ */
+char* find_valid_letters_for_position(char* prefix, char* expected_letters)
+{
+    char* result_buffer = g_valid_letters;
+    char* result_ptr = result_buffer;
+    char* saved_prefix = prefix;
+    char* saved_expected = expected_letters;
+    DAWGNode** dawg_table_ptr = g_dawg_table;
+    int letter_set_index = 0;
+
+    /*
+     * Iterate through DAWG tables (multiple dictionaries possible)
+     */
+    while (1) {
+        g_dawg_base_ptr = *dawg_table_ptr;
+        g_letter_set_index = letter_set_index;
+
+        /* Get root node for this letter set */
+        uint32_t root_node = (uint32_t)g_dawg_table[letter_set_index];  /* uncertain */
+        if (root_node == 0) {
+            break;  /* No more letter sets */
+        }
+
+        g_current_dawg_node = root_node;
+
+        /* Reset to original prefix */
+        prefix = saved_prefix;
+        expected_letters = saved_expected;
+
+        /* Traverse for prefix */
+        uint32_t node_index = traverse_dawg_for_word(prefix);
+
+        if ((int32_t)node_index <= 0) {
+            goto next_letter_set;  /* Prefix not found */
+        }
+
+        /* Skip to end of prefix */
+        while (*prefix != 0) prefix++;
+
+        /* Get node at end of prefix */
+        uint32_t node_offset = node_index * 8;
+        DAWGNode node = *(DAWGNode*)((uint8_t*)g_dawg_base_ptr + node_offset);
+
+        /*
+         * Check each expected letter to see if it forms a valid word
+         */
+        uint8_t expected = *expected_letters;
+
+        while (expected != 0) {
+            uint8_t node_letter = DAWG_LETTER(node);
+
+            if (node_letter < expected) {
+                expected_letters++;
+                expected = *expected_letters;
+                continue;
+            }
+
+            if (node_letter == expected) {
+                /* Letter matches - check if forms valid word */
+                if (*prefix == 0) {
+                    /* No suffix - check end-of-word flag */
+                    if (DAWG_IS_EOW(node)) {
+                        *result_ptr++ = node_letter;
+                    }
+                } else {
+                    /* Has suffix - need to check children */
+                    uint32_t child_ptr = DAWG_CHILD_PTR(node);
+                    if (child_ptr != 0) {
+                        /* Check if suffix is valid from children */
+                        /* uncertain - recursive check logic */
+                        uint32_t suffix_offset = child_ptr * 8;
+                        DAWGNode child = *(DAWGNode*)((uint8_t*)g_dawg_base_ptr + suffix_offset);
+
+                        /* Match suffix letters */
+                        char* suffix_ptr = prefix;
+                        while (*suffix_ptr != 0) {
+                            if (DAWG_LETTER(child) == *suffix_ptr) {
+                                if (*(suffix_ptr + 1) == 0 && DAWG_IS_EOW(child)) {
+                                    *result_ptr++ = node_letter;
+                                }
+                                break;
+                            }
+
+                            if (DAWG_IS_LAST(child)) {
+                                break;
+                            }
+                            child_ptr++;
+                            child = *(DAWGNode*)((uint8_t*)g_dawg_base_ptr + child_ptr * 8);
+                        }
+                    }
+                }
+
+                expected_letters++;
+                expected = *expected_letters;
+            }
+
+            /* Check last sibling flag */
+            if (DAWG_IS_LAST(node)) {
+                break;
+            }
+
+            node_index++;
+            node = *(DAWGNode*)((uint8_t*)g_dawg_base_ptr + node_index * 8);
+        }
+
+    next_letter_set:
+        letter_set_index++;
+        dawg_table_ptr++;
+    }
+
+    /* Null-terminate result */
+    *result_ptr = 0;
+
+    return result_buffer;
+}
+
+/*
+ * process_dawg_node - Function at 0x024A (internal helper)
+ *
+ * Recursively processes a DAWG node during initialization,
+ * checking for valid word placements on the board.
+ *
+ * This implements the core of the Appel-Jacobson move generation
+ * algorithm for the initialization phase.
+ */
+static void process_dawg_node(uint32_t node_ptr)
+{
+    uint32_t node_offset;
+    DAWGNode node;
+    uint8_t letter;
+    int8_t* letter_count_ptr;
+
+    /* Increment traversal counter */
+    g_traversal_ptr++;
+
+    /* Get DAWG node */
+    node_offset = node_ptr * 8;
+    node = *(DAWGNode*)((uint8_t*)g_dawg_base_ptr + node_offset);
+    letter = DAWG_LETTER(node);
+
+    /* Store letter at traversal position */
+    *g_traversal_ptr = letter;
+
+    /* Validate letter is valid character */
+    if (g_char_class[letter] >= 0) {
+        bounds_error();  /* Invalid character */
+    }
+
+    /* Get letter availability */
+    letter_count_ptr = &g_position_counts[letter];
+
+    if (*letter_count_ptr == 0) {
+        /* Letter not available in rack */
+        goto check_sibling;
+    }
+
+    /* Decrement available count */
+    (*letter_count_ptr)--;
+
+    /* Check end-of-word flag */
+    if (!DAWG_IS_EOW(node)) {
+        goto try_children;
+    }
+
+    /*
+     * Found valid word ending - try placements
+     */
+    uint32_t word_len = g_traversal_ptr - g_current_move_ptr;
+    int16_t start_pos = 8 - word_len;  /* Starting position (row 8 = center) */
+
+    while (start_pos <= 8) {
+        g_current_move_ptr[33] = start_pos;  /* Set row */
+        g_current_move_ptr[24] = 0;  /* Clear score */
+        g_current_move_ptr[25] = 0;
+        g_current_move_ptr[26] = 0;
+        g_current_move_ptr[27] = 0;
+
+        int16_t pos = start_pos;
+        uint8_t* word_ptr = g_current_move_ptr;
+
+        /* Check each letter position for constraints */
+        while (*word_ptr != 0) {
+            uint8_t current = *word_ptr;
+
+            if (!is_playable(current)) {
+                goto next_position;
+            }
+
+            /* Check position constraints */
+            if (g_constraint1[pos] > 1) goto valid_position;
+            if (g_constraint2[pos] > 1) goto valid_position;
+            if (g_constraint3[pos] > 1) goto valid_position;
+            if (g_constraint4[pos] <= 1) goto next_position;
+
+        valid_position:
+            /* Valid - increment match count */
+            (*(uint32_t*)&g_current_move_ptr[24])++;
+
+        next_position:
+            pos++;
+            word_ptr++;
+        }
+
+        /* Process this valid word placement */
+        /* Internal handler at PC+2858 */
+
+        /* Clear score for next iteration */
+        g_current_move_ptr[24] = 0;
+
+        start_pos++;
+    }
+
+try_children:
+    /* Check for child nodes */
+    {
+        uint32_t child_ptr = DAWG_CHILD_PTR(node);
+        if (child_ptr != 0) {
+            /* Recurse into children */
+            process_dawg_node(child_ptr);
+        }
+    }
+
+    /* Restore letter count */
+    (*letter_count_ptr)++;
+
+check_sibling:
+    /* Check last sibling flag */
+    if (!DAWG_IS_LAST(node)) {
+        /* Process next sibling */
+        process_dawg_node(node_ptr + 1);
+    }
+
+    /* Backtrack */
+    *g_traversal_ptr = 0;
+    g_traversal_ptr--;
+}
+```
+
+### Key Algorithmic Notes
+
+```
+DAWG NODE FORMAT:
+=================
+4 bytes packed as follows:
+- Bits 0-7:   Letter code (1-26 for a-z, 63 for blank)
+- Bit 8:      End-of-word (EOW) flag
+- Bit 9:      Last-sibling flag
+- Bits 10-31: Child pointer index (22 bits)
+
+Nodes are stored in 8-byte table entries (for alignment).
+
+CROSS-CHECK GENERATION:
+=======================
+For each empty board position:
+1. Check if adjacent cells (above/below for horizontal moves) are empty
+2. If empty: all 26 letters are valid (mask = 0xFFFFFFFF)
+3. If occupied: traverse DAWG to find letters forming valid cross-words
+
+Cross-check masks are 32 bits:
+- Bit N set = letter N is valid at this position
+- Used to quickly filter rack letters during move generation
+
+APPEL-JACOBSON ALGORITHM:
+=========================
+The DAWG traversal implements Appel-Jacobson move generation:
+1. Anchor squares: positions adjacent to existing tiles
+2. For each anchor: try placing letters from rack
+3. Extend left (prefix) and right (suffix) from anchor
+4. Validate cross-words using cross-check masks
+5. Validate main word in DAWG
+
+BOARD COORDINATE SYSTEM:
+========================
+- Board is 17x32 bytes (includes borders)
+- Row 0 and 16 are borders
+- Columns 1-15 are playable
+- Cross-checks stored per row (68 bytes each)
+
+MULTIPLE LETTER SETS:
+=====================
+g_dawg_table can contain multiple DAWG roots for:
+- Different dictionaries (TWL vs SOWPODS)
+- Challenge word verification
+- Pattern matching modes
+```

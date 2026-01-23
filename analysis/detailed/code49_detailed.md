@@ -325,3 +325,299 @@ Standard Mac Scrap/Resource Manager patterns:
 - AddResource for file persistence
 - Handle-based memory with proper locking
 - Linear search through typed entries
+
+---
+
+## Speculative C Translation
+
+### Data Structures
+
+```c
+/* Window placement entry - 14 bytes */
+typedef struct WindowPlacementEntry {
+    long window_id;            /* 0-3: Unique window identifier */
+    short window_type;         /* 4-5: Window type code */
+    Rect bounds;               /* 6-13: Window bounds rectangle */
+} WindowPlacementEntry;
+
+/* Global variables */
+Rect g_window_rect;            /* A5-1450: Current window reference rectangle */
+short g_resource_file_ref;     /* A5-3512: Application resource file ref */
+
+/* Scrap type constant */
+#define kWindowPlacementType  'wplc'  /* 0x77706C63 */
+```
+
+### Function 0x0000 - Find or Create Window Placement Scrap
+
+```c
+/*
+ * find_or_create_placement_scrap - Find matching scrap or create new
+ *
+ * Searches for an existing 'wplc' scrap entry that matches the current
+ * window rectangle. If not found, creates a new scrap entry.
+ *
+ * @return: Handle to window placement scrap, or NULL on failure
+ */
+Handle find_or_create_placement_scrap(void) {
+    Rect local_rect;
+    Rect scrap_rect;
+    Handle scrap_handle;
+    short scrap_index = 0;
+    long scrap_offset;
+
+    /* Get current window rectangle from globals */
+    local_rect = g_window_rect;
+
+    /* Search through existing 'wplc' scraps */
+    while (1) {
+        /* Try to get scrap at this index */
+        scrap_offset = 0;
+        scrap_handle = GetScrap(NULL, kWindowPlacementType, &scrap_offset);
+
+        if (scrap_handle == NULL) {
+            break;  /* No more scraps - need to create new */
+        }
+
+        /* Check if this scrap matches our window rect */
+        scrap_rect = **(Rect**)scrap_handle;
+
+        if (scrap_rect.top == local_rect.top &&
+            scrap_rect.bottom == local_rect.bottom &&
+            scrap_rect.left == local_rect.left &&
+            scrap_rect.right == local_rect.right) {
+            /* Found matching placement */
+            return scrap_handle;
+        }
+
+        /* No match - release and try next */
+        ZeroScrap();  /* uncertain: releases current scrap entry */
+        scrap_index++;
+    }
+
+    /* Create new scrap entry */
+    scrap_handle = NewHandle(sizeof(Rect));  /* 8 bytes */
+
+    if (scrap_handle == NULL) {
+        return NULL;  /* Memory allocation failed */
+    }
+
+    /* Lock handle and initialize */
+    HLock(scrap_handle);
+
+    /* Verify size is correct */
+    if (GetHandleSize(scrap_handle) != sizeof(Rect)) {
+        error_handler();  /* JT[418] */
+    }
+
+    /* Store window rectangle in new scrap */
+    **((Rect**)scrap_handle) = local_rect;
+
+    /* Add as resource for persistence */
+    AddResource(scrap_handle, kWindowPlacementType,
+                scrap_index, "\p");  /* Empty name */
+
+    /* Register in scrap manager */
+    PutScrap(sizeof(Rect), kWindowPlacementType, *scrap_handle);
+    InfoScrap();
+    UnloadScrap();
+
+    return scrap_handle;
+}
+```
+
+### Function 0x00B8 - Get Window Placement Data
+
+```c
+/*
+ * get_window_placement - Retrieve stored window bounds by type
+ *
+ * Searches the placement scrap for an entry matching the given window
+ * type and copies the bounds to the output rectangle.
+ *
+ * @param window_type: Type code to search for
+ * @param out_bounds: Receives the stored bounds rectangle
+ */
+void get_window_placement(short window_type, Rect *out_bounds) {
+    Handle scrap_handle;
+    WindowPlacementEntry *entries;
+    long entry_count;
+    short index;
+    long scrap_size;
+
+    /* Find or create the placement scrap */
+    scrap_handle = find_or_create_placement_scrap();
+
+    if (scrap_handle == NULL) {
+        return;  /* No placement data available */
+    }
+
+    /* Lock handle for access */
+    HLock(scrap_handle);
+    entries = (WindowPlacementEntry*)*scrap_handle;
+
+    /* Calculate entry count from handle size */
+    /* uncertain: exact size calculation method */
+    scrap_size = GetHandleSize(scrap_handle);
+    entry_count = scrap_size / sizeof(WindowPlacementEntry);
+
+    /* Search for matching type */
+    for (index = 0; index < entry_count; index++) {
+        if (entries[index].window_type == window_type) {
+            /* Found matching entry - copy bounds */
+            *out_bounds = entries[index].bounds;
+            break;
+        }
+    }
+
+    /* Release scrap */
+    HUnlock(scrap_handle);
+    ZeroScrap();  /* uncertain: cleanup method */
+}
+```
+
+### Function 0x012E - Store Window Placement
+
+```c
+/*
+ * store_window_placement - Save window bounds for later restoration
+ *
+ * Saves the current window position in the placement scrap for the
+ * given window type. Updates existing entry or adds new one.
+ *
+ * @param window_id: Unique identifier for this window instance
+ * @param window_type: Type code for categorization
+ * @param window_ptr: Pointer to window record
+ */
+void store_window_placement(long window_id, short window_type,
+                            WindowPtr window_ptr) {
+    Handle scrap_handle;
+    WindowPlacementEntry *entries;
+    WindowPlacementEntry *entry_ptr;
+    Rect content_rect;
+    long entry_count;
+    short index;
+    Boolean found_existing = false;
+    OSErr mem_error;
+
+    /* Find or create placement scrap */
+    scrap_handle = find_or_create_placement_scrap();
+
+    if (scrap_handle == NULL) {
+        return;  /* Cannot store placement */
+    }
+
+    /* Get window content rectangle */
+    content_rect = ((WindowPeek)window_ptr)->contRgn[0]->rgnBBox;
+    /* uncertain: exact method to get content rect */
+
+    /* Convert to global coordinates */
+    LocalToGlobal(&content_rect.topLeft);
+    LocalToGlobal(&content_rect.botRight);
+    /* uncertain: coordinate conversion details */
+
+    /* Resize handle to add new entry */
+    SetHandleSize(scrap_handle,
+                  GetHandleSize(scrap_handle) + sizeof(WindowPlacementEntry));
+
+    /* Check for memory error */
+    mem_error = MemError();
+    if (mem_error != noErr) {
+        ZeroScrap();
+        return;
+    }
+
+    /* Lock for modification */
+    HLock(scrap_handle);
+    entries = (WindowPlacementEntry*)*scrap_handle;
+
+    /* Calculate entry count */
+    entry_count = GetHandleSize(scrap_handle) / sizeof(WindowPlacementEntry);
+
+    /* Search for existing entry with same type to update */
+    for (index = 0; index < entry_count - 1; index++) {  /* -1: new entry not yet initialized */
+        if (entries[index].window_type == window_type) {
+            /* Found existing entry - update it */
+            entries[index].bounds = content_rect;
+            found_existing = true;
+            break;
+        }
+    }
+
+    if (!found_existing) {
+        /* Add as new entry at end */
+        entry_ptr = &entries[entry_count - 1];
+        entry_ptr->window_id = window_id;
+        entry_ptr->window_type = window_type;
+        entry_ptr->bounds = content_rect;
+    } else {
+        /* Shrink handle back (we didn't need the extra space) */
+        SetHandleSize(scrap_handle,
+                      GetHandleSize(scrap_handle) - sizeof(WindowPlacementEntry));
+    }
+
+    /* Commit changes to scrap */
+    PutScrap(GetHandleSize(scrap_handle), kWindowPlacementType, *scrap_handle);
+    InfoScrap();
+    UnloadScrap();
+
+    /* Release handle */
+    HUnlock(scrap_handle);
+    ZeroScrap();
+}
+```
+
+### Usage Example
+
+```c
+/*
+ * Example: Restoring window position on open
+ */
+void open_game_window(void) {
+    WindowPtr new_window;
+    Rect default_bounds = {100, 100, 500, 700};
+    Rect saved_bounds;
+
+    /* Try to get saved position */
+    get_window_placement(kGameWindowType, &saved_bounds);
+
+    /* Use saved if valid, otherwise default */
+    if (!EmptyRect(&saved_bounds)) {
+        default_bounds = saved_bounds;
+    }
+
+    /* Create window at position */
+    new_window = NewWindow(NULL, &default_bounds, "\pMaven", true, ...);
+}
+
+/*
+ * Example: Saving window position on close
+ */
+void close_game_window(WindowPtr window) {
+    /* Save current position */
+    store_window_placement(GetWRefCon(window), kGameWindowType, window);
+
+    /* Then dispose */
+    DisposeWindow(window);
+}
+```
+
+### Window Type Constants (Speculative)
+
+```c
+/* uncertain: actual type values used */
+#define kGameWindowType      1
+#define kSettingsWindowType  2
+#define kDictWindowType      3
+#define kHistoryWindowType   4
+```
+
+### Algorithm Summary
+
+The window placement system uses a scrap-based storage mechanism:
+
+1. **Runtime Storage**: Uses Mac Scrap Manager for temporary storage during session
+2. **Persistent Storage**: AddResource saves to application resource fork
+3. **Entry Management**: Linear array of 14-byte placement entries
+4. **Lookup**: O(n) linear search by window type
+5. **Update**: In-place update if type exists, append if new

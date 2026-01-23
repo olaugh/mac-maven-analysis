@@ -480,3 +480,545 @@ Clear caching optimization patterns:
 - Score comparison for replacement
 - Entry validation with letter counts
 - 66-byte entry structure confirmed by memmove calls
+
+---
+
+## Speculative C Translation
+
+### Header File (code36_cache.h)
+
+```c
+/*
+ * CODE 36 - Move Cache and Position Scoring
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * This module manages the move evaluation cache for endgame optimization.
+ * Uses 66-byte entries indexed by position hash for fast lookup.
+ */
+
+#ifndef CODE36_CACHE_H
+#define CODE36_CACHE_H
+
+#include <stdint.h>
+#include <stdbool.h>
+
+/* Cache entry structure - 66 bytes total */
+typedef struct CacheEntry {
+    uint32_t link_flags;        /* +0: Link pointer and flags */
+    int32_t  score;             /* +4: Cached score value */
+    uint8_t  reserved1[10];     /* +8: Reserved/padding */
+    uint16_t cache_index;       /* +14: Index in cache array */
+    uint8_t  move_data[34];     /* +16: Copy of Move structure */
+    uint16_t position_row;      /* +50: Board row */  /* uncertain */
+    uint16_t position_col;      /* +52: Board column */  /* uncertain */
+    uint16_t score_flags;       /* +54: Score calculation flags */  /* uncertain */
+    int16_t  extra_score;       /* +56: Additional score modifier */  /* uncertain */
+    uint16_t cached_modifier;   /* +58: Cached score modifier */
+    uint8_t  letter_counts[4];  /* +60: Validation counts (tiles 0-3) */
+    uint8_t  reserved2[2];      /* +64: Padding to 66 bytes */
+} CacheEntry;
+
+/* Move data structure embedded in cache entries */
+typedef struct MoveData {
+    uint8_t  word_letters[16];  /* +0: Letters in the word */
+    int32_t  base_score;        /* +16: Base move score */
+    int32_t  component_score;   /* +20: Score component */
+    int32_t  bonus_score;       /* +24: Bonus (bingo, etc.) */
+    uint16_t flags;             /* +28: Move flags */
+    uint16_t position;          /* +30: Encoded position */
+    uint8_t  direction;         /* +32: 0=vertical, 8=horizontal */
+    uint8_t  row;               /* +33: Starting row */
+} MoveData;
+
+/*
+ * Global variables (A5-relative)
+ * These would be declared extern in implementation
+ */
+extern int32_t*  g_cache_ptr;           /* A5-1820: Cache enable/base pointer */
+extern uint16_t  g_score_multiplier;    /* A5-1822: Score multiplier */
+extern int32_t*  g_bingo_cache_ptr;     /* A5-1852: Special 7-tile cache */
+extern uint32_t  g_cache_hash_base;     /* A5-1924: Cache hash base value */
+extern uint16_t  g_position_values[4];  /* A5-2086 to A5-2092: Position vals */
+extern uint16_t  g_position_index;      /* A5-2094: Current position index */
+extern CacheEntry* g_cache_array;       /* A5-12508: Cache array pointer */
+extern uint16_t  g_cache_entry_count;   /* A5-12540: Number of entries */
+extern uint8_t   g_player_blank_count;  /* A5-12605: Player's blank count */
+extern int8_t    g_position_data[128];  /* A5-12668: Position data array */
+extern uint16_t  g_position_mask[256];  /* A5-18460: Position mask table */
+extern uint8_t   g_game_state[1024];    /* A5-19470: Game state buffer */
+extern uint16_t  g_tiles_placed;        /* A5-20010: Tiles in current move */
+extern uint8_t   g_blank_count;         /* A5-23155: Total blank count */
+extern int8_t    g_letter_counts[128];  /* A5-23218: Letter count array */
+extern int16_t   g_score_lookup[256];   /* A5-26024: Score lookup table */
+extern int16_t   g_letter_values[128];  /* A5-27630: Letter value table */
+
+/* Maximum cache entries */
+#define MAX_CACHE_ENTRIES 90
+
+/* Cache entry size in bytes */
+#define CACHE_ENTRY_SIZE 66
+
+/* Function prototypes */
+int16_t calculate_position_score(MoveData* move_data, int16_t comparison_value);
+void cache_move_entry(MoveData* move_data);
+void cache_move_alternate(MoveData* move_data);  /* Function at 0x04D6 */
+int32_t calculate_score_modifier(void);  /* Internal helper at 0x115A (PC+4442) */
+
+#endif /* CODE36_CACHE_H */
+```
+
+### Implementation File (code36_cache.c)
+
+```c
+/*
+ * CODE 36 - Move Cache and Position Scoring Implementation
+ * Maven Scrabble AI - Speculative Reconstruction
+ *
+ * Key algorithms:
+ * - Hash-based position cache lookup
+ * - Score comparison for cache replacement
+ * - Letter count validation for cache hits
+ * - Special handling for 7-tile (bingo) plays
+ */
+
+#include "code36_cache.h"
+#include <string.h>
+
+/*
+ * calculate_position_score - Function at 0x0000
+ *
+ * Calculates the positional score for a move, using the cache
+ * when available to avoid recalculation.
+ *
+ * Parameters:
+ *   move_data - Pointer to the move being evaluated
+ *   comparison_value - Value to compare against cached entries
+ *
+ * Returns:
+ *   Score value, or 0 if move should be skipped
+ */
+int16_t calculate_position_score(MoveData* move_data, int16_t comparison_value)
+{
+    int16_t accumulated_score = 0;
+    uint8_t* word_ptr;
+    uint8_t* board_ptr;  /* uncertain - tracks board state */
+    int16_t letter_index;
+    int16_t score_modifier;
+
+    /* Early exit check: base score must be > 5000 */
+    if (move_data->base_score <= 5000) {
+        return 0;
+    }
+
+    /* Check blank tile consistency */
+    if (g_blank_count == g_player_blank_count) {
+        return 0;  /* No difference in blanks - skip */
+    }
+
+    /* Check if cache is enabled */
+    if (g_cache_ptr == NULL) {
+        goto direct_calculation;
+    }
+
+    /*
+     * Cache lookup section
+     * Calculate cache index from position
+     */
+    word_ptr = move_data->word_letters;
+    int16_t row = move_data->row;
+    int16_t direction = move_data->direction;
+
+    /* Calculate hash for cache lookup */
+    /* uncertain - exact hash formula */
+    uint32_t cache_index = (row * 17 + direction) & 0xFFFF;
+
+    /*
+     * Iterate through word letters, checking each position
+     */
+    letter_index = *word_ptr;
+    while (letter_index != 0) {
+        /* Check if board cell is occupied */
+        if (*board_ptr != 0) {
+            goto next_letter;
+        }
+
+        /* Check letter value threshold (800 = high-value tile) */
+        if (g_letter_values[letter_index * 2] >= 800) {
+            goto next_letter;  /* High value - special handling */
+        }
+
+        /* Calculate score contribution for this letter */
+        int16_t player_offset = g_player_blank_count;
+        int32_t lookup_offset = letter_index;
+        lookup_offset *= 2;  /* Word-sized entries */
+
+        /* Get bonus from position-specific table */
+        /* uncertain - complex addressing mode */
+        int16_t position_bonus = g_position_mask[lookup_offset];
+
+        /* Apply mask with move flags */
+        uint16_t combined = move_data->position | position_bonus;
+        combined &= g_position_mask[player_offset * 2];  /* uncertain */
+        score_modifier = combined;
+
+        /* Look up cached value if available */
+        if (g_cache_ptr != NULL) {
+            uint8_t cached = *(uint8_t*)(g_cache_ptr + score_modifier);
+
+            if (cached == comparison_value) {
+                goto next_letter;  /* Cache hit - use cached */
+            }
+        }
+
+        /* Add letter contribution to score */
+        accumulated_score += g_position_data[letter_index];
+
+    next_letter:
+        word_ptr++;
+        board_ptr++;  /* uncertain */
+        letter_index = *word_ptr;
+    }
+
+    goto finalize_score;
+
+direct_calculation:
+    /*
+     * No cache available - calculate directly
+     */
+
+    /* Check for bingo (7 tiles placed) */
+    if (g_tiles_placed == 7) {
+        accumulated_score = 7;  /* Bingo base value */
+        goto finalize_score;
+    }
+
+    /*
+     * Calculate score from position values
+     * Uses 4 position indices to look up scores
+     */
+    int16_t val0 = g_position_data[g_position_values[2]];  /* A5-2090 */
+    int16_t val1 = g_position_data[g_position_values[0]];  /* A5-2086 */
+    int16_t val2 = g_position_data[g_position_values[3]];  /* A5-2092 */
+    int16_t val3 = g_position_data[g_position_values[1]];  /* A5-2088 */
+
+    accumulated_score = g_tiles_placed;
+    accumulated_score -= val3;
+    accumulated_score -= val2;
+    accumulated_score -= val1;
+    accumulated_score -= val0;
+
+finalize_score:
+    /*
+     * Final score aggregation
+     * Process all letters and apply lookup table modifiers
+     */
+    word_ptr = move_data->word_letters;
+    int32_t final_modifier = 0;
+
+    /* uncertain - complex loop processing letters */
+    uint8_t letter_count_63 = g_letter_counts[63];
+    int8_t pos_data_63 = g_position_data[63];
+
+    while (*word_ptr != 0) {
+        uint8_t current_letter = *word_ptr++;
+        int8_t pos_val = g_position_data[current_letter];
+
+        if (pos_val == 0) {
+            continue;  /* Not found in position data */
+        }
+
+        /* Clear used flag */
+        g_position_data[current_letter] = 0;
+
+        /* Check against letter count */
+        uint8_t count = g_letter_counts[current_letter];
+        if (count == pos_val) {
+            continue;  /* Exact match */
+        }
+
+        /* Adjust score based on lookup */
+        int32_t lookup_idx = count * 2;
+        accumulated_score -= g_score_lookup[0];
+        final_modifier &= g_score_lookup[lookup_idx];
+    }
+
+    /* Validate final modifier */
+    if (final_modifier == 0) {
+        /* Error condition - should not happen */
+        /* bounds_error(); - JT[418] */
+    }
+
+    return accumulated_score + (int16_t)final_modifier;
+}
+
+/*
+ * cache_move_entry - Function at 0x0188
+ *
+ * Caches a move entry for later retrieval. Uses a 66-byte
+ * entry format with position hash for indexing.
+ *
+ * Parameters:
+ *   move_data - Pointer to the move to cache
+ */
+void cache_move_entry(MoveData* move_data)
+{
+    int16_t* score_area;
+    int32_t cache_hash;
+    int32_t score_modifier;
+    int16_t tile_index;
+    int16_t adjusted_count;
+
+    /* Check tile count limit (max 7 for standard play) */
+    if (g_tiles_placed > 7) {
+        return;  /* Too many tiles - don't cache */
+    }
+
+    score_area = (int16_t*)((uint8_t*)move_data + 16);
+
+    /*
+     * Calculate cache hash from position and score
+     */
+    cache_hash = g_cache_hash_base;
+    cache_hash += *score_area;  /* Add base score */
+
+    /* Check against existing entry */
+    int32_t entry_offset = (g_cache_entry_count - 1) * CACHE_ENTRY_SIZE;
+    CacheEntry* existing = (CacheEntry*)((uint8_t*)g_cache_array + entry_offset);
+
+    if (cache_hash <= existing->score) {
+        return;  /* Existing entry is better or equal */
+    }
+
+    /*
+     * Calculate cache index adjustment
+     */
+    tile_index = g_position_index - g_tiles_placed;
+    adjusted_count = tile_index - 7;
+
+    if (adjusted_count <= 0) {
+        if (adjusted_count < 0) {
+            adjusted_count = 1;  /* Minimum value */
+        } else {
+            adjusted_count = 7;  /* At boundary */
+        }
+    }
+
+    /*
+     * Calculate score modifier using helper function
+     */
+    score_modifier = calculate_score_modifier();
+
+    /* Apply multiplier for tile count */
+    int32_t multiplied = g_tiles_placed * g_score_multiplier;
+
+    /* Complex calculation using JT[66] and JT[90] */
+    /* uncertain - involves 32-bit multiply and divide */
+    int32_t calc_result = (multiplied * score_modifier) / adjusted_count;
+    calc_result += *score_area;
+    cache_hash = calc_result;
+
+    /* Recheck against existing entry */
+    if (cache_hash <= existing->score) {
+        return;  /* Still not better */
+    }
+
+    /* Validate entry count */
+    if (g_cache_entry_count != MAX_CACHE_ENTRIES) {
+        /* bounds_error(); - JT[418] */
+        return;
+    }
+
+    /*
+     * Check if we can find existing entry to update
+     */
+    if (g_cache_ptr == NULL) {
+        goto create_new_entry;
+    }
+
+    /* Look up position in cache */
+    uint32_t position_offset = move_data->position;
+    uint8_t* cache_lookup = (uint8_t*)(g_cache_ptr + position_offset);
+    int16_t found_index = (int8_t)*cache_lookup;
+
+    if (found_index == -1) {
+        goto create_new_entry;  /* Not found */
+    }
+
+    /* Validate index bounds */
+    if (found_index >= g_cache_entry_count || found_index < 0) {
+        /* bounds_error(); */
+        return;
+    }
+
+    /*
+     * Found existing entry - verify it matches
+     */
+    CacheEntry* found_entry = &g_cache_array[found_index];
+
+    /* Check position hash matches */
+    if (*(uint32_t*)&found_entry->reserved1[2] != found_index) {
+        goto create_new_entry;  /* Hash mismatch */  /* uncertain */
+    }
+
+    /* Verify direction matches */
+    if (found_entry->move_data[16] != move_data->direction) {  /* offset 32 in Move */
+        goto create_new_entry;
+    }
+
+    /* Verify row matches */
+    if (found_entry->move_data[17] != move_data->row) {  /* offset 33 in Move */
+        goto create_new_entry;
+    }
+
+    /*
+     * Verify letter counts match current state
+     */
+    if (found_entry->letter_counts[0] != g_tiles_placed) {
+        goto create_new_entry;
+    }
+
+    /* Check each position value */
+    if (found_entry->letter_counts[1] != g_position_data[g_position_values[1]]) {
+        goto create_new_entry;
+    }
+    if (found_entry->letter_counts[2] != g_position_data[g_position_values[3]]) {
+        goto create_new_entry;
+    }
+    if (found_entry->letter_counts[3] != g_position_data[g_position_values[0]]) {
+        goto create_new_entry;
+    }
+
+    /*
+     * Score comparison - update only if better
+     */
+    if (cache_hash <= found_entry->score) {
+        return;  /* Existing entry is better */
+    }
+
+    /* Update existing entry with new values */
+    found_entry->score = cache_hash;
+
+    /* Copy move data (34 bytes = 8 longs + 1 word) */
+    uint32_t* dest = (uint32_t*)found_entry->move_data;
+    uint32_t* src = (uint32_t*)move_data;
+    for (int i = 0; i < 8; i++) {
+        *dest++ = *src++;
+    }
+    *(uint16_t*)dest = *(uint16_t*)src;
+
+    /* Store modifier */
+    found_entry->cached_modifier = (uint16_t)score_modifier;
+
+    return;
+
+create_new_entry:
+    /*
+     * Create new cache entry
+     * Special handling for 7-tile (bingo) plays
+     */
+    if (g_tiles_placed == 7) {
+        /* Use special bingo cache */
+        CacheEntry* bingo_entry = (CacheEntry*)g_bingo_cache_ptr;
+
+        /* Sum letter values for bingo scoring */
+        int32_t letter_sum = 0;
+        uint8_t* letters = move_data->word_letters;
+
+        while (*letters != 0) {
+            uint8_t letter = *letters++;
+            int16_t letter_val = g_letter_values[letter * 2];
+            int8_t count_diff = g_position_data[letter] - g_letter_counts[letter];
+            letter_sum += letter_val * count_diff;
+        }
+
+        letter_sum *= 2;  /* Double for bingo */
+        letter_sum += move_data->base_score;
+
+        /* Update bingo cache entry */
+        /* uncertain - rest of bingo handling */
+    }
+
+    /* Standard entry creation would continue here */
+    /* ... additional logic for non-bingo entries ... */
+}
+
+/*
+ * cache_move_alternate - Function at 0x04D6
+ *
+ * Alternative cache management function with similar structure
+ * to cache_move_entry but different handling for certain cases.
+ * Used for secondary move evaluation paths.
+ *
+ * Parameters:
+ *   move_data - Pointer to the move to cache
+ */
+void cache_move_alternate(MoveData* move_data)
+{
+    int16_t* score_area;
+    int32_t cache_hash;
+
+    /* Same initial checks as cache_move_entry */
+    if (g_tiles_placed > 7) {
+        return;
+    }
+
+    score_area = (int16_t*)((uint8_t*)move_data + 16);
+
+    cache_hash = g_cache_hash_base;
+    cache_hash += *score_area;
+
+    /*
+     * Similar structure to 0x0188 but with different
+     * cache handling - possibly for alternate search paths
+     */
+    /* uncertain - specific differences from cache_move_entry */
+
+    /* ... implementation continues similarly ... */
+}
+```
+
+### Key Algorithmic Notes
+
+```
+CACHE ENTRY STRUCTURE (66 bytes):
+================================
+The 66-byte cache entry is optimized for:
+1. Fast lookup by position hash
+2. Score comparison for replacement
+3. Move data storage (34 bytes - exact move copy)
+4. Validation via letter counts
+
+HASH CALCULATION:
+=================
+Position hash combines:
+- Row position (0-14)
+- Direction (0=vertical, 8=horizontal)
+- Base score component
+- Hash base value from g_cache_hash_base
+
+CACHE REPLACEMENT POLICY:
+=========================
+- Score-based replacement (higher score wins)
+- Letter count validation prevents stale hits
+- Maximum 90 entries (MAX_CACHE_ENTRIES)
+- Separate bingo cache for 7-tile plays
+
+LETTER COUNT VALIDATION:
+========================
+Four letter counts (offsets 60-63) store:
+- Tiles placed count
+- Three position-specific letter counts
+These must match current game state for cache hit validity.
+
+PERFORMANCE OPTIMIZATION:
+=========================
+The cache avoids recalculating position scores during
+endgame search. Critical for the B* search algorithm
+used in Maven's endgame analysis.
+
+INTEGRATION:
+============
+- Called by CODE 35's score calculation functions
+- Results used by CODE 40's move caching layer
+- Shares position data with CODE 43's cross-checks
+```

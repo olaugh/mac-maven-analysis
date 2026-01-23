@@ -290,6 +290,279 @@ Handle get_history(long* count_out) {
 | A9A0 | GetResource |
 | A9CF | TESetText |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 16 - Statistics & Game History
+ * Game statistics tracking, history management, score formatting.
+ */
+
+#include <MacTypes.h>
+#include <Resources.h>
+#include <TextEdit.h>
+
+/*========== Constants ==========*/
+#define STATS_BLOCK_LONGS       22      /* 22 longs = 88 bytes */
+#define STATS_BLOCK_SIZE        88      /* Bytes per stats block */
+#define HISTORY_ENTRY_SIZE      8       /* Bytes per history entry */
+#define REPORT_BUFFER_SIZE      16384   /* 16KB report buffer */
+
+/*========== Data Structures ==========*/
+
+/* Statistics block (88 bytes, 22 longs) */
+typedef struct StatsBlock {
+    long total_games;           /* Offset 0: Total games played */
+    long wins;                  /* Offset 4: Games won */
+    long losses;                /* Offset 8: Games lost */
+    long ties;                  /* Offset 12: Games tied */
+    long total_scored;          /* Offset 16: Total points scored */
+    long total_against;         /* Offset 20: Total points against */
+    long field_24;              /* Offset 24: Additional stat */
+    long field_28;              /* Offset 28: Additional stat */
+    long field_32;              /* Offset 32: Additional stat */
+    long field_36;              /* Offset 36: Additional stat */
+    long field_40;              /* Offset 40: Additional stat */
+    long field_44;              /* Offset 44: Additional stat */
+    long field_48;              /* Offset 48: Additional stat */
+    long reserved[9];           /* Remaining fields to 88 bytes */
+} StatsBlock;
+
+/* History entry (8 bytes each) */
+typedef struct HistoryEntry {
+    long score_data;            /* Offset 0: Score or data value */
+    short flags;                /* Offset 4: Entry flags */
+    short player_id;            /* Offset 6: Player identifier */
+} HistoryEntry;
+
+/*========== Global Variables (A5-relative) ==========*/
+extern Handle   g_main_window_handle;   /* A5-8584: Main window handle */
+extern WindowPtr g_stats_window;        /* A5-8580: Statistics window */
+extern char     g_format_string[];      /* A5-6940: Player format string */
+extern char     g_field_14[];           /* A5-15514: General buffer */
+```
+
+### Statistics Block Operations
+```c
+/*
+ * accumulate_stats_block - Add source stats to destination
+ *
+ * Adds all 22 long values from source to destination.
+ *
+ * @param dest: Destination statistics block
+ * @param source: Source statistics block
+ */
+void accumulate_stats_block(StatsBlock* dest, StatsBlock* source) {
+    long* dest_ptr = (long*)dest;
+    long* src_ptr = (long*)source;
+
+    for (int i = 0; i < STATS_BLOCK_LONGS; i++) {
+        dest_ptr[i] += src_ptr[i];
+    }
+}
+
+/*
+ * scale_stats_block - Scale statistics by percentage
+ *
+ * Copies source to dest, then scales certain fields
+ * by the provided factor (divided by 100, then by 2).
+ *
+ * @param dest: Destination statistics block
+ * @param source: Source statistics block to scale
+ * @param scale_factor: Percentage scale factor
+ */
+void scale_stats_block(StatsBlock* dest, StatsBlock* source, long scale_factor) {
+    long adjusted_factor;
+    long half_factor;
+
+    /* Calculate scale factors */
+    adjusted_factor = scale_factor / 100;       /* JT[66] divide */
+    half_factor = adjusted_factor / 2;          /* JT[90] divide */
+
+    /* Copy source to destination */
+    memcpy(dest, source, STATS_BLOCK_SIZE);
+
+    /* Scale specific fields */
+    dest->wins = dest->wins / adjusted_factor;
+    dest->losses = dest->losses / adjusted_factor;
+    dest->ties = dest->ties / adjusted_factor;
+    dest->total_scored = dest->total_scored / adjusted_factor;
+    dest->total_against = dest->total_against / adjusted_factor;
+
+    /* Continue scaling remaining fields... */
+    /* uncertain: exact fields scaled */
+}
+```
+
+### History Resource Access
+```c
+/*
+ * get_history_resource - Load game history from resource
+ *
+ * Loads 'HIST' resource and returns count of entries.
+ * Each entry is 8 bytes.
+ *
+ * @param count_out: Output - number of history entries
+ * @return: Handle to history data, NULL if not found
+ */
+Handle get_history_resource(long* count_out) {
+    Handle history_handle;
+    long handle_size;
+
+    /* Load 'HIST' resource ID 0 */
+    history_handle = GetResource('HIST', 0);
+
+    if (history_handle != NULL) {
+        /* Calculate entry count from handle size */
+        handle_size = GetHandleSize(history_handle);    /* JT[2826] */
+        *count_out = handle_size / HISTORY_ENTRY_SIZE;  /* >> 3 */
+    }
+    else {
+        *count_out = 0;
+    }
+
+    return history_handle;
+}
+```
+
+### Statistics Report Generation
+```c
+/*
+ * format_statistics_report - Generate statistics report text
+ *
+ * Processes game history and formats comprehensive statistics
+ * report for display.
+ *
+ * @param output_buffer: Buffer to receive formatted text
+ * @return: Length of generated text
+ */
+long format_statistics_report(char* output_buffer) {
+    Handle history_handle;
+    HistoryEntry* history_ptr;
+    long entry_count;
+    long wins = 0, losses = 0, ties = 0, games = 0;
+    short current_player;
+
+    /* Get current player from window data */
+    WindowData** wh = (WindowData**)g_main_window_handle;
+    WindowData* w = *wh;
+    current_player = w->current_player;         /* Offset 770 */
+
+    /* Format player header */
+    /* uncertain: exact format string location */
+    sprintf(output_buffer, g_format_string,
+            /* player name at A5-6956 indexed by player */ );
+
+    /* Load history resource */
+    history_handle = get_history_resource(&entry_count);
+
+    if (history_handle == NULL) {
+        return strlen(output_buffer);
+    }
+
+    /* Lock and process history */
+    HLock(history_handle);
+    history_ptr = (HistoryEntry*)*history_handle;
+
+    /* Accumulate statistics for current player */
+    for (long i = 0; i < entry_count; i++) {
+        HistoryEntry* entry = &history_ptr[i];
+
+        /* Check if entry is for current player */
+        if (entry->player_id == current_player) {
+            games++;
+
+            /* Accumulate based on flags */
+            /* uncertain: exact flag interpretation */
+            if (entry->flags & /* win flag */) {
+                wins++;
+            }
+            else if (entry->flags & /* loss flag */) {
+                losses++;
+            }
+            else {
+                ties++;
+            }
+
+            /* Accumulate score totals */
+            /* uncertain: how score_data is used */
+        }
+    }
+
+    HUnlock(history_handle);
+
+    /* Calculate percentages */
+    long win_percent = (games > 0) ? (wins * 100 / games) : 0;
+    long loss_percent = (games > 0) ? (losses * 100 / games) : 0;
+
+    /* Format statistics */
+    char* ptr = output_buffer + strlen(output_buffer);
+
+    sprintf(ptr, "Games: %ld\nWins: %ld (%ld%%)\nLosses: %ld (%ld%%)\nTies: %ld\n",
+            games, wins, win_percent, losses, loss_percent, ties);
+
+    /* uncertain: additional statistics formatting */
+
+    return strlen(output_buffer);
+}
+```
+
+### Report Display
+```c
+/*
+ * generate_and_display_report - Create and show full report
+ *
+ * Generates statistics report and displays in TextEdit field.
+ * Uses 16KB local buffer for report text.
+ */
+void generate_and_display_report(void) {
+    char report_buffer[REPORT_BUFFER_SIZE];     /* 16KB stack frame! */
+    long report_length;
+    TEHandle te_handle;
+
+    /* Generate report */
+    report_length = format_statistics_report(report_buffer);
+
+    /* Get TextEdit handle from stats window */
+    te_handle = (TEHandle)((char*)g_stats_window + 160);    /* TE at offset 160 */
+
+    /* Set text in TextEdit record */
+    TESetText(report_buffer, report_length, te_handle);
+
+    /* Update display */
+    update_stats_window();      /* JT[1890] */
+    redraw_stats_window();      /* JT[1874] */
+
+    /* Additional processing */
+    additional_report_func(0);  /* PC-relative */
+}
+```
+
+### Percentage Calculation
+```c
+/*
+ * calculate_percentage - Compute percentage with rounding
+ *
+ * @param numerator: Value to calculate percentage of
+ * @param denominator: Total value (100%)
+ * @return: Percentage (0-100)
+ */
+short calculate_percentage(long numerator, long denominator) {
+    if (denominator == 0) {
+        return 0;
+    }
+
+    /* Multiply by 100 first for precision */
+    long scaled = numerator * 100;
+
+    /* Add half denominator for rounding */
+    scaled += denominator / 2;
+
+    /* Divide */
+    return (short)(scaled / denominator);
+}
+```
+
 ## Confidence: HIGH
 
 Clear statistics tracking:

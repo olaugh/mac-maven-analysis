@@ -453,6 +453,340 @@ CODE 18 creates human-readable move descriptions:
 | A5-11960 | DAWG base pointer |
 | A5-26158 | Tile table |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 18 - Move Description Formatting
+ * Formats move descriptions for display, handles special moves.
+ */
+
+#include <MacTypes.h>
+
+/*========== Special Move Type Codes ==========*/
+#define MOVE_GAME_END_SPECIAL   0x4E20  /* 20000: Game end special */
+#define MOVE_PASS               0x8001  /* Pass turn */
+#define MOVE_FORFEIT            0xFFFF  /* Forfeit game */
+#define MOVE_EXCHANGE           0xFFFE  /* Exchange tiles */
+#define MOVE_CHALLENGE          0xFFFD  /* Challenge opponent */
+#define MOVE_GAME_END           0xFFFC  /* End of game */
+#define MOVE_TIMEOUT            0xFFE0  /* Time expired */
+#define MOVE_OVERTIME           0xFFDF  /* Overtime penalty */
+#define MOVE_RESIGN             0x07DA  /* 2010: Resign */
+
+/* Letter exchange range: 0xFFE1 to 0xFFFB (-31 to -5) */
+#define EXCHANGE_RANGE_MIN      0xFFE1
+#define EXCHANGE_RANGE_MAX      0xFFFB
+
+/*========== String Table Offsets (A5-relative) ==========*/
+/*
+ * A5-5160: Percentage indicator
+ * A5-5192: Horizontal format
+ * A5-5214: Coordinate format
+ * A5-5228: Position format
+ * A5-5250: Direction format
+ * A5-5256: "down"
+ * A5-5260: "across"
+ * A5-5280: Exchange format
+ * A5-5316: "end"
+ * A5-5338: "resign"
+ * A5-5366: "challenge lost"
+ * A5-5430: "challenge won"
+ * A5-5446: "overtime"
+ * A5-5462: "time"
+ * A5-5486: "exchange"
+ * A5-5510: "forfeit"
+ * A5-5516: "pass"
+ * A5-5554: "behind"
+ * A5-5592: "ahead"
+ * A5-5636: "won"
+ * A5-5648: Horizontal string
+ * A5-5660: Vertical format
+ * A5-5668: "no play"
+ * A5-5674: Format string 2
+ * A5-5678: Format string 1
+ * A5-5774: Output buffer (96 bytes)
+ */
+
+/*========== Global Variables ==========*/
+extern long*  g_dawg_base_ptr;          /* A5-11960: DAWG base */
+extern char*  g_tile_table;             /* A5-26158: Tile lookup table */
+extern char   g_output_buffer[96];      /* A5-5774: Output buffer */
+```
+
+### Move Formatting
+```c
+/*
+ * format_move_to_string - Format move data to human-readable string
+ *
+ * Creates description of move including word, position, and any
+ * special notation (blanks, etc).
+ *
+ * @param output: Output buffer for formatted string
+ * @param move_data: Move data structure
+ * @param context: Additional context/direction info
+ * @return: Pointer to output buffer
+ */
+char* format_move_to_string(char* output, void* move_data, void* context) {
+    char* move_ptr = (char*)move_data;
+
+    /* Check if blank was played (offset 32 in move data) */
+    if (move_ptr[32] != 0) {
+        /* Format blank notation */
+        /* Compare move data for same-tile vs different-tile format */
+        if (strcmp(move_data, move_data) == 0) {    /* uncertain: actual comparison */
+            sprintf(output, g_format_string_1, /* args */);     /* A5-5678 */
+        } else {
+            sprintf(output, g_format_string_2, /* args */);     /* A5-5674 */
+        }
+        return output;
+    }
+
+    /* Check if word was played */
+    if (move_ptr[0] == 0) {
+        /* No word - "no play" */
+        strcpy(output, g_no_play_string);       /* A5-5668 */
+        return output;
+    }
+
+    /* Word played - check direction */
+    char* context_ptr = (char*)context;
+    if (context_ptr[32] != 0) {
+        /* Horizontal play */
+        strcpy(output, g_horizontal_string);    /* A5-5648 */
+    } else {
+        /* Vertical play - format with coordinates */
+        short coords = get_coordinates(move_data);  /* JT[2026] */
+        sprintf(output, g_vertical_format, coords); /* A5-5660 */
+    }
+
+    return output;
+}
+```
+
+### Special Move Description
+```c
+/*
+ * format_score_description - Format score/move type description
+ *
+ * Handles all special move types (pass, exchange, challenge, etc.)
+ * and regular score display.
+ *
+ * @param score_type: Move type code or score value
+ * @param score_value: Additional score parameter
+ * @param outcome_flag: Win/loss indicator for challenges
+ * @return: Pointer to description string
+ */
+char* format_score_description(short score_type, short score_value, short outcome_flag) {
+    Rect local_rect;            /* Stack frame: -144 bytes */
+
+    /* Validate input */
+    if (score_type == 0) {
+        bounds_check_error();           /* JT[418] */
+    }
+
+    /* Setup rectangle */
+    /* uncertain: SetRect call at JT[2394] */
+
+    /* Check for game end special (20000) */
+    if (score_type == MOVE_GAME_END_SPECIAL) {
+        if (outcome_flag != 0) {
+            return g_won_string;        /* A5-5636 */
+        }
+        if (score_value > 0) {
+            return g_ahead_string;      /* A5-5592 */
+        }
+        return g_behind_string;         /* A5-5554 */
+    }
+
+    /* Check for pass */
+    if (score_type == MOVE_PASS) {
+        return g_pass_string;           /* A5-5516 */
+    }
+
+    /* Check for forfeit */
+    if (score_type == MOVE_FORFEIT) {
+        return g_forfeit_string;        /* A5-5510 */
+    }
+
+    /* Check for exchange */
+    if (score_type == MOVE_EXCHANGE) {
+        return g_exchange_string;       /* A5-5486 */
+    }
+
+    /* Check for timeout */
+    if (score_type == MOVE_TIMEOUT) {
+        return g_time_string;           /* A5-5462 */
+    }
+
+    /* Check for overtime */
+    if (score_type == MOVE_OVERTIME) {
+        return g_overtime_string;       /* A5-5446 */
+    }
+
+    /* Check for challenge */
+    if (score_type == MOVE_CHALLENGE) {
+        if (outcome_flag != 0) {
+            return g_challenge_won_string;  /* A5-5430 */
+        }
+        return g_challenge_lost_string;     /* A5-5366 */
+    }
+
+    /* Check for resign */
+    if (score_type == MOVE_RESIGN) {
+        return g_resign_string;         /* A5-5338 */
+    }
+
+    /* Check for game end */
+    if (score_type == MOVE_GAME_END) {
+        return g_end_string;            /* A5-5316 */
+    }
+
+    /* Check for letter exchange range (0xFFFB to 0xFFE1 = -5 to -31) */
+    if (score_type >= EXCHANGE_RANGE_MIN && score_type <= EXCHANGE_RANGE_MAX) {
+        return format_letter_exchange(score_type, score_value);
+    }
+
+    /* Regular score - format position and word */
+    return format_regular_move(score_type);
+}
+
+/*
+ * format_letter_exchange - Format specific letter exchange
+ *
+ * Formats exchange of specific letter(s) with direction indicator.
+ *
+ * @param exchange_code: Code indicating which letter (-5 to -31)
+ * @param direction: Direction indicator
+ * @return: Formatted string
+ */
+static char* format_letter_exchange(short exchange_code, short direction) {
+    /* Calculate letter index: -5 - code */
+    short letter_index = -5 - exchange_code;
+
+    /* Get letter from tile table */
+    char letter = g_tile_table[letter_index];   /* A5-26158 */
+    char lower_letter = tolower(letter);        /* JT[3562] */
+
+    /* Check if valid letter for direction display */
+    /* uncertain: exact validation logic */
+
+    /* Choose direction string */
+    char* dir_string;
+    if (direction > 0) {
+        dir_string = g_across_string;           /* A5-5260 */
+    } else {
+        dir_string = g_down_string;             /* A5-5256 */
+    }
+
+    /* Format output */
+    sprintf(g_output_buffer, g_exchange_format, lower_letter, dir_string);
+    /* A5-5280 format, A5-5774 output */
+
+    return g_output_buffer;
+}
+```
+
+### Regular Move Formatting
+```c
+/*
+ * format_regular_move - Format standard word placement
+ *
+ * Parses DAWG-encoded move and formats with coordinates.
+ *
+ * @param score_type: Encoded move/score type
+ * @return: Formatted string in output buffer
+ */
+static char* format_regular_move(short score_type) {
+    short min_row = 0, max_row = 0;
+    short min_col = 0, max_col = 0;
+    short current_entry = score_type;
+    long* dawg_base = g_dawg_base_ptr;          /* A5-11960 */
+
+    /* Check if entry has letter data */
+    long entry_offset = current_entry * 4;
+    char* entry_ptr = (char*)dawg_base + entry_offset;
+
+    if (*entry_ptr == 0) {
+        /* No letter - just format position */
+        short word_data = *(short*)(entry_ptr);
+        short coords = get_coordinates(entry_ptr);  /* JT[2026] */
+        sprintf(g_output_buffer, g_position_format, coords);    /* A5-5228 */
+        return g_output_buffer;
+    }
+
+    /* Parse word and calculate bounds */
+    while (current_entry != 0) {
+        entry_offset = current_entry * 4;
+        entry_ptr = (char*)dawg_base + entry_offset;
+
+        char letter = *entry_ptr;
+        short row = entry_ptr[6];       /* uncertain: exact offset */
+        short col = entry_ptr[7];       /* uncertain: exact offset */
+
+        /* Track min/max bounds */
+        if (col < min_col || min_col == 0) min_col = col;
+        if (col > max_col) max_col = col;
+        if (row < min_row || min_row == 0) min_row = row;
+        if (row > max_row) max_row = row;
+
+        /* Get next entry in word */
+        current_entry = *(short*)(entry_ptr);
+    }
+
+    /* Adjust for board edges */
+    if (/* start at edge check */) {
+        min_row++;      /* uncertain: exact adjustment */
+    }
+
+    /* Format with coordinates and word */
+    /* uncertain: exact format parameters */
+    sprintf(g_output_buffer, g_coord_format,
+            /* row/col, word, score */);
+
+    return g_output_buffer;
+}
+```
+
+### Score Percentage
+```c
+/*
+ * format_score_with_percentage - Format score with win percentage
+ *
+ * @param score: Raw score value
+ * @return: Formatted score string with percentage indicator
+ */
+char* format_score_with_percentage(short score) {
+    short whole_part;
+    short remainder;
+
+    /* Calculate percentage parts */
+    whole_part = score / 100;
+    whole_part *= 100;
+    remainder = score - whole_part;
+
+    /* Validate remainder */
+    if (remainder < 0 || remainder >= 100) {
+        bounds_check_error();           /* JT[418] */
+    }
+
+    /* Check thresholds for percentage indicator */
+    if (remainder < 2 && score > 1) {
+        return g_low_percent_string;    /* A5-5160: "low" indicator */
+    }
+
+    /* Check for zero or negative */
+    if (score < 0) {
+        /* uncertain: special negative handling */
+    }
+
+    /* Format normal score */
+    /* uncertain: exact format */
+
+    return g_output_buffer;
+}
+```
+
 ## Confidence: HIGH
 
 Clear move formatting patterns:

@@ -363,3 +363,351 @@ Standard string utility patterns clearly identified:
 - Pascal string formatting for Mac Toolbox
 - Character set filtering with two methods (strchr and mask table)
 - All functions follow standard 68000 calling conventions
+
+---
+
+## Speculative C Translation
+
+### Global Variables
+
+```c
+/* String utility data */
+char g_format_string[64];     /* A5-3012: Format string for sprintf */
+char g_valid_charset[64];     /* A5-3018: Set of valid characters */
+char g_char_class_table[256]; /* A5-1064: Character classification bitmask table */
+
+/* Character class bits (uncertain - inferred from usage) */
+#define CHAR_ALPHA    0x01    /* Alphabetic character */
+#define CHAR_DIGIT    0x02    /* Numeric digit */
+#define CHAR_UPPER    0x04    /* Uppercase letter */
+#define CHAR_LOWER    0x08    /* Lowercase letter */
+#define CHAR_VALID    0x80    /* Valid for rack/board */
+```
+
+### Function 0x0000 - Check Character in Set
+
+Tests if a character belongs to a predefined character set.
+
+```c
+/*
+ * char_in_set - Check if character is in the valid character set
+ *
+ * @param c: Character to check
+ * Returns: 1 (true) if in set, 0 (false) if not
+ */
+int char_in_set(char c) {
+    /* Search for character in the global valid charset */
+    char* result = strchr(g_valid_charset, c);  /* JT[3514] */
+
+    /* Convert pointer result to boolean */
+    if (result != NULL) {
+        return 1;  /* Character found in set */
+    }
+    return 0;  /* Character not in set */
+}
+```
+
+### Function 0x001C - Find First Matching Character
+
+Scans a string for the first character that matches any in a given set.
+
+```c
+/*
+ * find_first_in_set - Find first character from string that's in charset
+ *
+ * @param charset: String of characters to search for
+ * @param str: String to search within
+ * Returns: The matching character, or 0 if none found
+ */
+int find_first_in_set(char* charset, char* str) {
+    /* Iterate through string */
+    while (*str) {
+        /* Check if current character is in the charset */
+        if (strchr(charset, *str)) {  /* JT[3514] */
+            return (unsigned char)*str;  /* Return the matching character */
+        }
+        str++;
+    }
+
+    return 0;  /* No matching character found */
+}
+```
+
+### Function 0x0050 - Filter String by Charset
+
+Copies characters from source to destination, keeping only those in the charset.
+
+```c
+/*
+ * filter_string_by_charset - Copy only characters that are in charset
+ *
+ * @param dest: Destination buffer
+ * @param src: Source string to filter
+ * @param charset: Set of characters to keep
+ *
+ * Example: filter_string_by_charset(out, "AB1C2D", "ABCD") -> "ABCD"
+ */
+void filter_string_by_charset(char* dest, char* src, char* charset) {
+    /* Process each character from source */
+    while (*src) {
+        char current = *src++;
+
+        /* Check if current destination character is in charset */
+        /* (This advances dest only for valid characters) */
+        if (strchr(charset, *dest)) {  /* JT[3514] */
+            dest++;  /* Advance destination past valid char */
+        }
+
+        /* Copy source character to current dest position */
+        *dest = current;
+    }
+
+    /* Null-terminate (copy the null from source) */
+    /* uncertain: exact termination logic */
+}
+```
+
+### Function 0x0086 - Filter with Mask Table
+
+Filters a string using a character classification lookup table.
+
+```c
+/*
+ * filter_by_mask - Filter string keeping only characters matching mask
+ *
+ * @param str: String to filter (modified in place)
+ * @param src: Source string to copy from
+ *
+ * Uses g_char_class_table for classification lookup.
+ */
+void filter_by_mask(char* str, char* src) {
+    char* read_ptr = str;   /* A4: Current read position */
+
+    /* Process each character from source */
+    while (*src) {
+        char c = *src++;
+
+        /* Look up character class in table */
+        unsigned char char_code = (unsigned char)*read_ptr;
+        unsigned char char_class = g_char_class_table[char_code];
+
+        /* Check if character matches the filter mask */
+        if ((char_class & CHAR_VALID) != 0) {  /* uncertain: exact mask */
+            read_ptr++;  /* Keep this character, advance read pointer */
+        }
+
+        /* Copy source character */
+        *read_ptr = c;
+    }
+
+    /* Null-terminate result */
+    *read_ptr = '\0';
+}
+```
+
+### Function 0x00B8 - Format Pascal String
+
+Creates a Pascal string (length-prefixed) using sprintf formatting.
+
+```c
+/*
+ * format_pascal_string - Create Pascal string with formatted content
+ *
+ * @param output: Output buffer for Pascal string
+ * @param arg: Argument to format (typically a number)
+ * Returns: Pointer to output buffer
+ *
+ * Pascal string format: [length_byte][characters...]
+ */
+char* format_pascal_string(char* output, long arg) {
+    /* Format the string content starting at output+1 (skip length byte) */
+    int length = sprintf(output + 1, g_format_string, arg);  /* JT[2066] */
+
+    /* Store length in first byte (Pascal string convention) */
+    output[0] = (unsigned char)length;
+
+    return output;
+}
+```
+
+### Function 0x00DC - Copy with Length Limit
+
+Copies a string to a Pascal string buffer with maximum length enforcement.
+
+```c
+/*
+ * copy_to_pascal_string - Copy C string to Pascal string with length limit
+ *
+ * @param dest: Destination Pascal string buffer
+ * @param src: Source C string
+ * @param max_len: Maximum length (including length byte)
+ */
+void copy_to_pascal_string(char* dest, char* src, int max_len) {
+    /* Copy up to max_len-1 characters to dest+1 */
+    strncpy(dest + 1, src, max_len - 1);  /* JT[3530] */
+
+    /* Get actual source length */
+    int src_len = strlen(src);  /* JT[3522] */
+
+    /* Store the smaller of actual length or max_len-1 */
+    if (src_len < max_len) {
+        dest[0] = (unsigned char)src_len;
+    } else {
+        dest[0] = (unsigned char)(max_len - 1);
+    }
+}
+```
+
+### Function 0x01BA - Convert String to Uppercase
+
+Converts all characters in a string to uppercase.
+
+```c
+/*
+ * string_to_upper - Convert string to all uppercase
+ *
+ * @param dest: Destination buffer for uppercase string
+ * @param src: Source string to convert
+ * Returns: Pointer to destination buffer
+ */
+char* string_to_upper(char* dest, char* src) {
+    char* result = dest;  /* Save original dest for return */
+
+    /* Process each character */
+    while (*src) {
+        /* Convert to uppercase and store */
+        *dest = toupper((unsigned char)*src);  /* JT[3554] */
+        dest++;
+        src++;
+    }
+
+    /* Null-terminate */
+    *dest = '\0';
+
+    return result;
+}
+```
+
+### Function 0x01FA - Convert String to Lowercase
+
+Converts all characters in a string to lowercase.
+
+```c
+/*
+ * string_to_lower - Convert string to all lowercase
+ *
+ * @param dest: Destination buffer for lowercase string
+ * @param src: Source string to convert
+ * Returns: Pointer to destination buffer
+ */
+char* string_to_lower(char* dest, char* src) {
+    char* result = dest;  /* Save original dest for return */
+
+    /* Process each character */
+    while (*src) {
+        /* Convert to lowercase and store */
+        *dest = tolower((unsigned char)*src);  /* JT[3562] */
+        dest++;
+        src++;
+    }
+
+    /* Null-terminate */
+    *dest = '\0';
+
+    return result;
+}
+```
+
+### Function 0x023A - Skip Non-Alpha Characters
+
+Advances a pointer past non-alphabetic characters.
+
+```c
+/*
+ * skip_non_alpha - Advance pointer to first alphabetic character
+ *
+ * @param str_ptr: Pointer to string pointer (modified)
+ * Returns: Pointer to first alpha character (or end of string)
+ */
+char* skip_non_alpha(char** str_ptr) {
+    char* p = *str_ptr;
+
+    /* Skip characters that are not alphabetic */
+    while (*p) {
+        unsigned char c = (unsigned char)*p;
+
+        /* Check character class table for alpha */
+        if ((g_char_class_table[c] & CHAR_ALPHA) != 0) {
+            break;  /* Found alphabetic character */
+        }
+
+        p++;  /* Skip this non-alpha character */
+    }
+
+    *str_ptr = p;
+    return p;
+}
+```
+
+### Complete Header File
+
+```c
+/*
+ * string_utils.h - Maven String Utility Functions
+ *
+ * These functions handle string manipulation for:
+ *   - Rack validation (filtering valid letters)
+ *   - User input processing
+ *   - Display formatting (Pascal strings for Mac UI)
+ *   - Word preprocessing for dictionary lookup
+ */
+
+#ifndef STRING_UTILS_H
+#define STRING_UTILS_H
+
+/* Character set membership testing */
+int char_in_set(char c);
+int find_first_in_set(char* charset, char* str);
+
+/* String filtering */
+void filter_string_by_charset(char* dest, char* src, char* charset);
+void filter_by_mask(char* str, char* src);
+
+/* Pascal string handling */
+char* format_pascal_string(char* output, long arg);
+void copy_to_pascal_string(char* dest, char* src, int max_len);
+
+/* Case conversion */
+char* string_to_upper(char* dest, char* src);
+char* string_to_lower(char* dest, char* src);
+
+/* Character classification */
+char* skip_non_alpha(char** str_ptr);
+
+#endif /* STRING_UTILS_H */
+```
+
+### Usage in Maven Context
+
+```c
+/*
+ * Example: Processing user input for rack
+ *
+ * 1. User types: "ABCDEFG1234"
+ * 2. Filter to valid letters: "ABCDEFG"
+ * 3. Convert to uppercase: "ABCDEFG"
+ * 4. Store as Pascal string for TextEdit display
+ */
+void process_rack_input(char* user_input, char* rack_output) {
+    char temp_buffer[32];
+
+    /* Keep only valid Scrabble letters */
+    filter_string_by_charset(temp_buffer, user_input, "ABCDEFGHIJKLMNOPQRSTUVWXYZ?");
+
+    /* Convert to uppercase */
+    string_to_upper(temp_buffer, temp_buffer);
+
+    /* Convert to Pascal string for Mac TextEdit */
+    copy_to_pascal_string(rack_output, temp_buffer, 8);  /* Max 7 tiles + length */
+}
+```

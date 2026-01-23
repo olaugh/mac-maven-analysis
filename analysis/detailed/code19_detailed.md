@@ -207,6 +207,248 @@ Based on the structure and Scrabble game context:
 | 1154 | Refresh type C |
 | 1274 | Refresh type D |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 19 - Window Flag Toggles
+ * Toggle functions for window display options (show/hide features).
+ */
+
+#include <MacTypes.h>
+#include <Dialogs.h>
+
+/*========== Window Data Flag Offsets ==========*/
+/* All flags are 2-byte shorts at these offsets in window data */
+#define FLAG_OFFSET_774         774     /* Display option A */
+#define FLAG_OFFSET_775         775     /* Modal dialog flag (1 byte) */
+#define FLAG_OFFSET_776         776     /* Display option B */
+#define FLAG_OFFSET_778         778     /* Display option C */
+#define FLAG_OFFSET_782         782     /* Display option D */
+#define FLAG_OFFSET_784         784     /* Display option E */
+
+/*========== Likely UI Option Meanings ==========*/
+/*
+ * Based on Scrabble game context, these likely control:
+ * - Flag 774: Show/hide tile point values
+ * - Flag 776: Show/hide best word suggestion
+ * - Flag 778: Show/hide player scores
+ * - Flag 782: Show/hide move history
+ * - Flag 784: Show/hide rack tiles
+ */
+
+/*========== Global Variables (A5-relative) ==========*/
+extern Handle g_window_handle;          /* A5-8584: Main window handle */
+```
+
+### Generic Toggle Implementation
+```c
+/*
+ * toggle_window_flag - Generic boolean toggle for window flags
+ *
+ * Implements the 68K SEQ/NEG.B idiom for boolean toggle:
+ * - If current value is 0, sets to -1 (0xFFFF as word)
+ * - If current value is non-zero, sets to 0
+ *
+ * This pattern is used because:
+ *   SEQ D0      ; D0 = 0xFF if Z flag set (value was 0), else 0x00
+ *   NEG.B D0    ; D0 = 0x01 if was 0xFF, else 0x00
+ *   EXT.W D0    ; Sign-extend to word: 0x0001 or 0x0000
+ *                 Actually results in 0xFFFF or 0x0000 due to sign
+ *
+ * @param flag_offset: Byte offset of flag within window data
+ * @return: New flag value after toggle
+ */
+static short toggle_window_flag(short flag_offset) {
+    /* Get window data pointer */
+    Handle wh = g_window_handle;            /* A5-8584 */
+    char* window_data = *wh;
+
+    /* Get current flag value */
+    short* flag_ptr = (short*)(window_data + flag_offset);
+    short current_value = *flag_ptr;
+
+    /* Toggle: 0 -> -1 (0xFFFF), non-zero -> 0 */
+    short new_value = (current_value == 0) ? -1 : 0;
+    *flag_ptr = new_value;
+
+    return new_value;
+}
+```
+
+### Individual Toggle Functions
+```c
+/*
+ * toggle_flag_774 - Toggle display option at offset 774
+ *
+ * Likely: Show/hide tile point values
+ * Calls JT[970] for refresh after toggle.
+ */
+void toggle_flag_774(void) {
+    toggle_window_flag(FLAG_OFFSET_774);
+    refresh_type_b();                       /* JT[970] */
+}
+
+/*
+ * toggle_flag_776 - Toggle display option at offset 776
+ *
+ * Likely: Show/hide best word suggestion
+ * Calls JT[970] for refresh after toggle.
+ */
+void toggle_flag_776(void) {
+    toggle_window_flag(FLAG_OFFSET_776);
+    refresh_type_b();                       /* JT[970] */
+}
+
+/*
+ * toggle_flag_778 - Toggle display option at offset 778
+ *
+ * Likely: Show/hide player scores
+ * Calls JT[962] for refresh (different refresh type!).
+ */
+void toggle_flag_778(void) {
+    toggle_window_flag(FLAG_OFFSET_778);
+    refresh_type_a();                       /* JT[962] - different! */
+}
+
+/*
+ * toggle_flag_782 - Toggle display option at offset 782
+ *
+ * Likely: Show/hide move history
+ * Calls JT[1274] with parameter 0 after toggle.
+ */
+void toggle_flag_782(void) {
+    toggle_window_flag(FLAG_OFFSET_782);
+    update_with_param(0);                   /* JT[1274] */
+}
+
+/*
+ * toggle_flag_784 - Toggle display option at offset 784
+ *
+ * Likely: Show/hide rack tiles
+ * Calls JT[1154] for refresh after toggle.
+ */
+void toggle_flag_784(void) {
+    toggle_window_flag(FLAG_OFFSET_784);
+    refresh_type_c();                       /* JT[1154] */
+}
+```
+
+### Modal Dialog Support
+```c
+/*
+ * modal_with_flag - Call modal dialog with flag parameter
+ *
+ * Uses the byte at offset 775 as a modal dialog parameter.
+ *
+ * @param param1: First dialog parameter
+ * @param param2: Second dialog parameter (word, uses high byte)
+ */
+void modal_with_flag(long param1, short param2) {
+    Handle wh = g_window_handle;
+    char* window_data = *wh;
+
+    /* Get flag byte at offset 775 */
+    char flag_byte = window_data[FLAG_OFFSET_775];
+
+    /* Call ModalDialog trap (A945) */
+    /* uncertain: exact parameter usage */
+    ModalDialog(NULL, /* item_hit */);
+}
+```
+
+### Byte Getter Functions
+```c
+/*
+ * get_flag_byte_775 - Get byte flag at offset 775
+ *
+ * @return: Flag byte value
+ */
+char get_flag_byte_775(void) {
+    Handle wh = g_window_handle;
+    char* window_data = *wh;
+    return window_data[775];
+}
+
+/*
+ * get_flag_byte_779 - Get byte flag at offset 779
+ *
+ * @return: Flag byte value
+ */
+char get_flag_byte_779(void) {
+    Handle wh = g_window_handle;
+    char* window_data = *wh;
+    return window_data[779];
+}
+
+/*
+ * get_flag_byte_781 - Get byte flag at offset 781
+ *
+ * @return: Flag byte value
+ */
+char get_flag_byte_781(void) {
+    Handle wh = g_window_handle;
+    char* window_data = *wh;
+    return window_data[781];
+}
+
+/*
+ * get_flag_byte_783 - Get byte flag at offset 783
+ *
+ * @return: Flag byte value
+ */
+char get_flag_byte_783(void) {
+    Handle wh = g_window_handle;
+    char* window_data = *wh;
+    return window_data[783];
+}
+
+/*
+ * get_flag_byte_785 - Get byte flag at offset 785
+ *
+ * @return: Flag byte value
+ */
+char get_flag_byte_785(void) {
+    Handle wh = g_window_handle;
+    char* window_data = *wh;
+    return window_data[785];
+}
+```
+
+### Simple Wrapper
+```c
+/*
+ * simple_wrapper_function - Calls JT[202]
+ *
+ * Simple wrapper that just calls another function.
+ * uncertain: purpose of this indirection.
+ */
+void simple_wrapper_function(void) {
+    unknown_function_202();                 /* JT[202] */
+}
+```
+
+### Boolean Utility
+```c
+/*
+ * Note on 68K boolean toggle pattern (SEQ/NEG.B):
+ *
+ * Assembly:
+ *   TST.W    offset(A0)    ; Test current value, set Z if zero
+ *   SEQ      D0            ; D0 = 0xFF if Z set, 0x00 if Z clear
+ *   NEG.B    D0            ; Negate: 0xFF->0x01, 0x00->0x00
+ *   EXT.W    D0            ; Sign extend to word
+ *   MOVE.W   D0,offset(A0) ; Store result
+ *
+ * This converts:
+ *   0 (zero)     -> 0xFFFF (-1 as signed word)
+ *   non-zero     -> 0x0000 (0)
+ *
+ * The -1 value is often used as "true" in C boolean contexts
+ * because any non-zero value is true, and -1 has all bits set.
+ */
+```
+
 ## Confidence: HIGH
 
 Clear toggle pattern with standard boolean inversion:

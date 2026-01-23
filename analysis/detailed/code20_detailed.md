@@ -478,6 +478,394 @@ Both g_state1 and g_state2 store data in transposed positions (offset by 15 colu
 | 3554 | toupper - Convert to uppercase |
 | 3562 | tolower - Convert to lowercase |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 20 - Board State Management
+ * Manages Scrabble board state, tile placement, cross-checks.
+ */
+
+#include <MacTypes.h>
+
+/*========== Board Dimensions ==========*/
+#define BOARD_SIZE              17      /* 15 playable + 2 border */
+#define PLAYABLE_MIN            1       /* First playable row/col */
+#define PLAYABLE_MAX            15      /* Last playable row/col */
+#define BORDER_SIZE             1       /* Border cell width */
+
+/*========== Array Sizes ==========*/
+#define STATE1_SIZE             544     /* 17*17*2 bytes for letters */
+#define STATE2_SIZE             1088    /* 17*17*4 bytes for scores */
+#define LOOKUP_SIZE             289     /* 17*17*1 bytes for cross-check */
+
+/*========== Index Calculations ==========*/
+/* 1-byte arrays: index = row * 17 + col */
+/* 2-byte arrays: index = row * 17 + col (word access) */
+/* 4-byte arrays: index = row * 34 + col * 2 */
+
+/*========== Data Structures ==========*/
+
+/* Rack entry (8 bytes) */
+typedef struct RackEntry {
+    short tile_value;           /* Letter value */
+    short played_flag;          /* Non-zero if played */
+    short reserved[2];          /* Padding to 8 bytes */
+} RackEntry;
+
+/*========== Global Variables (A5-relative) ==========*/
+extern char   g_state1[STATE1_SIZE];        /* A5-17154: Letter grid (17x17x2) */
+extern short  g_state2[BOARD_SIZE * BOARD_SIZE]; /* A5-16610: Score grid */
+extern char   g_lookup_tbl[LOOKUP_SIZE];    /* A5-10388: Cross-check primary */
+extern char   g_secondary_lookup[LOOKUP_SIZE]; /* A5-10099: Cross-check secondary */
+extern short  g_validation_flag;            /* A5-9810: Validation mode */
+extern RackEntry g_rack[7];                 /* A5-8664: Player's rack */
+extern char   g_field_14[64];               /* A5-15514: General buffer */
+extern short  g_letter_points[27];          /* A5-27630: Point values */
+extern char   g_letter_valid[27];           /* A5-1064: Valid letter flags */
+```
+
+### Board Initialization
+```c
+/*
+ * init_board - Initialize all board state arrays
+ *
+ * Clears letter grid, score grid, and cross-check tables.
+ * Sets up initial game state.
+ */
+void init_board(void) {
+    /* Internal initialization */
+    internal_init();                        /* PC-relative at 0x051A */
+
+    /* Clear letter grid (17x17 x 2 bytes = 544 bytes) */
+    memset(g_state1, 0, STATE1_SIZE);       /* JT[426] */
+
+    /* Clear primary cross-check table (289 bytes) */
+    memset(g_lookup_tbl, 0, LOOKUP_SIZE);   /* JT[426] */
+
+    /* Clear secondary cross-check table (289 bytes) */
+    memset(g_secondary_lookup, 0, LOOKUP_SIZE); /* JT[426] */
+
+    /* Clear score grid (17x17 x 4 bytes = 1088 bytes) */
+    memset(g_state2, 0, STATE2_SIZE);       /* JT[426] */
+
+    /* Clear validation flag */
+    g_validation_flag = 0;                  /* A5-9810 */
+
+    /* Post-initialization calls */
+    setup_function_1();                     /* JT[658] */
+    setup_function_2();                     /* JT[1338] */
+    post_init_internal();                   /* PC-relative */
+}
+
+/*
+ * reset_board - Reset board to empty state
+ *
+ * Clears letters and scores but preserves configuration.
+ */
+void reset_board(void) {
+    /* Clear letter grid */
+    memset(g_state1, 0, STATE1_SIZE);       /* JT[426] */
+
+    /* Clear score grid */
+    memset(g_state2, 0, STATE2_SIZE);       /* JT[426] */
+
+    /* Additional reset */
+    process_reset(/* parameter at A5+1090 */);  /* PC-relative */
+    setup_function_2();                     /* JT[1338] */
+}
+```
+
+### Cross-Check Updates
+```c
+/*
+ * update_cell_crosscheck - Sync cross-check tables for cell
+ *
+ * Compares primary and secondary lookup tables.
+ * If different, copies secondary to primary and updates cross-checks.
+ *
+ * @param row: Board row (0-16)
+ * @param col: Board column (0-16)
+ */
+void update_cell_crosscheck(short row, short col) {
+    int index = row * BOARD_SIZE + col;
+
+    char* primary_ptr = &g_lookup_tbl[index];
+    char* secondary_ptr = &g_secondary_lookup[index];
+
+    /* Compare values */
+    if (*primary_ptr != *secondary_ptr) {
+        /* Values differ - sync and update cross-checks */
+        *primary_ptr = *secondary_ptr;
+        update_crosscheck_info(row, col);   /* PC-relative at 0x0592 */
+    }
+}
+```
+
+### Tile Placement
+```c
+/*
+ * place_tile - Place tile on board with score tracking
+ *
+ * Places letter on board, looks up point value, stores in
+ * both normal and transposed positions for bidirectional access.
+ *
+ * @param row: Board row (1-15 for playable area)
+ * @param col: Board column (1-15 for playable area)
+ */
+void place_tile(short row, short col) {
+    int lookup_index = row * BOARD_SIZE + col;
+    char tile_value;
+    char upper_letter;
+    short point_value;
+    int mirror_row, mirror_col;
+
+    /* Get tile from secondary lookup */
+    tile_value = g_secondary_lookup[lookup_index];
+
+    /* Update cross-check if different from primary */
+    if (g_lookup_tbl[lookup_index] != tile_value) {
+        g_secondary_lookup[lookup_index] = g_lookup_tbl[lookup_index];
+        update_crosscheck_callback(row, col);   /* PC-relative */
+    }
+
+    /* Exit if no tile to place */
+    if (tile_value == 0) {
+        return;
+    }
+
+    /* Calculate mirror position for transposed access */
+    mirror_col = col + 15;      /* Transpose offset */
+    mirror_row = row;
+
+    /* Convert to uppercase */
+    upper_letter = toupper(tile_value);     /* JT[3554] */
+
+    /* Store letter in primary position */
+    g_state1[row * BOARD_SIZE + col] = upper_letter;
+
+    /* Store letter in transposed position */
+    g_state1[mirror_col * BOARD_SIZE + mirror_row] = upper_letter;
+
+    /* Look up point value */
+    if (!is_valid_letter(tile_value)) {     /* Check A5-1064 table */
+        point_value = 0;    /* Invalid letter (blank?) = 0 points */
+    } else {
+        /* Get point value from table (indexed by uppercase letter) */
+        point_value = g_letter_points[upper_letter - 'A'];  /* A5-27630 */
+    }
+
+    /* Store score in primary position (4-byte entries, stride = 34) */
+    int score_index = row * 34 + col * 2;
+    g_state2[row * BOARD_SIZE + col] = point_value;
+
+    /* Store score in transposed position */
+    g_state2[mirror_col * BOARD_SIZE + mirror_row] = point_value;
+}
+
+/*
+ * remove_tile - Remove tile from board
+ *
+ * Clears tile from specified position, updates cross-checks.
+ *
+ * @param row: Board row
+ * @param col: Board column
+ */
+void remove_tile(short row, short col) {
+    int index = row * BOARD_SIZE + col;
+    char letter;
+    short score;
+
+    /* Get current letter */
+    letter = g_state1[index];
+
+    /* Get current score */
+    int score_index = row * 34 + col * 2;   /* 4-byte stride */
+    score = g_state2[row * BOARD_SIZE + col];
+
+    if (score == 0) {
+        return;     /* Already empty */
+    }
+
+    /* Convert to lowercase for removal indicator */
+    char lower = tolower(letter);           /* JT[3562] */
+
+    /* Update lookup tables */
+    /* uncertain: exact removal logic */
+
+    /* Clear the cell */
+    /* uncertain: what gets cleared */
+}
+```
+
+### Board Iteration
+```c
+/*
+ * iterate_board - Call function for each playable cell
+ *
+ * Iterates over all playable board positions (1-15, 1-15),
+ * calling provided callback for each cell.
+ *
+ * @param callback: Function to call with (row, col) parameters
+ */
+void iterate_board(void (*callback)(short row, short col)) {
+    /* Iterate rows 1-15 (skip border row 0 and 16) */
+    for (short row = PLAYABLE_MIN; row <= PLAYABLE_MAX; row++) {
+        /* Iterate columns 1-15 (skip border columns) */
+        for (short col = PLAYABLE_MIN; col <= PLAYABLE_MAX; col++) {
+            callback(row, col);
+        }
+    }
+}
+
+/*
+ * iterate_board_with_context - Iterate with user context
+ *
+ * @param callback: Callback function(row, col, context)
+ * @param context: User context passed to callback
+ */
+void iterate_board_with_context(
+    void (*callback)(short row, short col, void* ctx),
+    void* context
+) {
+    for (short row = PLAYABLE_MIN; row <= PLAYABLE_MAX; row++) {
+        for (short col = PLAYABLE_MIN; col <= PLAYABLE_MAX; col++) {
+            callback(row, col, context);
+        }
+    }
+}
+```
+
+### Tile Validation
+```c
+/*
+ * validate_tile_placement - Check if rack tiles match board state
+ *
+ * Validates that played tiles from rack match expected positions.
+ *
+ * @return: 1 if valid, 0 if mismatch
+ */
+int validate_tile_placement(void) {
+    int tile_count = 0;
+    char local_buffer_1[4];     /* Stack frame */
+    char local_buffer_2[4];     /* Stack frame */
+    RackEntry* rack_ptr = g_rack;   /* A5-8664 */
+
+    /* Count tiles to be played */
+    while (rack_ptr->tile_value != 0) {
+        short tile = rack_ptr->tile_value;
+        /* uncertain: validation logic per tile */
+        rack_ptr++;     /* 8 bytes */
+    }
+
+    /* Compare with expected string length */
+    int expected_len = strlen(g_field_14);      /* JT[3522] */
+
+    if (tile_count != expected_len) {
+        return 0;   /* Mismatch */
+    }
+
+    /* Additional validation */
+    /* uncertain: remaining checks */
+
+    return 1;   /* Valid */
+}
+```
+
+### Index Calculation Helpers
+```c
+/*
+ * calc_1byte_index - Calculate index for 1-byte array
+ *
+ * @param row: Row (0-16)
+ * @param col: Column (0-16)
+ * @return: Array index
+ */
+static inline int calc_1byte_index(short row, short col) {
+    return row * BOARD_SIZE + col;
+}
+
+/*
+ * calc_2byte_index - Calculate index for 2-byte array
+ *
+ * @param row: Row (0-16)
+ * @param col: Column (0-16)
+ * @return: Array index (same as 1-byte, but used differently)
+ */
+static inline int calc_2byte_index(short row, short col) {
+    return row * BOARD_SIZE + col;
+}
+
+/*
+ * calc_4byte_index - Calculate byte offset for 4-byte array
+ *
+ * Uses stride of 34 (17 * 2) for word-aligned access.
+ *
+ * @param row: Row (0-16)
+ * @param col: Column (0-16)
+ * @return: Byte offset into array
+ */
+static inline int calc_4byte_index(short row, short col) {
+    return row * 34 + col * 2;
+}
+
+/*
+ * get_mirror_position - Calculate transposed position
+ *
+ * For bidirectional board access (across/down), stores data
+ * in transposed positions as well.
+ *
+ * @param row: Original row
+ * @param col: Original column
+ * @param mirror_row: Output - mirrored row
+ * @param mirror_col: Output - mirrored column
+ */
+static inline void get_mirror_position(
+    short row, short col,
+    short* mirror_row, short* mirror_col
+) {
+    *mirror_col = col + 15;     /* Transpose offset */
+    *mirror_row = row;
+}
+```
+
+### Board Access Functions
+```c
+/*
+ * get_letter_at - Get letter at board position
+ *
+ * @param row: Board row
+ * @param col: Board column
+ * @return: Letter at position, 0 if empty
+ */
+char get_letter_at(short row, short col) {
+    int index = calc_1byte_index(row, col);
+    return g_state1[index];
+}
+
+/*
+ * get_score_at - Get tile score at board position
+ *
+ * @param row: Board row
+ * @param col: Board column
+ * @return: Point value of tile, 0 if empty
+ */
+short get_score_at(short row, short col) {
+    return g_state2[row * BOARD_SIZE + col];
+}
+
+/*
+ * is_cell_empty - Check if board cell is empty
+ *
+ * @param row: Board row
+ * @param col: Board column
+ * @return: 1 if empty, 0 if occupied
+ */
+int is_cell_empty(short row, short col) {
+    return g_lookup_tbl[row * BOARD_SIZE + col] == 0;
+}
+```
+
 ## Confidence: HIGH
 
 Clear board management patterns:

@@ -397,3 +397,434 @@ Standard Mac Toolbox window management patterns:
 - Window list traversal using standard nextWindow chain
 - Region-based hit testing
 - 3D border drawing for Mac OS 7+ appearance
+
+---
+
+## Speculative C Translation
+
+### Global Variables
+
+```c
+/* Window tracking globals */
+WindowPtr g_front_window;      /* A5-1326: Front/active window */
+WindowPtr g_active_window;     /* A5-1330: Currently active window */
+WindowPtr g_focus_window;      /* A5-1322: Window with keyboard focus */
+long g_last_window;            /* A5-1318: Last processed window (-1 = none) */
+
+/* System low-memory globals (68K Mac) */
+#define WindowList  (*(WindowPtr*)0x09D6)   /* Head of window list */
+#define QDGlobals   (*(QDGlobalsPtr*)0x09DE) /* QuickDraw globals */
+#define SysFrontWnd (*(WindowPtr*)0x0A64)   /* System front window */
+#define ScreenDepth (*(short*)0x0BAA)       /* Screen bit depth */
+```
+
+### Window Custom Data Structure
+
+```c
+/* Extended window data at standard Mac offsets */
+typedef struct MavenWindowData {
+    /* Standard WindowRecord fields 0-109 */
+    char reserved[110];
+
+    /* Custom Maven fields */
+    Boolean visible_flag;      /* 110: Is window visible */
+    Boolean pattern_flag1;     /* 111: First pattern/style flag */
+    Boolean pattern_flag2;     /* 112: Second pattern/style flag */
+    char reserved2;            /* 113: Padding */
+    Handle content_rgn_h;      /* 114: Content region handle */
+    Handle title_rgn_h;        /* 118: Title bar region handle */
+    /* ... more fields ... */
+    WindowPtr next_window;     /* 144: Next window in chain */
+} MavenWindowData;
+```
+
+### Function 0x0000 - Window Event Dispatcher
+
+```c
+/*
+ * window_event_dispatcher - Main event routing for custom windows
+ *
+ * Routes window events to appropriate handlers based on event type.
+ *
+ * @param event_data: Event-specific data
+ * @param event_type: Type of window event (0=draw, 1=click, etc.)
+ * @param window_ptr: Target window pointer
+ * @return: Result code (varies by event type)
+ */
+long window_event_dispatcher(long event_data, short event_type,
+                             WindowPtr window_ptr) {
+    long result = 0;
+
+    switch (event_type) {
+        case 0:  /* Draw content */
+            draw_window_content(window_ptr, event_data);
+            break;
+
+        case 1:  /* Mouse click */
+            result = handle_window_click(window_ptr, event_data,
+                                         /* modifiers from stack */);
+            return result;
+
+        case 2:  /* Update event */
+            handle_window_update(window_ptr);
+            break;
+
+        case 5:  /* Idle processing */
+            handle_window_idle(window_ptr, event_data);
+            break;
+
+        case 6:  /* Activate/deactivate */
+            /* Check activate flag at offset 18 on stack */
+            handle_window_activate(window_ptr);
+            break;
+
+        default:
+            break;
+    }
+
+    return 0;
+}
+```
+
+### Function 0x0086 - Draw 3D Border Effect
+
+```c
+/*
+ * draw_3d_border - Draw Mac OS 7+ style 3D border around rectangle
+ *
+ * Creates raised/embossed appearance using light/dark edge lines.
+ *
+ * @param bounds_rect: Rectangle to draw border around
+ */
+void draw_3d_border(Rect *bounds_rect) {
+    Rect local_rect;
+
+    /* Copy bounds to local storage */
+    local_rect = *bounds_rect;
+
+    /* Expand rect by 1 pixel for outer frame */
+    InsetRect(&local_rect, -1, -1);
+    FrameRect(&local_rect);
+
+    /* Draw highlight (white) on top-left edges */
+    MoveTo(bounds_rect->left, bounds_rect->top);
+    Line(-13, 0);  /* Left edge highlight - uncertain: exact offset */
+
+    /* Draw shadow (dark) on bottom-right edges */
+    Line(13, 0);   /* Bottom edge shadow */
+    Line(0, -15);  /* Right edge shadow */
+
+    /* Continue shadow on opposite corners */
+    /* uncertain: exact coordinate calculations */
+    MoveTo(bounds_rect->left + 2, bounds_rect->bottom);
+    Line(-15, 15);
+}
+```
+
+### Function 0x0268 - Draw Board Square
+
+```c
+/*
+ * draw_board_square - Draw a single game board square with highlighting
+ *
+ * Handles full redraw or partial highlight update.
+ *
+ * @param board_data: Board state data pointer
+ * @param highlight_param: NULL for full draw, non-NULL for highlight only
+ */
+void draw_board_square(MavenWindowData *board_data, void *highlight_param) {
+    Rect square_rect;
+    Str255 title_buffer;
+    short saved_fore_color, saved_back_color;
+
+    /* Check if square is visible */
+    if (!board_data->visible_flag) {
+        return;
+    }
+
+    /* Highlight-only mode (partial redraw) */
+    if (highlight_param != NULL) {
+        get_square_rect(board_data, &square_rect);
+
+        /* Save and set text size for marks */
+        TextSize(10);
+
+        /* Draw X marks in corners for selection highlight */
+        /* uncertain: exact mark drawing code */
+        MoveTo(square_rect.left + 2, square_rect.top + 2);
+        LineTo(square_rect.left - 3, square_rect.top - 3);
+        /* ... more highlight drawing ... */
+
+        return;
+    }
+
+    /* Full redraw path */
+    get_full_square_rect(board_data, &square_rect);
+
+    /* Draw frame */
+    PenSize(1, 1);
+    FrameRect(&square_rect);
+
+    /* Inset slightly */
+    InsetRect(&square_rect, 1, 1);
+    InsetRect(&square_rect, -4, -4);  /* uncertain: multiple insets */
+
+    /* Draw patterns if enabled */
+    if (board_data->pattern_flag1) {
+        draw_square_pattern1(board_data, &square_rect);
+
+        if (board_data->pattern_flag2) {
+            draw_square_pattern2(board_data, &square_rect);
+        }
+
+        /* Redraw frame after patterns */
+        FrameRect(&square_rect);
+        InsetRect(&square_rect, 1, 1);
+        InsetRect(&square_rect, -4, -4);
+    }
+
+    /* Save current colors */
+    saved_fore_color = QDGlobals->fgColor;
+    saved_back_color = QDGlobals->bgColor;  /* uncertain: exact offset */
+
+    /* Set drawing colors: foreground=4 (red?), background=1 (white?) */
+    ForeColor(4);
+    BackColor(1);
+    ColorBit(0);
+    SetCursor(9);  /* uncertain: cursor setting purpose */
+
+    /* Get and draw window title */
+    GetWTitle(board_data, title_buffer);
+
+    /* Get font metrics for positioning */
+    FontInfo font_info;
+    GetFontInfo(&font_info);
+
+    /* Position and draw title string */
+    /* uncertain: exact positioning calculation */
+    short text_offset = square_rect.bottom - square_rect.top - 40;
+    MoveTo(square_rect.left + text_offset, square_rect.bottom - 3);
+    DrawString(title_buffer);
+
+    /* Restore colors */
+    ForeColor(saved_fore_color);
+    BackColor(saved_back_color);
+
+    /* Frame content area */
+    Handle content_h = board_data->content_rgn_h;
+    if (content_h) {
+        Rect *content_bounds = (Rect*)(*content_h + 2);
+        square_rect = *content_bounds;
+        FrameRect(&square_rect);
+    }
+}
+```
+
+### Function 0x050C - Hit Test Point
+
+```c
+/*
+ * hit_test_window_point - Determine which window region was clicked
+ *
+ * Returns code indicating which part of window contains the point.
+ *
+ * @param window_ptr: Window to test
+ * @param test_point: Point to test (global coordinates)
+ * @return: Hit region code (0=content, 1=title, 2=grow, 3=close, 4=pattern)
+ */
+short hit_test_window_point(MavenWindowData *window_ptr, Point test_point) {
+    Rect test_rect;
+
+    /* Get content region bounds */
+    Handle content_h = window_ptr->content_rgn_h;
+    Rect *content_bounds = (Rect*)(*content_h + 2);
+    test_rect = *content_bounds;
+
+    /* Test if point is in main content area */
+    if (!PtInRect(test_point, &test_rect)) {
+        return 0;  /* Not in content - outside window */
+    }
+
+    /* Test title bar region */
+    Handle title_h = window_ptr->title_rgn_h;
+    Rect *title_bounds = (Rect*)(*title_h + 2);
+
+    if (PtInRect(test_point, title_bounds)) {
+        /* Point is in title bar area */
+
+        /* Check for close box (top-left 16x16 area) */
+        /* uncertain: exact close box detection */
+        test_rect.right = test_rect.left - 16;
+        test_rect.bottom = test_rect.top - 16;
+
+        if (PtInRect(test_point, &test_rect)) {
+            return 3;  /* Close box */
+        }
+
+        return 1;  /* Title bar (drag region) */
+    }
+
+    /* Test grow box area (bottom-right) */
+    test_rect.top = test_rect.bottom + 13;  /* Adjust for grow box */
+
+    if (PtInRect(test_point, &test_rect)) {
+        /* In grow area - check for pattern region if enabled */
+        if (window_ptr->pattern_flag1) {
+            Rect pattern_rect;
+            get_pattern_region_rect(window_ptr, &pattern_rect);
+
+            if (PtInRect(test_point, &pattern_rect)) {
+                return 4;  /* Pattern/special area */
+            }
+        }
+
+        return 2;  /* Grow box */
+    }
+
+    return 0;  /* General content area */
+}
+```
+
+### Function 0x0A26 - Initialize Window List
+
+```c
+/*
+ * initialize_window_tracking - Walk window list and set up tracking pointers
+ *
+ * Traverses the system window list to identify front, active, and focus windows.
+ *
+ * @return: Appropriate window pointer based on state
+ */
+WindowPtr initialize_window_tracking(void) {
+    Boolean found_front = false;
+    Boolean found_inactive = false;
+
+    /* Clear global tracking pointers */
+    g_front_window = NULL;
+    g_active_window = NULL;
+    g_focus_window = NULL;
+    g_last_window = -1;
+
+    /* Get head of system window list */
+    WindowPtr current = WindowList;
+
+    while (current != NULL) {
+        MavenWindowData *win_data = (MavenWindowData*)current;
+
+        /* Skip hidden windows */
+        if (!win_data->visible_flag) {
+            current = win_data->next_window;
+            continue;
+        }
+
+        /* Track first visible window as focus candidate */
+        if (g_focus_window == NULL) {
+            g_focus_window = current;
+        }
+
+        /* Check if this is the active window */
+        if (is_window_active(current)) {
+            if (g_front_window == NULL) {
+                g_front_window = current;
+            }
+            if (!found_inactive) {
+                found_front = false;  /* uncertain: flag logic */
+            }
+        } else {
+            /* Inactive window handling */
+            if (is_window_special(current)) {
+                /* uncertain: special window criteria */
+                if (g_front_window == NULL) {
+                    g_front_window = current;
+                    g_focus_window = current;
+                } else {
+                    /* Reorder windows */
+                    SendBehind(current, g_front_window);
+                }
+                current = g_active_window;  /* uncertain: assignment */
+            }
+
+            if (g_active_window == NULL) {
+                g_active_window = current;
+            }
+            g_last_window = (long)current;
+        }
+
+        current = win_data->next_window;
+    }
+
+    /* Handle reordering if needed */
+    if (!found_front && g_front_window != NULL) {
+        /* Complex reordering logic */
+        WindowPtr reorder_base = g_front_window ? g_front_window : g_last_window;
+        current = ((MavenWindowData*)g_active_window)->next_window;
+
+        while (current != NULL && current != reorder_base) {
+            if (check_window_state(current)) {
+                /* Adjust title region ordering */
+                /* uncertain: exact reorder operations */
+                Handle title_h = ((MavenWindowData*)current)->title_rgn_h;
+                short saved_val = ((short*)(*title_h))[2];
+                ((short*)(*title_h))[2] = ((short*)(*title_h))[0];
+
+                SendBehind(current, reorder_base);
+
+                ((short*)(*title_h))[3] = saved_val;
+                current = g_active_window;
+            }
+            current = ((MavenWindowData*)current)->next_window;
+        }
+    }
+
+    /* Return appropriate window */
+    if (g_active_window != g_focus_window) {
+        return g_front_window;
+    }
+    return g_focus_window;
+}
+```
+
+### Helper Function - Fill Pattern Drawing
+
+```c
+/*
+ * draw_fill_pattern - Draw checkerboard or custom pattern
+ *
+ * Creates alternating pattern for board squares.
+ *
+ * @param window_ptr: Window containing the square
+ */
+void draw_fill_pattern(MavenWindowData *window_ptr) {
+    Rect pattern_rect;
+    long pattern_data;
+
+    pattern_rect = *((Rect*)&window_ptr->reserved[0]);  /* uncertain: offset */
+
+    /* Select pattern based on position bit */
+    if (window_ptr->reserved[3] & 0x01) {
+        pattern_data = 0x00550055;  /* Light pattern */
+    } else {
+        pattern_data = 0x00AA00AA;  /* Dark pattern */
+    }
+
+    /* Check secondary pattern flag */
+    if (window_ptr->reserved[1] & 0x01) {
+        pattern_data = (pattern_data << 1) | (pattern_data >> 31);
+    }
+
+    /* uncertain: pattern storage location */
+    long local_pattern[2] = {pattern_data, pattern_data};
+
+    FillRect(&pattern_rect, (Pattern*)local_pattern);
+}
+```
+
+### Window Event Handling Summary
+
+| Event Type | Handler Function | Purpose |
+|------------|------------------|---------|
+| 0 | draw_window_content | Full window redraw |
+| 1 | handle_window_click | Mouse down processing |
+| 2 | handle_window_update | Update region handling |
+| 5 | handle_window_idle | Cursor blink, animations |
+| 6 | handle_window_activate | Focus changes |

@@ -420,6 +420,411 @@ Bits 10-31: Child node index (22 bits)
 | A5-24030 | Compare pointer |
 | A5-24792 | Default pointer |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 15 - DAWG Traversal Support
+ * DAWG node traversal, pattern matching, word generation.
+ */
+
+#include <MacTypes.h>
+#include <Windows.h>
+
+/*========== Constants ==========*/
+/* DAWG Entry Format (4 bytes):
+ * Bits 0-7:   Letter (ASCII)
+ * Bit 8:      End-of-word flag
+ * Bit 9:      Last-sibling flag
+ * Bits 10-31: Child node index (22 bits)
+ */
+#define DAWG_LETTER_MASK        0x000000FF
+#define DAWG_END_OF_WORD_BIT    8
+#define DAWG_LAST_SIBLING_BIT   9
+#define DAWG_CHILD_SHIFT        10
+
+#define SCREEN_WIDTH_LARGE      640
+#define SCREEN_HEIGHT_LARGE     480
+
+/*========== Data Structures ==========*/
+
+/* Pattern match callback */
+typedef int (*PatternCallback)(char* result, void* context);
+
+/*========== Global Variables (A5-relative) ==========*/
+extern long*  g_dawg_base_ptr;          /* A5-11960: DAWG array base */
+extern long   g_dawg_current_pos;       /* A5-11964: Current position */
+extern long   g_dawg_start_pos;         /* A5-11968: Start position */
+extern short  g_word_counter;           /* A5-10936: Word counter */
+extern short  g_bounds_counter;         /* A5-23674: Bounds counter */
+extern long   g_compare_ptr;            /* A5-24030: Compare pointer */
+extern long   g_default_ptr;            /* A5-24792: Default pointer */
+
+extern char*  g_small_screen_strings;   /* A5-7166: Small screen strings */
+extern char*  g_large_screen_strings;   /* A5-7272: Large screen strings */
+extern char** g_string_table_ptr;       /* A5-8576: Active string table */
+extern long   g_window_refcon;          /* A5-7284: Window refCon */
+extern short  g_screen_width;           /* A5-1444: Screen width */
+extern short  g_screen_height;          /* A5-1446: Screen height */
+```
+
+### DAWG Search Functions
+```c
+/*
+ * search_dawg_with_pattern - Search DAWG for pattern match
+ *
+ * Searches DAWG structure following the provided pattern.
+ * Returns position of match or sets up default on failure.
+ *
+ * @param dawg_ptr: DAWG structure to search
+ * @param pattern: Pattern string to match
+ * @return: Result position or NULL
+ */
+void* search_dawg_with_pattern(void* dawg_ptr, char* pattern) {
+    void* result;
+    long adjusted_result;
+
+    /* Perform search via JT[3386] */
+    result = dawg_search_internal(dawg_ptr, 0, pattern);
+
+    if (result == NULL) {
+        /* Not found - setup default */
+        g_compare_ptr = g_default_ptr;          /* A5-24030 = A5-24792 */
+        g_bounds_counter--;
+
+        /* Calculate offset: counter * 44 + g_common */
+        long offset = g_bounds_counter * 44;
+        void* common_ptr = &g_common_area;      /* A5-24026 */
+        return (char*)common_ptr + offset;
+    }
+
+    /* Adjust result: divide by 4 */
+    adjusted_result = (long)result >> 2;
+
+    /* Validate result */
+    if (adjusted_result <= 0) {
+        /* Invalid - use default */
+        g_compare_ptr = g_default_ptr;
+        g_bounds_counter--;
+        /* uncertain: additional setup */
+        return NULL;
+    }
+
+    /* Check end-of-word flag (bit 3 after >> 2 = original bit 9?) */
+    long entry = *(long*)pattern;
+    if ((entry >> 2) & 0x08) {      /* uncertain: exact bit check */
+        /* Valid word ending */
+        /* uncertain: additional validation */
+    }
+
+    return result;
+}
+```
+
+### Child Navigation
+```c
+/*
+ * walk_to_next_child - Navigate to child matching pattern
+ *
+ * Walks the DAWG sibling chain looking for matching letter,
+ * then follows child pointer. Advances pattern on match.
+ *
+ * @param pattern_ptr: Pointer to current pattern position
+ * @return: New DAWG position, 0 if not found
+ */
+long walk_to_next_child(char** pattern_ptr) {
+    char target_letter = **pattern_ptr;
+    long current_pos = g_dawg_current_pos;      /* A5-11964 */
+    long* dawg_base = g_dawg_base_ptr;          /* A5-11960 */
+
+    while (target_letter != '\0') {
+        /* Get current DAWG entry */
+        long entry = dawg_base[current_pos];
+        char entry_letter = (char)(entry & DAWG_LETTER_MASK);
+
+        if (entry_letter == target_letter) {
+            /* Found matching letter - get child index */
+            long child_pos = entry >> DAWG_CHILD_SHIFT;
+
+            if (child_pos == 0) {
+                /* No children - end of path */
+                break;
+            }
+
+            /* Advance to next pattern character */
+            (*pattern_ptr)++;
+            target_letter = **pattern_ptr;
+            current_pos = child_pos;
+        }
+        else {
+            /* Check if this is last sibling */
+            if (entry & (1 << DAWG_LAST_SIBLING_BIT)) {
+                /* Last sibling - letter not found */
+                return 0;
+            }
+
+            /* Check if we've passed the target (alphabetical order) */
+            if (entry_letter > target_letter) {
+                return 0;
+            }
+
+            /* Move to next sibling */
+            current_pos++;
+        }
+    }
+
+    return current_pos;
+}
+```
+
+### Word Generation
+```c
+/*
+ * generate_words_from_pattern - Build words matching pattern
+ *
+ * Traverses DAWG sections and builds matching words into
+ * output buffer.
+ *
+ * @param output_buffer: Buffer to receive generated words
+ * @param pattern: Pattern to match against
+ * @param flags: Generation flags
+ * @return: Number of words generated
+ */
+int generate_words_from_pattern(char* output_buffer, char* pattern, short flags) {
+    int word_count = 0;
+    long* section_ptr = g_dawg_base_ptr;        /* A5-11960 */
+
+    /* Store DAWG base */
+    g_dawg_start_pos = *section_ptr;            /* A5-11968 */
+    g_word_counter = 0;                         /* A5-10936 */
+
+    /* Process each DAWG section */
+    while (1) {
+        /* Get section start position */
+        g_dawg_current_pos = section_ptr[word_count];   /* A5-11964 */
+
+        if (g_dawg_current_pos == 0) {
+            break;      /* No more sections */
+        }
+
+        g_word_counter = 0;
+
+        /* Walk pattern in this section */
+        char* pattern_pos = pattern;
+        long child_pos = walk_to_next_child(&pattern_pos);
+
+        if (child_pos == 0) {
+            word_count++;
+            section_ptr++;      /* 4 bytes to next section */
+            continue;
+        }
+
+        /* Found match - extract letters */
+        while (1) {
+            long entry = g_dawg_base_ptr[child_pos];
+            child_pos++;
+
+            char letter = (char)(entry & DAWG_LETTER_MASK);
+            *output_buffer = letter;
+
+            /* Check flags for end-of-word handling */
+            if (flags != 0) {
+                if (entry & (1 << DAWG_END_OF_WORD_BIT)) {
+                    /* uncertain: special handling */
+                }
+            }
+
+            output_buffer++;
+
+            /* Check for last sibling */
+            if (entry & (1 << DAWG_LAST_SIBLING_BIT)) {
+                break;
+            }
+        }
+
+        word_count++;
+        section_ptr++;
+    }
+
+    *output_buffer = '\0';      /* Null terminate */
+    return word_count;
+}
+```
+
+### Recursive Pattern Match
+```c
+/*
+ * recursive_pattern_match - Recursively match pattern against DAWG
+ *
+ * Deep recursive traversal with callback for matches.
+ *
+ * @param pattern: Pattern to match (advances during recursion)
+ * @param remaining_len: Remaining pattern length
+ * @param level: Current recursion level
+ * @param dawg_pos: Current DAWG position
+ * @param is_end_of_word: Whether current pos is end-of-word
+ * @param callback: Function to call on match
+ * @param result_buffer: Buffer to build result
+ * @param user_data: Context for callback
+ * @param extra_context: Additional context
+ * @return: 0 to continue, non-zero to stop
+ */
+int recursive_pattern_match(
+    char* pattern,
+    short remaining_len,
+    short level,
+    long dawg_pos,
+    int is_end_of_word,
+    PatternCallback callback,
+    char* result_buffer,
+    void* user_data,
+    void* extra_context
+) {
+    long* dawg_base = g_dawg_base_ptr;
+    char pattern_char;
+    long entry;
+    char entry_letter;
+
+    /* Base case: end of pattern */
+    if (remaining_len == 0) {
+        if (dawg_pos == 0) {
+            return 0;   /* No match */
+        }
+
+        /* Check if callback provided */
+        if (callback != NULL) {
+            return callback(result_buffer, extra_context);
+        }
+
+        return 0;
+    }
+
+    /* No DAWG position to search */
+    if (dawg_pos == 0) {
+        return 0;
+    }
+
+    /* Calculate buffer position for this level */
+    char* level_buffer = result_buffer + level;
+
+    /* Adjust counters */
+    int adjusted_level = level + 1;
+    int adjusted_remaining = remaining_len - 1;
+
+    /* Traverse siblings at current position */
+    while (1) {
+        /* Get DAWG entry */
+        entry = dawg_base[dawg_pos];
+        dawg_pos++;     /* Prepare for next sibling */
+
+        /* Extract letter */
+        entry_letter = (char)(entry & DAWG_LETTER_MASK);
+
+        /* Get pattern character */
+        pattern_char = *pattern;
+
+        if (entry_letter == pattern_char) {
+            /* Match! Store letter */
+            *level_buffer = entry_letter;
+
+            /* Extract child and flags */
+            long child_pos = entry >> DAWG_CHILD_SHIFT;
+            int child_is_eow = (entry & (1 << DAWG_END_OF_WORD_BIT)) ? 1 : 0;
+
+            /* Recurse */
+            int result = recursive_pattern_match(
+                pattern + 1,
+                adjusted_remaining,
+                adjusted_level,
+                child_pos,
+                child_is_eow,
+                callback,
+                result_buffer,
+                user_data,
+                extra_context
+            );
+
+            if (result != 0) {
+                return result;  /* Stop recursion */
+            }
+        }
+        else if (pattern_char == '\0' && user_data != NULL) {
+            /* End of pattern with user data - wildcard? */
+            /* Bitmask for valid letters: bit position = letter - 'a' */
+            int letter_bit = entry_letter - 'a';
+            if (letter_bit >= 0 && letter_bit < 26) {
+                /* uncertain: bitmask operation */
+            }
+        }
+
+        /* Check if last sibling */
+        if (entry & (1 << DAWG_LAST_SIBLING_BIT)) {
+            break;
+        }
+    }
+
+    return 0;
+}
+```
+
+### Window Creation
+```c
+/*
+ * create_modeless_window - Create new modeless window
+ *
+ * Creates a window using GetNewWindow and shows it.
+ *
+ * @param res_id: WIND resource ID
+ * @param bounds_rect: Window bounds rectangle
+ * @param title: Window title string
+ * @return: Created window pointer
+ */
+WindowPtr create_modeless_window(short res_id, Rect* bounds_rect, Str255 title) {
+    WindowPtr new_window;
+
+    /* Create window behind all others */
+    new_window = GetNewWindow(res_id, NULL, (WindowPtr)-1L);
+
+    if (new_window != NULL) {
+        /* Show the window */
+        ShowWindow(new_window);
+
+        /* Set refCon from global */
+        SetWRefCon(new_window, g_window_refcon);    /* A5-7284 */
+    }
+
+    return new_window;
+}
+```
+
+### Initialization
+```c
+/*
+ * init_dawg_tables - Initialize DAWG and string tables
+ *
+ * Sets up DAWG pointers and selects appropriate string table
+ * based on screen size.
+ */
+void init_dawg_tables(void) {
+    /* Get system info */
+    /* uncertain: system call at PC+2024 */
+
+    /* Check screen dimensions */
+    if (g_screen_width >= SCREEN_WIDTH_LARGE &&
+        g_screen_height >= SCREEN_HEIGHT_LARGE) {
+        /* Large screen - use full strings */
+        g_string_table_ptr = &g_large_screen_strings;   /* A5-7272 */
+    }
+    else {
+        /* Small screen - use abbreviated strings */
+        g_string_table_ptr = &g_small_screen_strings;   /* A5-7166 */
+    }
+
+    /* Additional setup */
+    /* uncertain: remaining initialization */
+}
+```
+
 ## Confidence: HIGH
 
 Clear DAWG traversal patterns:

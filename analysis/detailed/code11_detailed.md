@@ -360,6 +360,376 @@ CODE 11 exports important functions via the jump table:
 | A5-27896 | long | alt_data_ptr | Alternative data pointer |
 | A5-27912 | long | default_data_ptr | Default data pointer |
 
+## Speculative C Translation
+
+### Header Definitions
+```c
+/* CODE 11 - Game Controller
+ * Central dispatch hub for Maven game engine.
+ * Manages callbacks, function pointer dispatch, and subsystem coordination.
+ */
+
+#include <MacTypes.h>
+#include <Resources.h>
+#include <Menus.h>
+
+/*========== Constants ==========*/
+#define MAX_CALLBACKS           16
+#define DISPATCH_ENTRY_SIZE     12      /* bytes per dispatch table entry */
+
+/*========== Data Structures ==========*/
+
+/* Dispatch table node - linked list of function dispatch entries */
+typedef struct DispatchNode {
+    struct DispatchNode* next;          /* Offset 0: Link to next node */
+    short entry_count;                  /* Offset 4: Number of entries in this node */
+    /* Followed by entry_count entries: */
+} DispatchNode;
+
+/* Individual dispatch entry within a node */
+typedef struct DispatchEntry {
+    long lookup_key;                    /* Offset 0: Key for lookup */
+    void* associated_data;              /* Offset 4: Data pointer */
+    void* handler_func;                 /* Offset 8: Function pointer to call */
+} DispatchEntry;
+
+/* Game context structure (partial - fields at specific offsets) */
+typedef struct GameContext {
+    /* ... fields up to offset 108 ... */
+    char padding[108];
+    short mode_flags;                   /* Offset 108: Mode/state flags */
+    char feature_bits;                  /* Offset 109: Feature bit flags */
+    /* ... more fields ... */
+    char padding2[42];
+    void* handler_ptr;                  /* Offset 152: Handler function pointer */
+} GameContext;
+
+/*========== Global Variables (A5-relative) ==========*/
+extern void*  g_callback_table[MAX_CALLBACKS];  /* A5-27800: Registered callbacks */
+extern short  g_callback_count;                  /* A5-27872: Current callback count */
+extern void*  g_dispatch_target;                 /* A5-27804: Current dispatch target */
+extern void*  g_default_data_ptr;                /* A5-27912: Default handler data */
+extern void*  g_alt_data_ptr;                    /* A5-27896: Alternate handler data */
+extern void*  g_primary_dispatch_ptr;            /* A5-1330: Primary dispatch pointer */
+extern void*  g_secondary_dispatch_ptr;          /* A5-1326: Secondary dispatch pointer */
+```
+
+### Core Dispatch Functions
+```c
+/*
+ * get_handler_data_ptr - Retrieve appropriate handler data pointer
+ *
+ * Determines which data pointer to use based on context state.
+ * Returns default, alternate, or context-specific handler.
+ *
+ * @param context: Game context structure (may be NULL)
+ * @return: Appropriate data pointer for dispatch
+ */
+void* get_handler_data_ptr(GameContext* context) {
+    /* NULL context -> return default data pointer */
+    if (context == NULL) {
+        return g_default_data_ptr;      /* A5-27912 */
+    }
+
+    /* Check if context requires special handling via JT[1610] */
+    if (check_context_validity(context)) {  /* uncertain: exact check unknown */
+        return g_alt_data_ptr;          /* A5-27896 */
+    }
+
+    /* Check mode and feature flags for custom handler */
+    if (context->mode_flags >= 8 &&
+        (context->feature_bits & 0x02) &&   /* Bit 1 set */
+        verify_mode_active(context)) {       /* uncertain: PC-relative call */
+        return context->handler_ptr;    /* Custom handler at offset 152 */
+    }
+
+    return g_alt_data_ptr;
+}
+
+/*
+ * dispatch_with_context - Call handler through data pointer
+ *
+ * Retrieves appropriate handler and calls it with provided parameters.
+ * Always returns 1 (success indicator).
+ *
+ * @param context: Game context for handler lookup
+ * @param param1: First parameter passed to handler
+ * @param param2: Second parameter passed to handler
+ * @return: Always returns 1
+ */
+int dispatch_with_context(GameContext* context, void* param1, void* param2) {
+    typedef void (*HandlerFunc)(GameContext*, void*);
+
+    HandlerFunc handler = (HandlerFunc)get_handler_data_ptr(context);
+
+    if (handler != NULL) {
+        handler(context, param2);       /* Indirect call via JSR (A4) */
+    }
+
+    return 1;
+}
+
+/*
+ * lookup_dispatch_entry - Search linked dispatch tables for key
+ *
+ * Traverses linked list of dispatch nodes looking for matching key.
+ * Each node contains multiple 12-byte entries (key, data, func).
+ *
+ * @param list_head: Head of dispatch node linked list
+ * @param target_key: Key value to search for
+ * @return: Associated data pointer if found, NULL otherwise
+ */
+void* lookup_dispatch_entry(DispatchNode* list_head, long target_key) {
+    DispatchNode* current_node = list_head;
+
+    while (current_node != NULL) {
+        int entry_count = current_node->entry_count;
+        DispatchEntry* entries = (DispatchEntry*)((char*)current_node + 8);
+
+        /* Search all entries in this node */
+        for (int i = 0; i < entry_count; i++) {
+            if (entries[i].lookup_key == target_key) {
+                return entries[i].associated_data;  /* Found! */
+            }
+        }
+
+        /* Move to next node in chain */
+        current_node = current_node->next;
+    }
+
+    return NULL;    /* Not found */
+}
+```
+
+### Callback Management Functions
+```c
+/*
+ * is_callback_registered - Check if callback already in table
+ *
+ * Linear search through callback table to find matching pointer.
+ *
+ * @param callback_ptr: Callback function pointer to search for
+ * @return: 1 if found, 0 if not registered
+ */
+int is_callback_registered(void* callback_ptr) {
+    for (int i = 0; i < g_callback_count; i++) {
+        if (g_callback_table[i] == callback_ptr) {
+            return 1;   /* Found */
+        }
+    }
+    return 0;   /* Not found */
+}
+
+/*
+ * register_callback - Add callback to table
+ *
+ * Adds callback pointer to next available slot.
+ * Calls overflow_error() if table is full (16 max).
+ *
+ * @param callback_ptr: Callback function to register
+ */
+void register_callback(void* callback_ptr) {
+    if (g_callback_count >= MAX_CALLBACKS) {
+        overflow_error();   /* PC-relative call at 0x4058 */
+        return;             /* uncertain: may not return */
+    }
+
+    g_callback_table[g_callback_count] = callback_ptr;
+    g_callback_count++;
+}
+
+/*
+ * unregister_callback - Remove callback from table
+ *
+ * Finds callback in table, removes it by compacting array.
+ * Calls error handler if callback not found.
+ *
+ * @param callback_ptr: Callback function to remove
+ */
+void unregister_callback(void* callback_ptr) {
+    int found_index = -1;
+
+    /* Find the callback */
+    for (int i = 0; i < g_callback_count; i++) {
+        if (g_callback_table[i] == callback_ptr) {
+            found_index = i;
+            break;
+        }
+    }
+
+    if (found_index < 0) {
+        not_found_error();      /* PC-relative call at 0x3988 */
+        return;
+    }
+
+    /* Compact array by shifting remaining entries */
+    for (int i = found_index; i < g_callback_count - 1; i++) {
+        g_callback_table[i] = g_callback_table[i + 1];
+    }
+
+    g_callback_count--;
+}
+
+/*
+ * invoke_all_callbacks - Call all registered callbacks
+ *
+ * Iterates through callback table and invokes each one.
+ * uncertain: exact parameter passing convention
+ *
+ * @param event_data: Data to pass to each callback
+ */
+void invoke_all_callbacks(void* event_data) {
+    typedef void (*CallbackFunc)(void*);
+
+    for (int i = 0; i < g_callback_count; i++) {
+        CallbackFunc cb = (CallbackFunc)g_callback_table[i];
+        if (cb != NULL) {
+            cb(event_data);
+        }
+    }
+}
+```
+
+### Menu Iteration Handler
+```c
+/*
+ * iterate_all_menus - Process all MENU resources with callback
+ *
+ * Uses Resource Manager to enumerate all MENU resources,
+ * then calls provided callback for each menu's items.
+ *
+ * @param menu_callback: Function to call for each menu
+ * @param user_data: Context data passed to callback
+ */
+void iterate_all_menus(void (*menu_callback)(short menuID, void* data),
+                       void* user_data) {
+    short menu_count;
+    Handle menu_handle;
+    short menu_id;
+    char local_buffer[256];     /* Stack frame: -262 bytes */
+
+    /* Count MENU resources */
+    menu_count = CountResources('MENU');
+
+    /* Process each menu resource */
+    for (short i = menu_count; i >= 1; i--) {  /* DBF counts down */
+        menu_handle = GetIndResource('MENU', i);
+
+        if (menu_handle != NULL) {
+            /* Extract menu ID from resource */
+            /* uncertain: exact menu structure parsing */
+            MenuHandle mh = (MenuHandle)menu_handle;
+            menu_id = (**mh).menuID;
+
+            /* Call the provided callback */
+            menu_callback(menu_id, user_data);
+        }
+    }
+}
+
+/*
+ * process_menu_command - Handle menu selection
+ *
+ * Dispatches menu command to appropriate handler based on menu ID.
+ * Uses dispatch table lookup for extensible command handling.
+ *
+ * @param menu_id: Selected menu's ID
+ * @param item_num: Selected item number within menu
+ */
+void process_menu_command(short menu_id, short item_num) {
+    long menu_key = ((long)menu_id << 16) | item_num;
+
+    /* Look up handler in dispatch table */
+    void* handler_data = lookup_dispatch_entry(
+        (DispatchNode*)g_primary_dispatch_ptr,
+        menu_key
+    );
+
+    if (handler_data != NULL) {
+        /* uncertain: exact dispatch mechanism */
+        dispatch_with_context(NULL, handler_data, NULL);
+    }
+
+    /* Unhighlight menu after processing */
+    HiliteMenu(0);
+}
+```
+
+### Utility Functions
+```c
+/*
+ * bounds_check_assert - Validate value is within expected range
+ *
+ * Called when validation fails - likely shows error dialog and aborts.
+ * Exported via JT[418] for use throughout the application.
+ */
+void bounds_check_assert(void) {
+    /* uncertain: exact error handling behavior */
+    /* Likely shows alert dialog then exits or throws exception */
+    SysBeep(10);
+    /* May call ExitToShell() or DebugStr() */
+}
+
+/*
+ * clear_memory_block - Zero-fill memory region
+ *
+ * Exported via JT[426] - standard memset(ptr, 0, size).
+ *
+ * @param dest: Destination pointer
+ * @param byte_count: Number of bytes to clear
+ */
+void clear_memory_block(void* dest, long byte_count) {
+    char* p = (char*)dest;
+    while (byte_count-- > 0) {
+        *p++ = 0;
+    }
+}
+
+/*
+ * init_controller_subsystem - Initialize game controller
+ *
+ * Sets up callback tables, dispatch pointers, and related state.
+ * Called during application startup.
+ */
+void init_controller_subsystem(void) {
+    /* Clear callback table */
+    clear_memory_block(g_callback_table, MAX_CALLBACKS * sizeof(void*));
+    g_callback_count = 0;
+
+    /* Initialize dispatch pointers */
+    g_primary_dispatch_ptr = NULL;      /* uncertain: actual initial value */
+    g_secondary_dispatch_ptr = NULL;
+    g_dispatch_target = NULL;
+
+    /* uncertain: additional initialization steps */
+}
+```
+
+### State Machine Control
+```c
+/*
+ * update_game_state - Transition game state machine
+ *
+ * Exported via JT[1362]. Handles state transitions and
+ * notifies registered callbacks of state changes.
+ *
+ * @param new_state: Target state to transition to
+ * @param transition_data: Context for the transition
+ */
+void update_game_state(short new_state, void* transition_data) {
+    /* uncertain: exact state machine implementation */
+
+    /* Validate state transition */
+    /* uncertain: state validation logic */
+
+    /* Update current state */
+    /* uncertain: where state is stored */
+
+    /* Notify callbacks of state change */
+    invoke_all_callbacks(transition_data);
+}
+```
+
 ## Confidence: HIGH
 
 The dispatch/callback patterns are well-understood:

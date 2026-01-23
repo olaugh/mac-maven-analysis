@@ -363,3 +363,489 @@ Standard printf implementation patterns:
 - Integer to string conversion loops
 - Hex digit lookup tables
 - Floating point formatting helpers
+
+---
+
+## Speculative C Translation
+
+### Format State Structure
+
+```c
+/* Format flags bitmask (at stack offset -538) */
+#define FMT_LEFT_JUSTIFY  0x80  /* Bit 7: '-' flag */
+#define FMT_SHOW_SIGN     0x40  /* Bit 6: '+' flag */
+#define FMT_ALTERNATE     0x20  /* Bit 5: '#' flag */
+#define FMT_ZERO_PAD      0x10  /* Bit 4: '0' flag */
+#define FMT_PRECISION     0x08  /* Bit 3: precision specified */
+#define FMT_UNSIGNED      0x04  /* Bit 2: unsigned conversion */
+#define FMT_LONG          0x02  /* Bit 1: 'l' modifier */
+#define FMT_SHORT         0x01  /* Bit 0: 'h' modifier */
+
+typedef struct {
+    short flags;           /* -538: Format flags */
+    char sign_char;        /* -536: Sign character ('-', '+', ' ', or 0) */
+    char exp_sign;         /* -535: Exponent sign for floats */
+    short width;           /* -534: Field width */
+    short precision;       /* -532: Precision value */
+    short decimal_pos;     /* -530: Decimal point position */
+    short output_len;      /* -528: Current output length */
+    char* hex_digits;      /* -526: Pointer to hex digit table */
+    char work_buffer[500]; /* -522: Working buffer for conversion */
+} FormatState;
+
+/* Global hex digit tables */
+char g_hex_upper[] = "0123456789ABCDEF";  /* A5-2944 */
+char g_hex_lower[] = "0123456789abcdef";  /* A5-2962 */
+```
+
+### Main sprintf Function (0x0000)
+
+```c
+/*
+ * maven_sprintf - Formatted string output
+ *
+ * @param output: Destination buffer
+ * @param format: Format string with % specifiers
+ * @param ...: Variable arguments
+ * Returns: Number of characters written
+ *
+ * This is a full printf implementation supporting:
+ *   %d, %i, %u, %o, %x, %X, %s, %S, %c, %e, %E, %f, %g, %G, %%, %W, %R
+ */
+int maven_sprintf(char* output, char* format, ...) {
+    FormatState state;           /* Local format state (-574 to -36 on stack) */
+    char* fmt_ptr = format;      /* A4: Current format position */
+    int output_count = 0;        /* D4: Characters output */
+    int current_char;            /* D7: Current format character */
+    va_list args;                /* Points to 16(A6) */
+
+    va_start(args, format);
+
+    /* Main parsing loop */
+    while ((current_char = *fmt_ptr++) != '\0') {
+
+        /* Check for format specifier */
+        if (current_char != '%') {
+            /* Regular character - output directly */
+            *output++ = current_char;
+            output_count++;
+            continue;
+        }
+
+        /* Initialize format state with defaults */
+        state.flags = 0;
+        state.sign_char = 0;
+        state.width = 0;
+        state.precision = -1;  /* -1 = not specified */
+
+        /* Parse flags */
+        while (1) {
+            current_char = *fmt_ptr++;
+
+            switch (current_char) {
+                case '-':
+                    state.flags |= FMT_LEFT_JUSTIFY;
+                    continue;
+                case '+':
+                    state.flags |= FMT_SHOW_SIGN;
+                    continue;
+                case ' ':
+                    state.sign_char = ' ';
+                    continue;
+                case '#':
+                    state.flags |= FMT_ALTERNATE;
+                    continue;
+                case '0':
+                    state.flags |= FMT_ZERO_PAD;
+                    continue;
+                default:
+                    break;
+            }
+            break;
+        }
+
+        /* Parse width */
+        if (current_char == '*') {
+            /* Dynamic width from argument */
+            state.width = va_arg(args, int);
+            if (state.width < 0) {
+                state.flags |= FMT_LEFT_JUSTIFY;
+                state.width = -state.width;
+            }
+            current_char = *fmt_ptr++;
+        } else {
+            /* Parse numeric width */
+            while (current_char >= '0' && current_char <= '9') {
+                state.width = state.width * 10 + (current_char - '0');
+                current_char = *fmt_ptr++;
+            }
+        }
+
+        /* Parse precision */
+        if (current_char == '.') {
+            state.flags |= FMT_PRECISION;
+            current_char = *fmt_ptr++;
+
+            if (current_char == '*') {
+                /* Dynamic precision from argument */
+                state.precision = va_arg(args, int);
+                current_char = *fmt_ptr++;
+            } else {
+                state.precision = 0;
+                while (current_char >= '0' && current_char <= '9') {
+                    state.precision = state.precision * 10 + (current_char - '0');
+                    current_char = *fmt_ptr++;
+                }
+            }
+        }
+
+        /* Parse length modifier */
+        if (current_char == 'l') {
+            state.flags |= FMT_LONG;
+            current_char = *fmt_ptr++;
+        } else if (current_char == 'h') {
+            state.flags |= FMT_SHORT;
+            current_char = *fmt_ptr++;
+        }
+
+        /* Dispatch on format specifier */
+        switch (current_char) {
+            case 'd':
+            case 'i':
+                output_count += format_signed_int(&state, output, args);
+                break;
+
+            case 'u':
+                state.flags |= FMT_UNSIGNED;
+                output_count += format_unsigned_int(&state, output, args);
+                break;
+
+            case 'o':
+                output_count += format_octal(&state, output, args);
+                break;
+
+            case 'x':
+                state.hex_digits = g_hex_lower;
+                output_count += format_hex(&state, output, args);
+                break;
+
+            case 'X':
+                state.hex_digits = g_hex_upper;
+                output_count += format_hex(&state, output, args);
+                break;
+
+            case 's':
+                output_count += format_string(&state, output, args);
+                break;
+
+            case 'S':
+                output_count += format_pascal_string(&state, output, args);
+                break;
+
+            case 'c':
+                output_count += format_char(&state, output, args);
+                break;
+
+            case 'e':
+            case 'E':
+                output_count += format_scientific(&state, output, args, current_char);
+                break;
+
+            case 'f':
+                output_count += format_fixed(&state, output, args);
+                break;
+
+            case 'g':
+            case 'G':
+                output_count += format_general(&state, output, args, current_char);
+                break;
+
+            case '%':
+                *output++ = '%';
+                output_count++;
+                break;
+
+            case 'W':
+                /* uncertain: Wide string format */
+                output_count += format_wide_string(&state, output, args);
+                break;
+
+            case 'R':
+                /* uncertain: Resource string format */
+                output_count += format_resource_string(&state, output, args);
+                break;
+
+            default:
+                /* Invalid specifier - output as-is */
+                *output++ = current_char;
+                output_count++;
+                break;
+        }
+
+        output = output + state.output_len;  /* uncertain: exact advancement */
+    }
+
+    *output = '\0';
+    va_end(args);
+    return output_count;
+}
+```
+
+### Integer Formatting Helpers
+
+```c
+/*
+ * format_signed_int - Format a signed decimal integer
+ */
+static int format_signed_int(FormatState* state, char* output, va_list args) {
+    long value;
+    int digit_count = 0;
+    char digit_buffer[32];
+    char* digit_ptr = digit_buffer + sizeof(digit_buffer) - 1;
+
+    /* Get value based on size modifier */
+    if (state->flags & FMT_LONG) {
+        value = va_arg(args, long);
+    } else {
+        value = (short)va_arg(args, int);
+    }
+
+    /* Handle negative numbers */
+    if (value < 0) {
+        value = -value;
+        state->sign_char = '-';
+    } else if (state->flags & FMT_SHOW_SIGN) {
+        state->sign_char = '+';
+    }
+
+    /* Convert to digits (reverse order) */
+    do {
+        int digit = modulo_long(value, 10);  /* JT[82] */
+        *digit_ptr-- = '0' + digit;
+        value = divide_long(value, 10);      /* JT[74] */
+        digit_count++;
+    } while (value != 0);
+
+    /* Output sign if needed */
+    /* ... padding and output logic ... */
+
+    return digit_count + (state->sign_char ? 1 : 0);
+}
+
+/*
+ * format_octal - Format as octal number
+ */
+static int format_octal(FormatState* state, char* output, va_list args) {
+    unsigned long value;
+    int digit_count = 0;
+    char digit_buffer[32];
+    char* digit_ptr = digit_buffer + sizeof(digit_buffer) - 1;
+
+    if (state->flags & FMT_LONG) {
+        value = va_arg(args, unsigned long);
+    } else {
+        value = (unsigned short)va_arg(args, unsigned int);
+    }
+
+    /* Convert to octal digits */
+    do {
+        *digit_ptr-- = '0' + (value & 7);  /* value & 0x7 */
+        value >>= 3;                        /* LSR.L #3 */
+        digit_count++;
+    } while (value != 0);
+
+    /* Add '0' prefix if alternate form */
+    if ((state->flags & FMT_ALTERNATE) && digit_buffer[digit_count-1] != '0') {
+        *digit_ptr-- = '0';
+        digit_count++;
+    }
+
+    /* ... output logic ... */
+    return digit_count;
+}
+
+/*
+ * format_hex - Format as hexadecimal number
+ */
+static int format_hex(FormatState* state, char* output, va_list args) {
+    unsigned long value;
+    int digit_count = 0;
+    char digit_buffer[32];
+    char* digit_ptr = digit_buffer + sizeof(digit_buffer) - 1;
+    char* hex_table = state->hex_digits;
+
+    /* For pointer formatting, force 8 digits */
+    if (state->flags & FMT_LONG) {
+        state->precision = 8;  /* 8 hex digits for 32-bit */
+    }
+
+    if (state->flags & FMT_LONG) {
+        value = va_arg(args, unsigned long);
+    } else {
+        value = (unsigned short)va_arg(args, unsigned int);
+    }
+
+    /* Convert to hex digits using lookup table */
+    do {
+        int nibble = value & 0xF;          /* AND.L #15 */
+        *digit_ptr-- = hex_table[nibble];  /* Lookup in table */
+        value >>= 4;                        /* LSR.L #4 */
+        digit_count++;
+    } while (value != 0);
+
+    /* Add '0x' or '0X' prefix if alternate form */
+    if (state->flags & FMT_ALTERNATE) {
+        /* uncertain: exact prefix handling */
+    }
+
+    /* ... padding and output logic ... */
+    return digit_count;
+}
+```
+
+### String Formatting
+
+```c
+/*
+ * format_string - Format a C string (%s)
+ */
+static int format_string(FormatState* state, char* output, va_list args) {
+    char* str = va_arg(args, char*);
+    int len;
+
+    if (str == NULL) {
+        str = "(null)";  /* uncertain: actual null handling */
+    }
+
+    len = strlen(str);  /* JT[3522] */
+
+    /* Apply precision limit */
+    if ((state->flags & FMT_PRECISION) && state->precision < len) {
+        len = state->precision;
+    }
+
+    /* Handle width and justification */
+    int padding = state->width - len;
+
+    if (!(state->flags & FMT_LEFT_JUSTIFY)) {
+        /* Right justify - add leading spaces */
+        while (padding > 0) {
+            *output++ = ' ';
+            padding--;
+        }
+    }
+
+    /* Copy string */
+    memcpy(output, str, len);  /* uncertain: exact copy method */
+    output += len;
+
+    if (state->flags & FMT_LEFT_JUSTIFY) {
+        /* Left justify - add trailing spaces */
+        while (padding > 0) {
+            *output++ = ' ';
+            padding--;
+        }
+    }
+
+    state->output_len = len + (state->width > len ? state->width - len : 0);
+    return state->output_len;
+}
+
+/*
+ * format_pascal_string - Format a Pascal string (%S)
+ *
+ * Pascal strings have a length byte prefix.
+ */
+static int format_pascal_string(FormatState* state, char* output, va_list args) {
+    unsigned char* pstr = va_arg(args, unsigned char*);
+    int len = pstr[0];  /* First byte is length */
+    char* str = (char*)(pstr + 1);  /* String data follows */
+
+    /* Handle alternate form - might do something special */
+    if (state->flags & FMT_ALTERNATE) {
+        /* uncertain: special pascal string handling */
+    }
+
+    /* Use C string length if no pascal length */
+    if (len == 0) {
+        len = strlen(str);  /* JT[3522] */
+    }
+
+    /* uncertain: may need conversion to C string first */
+    /* Copy without length byte */
+    strncpy(output, str, len);  /* JT[3490] */
+
+    state->output_len = len;
+    return len;
+}
+```
+
+### Floating Point Formatting
+
+```c
+/*
+ * format_scientific - Format in scientific notation (%e, %E)
+ */
+static int format_scientific(FormatState* state, char* output, va_list args, char specifier) {
+    /* Default precision is 6 */
+    if (!(state->flags & FMT_PRECISION)) {
+        state->precision = 6;
+    }
+
+    /* Call internal float formatter */
+    /* uncertain: exact float handling */
+    int format_type = (specifier == 'E') ? 1 : 0;
+
+    /* Push arguments for internal call at PC+1188 */
+    return internal_format_float(
+        format_type,
+        state->precision,
+        state->work_buffer,
+        args
+    );
+}
+
+/*
+ * format_fixed - Format as fixed-point decimal (%f)
+ */
+static int format_fixed(FormatState* state, char* output, va_list args) {
+    if (!(state->flags & FMT_PRECISION)) {
+        state->precision = 6;
+    }
+
+    /* uncertain: exact implementation */
+    return internal_format_float(2, state->precision, state->work_buffer, args);
+}
+
+/*
+ * format_general - Smart format selection (%g, %G)
+ *
+ * Uses %e or %f depending on exponent value.
+ */
+static int format_general(FormatState* state, char* output, va_list args, char specifier) {
+    if (!(state->flags & FMT_PRECISION)) {
+        state->precision = 6;
+    }
+
+    /* uncertain: selection logic between %e and %f */
+    return internal_format_float(3, state->precision, state->work_buffer, args);
+}
+```
+
+### Usage Example
+
+```c
+/*
+ * Example usage in Maven code:
+ *
+ * Display move information:
+ *   sprintf(buffer, "Move: %s at %d,%d scores %ld", word, row, col, score);
+ *
+ * Debug board state:
+ *   sprintf(buffer, "g_size1: %ld  g_size2: %ld", g_size1/100, g_size2/100);
+ *
+ * Format Pascal string for TextEdit:
+ *   sprintf(output+1, "%s", word);
+ *   output[0] = strlen(output+1);  // Set Pascal length byte
+ */
+```

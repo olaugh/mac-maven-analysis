@@ -143,3 +143,81 @@ The header claims 3584 JT entries (28,672 bytes), but CODE 0 is only 3,564 bytes
 ## Confidence: HIGH
 
 This is standard Classic Mac architecture. The pattern of A9F0 traps followed by segment numbers is unmistakable. The disassembler's attempt to interpret this as code produces the garbled output seen in the disassembly.
+
+---
+
+## Speculative C Translation
+
+CODE 0 is **not executable code** - it's the jump table data structure. However, we can represent its structure in C:
+
+```c
+/* CODE 0 - Jump Table Structure (NOT executable code) */
+
+/*
+ * The jump table maps function indices to their locations across
+ * all CODE segments. Each entry is 8 bytes.
+ */
+
+typedef struct JumpTableEntry {
+    uint16_t offset;          /* Offset within the CODE segment */
+    uint16_t push_opcode;     /* 0x3F3C = MOVE.W #imm,-(SP) */
+    uint16_t segment_number;  /* Which CODE resource to load */
+    uint16_t loadseg_trap;    /* 0xA9F0 = _LoadSeg trap */
+} JumpTableEntry;
+
+/*
+ * After a segment is loaded, the entry is patched to:
+ *   JSR abs.L  (direct jump, no trap)
+ *
+ * The jump table is accessed via positive offsets from A5.
+ * For example: JSR 66(A5) calls the multiply function.
+ */
+
+/* Key Jump Table Offsets - these map to functions across CODE segments */
+typedef struct JumpTableMap {
+    /* Offset 66  */ void* multiply_32bit;       /* CODE 1: 32-bit multiply */
+    /* Offset 90  */ void* divide_signed;        /* CODE 1: signed division */
+    /* Offset 274 */ void* set_cursor;           /* CODE 9: cursor management */
+    /* Offset 362 */ void* dawg_traverse;        /* CODE 3: DAWG traversal */
+    /* Offset 418 */ void* bounds_check;         /* CODE 11: assertion/error */
+    /* Offset 426 */ void* memset;               /* CODE 11: memory clear */
+    /* Offset 506 */ void* lookup_callback;      /* CODE 10: callback lookup */
+    /* Offset 658 */ void* init_subsystem;       /* CODE 6: init functions */
+    /* Offset 962 */ void* redraw_board;         /* CODE 8: board redraw */
+    /* Offset 986 */ void* update_cell;          /* CODE 8: cell update */
+    /* Offset 1362*/ void* state_update;         /* CODE 5/7: state sync */
+    /* Offset 1666*/ void* new_ptr_wrapper;      /* CODE 9: NewPtr wrapper */
+    /* Offset 1682*/ void* free_mem_wrapper;     /* CODE 9: FreeMem wrapper */
+    /* Offset 2066*/ void* sprintf_like;         /* CODE 9: string format */
+    /* Offset 2410*/ void* init_buffer;          /* CODE 3: buffer init */
+    /* Offset 3466*/ void* memcpy;               /* CODE 11: memory copy */
+    /* Offset 3490*/ void* copy_to_global;       /* CODE 11: global copy */
+    /* Offset 3522*/ void* strlen;               /* CODE 11: string length */
+} JumpTableMap;
+
+/*
+ * How calls work at runtime:
+ *
+ * 1. Code executes: JSR xxx(A5)
+ * 2. A5 points to application globals (includes jump table)
+ * 3. Entry at offset xxx is read
+ * 4. If segment not loaded:
+ *    - 0x3F3C pushes segment number
+ *    - A9F0 triggers _LoadSeg trap
+ *    - Segment is loaded into memory
+ *    - Entry is patched to direct JSR
+ * 5. Control transfers to target function
+ */
+
+/* Segment distribution summary */
+/* CODE 1:  ~10 entries - Runtime init, math */
+/* CODE 2:  4 entries   - Resource loading */
+/* CODE 3:  6 entries   - DAWG search coordination */
+/* CODE 5:  1 entry     - Game state setup */
+/* CODE 6:  7 entries   - Window/display */
+/* CODE 7:  13 entries  - Board state management */
+/* CODE 8:  3 entries   - Move scoring */
+/* CODE 9:  37 entries  - Runtime support library */
+/* CODE 10: 3 entries   - Cursor/dialog */
+/* CODE 11: 18 entries  - Utility functions */
+```
