@@ -103,6 +103,35 @@ def load_all_mul_resources():
     return mul_data
 
 
+def load_vcb_data():
+    """Load VCB (Vowel Consonant Balance) adjustment data."""
+    vcb_data = {}
+
+    for letter in 'abcdefgh':
+        vcb_path = os.path.join(RESOURCES_DIR, f"VCB{letter}", "0_0.bin")
+        if not os.path.exists(vcb_path):
+            continue
+
+        with open(vcb_path, 'rb') as f:
+            data = f.read()
+
+        # Skip if all zeros
+        if all(b == 0 for b in data):
+            continue
+
+        # Parse like MUL - extract adjustment at offset 24
+        adjustments = []
+        for i in range(len(data) // RECORD_SIZE):
+            offset = i * RECORD_SIZE
+            rec = data[offset:offset + RECORD_SIZE]
+            adjust = struct.unpack('>i', rec[24:28])[0]
+            adjustments.append(adjust)
+
+        vcb_data[letter] = adjustments
+
+    return vcb_data
+
+
 def parse_estr_patterns():
     """Parse ESTR resource to get pattern strings."""
     estr_path = os.path.join(RESOURCES_DIR, "ESTR", "0_pattern_strings.bin")
@@ -133,13 +162,12 @@ def count_tiles(leave):
     return counts
 
 
-def evaluate_leave(leave, mul_data, verbose=True):
+def evaluate_leave(leave, mul_data, vcb_data=None, verbose=True):
     """
-    Evaluate a leave string using MUL resource data.
+    Evaluate a leave string using MUL and VCB resource data.
 
-    This uses only the per-tile values from Maven's MUL resources.
-    Maven also has synergy calculations in CODE 39, but those values
-    are not stored in extractable resources.
+    Uses per-tile values from MUL resources plus vowel count
+    adjustment from VCBh resource.
 
     Returns value in centipoints.
     Sign convention: positive = good leave, negative = bad leave
@@ -149,6 +177,10 @@ def evaluate_leave(leave, mul_data, verbose=True):
     total_expected = 0.0
 
     details = []
+
+    # Count vowels for VCB adjustment
+    vowels = set('AEIOU')
+    vowel_count = sum(counts.get(v, 0) for v in vowels)
 
     for tile, count in sorted(counts.items()):
         if tile in mul_data:
@@ -178,6 +210,15 @@ def evaluate_leave(leave, mul_data, verbose=True):
                 'error': 'No MUL data'
             })
 
+    # Apply VCBh vowel count adjustment
+    vcb_adj = 0
+    vcb_desc = None
+    if vcb_data and 'h' in vcb_data:
+        vcb_h = vcb_data['h']
+        if 0 <= vowel_count < len(vcb_h):
+            vcb_adj = vcb_h[vowel_count]
+            vcb_desc = f"VCBh[{vowel_count}]"
+
     if verbose:
         print(f"\nLeave: {leave.upper()}")
         print("-" * 60)
@@ -189,20 +230,24 @@ def evaluate_leave(leave, mul_data, verbose=True):
             else:
                 print(f"{d['tile']:<6} {d['count']:<6} {d['raw_adj']:<10} {d['value_points']:>+9.2f} {d['expected_score']:>9.2f}")
         print("-" * 60)
-        print(f"{'TOTAL':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f} {total_expected:>9.2f}")
+        print(f"{'Tiles':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f} {total_expected:>9.2f}")
+        if vcb_adj != 0:
+            print(f"{'Vowels':<6} {vowel_count:<6} {vcb_adj:<10} {vcb_adj/100:>+9.2f}  ({vcb_desc})")
+            print("-" * 60)
+            print(f"{'TOTAL':<6} {'':<6} {'':<10} {(total_centipoints + vcb_adj)/100:>+9.2f}")
         print()
 
-    return total_centipoints, details
+    return total_centipoints + vcb_adj, details
 
 
-def compare_leaves(leaves, mul_data):
+def compare_leaves(leaves, mul_data, vcb_data=None):
     """Compare multiple leaves side by side."""
     results = []
     for leave in leaves:
-        total, _ = evaluate_leave(leave, mul_data, verbose=False)
+        total, _ = evaluate_leave(leave, mul_data, vcb_data, verbose=False)
         results.append((leave.upper(), total / 100.0))
 
-    print("\nLeave Comparison (MUL values only)")
+    print("\nLeave Comparison (MUL + VCB)")
     print("-" * 40)
     results.sort(key=lambda x: -x[1])  # Sort by value, best first
     for leave, points in results:
@@ -270,6 +315,35 @@ def show_tile_detail(tile, mul_data):
     print()
 
 
+def show_vcb_data(vcb_data):
+    """Show VCB (Vowel Consonant Balance) adjustment data."""
+    if not vcb_data:
+        print("No VCB data loaded")
+        return
+
+    print("\nVCB Vowel Count Adjustments (from VCBh)")
+    print("Source: Maven VCBh resource, offset 24")
+    print("-" * 50)
+    print(f"{'Vowels':<8} {'Raw Adj':<12} {'Points':<12} {'Assessment'}")
+    print("-" * 50)
+
+    if 'h' in vcb_data:
+        for i, adj in enumerate(vcb_data['h']):
+            pts = adj / 100.0
+            if pts > 2:
+                assessment = "Optimal"
+            elif pts > 0:
+                assessment = "Good"
+            elif pts > -3:
+                assessment = "Okay"
+            elif pts > -8:
+                assessment = "Suboptimal"
+            else:
+                assessment = "Poor"
+            print(f"{i:<8} {adj:<12} {pts:>+11.2f}  {assessment}")
+    print()
+
+
 def show_patterns():
     """Show ESTR patterns from Maven."""
     patterns = parse_estr_patterns()
@@ -327,11 +401,11 @@ def show_raw_mul(tile, mul_data):
     print()
 
 
-def repl(mul_data):
+def repl(mul_data, vcb_data=None):
     """Interactive REPL for leave evaluation."""
     print("\n" + "=" * 60)
     print("Maven Leave Value Evaluator")
-    print("All values extracted from Maven's MUL resources")
+    print("Values from Maven's MUL + VCB resources")
     print("=" * 60)
     print("\nCommands:")
     print("  <leave>       Evaluate a leave (e.g., AEINST, Q, SATIRE?)")
@@ -340,12 +414,11 @@ def repl(mul_data):
     print("  best          Show best/worst tiles")
     print("  detail X      Show all counts for tile X")
     print("  raw X         Show raw MUL record for tile X")
+    print("  vcb           Show VCB vowel count adjustments")
     print("  patterns      Show ESTR synergy patterns")
     print("  help          Show this help")
     print("  /q            Exit")
     print("\nUse ? for blank tiles. Single letters like Q are evaluated as leaves.")
-    print("\nNote: This shows MUL values only. Maven's CODE 39 adds synergy")
-    print("adjustments (e.g., Q+U bonus) that are computed at runtime.")
     print()
 
     while True:
@@ -378,6 +451,7 @@ def repl(mul_data):
             print("  best          Show best/worst tiles")
             print("  detail X      Show all counts for tile X")
             print("  raw X         Show raw MUL record for tile X")
+            print("  vcb           Show VCB vowel count adjustments")
             print("  patterns      Show ESTR synergy patterns")
             print("  /q            Exit")
             print()
@@ -385,29 +459,38 @@ def repl(mul_data):
             show_tile_table(mul_data)
         elif cmd == 'best' and len(parts) == 1:
             best_tiles(mul_data)
+        elif cmd == 'vcb' and len(parts) == 1:
+            show_vcb_data(vcb_data)
         elif cmd == 'patterns' and len(parts) == 1:
             show_patterns()
         elif cmd == 'cmp' and len(parts) > 1:
-            compare_leaves(parts[1:], mul_data)
+            compare_leaves(parts[1:], mul_data, vcb_data)
         elif cmd == 'detail' and len(parts) > 1:
             show_tile_detail(parts[1], mul_data)
         elif cmd == 'raw' and len(parts) > 1:
             show_raw_mul(parts[1], mul_data)
         else:
             # Treat as a leave to evaluate
-            evaluate_leave(line, mul_data)
+            evaluate_leave(line, mul_data, vcb_data)
 
 
 def main():
     print("Loading MUL resources...")
     mul_data = load_all_mul_resources()
-    print(f"Loaded {len(mul_data)} tile types from Maven resources")
+    print(f"Loaded {len(mul_data)} tile types from Maven MUL resources")
+
+    print("Loading VCB resources...")
+    vcb_data = load_vcb_data()
+    if vcb_data:
+        print(f"Loaded VCB data: {', '.join(vcb_data.keys())}")
+    else:
+        print("No VCB data found")
 
     if not mul_data:
         print("Error: No MUL data found!")
         return
 
-    repl(mul_data)
+    repl(mul_data, vcb_data)
 
 
 if __name__ == "__main__":
