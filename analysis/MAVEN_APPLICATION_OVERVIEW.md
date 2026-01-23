@@ -19,97 +19,125 @@ Maven is a classic Macintosh Scrabble AI application from the 1980s. The applica
 ## High-Level Architecture
 
 ```
-+------------------+     +------------------+     +------------------+
-|   UI Layer       |     |   Game Logic     |     |   AI Engine      |
-|   CODE 9,14,15   |<--->|   CODE 11,46     |<--->|   CODE 3,7,21    |
-|   17,20,21,32    |     |                  |     |   22,30          |
-+------------------+     +------------------+     +------------------+
-        |                        |                        |
-        v                        v                        v
-+------------------+     +------------------+     +------------------+
-|   Dialogs        |     |   File I/O       |     |   DAWG Data      |
-|   CODE 8,15,16   |     |   CODE 12,13     |     |   Loaded from    |
-|   17,18,22,41    |     |   24,34,35       |     |   'DAWG' rsrc    |
-|   48,49          |     |                  |     |                  |
-+------------------+     +------------------+     +------------------+
-        |                        |                        |
-        +------------------------+------------------------+
-                                 |
-                    +---------------------------+
-                    |   Memory Management       |
-                    |   CODE 1,6,47,50          |
-                    +---------------------------+
-                                 |
-                    +---------------------------+
-                    |   Mac Toolbox (A-traps)   |
-                    +---------------------------+
+┌─────────────────────────────────────────────────────────────────────┐
+│                         GAME CONTROLLER (CODE 11)                   │
+│                    Dispatch, callbacks, state machine               │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+        ┌──────────────────────┼──────────────────────┐
+        ▼                      ▼                      ▼
+┌───────────────┐    ┌─────────────────┐    ┌────────────────────┐
+│   UI LAYER    │    │   GAME STATE    │    │    AI ENGINE       │
+│               │    │                 │    │                    │
+│ CODE 14,17,21 │◄──►│ CODE 5,7,20,31  │◄──►│ CODE 3,30,32,36-45 │
+│ 46,48,49      │    │ Board, Racks    │    │ Search, Score      │
+└───────────────┘    └─────────────────┘    └─────────┬──────────┘
+        │                                             │
+        │            ┌────────────────────────────────┘
+        │            ▼
+        │    ┌─────────────────────────────────────────────────┐
+        │    │              DAWG SUBSYSTEM                     │
+        │    │                                                 │
+        │    │  CODE 12,15: Word validation & pattern match    │
+        │    │  CODE 37,43: Appel-Jacobson cross-checks        │
+        │    │  CODE 52: Flag accessors (EOW, last-sibling)    │
+        │    │  CODE 25: Prime product anagram hashing         │
+        │    │                                                 │
+        │    │  ┌─────────────────────────────────────────┐    │
+        │    │  │  DAWG Data (loaded from resource fork)  │    │
+        │    │  │  Section 1: Reversed words (56,630)     │    │
+        │    │  │  Section 2: Forward words (65,536)      │    │
+        │    │  │  Heavily overlapping (shared suffixes)  │    │
+        │    │  └─────────────────────────────────────────┘    │
+        │    └─────────────────────────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────────────────────────────────────────┐
+│                    SUPPORT LAYER                                  │
+│                                                                   │
+│  CODE 1,9: Runtime (32-bit math, timing, cursors)                │
+│  CODE 4: Random (LFSR), GCD                                       │
+│  CODE 23,52-54: String utilities, C library                       │
+│  CODE 2,22,24,47: File I/O, printf                                │
+│  CODE 39: Synergy scoring (ESTR patterns)                         │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
-## CODE Resource Categories
+## Functional Subsystems
 
-### Core DAWG/AI Engine (5 segments, ~28 KB)
+### 🎯 AI & Move Generation
+The core algorithms for finding and scoring moves.
 
-These are the heart of the AI - they access DAWG data structures and generate moves.
+| CODE | Key Functions |
+|------|---------------|
+| **3** | DAWG search coordinator - manages 65-state search stack |
+| **12** | Recursive DAWG word validation (max 1000 results) |
+| **30** | DAWG traversal engine (1766-byte stack frame) |
+| **32** | **Core scoring** - bingo bonus, leave value calculation |
+| **36** | Move cache with hash-based lookup |
+| **37, 43** | **Appel-Jacobson** cross-check generation |
+| **39** | **Synergy scoring** (9632-byte frame, 6 tables) |
+| **45** | Move ranking with dual-table system |
 
-| CODE | Size | Functions | Purpose |
-|------|------|-----------|---------|
-| **3** | 4,390 | 16 | Main DAWG search coordinator |
-| **7** | 2,872 | 21 | Board/rack state management |
-| **11** | 4,478 | 29 | Game controller / main loop |
-| **21** | 13,718 | 53 | Main UI + DAWG display (largest) |
-| **22** | 2,056 | 10 | DAWG-related processing |
-| **30** | 3,492 | 15 | DAWG traversal support |
+### 🎮 Game State & Board
+Managing the board, racks, and game flow.
 
-### DAWG Support (17 segments, ~23 KB)
+| CODE | Key Functions |
+|------|---------------|
+| **5** | Game setup, turn order |
+| **7** | Board state (17×17 arrays with borders) |
+| **8** | Move scoring with letter/word multipliers |
+| **11** | Game controller, dispatch system |
+| **20** | Board management, transposed arrays for efficiency |
+| **21** | Main UI, rack management, AI/player turns |
+| **31** | Tile placement, Fisher-Yates shuffle |
 
-These segments reference DAWG globals but serve auxiliary functions.
+### 📝 Dictionary & DAWG
+Accessing and traversing the word graph.
 
-| CODE | Size | Purpose |
-|------|------|---------|
-| 5 | 204 | Small DAWG utility |
-| 6 | 1,026 | Memory + DAWG |
-| 8 | 2,326 | Dialogs + DAWG lookup |
-| 14 | 2,766 | UI + DAWG display |
-| 15 | 3,568 | Dialogs + DAWG |
-| 18 | 4,460 | DAWG-related |
-| 20 | 3,398 | DAWG-related |
-| 27-29 | ~2,000 | Various DAWG support |
-| 31 | 2,510 | DAWG support |
-| 36 | 9,102 | Large DAWG segment |
-| 38,40,44,45 | ~2,500 | Small DAWG utilities |
+| CODE | Key Functions |
+|------|---------------|
+| **15** | DAWG pattern matching with callbacks |
+| **25** | **Prime product hash** for anagram detection |
+| **52** | DAWG flag accessors (EOW, last-sibling, etc.) |
 
-### UI/Drawing (3 segments, ~10 KB)
+### 🖥️ User Interface
+Windows, dialogs, and display.
 
-| CODE | Size | Functions | Purpose |
-|------|------|-----------|---------|
-| 11 | 4,478 | 29 | Mixed: Game control + UI |
-| 15 | 3,568 | 20 | UI Drawing + dialogs |
-| 17 | 2,618 | 34 | Pure UI drawing |
+| CODE | Key Functions |
+|------|---------------|
+| **6** | Window/display management |
+| **14** | Move selection UI, candidate display |
+| **16** | Statistics display, report generation |
+| **17** | TextEdit windows, scroll handling |
+| **18** | Move description formatting |
+| **46** | Window management, 3D borders |
+| **48** | TextEdit controls |
+| **49** | Window placement persistence |
 
-### File I/O (3 segments, ~11 KB)
+### 💾 File I/O & Persistence
+Saving and loading games.
 
-| CODE | Size | Purpose |
-|------|------|---------|
-| 13 | 512 | File operations + menus |
-| 24 | 6,786 | Main file I/O (save/load games) |
-| 35 | 3,276 | Additional file operations |
+| CODE | Key Functions |
+|------|---------------|
+| **2** | Resource loading, SFGetFile |
+| **22** | Debug board dump, game save/load |
+| **24** | printf/sprintf implementation |
+| **47** | File I/O primitives |
 
-### System/Infrastructure (25 segments, ~32 KB)
+### ⚙️ Runtime & Utilities
+Low-level support functions.
 
-| CODE | Size | Purpose |
-|------|------|---------|
-| 0 | 3,564 | **Jump table** (not executable code) |
-| 1 | 574 | Startup initialization |
-| 2 | 750 | Alert/window management |
-| 4 | 108 | Startup stub |
-| 9 | 3,940 | 48 functions - likely utilities |
-| 10,53,54 | ~300 | Small utilities |
-| 12 | 2,722 | Unknown (no traps/DAWG) |
-| 16,19,23,25 | ~3,000 | Various utilities |
-| 32 | 6,464 | Large unknown segment |
-| 34,37,39 | ~8,500 | Various utilities |
-| 41-43 | ~2,900 | Dialog-related |
-| 46-52 | ~8,500 | Various utilities |
+| CODE | Key Functions |
+|------|---------------|
+| **0** | Jump table (not executable) |
+| **1** | Runtime init, 32-bit math (68000 workarounds) |
+| **4** | LFSR random, GCD algorithm |
+| **9** | Runtime library (timing, cursors, memory) |
+| **23** | String utilities, case conversion |
+| **51** | Procedure loader |
+| **52** | C string library (memcpy, strcmp, etc.) |
+| **53, 54** | Hash and string compare utilities |
 
 ## Key Data Structures
 
@@ -262,64 +290,118 @@ The application makes relatively few direct Toolbox calls - most are routed thro
 5. **Understand Move Generation**: Document the AI algorithm
 6. **Extract Dictionary**: Parse the DAWG data into a word list
 
-## Appendix: CODE Resource Index
+## CODE Resource Quick Reference
 
-```
-ID    Size    Category        Purpose
---    ----    --------        -------
-0     3564    SYSTEM          Jump table
-1      574    SYSTEM          Startup init
-2      750    SYSTEM          Window management
-3     4390    CORE_AI         DAWG search coordinator
-4      108    SYSTEM          Startup stub
-5      204    DAWG            DAWG utility
-6     1026    MEMORY          Memory management
-7     2872    CORE_AI         Board/rack state
-8     2326    DIALOG+DAWG     Dialogs with lookup
-9     3940    UTILITY         48 utility functions
-10     138    UTILITY         Small utility
-11    4478    CORE_AI+UI      Game controller
-12    2722    UNKNOWN         No traps/DAWG refs
-13     512    FILE_IO         File + menus
-14    2766    UI+DAWG         UI drawing
-15    3568    UI+DIALOG       Dialog handling
-16    1894    DIALOG          Dialog handling
-17    2618    UI              Pure UI drawing
-18    4460    DAWG            DAWG-related
-19     382    UTILITY         Small utility
-20    3398    UI+DAWG         UI drawing
-21   13718    CORE_AI         Largest - main UI/DAWG
-22    2056    CORE_AI         DAWG processing
-23     608    UTILITY         Unknown
-24    6786    FILE_IO         Save/load games
-25     200    UTILITY         Small utility
-27     662    DAWG            DAWG support
-28     664    DAWG            DAWG support
-29     686    DAWG            DAWG support
-30    3492    CORE_AI         DAWG traversal
-31    2510    DAWG            DAWG support
-32    6464    UTILITY         Unknown (large)
-34    1388    UTILITY         Unknown
-35    3276    FILE_IO         File operations
-36    9102    DAWG            DAWG-related (large)
-37    5344    UTILITY         Unknown
-38     374    DAWG            Small DAWG utility
-39    1784    UTILITY         Unknown
-40     624    DAWG            Small DAWG utility
-41     660    DIALOG          Dialog handling
-42     734    UTILITY         Unknown
-43    1486    UTILITY         Unknown
-44     424    DAWG            Small DAWG utility
-45    1122    DAWG            DAWG support
-46    2904    UI              Event handling
-47     908    MEMORY          Memory management
-48    1092    DIALOG          Dialog handling
-49     546    DIALOG          Dialog handling
-50    1174    MEMORY          Memory management
-51     236    UTILITY         Small utility
-52     938    UTILITY         Unknown
-53     106    UTILITY         Small utility
-54      42    UTILITY         Smallest - stub
+Based on speculative C decompilation, here's what each CODE resource actually does:
 
-Missing: CODE 26, CODE 33
-```
+### Runtime & System (CODE 0-4)
+
+| CODE | Size | What It Does |
+|------|------|--------------|
+| **0** | 3,564 | **Jump Table** - not code, maps JT offsets → segment entry points |
+| **1** | 574 | **Runtime init** - `_start()`, Toolbox init, 32-bit multiply/divide (68000 workarounds) |
+| **2** | 750 | **Resource loading** - `init_game_resources()`, SFGetFile dialogs, DAWG loader |
+| **3** | 4,390 | **DAWG search coordinator** - 2282-byte frame, 65 search states, type classification |
+| **4** | 108 | **Random & GCD** - LFSR random (0x40000000 tap), Euclidean GCD algorithm |
+
+### Game State & Board (CODE 5-10)
+
+| CODE | Size | What It Does |
+|------|------|--------------|
+| **5** | 204 | **Game setup** - buffer init, turn order, game mode assignment |
+| **6** | 1,026 | **Window/display** - direction pointers, buffer toggling, 1070-byte window handle |
+| **7** | 2,872 | **Board state** - 544/1088-byte structures, 17×17 grid with borders |
+| **8** | 2,326 | **Move scoring** - letter multipliers, cross-words, **BINGO bonus (50 pts)** |
+| **9** | 3,940 | **Runtime library** - timing, cursors, memory wrappers, low-memory access |
+| **10** | 138 | **Cursor/dialogs** - alert display, cursor state management |
+
+### Core Game Logic (CODE 11-21)
+
+| CODE | Size | What It Does |
+|------|------|--------------|
+| **11** | 4,478 | **Game controller** - dispatch system, callback management, menu iteration |
+| **12** | 2,722 | **Word validation** - recursive DAWG search, depth-first traversal, max 1000 words |
+| **13** | 512 | **Direction toggle** - horizontal↔vertical, sound playback via Sound Manager |
+| **14** | 2,766 | **Move selection** - 34-byte Move structure, score thresholds, candidate evaluation |
+| **15** | 3,568 | **DAWG pattern search** - pattern matching, sibling/child navigation, modeless windows |
+| **16** | 1,894 | **Statistics** - 88-byte stats block, 'HIST' resource, report generation |
+| **17** | 2,618 | **Text editing** - Standard File dialogs, scroll bars, TextEdit windows |
+| **18** | 4,460 | **Move formatting** - special codes (PASS/EXCHANGE/CHALLENGE), string tables |
+| **19** | 382 | **Flag toggles** - boolean toggles using 68K SEQ/NEG.B idiom |
+| **20** | 3,398 | **Board management** - transposed arrays, cross-check sync, tile place/remove |
+| **21** | 13,718 | **Main UI** - 8-byte rack entries, cursor management, AI turn, player input |
+
+### Debug & Utilities (CODE 22-25)
+
+| CODE | Size | What It Does |
+|------|------|--------------|
+| **22** | 2,056 | **Debug/board dump** - ASCII visualization ($*+# multipliers), game save/load |
+| **23** | 608 | **String utilities** - charset filtering, Pascal strings, case conversion |
+| **24** | 6,786 | **printf/sprintf** - full format parser, flags, integer/string/float formatting |
+| **25** | 200 | **🔑 Prime product hash** - unique anagram signatures via prime multiplication |
+
+### Move Search (CODE 27-32)
+
+| CODE | Size | What It Does |
+|------|------|--------------|
+| **27** | 662 | **Candidate list** - 34-byte linked list entries, callback traversal |
+| **28** | 664 | **Move array** - sorted insertion, maintains top 10 moves |
+| **29** | 686 | **Search coordination** - horizontal/vertical setup, callback addresses |
+| **30** | 3,492 | **DAWG traversal engine** - 1766-byte frame, core tree walking |
+| **31** | 2,510 | **Tile placement** - move apply/undo, **Fisher-Yates shuffle**, serialization |
+| **32** | 6,464 | **🔑 Core scoring** - 324-byte frame, **bingo=5000 centipoints**, leave SUBTRACTED |
+
+### Endgame & Advanced (CODE 34-44)
+
+| CODE | Size | What It Does |
+|------|------|--------------|
+| **34** | 1,388 | *(analysis pending deeper review)* |
+| **35** | 3,276 | **File operations** - additional I/O support |
+| **36** | 9,102 | **Move cache** - 66-byte entries, hash lookup, score-based replacement |
+| **37** | 5,344 | **DAWG traversal** - Appel-Jacobson cross-check generation |
+| **38** | 374 | **Rack filtering** - recursive combination enumeration (depth 0-7) |
+| **39** | 1,784 | **🔑 Synergy scoring** - **9632-byte frame!**, 6 tables, ESTR patterns |
+| **40** | 624 | **Move cache L2** - two-level cache hierarchy, callback system |
+| **41** | 660 | **Dialog Manager** - modal dialogs, DITL resources |
+| **42** | 734 | **Rack analysis** - depth-first enumeration, blank tile handling |
+| **43** | 1,486 | **🔑 Cross-check generation** - Appel-Jacobson algorithm, 17408-byte table |
+| **44** | 424 | **Search dispatcher** - rack-size thresholds (8, 17), 34-byte entries |
+
+### UI & System (CODE 45-54)
+
+| CODE | Size | What It Does |
+|------|------|--------------|
+| **45** | 1,122 | **Move ranking** - dual-table system, negated-score mechanism |
+| **46** | 2,904 | **Window management** - event routing, 3D borders, board square drawing |
+| **47** | 908 | **File I/O primitives** - read/write byte, HParamBlockRec, line reading |
+| **48** | 1,092 | **TextEdit controls** - cursor blink, activation, Tab/Enter handling |
+| **49** | 546 | **Window placement** - 14-byte entries, position persistence |
+| **50** | 1,174 | **Move history** - SANE floating-point, notation formatting |
+| **51** | 236 | **Procedure loader** - GetCodeEntry, self-referential handles |
+| **52** | 938 | **🔑 DAWG accessors + C library** - all flag extractors, memcpy/strcmp/etc |
+| **53** | 106 | **Hash function** - string hashing with lazy table init |
+| **54** | 42 | **String compare** - equality check utility |
+
+**Missing**: CODE 26, CODE 33
+
+---
+
+## Key Algorithms Identified
+
+| Algorithm | CODE | Description |
+|-----------|------|-------------|
+| **Appel-Jacobson** | 37, 43 | Cross-check set generation for move validation |
+| **Prime Product Hash** | 25 | Unique anagram signatures - multiply letter primes |
+| **Fisher-Yates Shuffle** | 31 | Tile bag randomization |
+| **LFSR Random** | 4 | Linear feedback shift register with 0x40000000 tap |
+| **GCD Reduction** | 4, 25 | Euclidean algorithm to prevent overflow |
+
+## Key Constants
+
+| Value | Meaning | Found In |
+|-------|---------|----------|
+| 5000 | Bingo bonus in centipoints (= 50 actual points) | CODE 32 |
+| 34 | Move/candidate structure size (bytes) | CODE 14, 27, 44 |
+| 17×17 | Board array dimensions (15×15 + borders) | CODE 7, 20 |
+| 65 | Max search depth (states in search stack) | CODE 3 |
+| 9632 | Synergy calculation stack frame size | CODE 39 |
