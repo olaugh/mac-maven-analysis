@@ -10,6 +10,19 @@
 | Functions | 1 (large) |
 | Purpose | **Format move notation for history display** |
 
+
+## System Role
+
+**Category**: Simulation
+**Function**: Result Storage
+
+Heavy FP (25 calls), stores simulation results via ChangedResource
+
+**Related CODE resources**:
+- CODE 35 (FP statistics)
+- CODE 15 (MUL resources)
+
+**Scale Note**: Converts FP statistics to integer centipoints for storage.
 ## Architecture Role
 
 CODE 50 formats game moves for display:

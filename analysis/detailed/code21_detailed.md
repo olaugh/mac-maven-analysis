@@ -10,6 +10,18 @@
 | Functions | 50+ |
 | Purpose | **Main game UI, tile placement, rack management, turn handling** |
 
+
+## System Role
+
+**Category**: Core System
+**Function**: Main Game Loop
+
+Largest CODE (13722 bytes), main event/game loop
+
+**Related CODE resources**:
+- CODE 11 (controller)
+- CODE 6 (windows)
+- CODE 8 (menus)
 ## Architecture Role
 
 CODE 21 is the **largest CODE resource** and the main game interface:

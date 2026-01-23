@@ -10,6 +10,13 @@
 | Functions | 3 |
 | Purpose | **Move scoring, cross-check validation, board state analysis** |
 
+
+## System Role
+
+**Category**: User Interface
+**Function**: Menu Handling
+
+Menu command dispatch and processing
 ## Architecture Role
 
 CODE 8 is responsible for:

@@ -10,6 +10,13 @@
 | Functions | 10 |
 | Purpose | **File input/output operations, text file handling** |
 
+
+## System Role
+
+**Category**: Game Logic
+**Function**: State Validation
+
+Game state validation
 ## Architecture Role
 
 CODE 47 provides file I/O functionality:

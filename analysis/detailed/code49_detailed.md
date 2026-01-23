@@ -10,6 +10,13 @@
 | Functions | 3 |
 | Purpose | **Clipboard (scrap) management, copy/paste support** |
 
+
+## System Role
+
+**Category**: User Interface
+**Function**: Clipboard
+
+Clipboard/scrap operations
 ## Architecture Role
 
 CODE 49 provides clipboard functionality:

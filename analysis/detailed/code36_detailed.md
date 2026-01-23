@@ -10,6 +10,13 @@
 | Functions | ~10 |
 | Purpose | **Move caching, position scoring, lookup optimization** |
 
+
+## System Role
+
+**Category**: DAWG Engine
+**Function**: Word Validation
+
+Validates words against dictionary
 ## Architecture Role
 
 CODE 36 manages move evaluation caching:

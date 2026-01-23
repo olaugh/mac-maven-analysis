@@ -10,6 +10,13 @@
 | Functions | ~15 |
 | Purpose | **Tile placement validation, board serialization, move application** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Word Score
+
+Word score calculation
 ## Architecture Role
 
 CODE 31 manages:

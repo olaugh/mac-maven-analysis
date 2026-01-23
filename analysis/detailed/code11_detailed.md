@@ -10,6 +10,17 @@
 | Functions | 29 |
 | Purpose | **Main game controller, event dispatch, state machine** |
 
+
+## System Role
+
+**Category**: Core System
+**Function**: Game Controller
+
+Central dispatch, callback registration, exports JT[418] bounds_check
+
+**Related CODE resources**:
+- CODE 21 (game loop)
+- CODE 3 (search)
 ## Architecture Role
 
 CODE 11 is the **central nervous system** of Maven:

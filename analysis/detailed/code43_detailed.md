@@ -10,6 +10,13 @@
 | Functions | 5 |
 | Purpose | **Generate cross-check sets for board positions, validate perpendicular words** |
 
+
+## System Role
+
+**Category**: Move Logic
+**Function**: Move List
+
+Move list management
 ## Architecture Role
 
 CODE 43 handles cross-check set generation:

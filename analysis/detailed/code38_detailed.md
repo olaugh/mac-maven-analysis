@@ -10,6 +10,13 @@
 | Functions | 4 |
 | Purpose | **Filter rack letters by validity mask, iterate with callbacks** |
 
+
+## System Role
+
+**Category**: Utility
+**Function**: Small Helper
+
+Minimal utility functions
 ## Architecture Role
 
 CODE 38 provides rack letter processing:

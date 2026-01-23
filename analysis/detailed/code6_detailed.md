@@ -10,6 +10,13 @@
 | Functions | 10 |
 | Purpose | **Window management, display updates, player switching** |
 
+
+## System Role
+
+**Category**: User Interface
+**Function**: Window Management
+
+Display pointers, window creation and visibility
 ## Architecture Role
 
 CODE 6 handles window/display operations:

@@ -10,6 +10,13 @@
 | Functions | 20+ |
 | Purpose | **Board state arrays, tile placement, cross-check generation** |
 
+
+## System Role
+
+**Category**: Board State
+**Function**: Position Utilities
+
+Board position helper functions
 ## Architecture Role
 
 CODE 20 manages the Scrabble board state:

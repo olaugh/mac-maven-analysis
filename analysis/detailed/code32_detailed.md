@@ -10,6 +10,21 @@
 | Functions | Multiple (large module) |
 | Purpose | **Score move candidates, track best positions, validate moves** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Move Scoring + Leave Values
+
+Main move scoring, applies leave values from MUL at offset 0x156A (7 FP calls)
+
+**Related CODE resources**:
+- CODE 15 (loads MUL)
+- CODE 39 (combinations)
+- CODE 45 (ranking)
+- CODE 35 (simulation source)
+
+**Scale Note**: Uses centipoints (1/100 point). Bingo = 5000 = 50 pts. Leave values SUBTRACTED (negative = bonus).
 ## Architecture Role
 
 CODE 32 is a core scoring module that:

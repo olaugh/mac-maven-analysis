@@ -10,6 +10,13 @@
 | Functions | 4 |
 | Purpose | **Cache move results, validate moves, manage move history** |
 
+
+## System Role
+
+**Category**: Game Logic
+**Function**: Rack Letters
+
+Rack letter utilities
 ## Architecture Role
 
 CODE 40 provides move caching functionality:

@@ -10,6 +10,13 @@
 | Functions | 14 |
 | Purpose | **TextEdit (TE) control management, text input handling** |
 
+
+## System Role
+
+**Category**: User Interface
+**Function**: UI Utilities
+
+User interface helper functions
 ## Architecture Role
 
 CODE 48 provides TextEdit functionality:

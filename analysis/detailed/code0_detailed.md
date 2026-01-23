@@ -9,6 +9,13 @@
 | JT Entries | 3584 |
 | Purpose | **Jump Table - NOT executable code** |
 
+
+## System Role
+
+**Category**: Core System
+**Function**: Segment Loader
+
+Initializes A5 global pointer, loads code segments on demand
 ## Critical Understanding
 
 CODE 0 is **not executable code** - it's the application's **jump table**. This is a standard Classic Mac OS convention where CODE 0 contains a table that maps function offsets to their actual locations across all CODE segments.

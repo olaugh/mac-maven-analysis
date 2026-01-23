@@ -10,6 +10,13 @@
 | Functions | ~10 |
 | Purpose | **String manipulation and system utilities** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Score Comparison
+
+Compares and ranks scores
 ## Key Insight
 
 CODE 34 contains low-level string manipulation functions (Pascal-style strings) and system environment detection. These are called by many other CODE segments.

@@ -10,6 +10,13 @@
 | Functions | 12 |
 | Purpose | **Game statistics, history tracking, score formatting** |
 
+
+## System Role
+
+**Category**: Simulation
+**Function**: Simulation Support
+
+Supports Monte Carlo simulation (6 FP calls)
 ## Architecture Role
 
 CODE 16 handles game statistics and history:

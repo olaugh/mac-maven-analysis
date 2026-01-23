@@ -10,6 +10,13 @@
 | Functions | 4 |
 | Purpose | **Coordinate move search, dispatch to appropriate search functions** |
 
+
+## System Role
+
+**Category**: User Interface
+**Function**: Score Display
+
+Score display formatting
 ## Architecture Role
 
 CODE 44 provides move search coordination:

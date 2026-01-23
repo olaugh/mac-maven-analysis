@@ -10,6 +10,13 @@
 | Functions | 1 |
 | Purpose | **Compare two null-terminated strings for equality** |
 
+
+## System Role
+
+**Category**: Utility
+**Function**: String Compare
+
+String equality comparison (smallest CODE at 46 bytes)
 ## Architecture Role
 
 CODE 54 is the smallest CODE resource, providing a simple utility:

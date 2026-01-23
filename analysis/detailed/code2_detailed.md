@@ -10,6 +10,13 @@
 | Functions | 6 |
 | Purpose | **Resource loading, data initialization, memory allocation** |
 
+
+## System Role
+
+**Category**: Core System
+**Function**: Resource Management
+
+Mac resource file operations
 ## Architecture Role
 
 CODE 2 handles loading and initializing game resources:

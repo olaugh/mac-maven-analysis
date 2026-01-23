@@ -10,6 +10,17 @@
 | Functions | 5 |
 | Purpose | **Generate and score letter pair/triple combinations for move evaluation** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Letter Combinations
+
+Letter pair synergy scoring (9632-byte stack frame)
+
+**Related CODE resources**:
+- CODE 32 (scoring)
+- CODE 42 (rack analysis)
 ## Architecture Role
 
 CODE 39 handles multi-letter combination analysis:

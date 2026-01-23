@@ -10,6 +10,13 @@
 | Functions | 1 |
 | Purpose | **Generate random numbers or hash values** |
 
+
+## System Role
+
+**Category**: Utility
+**Function**: Small Helper
+
+Minimal utility functions
 ## Architecture Role
 
 CODE 53 provides pseudo-random number generation:

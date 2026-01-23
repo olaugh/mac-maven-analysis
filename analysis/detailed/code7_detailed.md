@@ -10,6 +10,17 @@
 | Functions | 21 |
 | Purpose | **Board state, rack management, game state transitions** |
 
+
+## System Role
+
+**Category**: Board State
+**Function**: Board Management
+
+Manages g_state1 (letters) and g_state2 (scores) arrays
+
+**Related CODE resources**:
+- CODE 32 (uses board state)
+- CODE 52 (flags)
 ## Architecture Role
 
 CODE 7 manages the core game state including:

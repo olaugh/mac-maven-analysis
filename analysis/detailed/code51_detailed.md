@@ -10,6 +10,13 @@
 | Functions | 6 |
 | Purpose | **Dynamic procedure loading and invocation** |
 
+
+## System Role
+
+**Category**: Utility
+**Function**: Small Helper
+
+Minimal utility functions
 ## Architecture Role
 
 CODE 51 provides dynamic code loading:

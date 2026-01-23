@@ -10,6 +10,13 @@
 | Functions | 4 |
 | Purpose | **Manage linked list of move candidates, filtering and sorting** |
 
+
+## System Role
+
+**Category**: Move Logic
+**Function**: Move Generation
+
+Move generation helper
 ## Architecture Role
 
 CODE 27 manages move candidate data structures:

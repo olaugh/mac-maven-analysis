@@ -10,6 +10,13 @@
 | Functions | 10+ |
 | Purpose | **Full printf/sprintf implementation with format parsing** |
 
+
+## System Role
+
+**Category**: Simulation
+**Function**: Analysis Functions
+
+Statistical analysis (9 FP calls)
 ## Architecture Role
 
 CODE 24 provides C-style formatted output:

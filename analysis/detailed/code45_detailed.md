@@ -10,6 +10,19 @@
 | Functions | 5 |
 | Purpose | **Evaluate moves, compare scores, rank move candidates** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Move Ranking
+
+Ranks moves by value, maintains top-10 lists
+
+**Related CODE resources**:
+- CODE 32 (scoring)
+- CODE 43 (move list)
+
+**Scale Note**: Score tables initialized to -200,000,000 centipoints.
 ## Architecture Role
 
 CODE 45 provides move evaluation and ranking:

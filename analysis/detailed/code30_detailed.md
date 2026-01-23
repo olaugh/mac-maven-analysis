@@ -10,6 +10,13 @@
 | Functions | 15 |
 | Purpose | **Core DAWG traversal and word matching** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Position Scoring
+
+Position-based score calculation
 ## Architecture Role
 
 CODE 30 appears to be the **actual DAWG traversal engine** - it:

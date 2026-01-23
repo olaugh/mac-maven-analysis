@@ -10,6 +10,18 @@
 | Functions | 16 |
 | Purpose | **Main DAWG search coordination and move generation** |
 
+
+## System Role
+
+**Category**: DAWG Engine
+**Function**: Search Coordinator
+
+Main DAWG search with 2282-byte stack frame, coordinates move generation
+
+**Related CODE resources**:
+- CODE 15 (DAWG traversal)
+- CODE 36 (word validation)
+- CODE 52 (flags)
 ## Architecture Role
 
 CODE 3 is the **central coordinator** for DAWG operations. It:

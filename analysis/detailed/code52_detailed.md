@@ -10,6 +10,13 @@
 | Functions | 14 |
 | Purpose | **DAWG entry flag/field extraction** |
 
+
+## System Role
+
+**Category**: Board State
+**Function**: Flag Operations
+
+Board flag manipulation
 ## Critical Discovery
 
 CODE 52 is a set of **DAWG entry accessor functions**! All functions follow the exact same pattern but extract different bit fields from a DAWG entry byte. This is the low-level interface to DAWG data.

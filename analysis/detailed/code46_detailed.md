@@ -10,6 +10,13 @@
 | Functions | 20+ |
 | Purpose | **Window management, QuickDraw graphics, hit testing** |
 
+
+## System Role
+
+**Category**: Game Logic
+**Function**: History Management
+
+Game history tracking
 ## Architecture Role
 
 CODE 46 provides the user interface layer:

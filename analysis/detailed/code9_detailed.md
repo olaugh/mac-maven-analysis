@@ -10,6 +10,13 @@
 | Functions | 48 |
 | Purpose | **Runtime support / standard library functions** |
 
+
+## System Role
+
+**Category**: User Interface
+**Function**: Event Handling
+
+Mac event loop processing
 ## Key Insight
 
 CODE 9 is the **runtime support library**. It contains 37 exported functions (via jump table) that provide common services used throughout the application. This is a classic C runtime pattern - small utility functions that don't warrant their own segment.

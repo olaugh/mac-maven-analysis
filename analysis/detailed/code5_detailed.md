@@ -10,6 +10,13 @@
 | Functions | 1 |
 | Purpose | **Game state initialization, board setup** |
 
+
+## System Role
+
+**Category**: Core System
+**Function**: Init Helper
+
+Initialization support routines
 ## Architecture Role
 
 CODE 5 contains a single large function that:

@@ -10,6 +10,13 @@
 | Functions | ~10 |
 | Purpose | **DAWG traversal, word lookup, cross-check generation** |
 
+
+## System Role
+
+**Category**: DAWG Engine
+**Function**: Extended Word Checks
+
+Additional word validation
 ## Architecture Role
 
 CODE 37 handles DAWG (Directed Acyclic Word Graph) operations:

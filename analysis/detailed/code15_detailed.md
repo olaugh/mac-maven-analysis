@@ -10,6 +10,18 @@
 | Functions | 18 |
 | Purpose | **DAWG node traversal, pattern matching, word generation** |
 
+
+## System Role
+
+**Category**: DAWG Engine
+**Function**: DAWG Traversal + MUL Loading
+
+DAWG node traversal AND loads MUL leave value resources
+
+**Related CODE resources**:
+- CODE 3 (search coordinator)
+- CODE 32 (uses loaded MUL)
+- CODE 35 (generates MUL data)
 ## Architecture Role
 
 CODE 15 provides DAWG traversal utilities:

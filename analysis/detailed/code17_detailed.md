@@ -10,6 +10,13 @@
 | Functions | 30+ |
 | Purpose | **TextEdit management, scrollable windows, modal dialogs** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Score Helpers
+
+Score calculation support routines
 ## Architecture Role
 
 CODE 17 provides text editing support:

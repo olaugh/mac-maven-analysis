@@ -10,6 +10,13 @@
 | Functions | 3 |
 | Purpose | **Move array insertion, score calculation, word string handling** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Cross-word Scoring
+
+Calculates perpendicular word scores
 ## Architecture Role
 
 CODE 28 manages arrays of move candidates:

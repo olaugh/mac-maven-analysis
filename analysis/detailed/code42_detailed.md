@@ -10,6 +10,13 @@
 | Functions | 3 |
 | Purpose | **Analyze rack letters, calculate letter scores, recursive evaluation** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Rack Analysis
+
+Analyzes rack for scoring potential
 ## Architecture Role
 
 CODE 42 provides rack analysis functionality:

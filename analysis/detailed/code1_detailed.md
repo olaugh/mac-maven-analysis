@@ -10,6 +10,13 @@
 | Functions | ~8 |
 | Purpose | **Runtime initialization, division routines, math support** |
 
+
+## System Role
+
+**Category**: Core System
+**Function**: Init/Cleanup
+
+Application initialization and cleanup routines
 ## Architecture Role
 
 CODE 1 is loaded at startup and contains:

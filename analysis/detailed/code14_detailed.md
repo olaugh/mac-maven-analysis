@@ -10,6 +10,13 @@
 | Functions | 20+ |
 | Purpose | **Move selection, score comparison, AI decision making** |
 
+
+## System Role
+
+**Category**: Game Logic
+**Function**: Tile Bag
+
+Tile bag operations, drawing tiles
 ## Architecture Role
 
 CODE 14 handles AI move selection:

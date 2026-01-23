@@ -10,6 +10,13 @@
 | Functions | 8 |
 | Purpose | **Dialog box management, user interaction handling** |
 
+
+## System Role
+
+**Category**: Utility
+**Function**: Helper Functions
+
+General helper functions
 ## Architecture Role
 
 CODE 41 provides dialog interface functionality:

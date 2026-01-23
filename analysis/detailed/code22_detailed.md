@@ -10,6 +10,13 @@
 | Functions | 11 |
 | Purpose | **Debug/diagnostic output, board state dumping, file export** |
 
+
+## System Role
+
+**Category**: Game Logic
+**Function**: Player Management
+
+Player state and turn management
 ## Architecture Role
 
 CODE 22 provides debugging and diagnostic functions:

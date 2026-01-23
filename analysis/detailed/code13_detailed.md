@@ -10,6 +10,13 @@
 | Functions | 5 |
 | Purpose | **Player direction switching, move direction display** |
 
+
+## System Role
+
+**Category**: Utility
+**Function**: Memory Management
+
+Memory allocation utilities
 ## Architecture Role
 
 CODE 13 handles player direction management:

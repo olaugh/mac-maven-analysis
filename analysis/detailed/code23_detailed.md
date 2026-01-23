@@ -10,6 +10,13 @@
 | Functions | 12 |
 | Purpose | **String manipulation, character filtering, case conversion** |
 
+
+## System Role
+
+**Category**: Game Logic
+**Function**: Turn Handling
+
+Turn sequence control
 ## Architecture Role
 
 CODE 23 provides string utility functions:

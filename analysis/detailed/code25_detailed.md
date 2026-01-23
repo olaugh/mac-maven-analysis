@@ -10,6 +10,13 @@
 | Functions | 1 |
 | Purpose | **Calculate product of letter values for hashing/comparison** |
 
+
+## System Role
+
+**Category**: Utility
+**Function**: Small Helper
+
+Minimal utility functions
 ## Architecture Role
 
 CODE 25 computes a product based on letter values, likely for:

@@ -10,6 +10,13 @@
 | Functions | 7 |
 | Purpose | **Coordinate word search across board, manage search callbacks** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Adjacent Tiles
+
+Checks adjacent tile positions
 ## Architecture Role
 
 CODE 29 coordinates the word search process:

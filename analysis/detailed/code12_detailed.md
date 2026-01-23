@@ -10,6 +10,13 @@
 | Functions | 20+ |
 | Purpose | **Word validation, DAWG search, rack/letter management** |
 
+
+## System Role
+
+**Category**: Move Logic
+**Function**: Move Validation
+
+Validates move legality
 ## Architecture Role
 
 CODE 12 is central to word validation:

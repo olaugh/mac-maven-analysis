@@ -10,6 +10,13 @@
 | Functions | 6+ |
 | Purpose | **Format move descriptions for display, handle special moves** |
 
+
+## System Role
+
+**Category**: Scoring
+**Function**: Position Analysis
+
+Board position evaluation
 ## Architecture Role
 
 CODE 18 creates human-readable move descriptions:

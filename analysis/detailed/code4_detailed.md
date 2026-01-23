@@ -10,6 +10,13 @@
 | Functions | 3 |
 | Purpose | **Random number generation, GCD calculation** |
 
+
+## System Role
+
+**Category**: Utility
+**Function**: Small Helper
+
+Minimal utility functions
 ## Architecture Role
 
 CODE 4 provides random number services:

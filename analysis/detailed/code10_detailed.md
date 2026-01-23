@@ -10,6 +10,13 @@
 | Functions | 4 |
 | Purpose | **Cursor management, dialog/alert support** |
 
+
+## System Role
+
+**Category**: User Interface
+**Function**: Dialog Utilities
+
+Dialog box support functions
 ## Architecture Role
 
 CODE 10 provides UI support utilities:

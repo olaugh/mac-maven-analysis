@@ -10,6 +10,20 @@
 | Functions | ~8 |
 | Purpose | **Extended precision arithmetic for score evaluation using SANE** |
 
+
+## System Role
+
+**Category**: Simulation
+**Function**: SANE FP Statistics
+
+Heavy FP (22 calls) for simulation statistics - computes averages
+
+**Related CODE resources**:
+- CODE 50 (stores results)
+- CODE 32 (runtime consumer)
+- CODE 24 (analysis)
+
+**Scale Note**: Computes FP averages from simulation, results stored as centipoints in MUL resources.
 ## Architecture Role
 
 CODE 35 performs precise score calculations using Apple's SANE (Standard Apple Numerics Environment):

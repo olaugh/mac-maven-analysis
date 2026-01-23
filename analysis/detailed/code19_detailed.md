@@ -10,6 +10,13 @@
 | Functions | 11 |
 | Purpose | **Window display option toggles (show/hide features)** |
 
+
+## System Role
+
+**Category**: Utility
+**Function**: Small Helper
+
+Minimal utility functions
 ## Architecture Role
 
 CODE 19 provides toggle functions for window display options:
