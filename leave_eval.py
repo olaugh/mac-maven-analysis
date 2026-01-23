@@ -2,7 +2,8 @@
 """
 Maven Leave Value Evaluator
 
-Interactive REPL for evaluating Scrabble rack leaves using Maven's MUL resources.
+Evaluates Scrabble rack leaves using Maven's MUL resources.
+All values are extracted directly from Maven's data files.
 
 Usage:
     python3 leave_eval.py
@@ -24,6 +25,7 @@ RESOURCES_DIR = "/Volumes/T7/retrogames/oldmac/maven_re/resources"
 #   20-23: int32   - unknown
 #   24-27: int32   - leave adjustment (centipoints, used at runtime)
 RECORD_SIZE = 28
+
 
 class MULData:
     """Parsed MUL resource data for a single tile type."""
@@ -101,6 +103,26 @@ def load_all_mul_resources():
     return mul_data
 
 
+def parse_estr_patterns():
+    """Parse ESTR resource to get pattern strings."""
+    estr_path = os.path.join(RESOURCES_DIR, "ESTR", "0_pattern_strings.bin")
+    if not os.path.exists(estr_path):
+        return []
+
+    with open(estr_path, 'rb') as f:
+        data = f.read()
+
+    patterns = []
+    for p in data.split(b'\x00'):
+        try:
+            s = p.decode('ascii')
+            if s:
+                patterns.append(s)
+        except:
+            pass
+    return patterns
+
+
 def count_tiles(leave):
     """Count occurrences of each tile in a leave string."""
     counts = {}
@@ -111,113 +133,13 @@ def count_tiles(leave):
     return counts
 
 
-# Synergy adjustments (centipoints) - approximations based on ESTR patterns
-# These modify the raw sum when certain tile combinations are present
-# Positive = bonus for having these together, negative = penalty
-SYNERGIES = {
-    # Q+U synergy: Q is much better with U present
-    ('Q', 'U'): 1100,  # ~+11 pts bonus for Q+U together
-
-    # Vowel heavy penalties (from ESTR patterns like "uu", "ii", etc.)
-    ('U', 'U'): -200,   # Two U's is worse than sum suggests
-    ('I', 'I'): -150,   # Two I's slightly bad
-    ('O', 'O'): -100,   # Two O's slightly bad
-
-    # Good consonant combinations
-    ('S', 'T'): 50,     # S+T work well together
-    ('E', 'R'): 50,     # E+R common ending
-    ('I', 'N'): 50,     # I+N common
-    ('E', 'D'): 50,     # E+D past tense
-
-    # Awkward combinations
-    ('V', 'V'): -300,   # Two V's very bad
-    ('W', 'W'): -200,   # Two W's bad
-    ('Q', 'Q'): -500,   # Can't happen in standard set, but very bad
-}
-
-
-def calculate_synergies(counts):
-    """
-    Calculate synergy adjustments based on tile combinations.
-    Returns (adjustment, breakdown) where adjustment is centipoints
-    and breakdown is a list of (description, value) tuples.
-    """
-    adjustment = 0
-    breakdown = []
-    tiles_present = set(counts.keys())
-
-    # Pair synergies
-    for (tile1, tile2), bonus in SYNERGIES.items():
-        if tile1 == tile2:
-            # Same tile - check if count >= 2
-            if tile1 in counts and counts[tile1] >= 2:
-                adjustment += bonus
-                breakdown.append((f"{tile1}{tile1}", bonus))
-        else:
-            # Different tiles - check if both present
-            if tile1 in tiles_present and tile2 in tiles_present:
-                adjustment += bonus
-                breakdown.append((f"{tile1}+{tile2}", bonus))
-
-    # Vowel/consonant balance (from ESTR patterns)
-    vowels = set('AEIOU')
-    good_consonants = set('LNRST')  # "lnrtsu" pattern (minus U which is vowel)
-    bad_consonants = set('FHKWVY')   # "fhkwvy" pattern
-
-    vowel_count = sum(counts.get(v, 0) for v in vowels)
-    total_tiles = sum(counts.values())
-
-    # Vowel-heavy penalties (from "aeiou", "aeio" patterns)
-    distinct_vowels = len([v for v in vowels if v in tiles_present])
-    if distinct_vowels >= 5:
-        penalty = -400  # All 5 vowels present
-        adjustment += penalty
-        breakdown.append(("5 vowels", penalty))
-    elif distinct_vowels >= 4:
-        penalty = -200  # 4 different vowels
-        adjustment += penalty
-        breakdown.append(("4 vowels", penalty))
-
-    # Vowel ratio penalties (too vowel-heavy)
-    if total_tiles >= 3:
-        vowel_ratio = vowel_count / total_tiles
-        if vowel_ratio > 0.6:
-            penalty = -300  # More than 60% vowels
-            adjustment += penalty
-            breakdown.append(("vowel-heavy", penalty))
-        elif vowel_ratio < 0.2 and total_tiles >= 4:
-            penalty = -200  # Less than 20% vowels (consonant-heavy)
-            adjustment += penalty
-            breakdown.append(("consonant-heavy", penalty))
-
-    # Good consonant bonus (having LNRST)
-    good_cons_count = sum(1 for c in good_consonants if c in tiles_present)
-    if good_cons_count >= 4:
-        bonus = 150  # 4+ of the power consonants
-        adjustment += bonus
-        breakdown.append(("power consonants", bonus))
-    elif good_cons_count >= 3:
-        bonus = 75
-        adjustment += bonus
-        breakdown.append(("good consonants", bonus))
-
-    # Bad consonant penalty (having FHKWVY cluster)
-    bad_cons_count = sum(counts.get(c, 0) for c in bad_consonants)
-    if bad_cons_count >= 3:
-        penalty = -250
-        adjustment += penalty
-        breakdown.append(("awkward consonants", penalty))
-    elif bad_cons_count >= 2:
-        penalty = -100
-        adjustment += penalty
-        breakdown.append(("weak consonants", penalty))
-
-    return adjustment, breakdown
-
-
 def evaluate_leave(leave, mul_data, verbose=True):
     """
-    Evaluate a leave string and return the total value.
+    Evaluate a leave string using MUL resource data.
+
+    This uses only the per-tile values from Maven's MUL resources.
+    Maven also has synergy calculations in CODE 39, but those values
+    are not stored in extractable resources.
 
     Returns value in centipoints.
     Sign convention: positive = good leave, negative = bad leave
@@ -234,20 +156,16 @@ def evaluate_leave(leave, mul_data, verbose=True):
             leave_adj = md.get_leave_value(count)
             expected = md.get_expected_score(count)
 
-            # Raw value directly represents leave quality:
-            # Positive = good tile to keep, Negative = bad tile to keep
-            intuitive_value = leave_adj
-
             details.append({
                 'tile': tile,
                 'count': count,
                 'raw_adj': leave_adj,
-                'value_centipoints': intuitive_value,
-                'value_points': intuitive_value / 100.0,
+                'value_centipoints': leave_adj,
+                'value_points': leave_adj / 100.0,
                 'expected_score': expected,
             })
 
-            total_centipoints += intuitive_value
+            total_centipoints += leave_adj
             total_expected += expected
         else:
             details.append({
@@ -260,9 +178,6 @@ def evaluate_leave(leave, mul_data, verbose=True):
                 'error': 'No MUL data'
             })
 
-    # Calculate synergy adjustments
-    synergy_adj, synergy_breakdown = calculate_synergies(counts)
-
     if verbose:
         print(f"\nLeave: {leave.upper()}")
         print("-" * 60)
@@ -274,20 +189,31 @@ def evaluate_leave(leave, mul_data, verbose=True):
             else:
                 print(f"{d['tile']:<6} {d['count']:<6} {d['raw_adj']:<10} {d['value_points']:>+9.2f} {d['expected_score']:>9.2f}")
         print("-" * 60)
-        print(f"{'Tiles':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f} {total_expected:>9.2f}")
-        if synergy_breakdown:
-            for desc, val in synergy_breakdown:
-                print(f"  {desc:<18} {val:<10} {val/100:>+9.2f}")
-            print("-" * 60)
-            print(f"{'TOTAL':<6} {'':<6} {'':<10} {(total_centipoints + synergy_adj)/100:>+9.2f}")
+        print(f"{'TOTAL':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f} {total_expected:>9.2f}")
         print()
 
-    return total_centipoints + synergy_adj, details
+    return total_centipoints, details
+
+
+def compare_leaves(leaves, mul_data):
+    """Compare multiple leaves side by side."""
+    results = []
+    for leave in leaves:
+        total, _ = evaluate_leave(leave, mul_data, verbose=False)
+        results.append((leave.upper(), total / 100.0))
+
+    print("\nLeave Comparison (MUL values only)")
+    print("-" * 40)
+    results.sort(key=lambda x: -x[1])  # Sort by value, best first
+    for leave, points in results:
+        print(f"  {leave:<12} {points:>+8.2f} pts")
+    print()
 
 
 def show_tile_table(mul_data):
     """Show leave values for all tiles at count=1."""
     print("\nSingle-Tile Leave Values (count=1)")
+    print("Source: Maven MUL resources, offset 24")
     print("-" * 50)
     print(f"{'Tile':<6} {'Raw Adj':<12} {'Points':<12} {'Exp.Score':<12}")
     print("-" * 50)
@@ -297,9 +223,31 @@ def show_tile_table(mul_data):
         md = mul_data[tile]
         if len(md.records) > 1:
             raw = md.records[1]['leave_adj']
-            points = raw / 100.0  # raw value = leave quality (positive = good)
+            points = raw / 100.0
             exp = md.records[1]['expected_score']
             print(f"{tile:<6} {raw:<12} {points:>+11.2f} {exp:>11.2f}")
+    print()
+
+
+def best_tiles(mul_data, n=10):
+    """Show the N best and worst single tiles."""
+    tiles = []
+    for tile, md in mul_data.items():
+        if len(md.records) > 1:
+            raw = md.records[1]['leave_adj']
+            tiles.append((tile, raw / 100.0))
+
+    tiles.sort(key=lambda x: -x[1])
+
+    print(f"\nTop {n} Best Tiles to Keep (from MUL):")
+    print("-" * 30)
+    for tile, pts in tiles[:n]:
+        print(f"  {tile:<4} {pts:>+8.2f} pts")
+
+    print(f"\nTop {n} Worst Tiles to Keep (from MUL):")
+    print("-" * 30)
+    for tile, pts in tiles[-n:]:
+        print(f"  {tile:<4} {pts:>+8.2f} pts")
     print()
 
 
@@ -317,45 +265,65 @@ def show_tile_detail(tile, mul_data):
     print("-" * 70)
 
     for rec in md.records:
-        points = rec['leave_adj'] / 100.0  # raw value = leave quality
+        points = rec['leave_adj'] / 100.0
         print(f"{rec['count']:<6} {rec['leave_adj']:<12} {points:>+9.2f} {rec['expected_score']:>11.2f} {rec['sample_count']:>11}")
     print()
 
 
-def compare_leaves(leaves, mul_data):
-    """Compare multiple leaves side by side."""
-    results = []
-    for leave in leaves:
-        total, _ = evaluate_leave(leave, mul_data, verbose=False)
-        results.append((leave.upper(), total / 100.0))
+def show_patterns():
+    """Show ESTR patterns from Maven."""
+    patterns = parse_estr_patterns()
+    if not patterns:
+        print("Could not load ESTR patterns")
+        return
 
-    print("\nLeave Comparison")
-    print("-" * 40)
-    results.sort(key=lambda x: -x[1])  # Sort by value, best first
-    for leave, points in results:
-        print(f"  {leave:<12} {points:>+8.2f} pts")
+    print(f"\nESTR Patterns from Maven ({len(patterns)} patterns)")
+    print("These are used by CODE 39 for synergy calculations.")
+    print("The synergy VALUES are computed at runtime, not stored in resources.")
+    print("-" * 60)
+
+    # Categorize patterns
+    vowels = set('aeiou')
+
+    vowel_patterns = []
+    consonant_patterns = []
+    mixed_patterns = []
+
+    for p in patterns:
+        if p == '?' or p == '??':
+            continue
+        has_v = any(c in vowels or c == '?' for c in p)
+        has_c = any(c not in vowels and c != '?' for c in p)
+
+        if has_v and not has_c:
+            vowel_patterns.append(p)
+        elif has_c and not has_v:
+            consonant_patterns.append(p)
+        else:
+            mixed_patterns.append(p)
+
+    print("\nVowel patterns:", ', '.join(sorted(vowel_patterns, key=len)[:20]))
+    print("\nConsonant patterns:", ', '.join(sorted(consonant_patterns, key=len)[:20]))
+    print("\nMixed patterns:", ', '.join(sorted(mixed_patterns, key=len)[:20]))
     print()
 
 
-def best_tiles(mul_data, n=10):
-    """Show the N best and worst single tiles."""
-    tiles = []
-    for tile, md in mul_data.items():
-        if len(md.records) > 1:
-            raw = md.records[1]['leave_adj']
-            tiles.append((tile, raw / 100.0))
+def show_raw_mul(tile, mul_data):
+    """Show raw MUL record data for a tile."""
+    tile = tile.upper()
+    if tile not in mul_data:
+        print(f"No data for tile '{tile}'")
+        return
 
-    tiles.sort(key=lambda x: -x[1])
+    md = mul_data[tile]
+    print(f"\nRaw MUL data for tile '{tile}'")
+    print("-" * 80)
+    print(f"{'Cnt':<4} {'Exp.Score':<14} {'Secondary':<14} {'Samples':<12} {'Unknown':<10} {'LeaveAdj':<10}")
+    print("-" * 80)
 
-    print(f"\nTop {n} Best Tiles to Keep:")
-    print("-" * 30)
-    for tile, pts in tiles[:n]:
-        print(f"  {tile:<4} {pts:>+8.2f} pts")
-
-    print(f"\nTop {n} Worst Tiles to Keep:")
-    print("-" * 30)
-    for tile, pts in tiles[-n:]:
-        print(f"  {tile:<4} {pts:>+8.2f} pts")
+    for rec in md.records:
+        print(f"{rec['count']:<4} {rec['expected_score']:<14.6f} {rec['secondary_val']:<14.6f} "
+              f"{rec['sample_count']:<12} {rec['unknown']:<10} {rec['leave_adj']:<10}")
     print()
 
 
@@ -363,6 +331,7 @@ def repl(mul_data):
     """Interactive REPL for leave evaluation."""
     print("\n" + "=" * 60)
     print("Maven Leave Value Evaluator")
+    print("All values extracted from Maven's MUL resources")
     print("=" * 60)
     print("\nCommands:")
     print("  <leave>       Evaluate a leave (e.g., AEINST, Q, SATIRE?)")
@@ -370,9 +339,13 @@ def repl(mul_data):
     print("  table         Show all single-tile values")
     print("  best          Show best/worst tiles")
     print("  detail X      Show all counts for tile X")
+    print("  raw X         Show raw MUL record for tile X")
+    print("  patterns      Show ESTR synergy patterns")
     print("  help          Show this help")
     print("  /q            Exit")
     print("\nUse ? for blank tiles. Single letters like Q are evaluated as leaves.")
+    print("\nNote: This shows MUL values only. Maven's CODE 39 adds synergy")
+    print("adjustments (e.g., Q+U bonus) that are computed at runtime.")
     print()
 
     while True:
@@ -389,32 +362,37 @@ def repl(mul_data):
         cmd = parts[0].lower()
 
         # Check if input looks like a leave (only letters and ?)
-        # If so, evaluate it even if it matches a command name
         is_leave = all(c.isalpha() or c == '?' for c in line.replace(' ', ''))
 
         if cmd in ('quit', 'exit') and not is_leave:
             print("Goodbye!")
             break
-        elif cmd == '/q':  # Use /q for quick quit
+        elif cmd == '/q':
             print("Goodbye!")
             break
         elif cmd == 'help' and not is_leave:
             print("\nCommands:")
-            print("  <leave>       Evaluate a leave (e.g., AEINST, QUU, SATIRE?)")
+            print("  <leave>       Evaluate a leave (e.g., AEINST, Q, SATIRE?)")
             print("  cmp A B C     Compare multiple leaves")
             print("  table         Show all single-tile values")
             print("  best          Show best/worst tiles")
             print("  detail X      Show all counts for tile X")
-            print("  /q or quit    Exit")
+            print("  raw X         Show raw MUL record for tile X")
+            print("  patterns      Show ESTR synergy patterns")
+            print("  /q            Exit")
             print()
         elif cmd == 'table' and len(parts) == 1:
             show_tile_table(mul_data)
         elif cmd == 'best' and len(parts) == 1:
             best_tiles(mul_data)
+        elif cmd == 'patterns' and len(parts) == 1:
+            show_patterns()
         elif cmd == 'cmp' and len(parts) > 1:
             compare_leaves(parts[1:], mul_data)
         elif cmd == 'detail' and len(parts) > 1:
             show_tile_detail(parts[1], mul_data)
+        elif cmd == 'raw' and len(parts) > 1:
+            show_raw_mul(parts[1], mul_data)
         else:
             # Treat as a leave to evaluate
             evaluate_leave(line, mul_data)
@@ -423,7 +401,7 @@ def repl(mul_data):
 def main():
     print("Loading MUL resources...")
     mul_data = load_all_mul_resources()
-    print(f"Loaded {len(mul_data)} tile types")
+    print(f"Loaded {len(mul_data)} tile types from Maven resources")
 
     if not mul_data:
         print("Error: No MUL data found!")
