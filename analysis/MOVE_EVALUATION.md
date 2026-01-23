@@ -160,7 +160,15 @@ The signed integer at **offset 24** is the key leave adjustment value, used in S
 | Q | +88 | Small penalty |
 | V | +68 | Small penalty |
 
-Note: Scale and exact formula require further code analysis. Values appear inverted from traditional leave values (negative = good, positive = bad).
+**Scale: Centipoints (1/100 of a point)**
+
+Like the bingo bonus (5000 centipoints = 50 points), leave adjustments are stored in centipoints:
+- Blank: -515 = **-5.15 points** (bonus to keep)
+- S: -337 = **-3.37 points**
+- E: -219 = **-2.19 points**
+- Q: +88 = **+0.88 points** (penalty)
+
+Note: Values appear inverted from traditional notation (negative = good, positive = bad).
 
 ---
 
@@ -461,13 +469,41 @@ MUL resources contain 28-byte records per copy count. Key fields extracted via C
 
 Pattern: First copy gets a bonus, additional copies show diminishing returns or penalties.
 
-### Interpretation (Tentative)
+### Formula Analysis (Work in Progress)
 
-The adjustment values appear to modify a baseline expected score:
-- **Negative adjustment** = tile is valuable to keep (blank, S, E, R)
-- **Positive adjustment** = tile should be played soon (Q, V)
+The offset-24 values appear to be **adjustment increments** rather than absolute leave values:
 
-Scale is unclear - values may be in hundredths of a point (e.g., -515 = -5.15 points for blank).
+| Tile | Offset-24 | As Points | Expected Leave | Delta |
+|------|-----------|-----------|----------------|-------|
+| Blank | -515 | -5.15 | ~+25 | ??? |
+| S | -337 | -3.37 | ~+8 | ??? |
+| Q | +88 | +0.88 | ~-15 | ??? |
+
+**Key Observations:**
+1. All tiles have similar expected_score (~10.9-11.4) at offset 0
+2. The offset-24 values are much smaller than expected leave values
+3. The sign is inverted from expected (negative = good, positive = bad)
+
+**Possible Interpretations:**
+1. Offset-24 is a delta applied to the expected_score
+2. The full formula involves subtracting from a baseline (~21 points for full rack?)
+3. Multi-tile patterns (from ESTR) contribute additional adjustments
+
+**CODE 32 Usage (offsets 0x156A and 0x15C4):**
+```asm
+; At 0x156A - Load leave adjustment
+2068 d58c       MOVEA.L -10868(A0),A0   ; Load MUL data ptr from handle
+2d68 0018 ffdc  MOVE.L  24(A0),-36(A6)  ; Load offset-24 to local var
+
+; At 0x15C4 - Apply leave adjustment
+90ae ffdc       SUB.L   -36(A6),D0      ; SUBTRACT adjustment from D0
+```
+
+**Key finding:** The adjustment is **subtracted**, which inverts the sign:
+- Negative offset-24 → bonus (D0 - (-515) = D0 + 515)
+- Positive offset-24 → penalty (D0 - (+88) = D0 - 88)
+
+The loaded value is then processed through SANE floating-point operations (FMULX at 0x159E, FADDX at 0x15B6) which may scale it to final point values.
 
 ### Multi-Tile Diminishing Returns
 
