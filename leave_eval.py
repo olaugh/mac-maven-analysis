@@ -111,6 +111,52 @@ def count_tiles(leave):
     return counts
 
 
+# Synergy adjustments (centipoints) - approximations based on ESTR patterns
+# These modify the raw sum when certain tile combinations are present
+# Positive = bonus for having these together, negative = penalty
+SYNERGIES = {
+    # Q+U synergy: Q is much better with U present
+    ('Q', 'U'): 1100,  # ~+11 pts bonus for Q+U together
+
+    # Vowel heavy penalties (from ESTR patterns like "uu", "ii", etc.)
+    ('U', 'U'): -200,   # Two U's is worse than sum suggests
+    ('I', 'I'): -150,   # Two I's slightly bad
+    ('O', 'O'): -100,   # Two O's slightly bad
+
+    # Good consonant combinations
+    ('S', 'T'): 50,     # S+T work well together
+    ('E', 'R'): 50,     # E+R common ending
+    ('I', 'N'): 50,     # I+N common
+    ('E', 'D'): 50,     # E+D past tense
+
+    # Awkward combinations
+    ('V', 'V'): -300,   # Two V's very bad
+    ('W', 'W'): -200,   # Two W's bad
+    ('Q', 'Q'): -500,   # Can't happen in standard set, but very bad
+}
+
+
+def calculate_synergies(counts):
+    """
+    Calculate synergy adjustments based on tile combinations.
+    Returns adjustment in centipoints.
+    """
+    adjustment = 0
+    tiles_present = set(counts.keys())
+
+    for (tile1, tile2), bonus in SYNERGIES.items():
+        if tile1 == tile2:
+            # Same tile - check if count >= 2
+            if tile1 in counts and counts[tile1] >= 2:
+                adjustment += bonus
+        else:
+            # Different tiles - check if both present
+            if tile1 in tiles_present and tile2 in tiles_present:
+                adjustment += bonus
+
+    return adjustment
+
+
 def evaluate_leave(leave, mul_data, verbose=True):
     """
     Evaluate a leave string and return the total value.
@@ -156,6 +202,9 @@ def evaluate_leave(leave, mul_data, verbose=True):
                 'error': 'No MUL data'
             })
 
+    # Calculate synergy adjustments
+    synergy_adj = calculate_synergies(counts)
+
     if verbose:
         print(f"\nLeave: {leave.upper()}")
         print("-" * 60)
@@ -167,10 +216,14 @@ def evaluate_leave(leave, mul_data, verbose=True):
             else:
                 print(f"{d['tile']:<6} {d['count']:<6} {d['raw_adj']:<10} {d['value_points']:>+9.2f} {d['expected_score']:>9.2f}")
         print("-" * 60)
-        print(f"{'TOTAL':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f} {total_expected:>9.2f}")
+        print(f"{'Sum':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f} {total_expected:>9.2f}")
+        if synergy_adj != 0:
+            print(f"{'Synergy':<6} {'':<6} {synergy_adj:<10} {synergy_adj/100:>+9.2f}")
+            print("-" * 60)
+            print(f"{'TOTAL':<6} {'':<6} {'':<10} {(total_centipoints + synergy_adj)/100:>+9.2f}")
         print()
 
-    return total_centipoints, details
+    return total_centipoints + synergy_adj, details
 
 
 def show_tile_table(mul_data):
