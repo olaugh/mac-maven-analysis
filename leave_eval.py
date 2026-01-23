@@ -253,14 +253,14 @@ def repl(mul_data):
     print("Maven Leave Value Evaluator")
     print("=" * 60)
     print("\nCommands:")
-    print("  <leave>       Evaluate a leave (e.g., AEINST, QUU, SATIRE?)")
+    print("  <leave>       Evaluate a leave (e.g., AEINST, Q, SATIRE?)")
     print("  cmp A B C     Compare multiple leaves")
     print("  table         Show all single-tile values")
     print("  best          Show best/worst tiles")
     print("  detail X      Show all counts for tile X")
     print("  help          Show this help")
-    print("  quit          Exit")
-    print("\nUse ? for blank tiles")
+    print("  /q            Exit")
+    print("\nUse ? for blank tiles. Single letters like Q are evaluated as leaves.")
     print()
 
     while True:
@@ -276,21 +276,28 @@ def repl(mul_data):
         parts = line.split()
         cmd = parts[0].lower()
 
-        if cmd in ('quit', 'exit', 'q'):
+        # Check if input looks like a leave (only letters and ?)
+        # If so, evaluate it even if it matches a command name
+        is_leave = all(c.isalpha() or c == '?' for c in line.replace(' ', ''))
+
+        if cmd in ('quit', 'exit') and not is_leave:
             print("Goodbye!")
             break
-        elif cmd == 'help':
+        elif cmd == '/q':  # Use /q for quick quit
+            print("Goodbye!")
+            break
+        elif cmd == 'help' and not is_leave:
             print("\nCommands:")
             print("  <leave>       Evaluate a leave (e.g., AEINST, QUU, SATIRE?)")
             print("  cmp A B C     Compare multiple leaves")
             print("  table         Show all single-tile values")
             print("  best          Show best/worst tiles")
             print("  detail X      Show all counts for tile X")
-            print("  quit          Exit")
+            print("  /q or quit    Exit")
             print()
-        elif cmd == 'table':
+        elif cmd == 'table' and len(parts) == 1:
             show_tile_table(mul_data)
-        elif cmd == 'best':
+        elif cmd == 'best' and len(parts) == 1:
             best_tiles(mul_data)
         elif cmd == 'cmp' and len(parts) > 1:
             compare_leaves(parts[1:], mul_data)
