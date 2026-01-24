@@ -10,18 +10,39 @@
 | Functions | 18 |
 | Purpose | **DAWG node traversal, pattern matching, word generation** |
 
+## Runtime Verification (QEMU Trace Analysis)
+
+**Confirmed via dynamic tracing on 2026-01-24**
+
+When loaded, CODE 15 base address was observed at `0x7c9a600`. Key function entry points:
+
+| Static Offset | Runtime Address | Function |
+|---------------|-----------------|----------|
+| 0x0088 | 0x7c9a688 | Section iterator (loops through DAWG sections) |
+| 0x00B8 | 0x7c9a6b8 | Inner DAWG walk (core traversal loop) |
+
+**Trace excerpt showing DAWG traversal:**
+```
+0x07c9a6ce:  lsll #3,%d0           ; D6 * 8 for section indexing
+0x07c9a6d2:  moveal %a1@(-11960),%a4  ; Get section's DAWG base
+0x07c9a6de:  movel %a1@(-11956),%d6   ; Get section's position
+0x07c9a6e4:  lsll #2,%d0           ; Entry index * 4
+0x07c9a6ea:  cmpb %d5,%d7          ; Compare letters
+0x07c9a710:  btst #9,%d5           ; Check last-sibling flag
+```
 
 ## System Role
 
 **Category**: DAWG Engine
 **Function**: DAWG Traversal + MUL Loading
 
-DAWG node traversal AND loads MUL leave value resources
+Powers the **Word Lister** dialog for anagram/pattern searching. Also loads MUL leave value resources.
 
 **Related CODE resources**:
 - CODE 3 (search coordinator)
 - CODE 32 (uses loaded MUL)
 - CODE 35 (generates MUL data)
+
 ## Architecture Role
 
 CODE 15 provides DAWG traversal utilities:
@@ -29,6 +50,21 @@ CODE 15 provides DAWG traversal utilities:
 2. Pattern-based word generation
 3. Recursive DAWG search support
 4. Window/dialog creation
+
+## Multi-Section DAWG Architecture
+
+**Key Discovery**: Maven uses **multiple DAWG sections** accessed via an array of 8-byte structures:
+
+```c
+struct DAWGSection {
+    long* base_ptr;    // Offset 0: Pointer to DAWG array (A5-11960 indexed)
+    long  position;    // Offset 4: Current entry position (A5-11956 indexed)
+};
+// Accessed as: sections[D6] where D6 = section index
+// Index calculation: D6 * 8 (lsll #3)
+```
+
+The section count is stored at **A5-10936** and controls how many sections to iterate.
 
 ## Key Functions
 
@@ -406,19 +442,40 @@ Bits 10-31: Child node index (22 bits)
 
 ## Global Variables
 
-| Offset | Purpose |
-|--------|---------|
-| A5-7166 | Small screen strings |
-| A5-7272 | Large screen strings |
-| A5-7284 | Window refCon |
-| A5-8576 | String table ptr |
-| A5-10936 | Word counter |
-| A5-11960 | DAWG base pointer |
-| A5-11964 | Current DAWG position |
-| A5-11968 | DAWG start position |
-| A5-23674 | Counter |
-| A5-24030 | Compare pointer |
-| A5-24792 | Default pointer |
+### DAWG Section Array (Confirmed via Trace)
+
+The DAWG uses a **multi-section architecture** with parallel arrays:
+
+| Base Offset | Structure | Purpose |
+|-------------|-----------|---------|
+| A5-11960 | long[N] | Array of DAWG base pointers (one per section) |
+| A5-11956 | long[N] | Array of current positions (one per section) |
+
+**Access pattern**: `sections[i].base = A5[-11960 + i*8]`, `sections[i].pos = A5[-11956 + i*8]`
+
+### Other Globals
+
+| Offset | Type | Purpose |
+|--------|------|---------|
+| A5-7166 | char* | Small screen strings |
+| A5-7272 | char* | Large screen strings |
+| A5-7284 | long | Window refCon |
+| A5-8576 | char** | String table ptr |
+| A5-10936 | short | **Section count** (loop limit for section iterator) |
+| A5-11964 | long | Current DAWG position (working copy) |
+| A5-11968 | long | DAWG start position |
+| A5-23674 | short | Bounds counter |
+| A5-24030 | long | Compare pointer |
+| A5-24792 | long | Default pointer |
+
+### Trace Statistics (Word Lister search for "cat" → 4 results)
+
+| Metric | Count | Meaning |
+|--------|-------|---------|
+| Section loop iterations | 4 | One per result word (act, at, cat, ta) |
+| DAWG traversal loops | 5 | Letter comparisons during validation |
+| A5-10936 accesses | 5 | Section count checks |
+| Bit 9 tests | 2 | Last-sibling flag checks |
 
 ## Speculative C Translation
 
@@ -825,10 +882,58 @@ void init_dawg_tables(void) {
 }
 ```
 
-## Confidence: HIGH
+## Algorithm Summary (Confirmed by Trace)
 
-Clear DAWG traversal patterns:
-- Child/sibling navigation
-- Bit flag extraction
-- Recursive pattern matching
-- End-of-word detection
+### Word Lister Flow
+
+```
+Word Lister ("cat" search)
+         │
+         ▼
+┌─────────────────────────────────────┐
+│ section_iterator (0x0088)           │
+│   D7 = 0 (section counter)          │
+│   Loop while D7 < A5[-10936]        │
+│         │                           │
+│         ▼                           │
+│   ┌─────────────────────────────┐   │
+│   │ dawg_walk (0x00B8)          │   │
+│   │   - Index = D6 * 8          │   │
+│   │   - Base = A5[-11960+idx]   │   │
+│   │   - Pos = A5[-11956+idx]    │   │
+│   │   - Walk sibling chain      │   │
+│   │   - Compare letters         │   │
+│   │   - Check bit 9 (last)      │   │
+│   └─────────────────────────────┘   │
+│         │                           │
+│         ▼                           │
+│   D7++, next section                │
+└─────────────────────────────────────┘
+         │
+         ▼
+    Return results: act, at, cat, ta
+```
+
+### DAWG Entry Access Pattern
+
+```c
+// From trace at 0x7c9a6e2:
+entry = dawg_base[position * 4];     // lsll #2
+letter = entry & 0xFF;                // byte comparison
+if (letter == target) {
+    // Match found
+} else if (entry & 0x200) {          // btst #9
+    // Last sibling - not found
+} else {
+    position++;                       // Try next sibling
+}
+```
+
+## Confidence: VERY HIGH
+
+**Verified via QEMU dynamic tracing:**
+- Multi-section DAWG architecture confirmed (8-byte section structures)
+- Section count at A5-10936 controls iteration
+- 4-byte entries with bit 9 = last-sibling
+- Letter comparison at entry byte 0
+- Clear correlation: 4 sections searched → 4 words found

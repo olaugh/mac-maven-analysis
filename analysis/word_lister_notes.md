@@ -4,11 +4,28 @@
 
 The DAWG (Directed Acyclic Word Graph) in Maven is **optimized for cross-check validation during move generation**, not for direct word enumeration.
 
+## Dynamic Tracing Results (2026-01-24)
+
+**QEMU + trace log analysis confirmed:**
+
+- CODE 15 powers the Word Lister (loaded at runtime base 0x7c9a600)
+- Multi-section DAWG architecture with parallel base/position arrays
+- 8-byte section structures (indexed by section * 8)
+- Section count at A5-10936 controls iteration
+
+**Word Lister search for "cat" produced 4 words: act, at, cat, ta**
+
+| Metric | Value |
+|--------|-------|
+| Section iterations | 4 (one per result word) |
+| DAWG traversal loops | 5 (letter comparisons) |
+| Key functions | 0x0088 (iterator), 0x00B8 (walk) |
+
 ### Key CODE Resources
 
 | CODE | Purpose |
 |------|---------|
-| **CODE 15** | DAWG pattern matching with callbacks - likely powers Word Lister |
+| **CODE 15** | DAWG pattern matching - **confirmed via tracing** to power Word Lister |
 | **CODE 12** | Word validation during move generation |
 | **CODE 30** | Core DAWG traversal engine |
 | **CODE 5** | Dictionary initialization, lexicon loading |
