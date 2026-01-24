@@ -679,6 +679,62 @@ Section 3 (entries 122,166-145,475) contains 23,310 entries:
 | `trace_section1.py` | Trace Section 1 structure |
 | `trace_section2_queen.py` | Trace Section 2 word paths |
 
+## Menu Structure and Code Handlers
+
+### MENU Resources (from resource fork)
+
+| Menu ID | Name | Items |
+|---------|------|-------|
+| 129 (0x81) | File | New Game/N, Open.../O, Close/W, ----, Save/S, Save As..., ----, Quit/Q |
+| 130 (0x82) | Edit | Undo/Z, Cut/X, Copy/C, Paste/V |
+| 131 (0x83) | Lexicon | North American, United Kingdom, Both N.A. And U.K. |
+
+### Dialog Labels (from DITL resources)
+
+Key UI actions found in dialogs:
+- **Play** / **Pass** - Main game actions (at 0x16b64, 0x16b5e)
+- **Reset** - Reset board state
+- **Simulate** / **Record The Simulation** - AI analysis options
+- **Use End Analyzer** / **Use Late Analyzer** - Endgame analysis
+- **Enumerate All Racks** - Simulation mode
+- **Word Lister** / **Kibitzer** - Analysis tools
+- **Board Configuration Dialog** - Board setup
+
+### CODE Resource Menu Handlers
+
+| CODE | Purpose | Menu Actions |
+|------|---------|--------------|
+| 5 | Dictionary init | Sets lexicon mode 2 (UK) or 3 (Both) based on dictionary loaded |
+| 7 | Board management | Sets lexicon mode 1 (NA), 6, 8 for different states |
+| 11 | Game controller | Main dispatch for lexicon operations, table-driven validation |
+| 21 | Main game loop | References menu IDs 0x81-0x84, updates menu enable states |
+
+### Lexicon Mode Values (A5-8604)
+
+| Value | Meaning | Dictionary Used |
+|-------|---------|-----------------|
+| 0 | Not initialized | None |
+| 1 | North American (TWL) | SOWPODS with TWL filter |
+| 2 | United Kingdom (OSW) | OSW dictionary |
+| 3 | Both (SOWPODS) | SOWPODS full |
+| 4 | OSW with validation | OSW + extra checks |
+| 5 | Loading/switching | Transitional state |
+| 6-8 | Extended modes | Various internal states |
+
+### Menu ID References in CODE 21
+
+```
+0x1480: CMPI.W #$0081,12(A6)   ; Check if File menu
+0x19E0: MOVE.W #$0082,-(A7)    ; Push Edit menu ID (updating menu state)
+0x1A22: MOVE.W #$0083,-(A7)    ; Push Lexicon menu ID
+0x1A42: MOVE.W #$0081,-(A7)    ; Push File menu ID
+0x1FBA: MOVE.W #$0082,-(A7)    ; Edit menu operations
+0x208E: MOVE.W #$0083,-(A7)    ; Lexicon menu operations
+0x20F8: MOVE.W #$0081,-(A7)    ; File menu operations
+```
+
+These are calls to Toolbox menu routines (DisableItem, EnableItem, CheckItem) to update menu appearance based on game state.
+
 ## Next Steps
 
 1. ~~Debug in emulator to watch actual DAWG access~~
