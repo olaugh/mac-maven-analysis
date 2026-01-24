@@ -8,9 +8,16 @@
 | JT Offset | 224 |
 | JT Entries | 13 |
 | Functions | 21 |
-| Categories | DAWG_ACCESS |
-| Purpose | Unknown |
+| Categories | DAWG_ACCESS, BOARD_STATE, LEXICON_CONTROL |
+| Purpose | **Board State Management / Lexicon Mode Switching** |
 | Confidence | HIGH |
+
+## Menu Context
+
+This code handles board state operations and lexicon mode switching:
+- Called when user selects items from the **Lexicon menu** (Menu ID 131)
+- Handles "North American" (Item 1), "United Kingdom" (Item 2), "Both" (Item 3)
+- Also involved in board setup from dialogs
 
 ## Functions
 
@@ -26,11 +33,21 @@ Entry points at: 0x0000, 0x0038, 0x02EA, 0x03A0, 0x046C, 0x048E, 0x050A, 0x0564,
 | A5-15506 | g_size1 | DAWG section 1 size (56630) |
 | A5-15502 | g_size2 | DAWG section 2 size (65536) |
 | A5-15498 | g_current_ptr | Current active buffer pointer |
-| A5-8604 | g_game_mode | Game mode/state flag |
+| A5-8604 | g_lexicon_mode | **Lexicon mode: 1=NA, 2=UK, 3=Both, 6=?, 8=?** |
 | A5-8584 | g_handle | Handle to data structure |
 | A5-8510 | g_window_ptr | Main window pointer |
 
 Also references 14 unknown A5-relative globals.
+
+## Lexicon Mode Settings (from disassembly)
+
+```
+0x0A0C: MOVE.W   #$0008,-8604(A5)  ; Set mode = 8
+0x0A66: MOVE.W   #$0006,-8604(A5)  ; Set mode = 6
+0x0AC0: MOVE.W   #$0001,-8604(A5)  ; Set mode = 1 (North American/TWL)
+```
+
+This code sets lexicon mode to 1 (North American) at 0x0AC0, suggesting it handles the "North American" menu item selection from the Lexicon menu.
 
 ## Jump Table Calls
 
@@ -70,12 +87,27 @@ Also references 14 unknown A5-relative globals.
 
 ## Refined Analysis (Second Pass)
 
-**Cluster**: Dawg Support
+**Cluster**: Dawg Support, Board State
 
-**Category**: CORE_AI
+**Category**: CORE_AI, UI_HANDLER
 
 **Global Variable Profile**: 5 DAWG, 3 UI, 22 total
 
 **Calls functions in**: CODE 9, 11, 14, 20, 21, 22, 27, 29, 31, 32, 34, 41, 52
 
-**Assessment**: DAWG support
+**Assessment**: Board state management and lexicon mode switching - handles Lexicon menu
+
+## Key Functions
+
+| Offset | Purpose |
+|--------|---------|
+| 0x0A00-0x0AC0 | Lexicon mode switching (modes 1, 6, 8) |
+| 0x0000-0x0038 | Board state initialization |
+| 0x02EA+ | Board buffer operations |
+
+## Menu Handler Identification
+
+This code appears to be the **Lexicon menu handler**:
+- Sets mode=1 for "North American" (TWL dictionary)
+- Modes 6 and 8 may be transitional states during dictionary loading
+- Works with the two-buffer system (g_field_14/g_field_22) for dictionary switching
