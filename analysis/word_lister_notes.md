@@ -41,9 +41,16 @@ This is used for **cross-check validation** during move generation:
 ### Structure
 
 ```
-Section 1 (entries 0-56,629): REVERSED words, indexed by last letter
-Section 2 (entries 56,630-122,165): Forward entry points that reuse Section 1's suffix structure
+Section 1 (entries 0-56,629): REVERSED words, indexed by last letter - PARTIAL dictionary
+Section 2 (entries 56,630-122,165): Forward entry points - FULL dictionary
+Section 3 (entries 122,166-145,475): Additional entry points (possibly second lexicon)
 ```
+
+**Important Discovery**: Section 1 and Section 2 validate DIFFERENT word sets:
+- Words like "AA", "CAT" validate via BOTH Section 1 and Section 2
+- Words like "BA", "FA", "HA", "AB" validate ONLY via Section 2
+- Section 1 appears to be optimized for cross-check validation (suffix patterns)
+- Section 2 is the complete forward dictionary
 
 Words are validated by:
 1. Section 1: Reverse the word, start in the range for the last letter, follow children
@@ -146,10 +153,45 @@ To enumerate words directly (like Maven's Word Lister does), one would need to:
 3. Find the terminal node detection logic
 4. Verify with known words: does the path match expectations?
 
+### Enumeration Attempts (Static Analysis)
+
+Multiple enumeration approaches were attempted:
+
+1. **Section 1 enumeration** - Traversing letter ranges and collecting paths with is_word=True
+   - Result: Produces many false positives (e.g., "bb", "ff" marked as words)
+   - Reason: is_word marks valid suffixes, not complete words
+
+2. **Section 2 enumeration** - Starting from forward entry points
+   - Result: Produces gibberish (e.g., "aaliooooagcmiect")
+   - Reason: The DAWG shares suffix nodes between different words
+   - Example: A@56656 → A@98 → A@103 gives "AAA" which isn't a valid word
+   - The path combines prefixes from one word with suffixes from another
+
+3. **Why validation works but enumeration doesn't**:
+   - Validation: Given "CAT", check if the SPECIFIC path C→A→T exists with is_word at end
+   - Enumeration: Explore ALL paths, record when is_word=True
+   - The suffix-sharing structure means many invalid paths exist that happen to end at is_word=True nodes
+
+### Dynamic Debugging Would Help
+
+To understand how Maven's Word Lister actually enumerates words, dynamic debugging would reveal:
+
+1. **What constraints the Word Lister applies** beyond just is_word checks
+2. **Whether it uses pattern matching** to limit traversal (e.g., requiring wildcards)
+3. **How it handles the Section boundary** between forward and reversed structures
+4. **What the callback receives** - forward words or reversed paths that get unreversed?
+
+Suggested debugging approach:
+- Run Maven in QEMU with GDB attached
+- Set breakpoint at CODE 15's `recursive_pattern_match` (0x0272)
+- Use Word Lister with a simple pattern like "CAT" or "???"
+- Trace the traversal path and observe what gets passed to the callback
+
 ### Conclusions
 
 1. **Word enumeration without a reference is not practical** - The DAWG is optimized for validation, not enumeration
 2. **The WORD flag is for cross-checks** - It marks valid ending sequences, not complete words
-3. **Section 2 is just an entry layer** - All children point to Section 1's reversed structure
+3. **Section 2 is the complete dictionary** - Section 1 is partial (cross-check optimized)
 4. **Use reference wordlists** - Validate SOWPODS/TWL words against the DAWG
 5. **The maven_validated.txt file contains ~220K valid words** extracted using this approach
+6. **Dynamic debugging recommended** - To understand the Word Lister's actual algorithm
