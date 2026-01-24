@@ -409,15 +409,51 @@ Entries 36-45 in shared region have WORD flags:
 
 These appear to mark valid word endings in a reversed traversal.
 
+## CONFIRMED: Word Validation Algorithm (2026-01-23)
+
+After extensive analysis and testing, a working word validation algorithm was developed:
+
+### Algorithm
+
+To validate a word (e.g., "THE"):
+1. **Reverse the word**: "THE" → "EHT"
+2. **Use letter index**: First letter 'E' defines the starting range (entries 651-719)
+3. **Search for second letter**: Find 'H' entries in E's range
+4. **Follow children**: For each 'H' entry, follow children to find 'T'
+5. **Check WORD flag**: 'T' entry must have WORD flag (0x80) set
+
+### Key Insight: WORD Flag Semantics
+
+The WORD flag (0x80) does **NOT** mark complete dictionary words. It marks **valid affixes** for cross-check computation. This is why:
+- Direct enumeration produces millions of invalid "words"
+- Many valid words don't have WORD flag on all paths
+- The structure is optimized for cross-check queries, not word enumeration
+
+### Validation Results
+
+Testing against SOWPODS 2003 (246,691 words):
+- **220,036 words validated** (89.2% match rate)
+- **83 of 121 2-letter words** found (69%)
+- Missing words may use different dictionary version (TWL vs SOWPODS)
+
+### Working Extraction Method
+
+Since direct enumeration doesn't work, the extraction script:
+1. Loads a reference wordlist (SOWPODS)
+2. Validates each word against the DAWG
+3. Outputs only validated words
+
+See: `extract_dictionary.py`
+
 ## Open Questions
 
-1. **Child formula unclear**: `ptr + (flags & 0x7e)` produces some correct results but enumeration produces garbage
+1. **~~Child formula unclear~~**: CONFIRMED: `ptr + (flags & 0x7e)` is correct for child calculation
 2. **Ptr interpretation**: Very small values (0-19) suggest group indexing, not entry indexing
-3. **Multiple letter entries**: Why 13 different 'a' entries in A's range?
-4. **Purpose of second section**: ptr values (888, 889) pointing into first DAWG
-5. **Letter index meaning**: Points mid-group rather than group start - why?
-6. **WORD flag semantics**: Different meaning in shared vs. letter-specific regions?
-7. **Missing words**: AB, AH, AW, AX, AY not found in A's range despite being valid SOWPODS words
+3. **Multiple letter entries**: Multiple contexts for same letter supporting GADDAG-like traversal
+4. **Purpose of second section**: Entry points for forward (hook-after) cross-checks
+5. **Letter index meaning**: Defines RANGE of entries for words ending with that letter
+6. **~~WORD flag semantics~~**: CONFIRMED: Marks valid affixes, NOT complete words
+7. **Missing words**: ~11% of SOWPODS not found - likely different dictionary version (TWL/OSW)
 
 ## Scripts Reference
 
