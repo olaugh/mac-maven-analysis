@@ -472,10 +472,221 @@ Analysis scripts in `/Volumes/T7/retrogames/oldmac/maven_re/scripts/`:
 | `reverse_engineer.py` | Work backwards from WORD markers |
 | `analyze_duplicates.py` | Understand duplicate letter entries |
 
+## Dictionary Differentiation (TWL vs OSW vs SOWPODS) - 2026-01-23
+
+Maven supports three dictionary modes selectable via menu:
+- **TWL** (Tournament Word List) - American dictionary
+- **OSW** (Official Scrabble Words) - British dictionary
+- **SOWPODS** - Combined TWL + OSW
+
+### Test Cases
+
+Known dictionary-specific words (circa 2000 versions):
+| Word | TWL | OSW | SOWPODS |
+|------|-----|-----|---------|
+| HMM, HM, MM | Yes | No | Yes |
+| BRR, BRRR, GRR | Yes | No | Yes |
+| QUACKLE | No | Yes | Yes |
+| GI, CH, GIE | No | Yes | Yes |
+
+### CONFIRMED: Two DAWG Structures in maven2 File
+
+The maven2 file contains **two complete DAWG structures**:
+
+| DAWG | Offset | Size | Contents |
+|------|--------|------|----------|
+| DAWG1 | 0x0 - 0x8e520 | 582,944 bytes | **SOWPODS** (combined dictionary) |
+| DAWG2 | 0x8e520+ | 487,844 bytes | **OSW** (British dictionary) |
+
+**DAWG1 Structure** (standard format):
+- Header: 16 bytes at 0x0
+- Letter index: 104 bytes at 0x10
+- Padding: 920 bytes (zeros) at 0x78
+- Nodes: 145,476 entries at 0x410
+  - Section 1 (reversed): entries 0-56,629
+  - Section 2 (forward): entries 56,630-122,165
+  - Section 3 (additional): entries 122,166-145,475
+
+**DAWG2 Structure** (different format):
+- Header appears to be DAWG entries, not a traditional header
+- ~121,701 entries starting at 0x8e930
+- No separate letter index detected
+- Contains OSW dictionary (missing TWL-only words like HMM)
+
+### Verification Results
+
+Words found in DAWG1 (SOWPODS):
+- HMM: Section2 entry 77733 ✓
+- HM: Section2 entry 69845 ✓
+- MM: Section2 entry 59779 ✓
+- GI: Section2 entry 62497 ✓
+- CH: Section1 entry 37164 ✓
+- THE: Section1 entry 5222 ✓
+- QI: Section2 entry 113162 ✓
+
+Words NOT found in DAWG2 (OSW):
+- HMM: NOT FOUND (confirms TWL-only)
+- BRR: NOT FOUND (confirms TWL-only)
+- GRR: NOT FOUND (confirms TWL-only)
+
+### CONFIRMED: No Flag Bit for Dictionary Membership
+
+Extensive analysis of the flags byte revealed **no single bit correlates with dictionary membership**:
+
+```
+Flags byte layout:
+  Bit 7 (0x80): End-of-word marker (is_word)
+  Bit 0 (0x01): Last sibling marker (is_last)
+  Bits 1-6:     Used in child pointer calculation: child = ptr + (flags & 0x7e)
+```
+
+Flag patterns for test words show no correlation:
+| Category | Words | Flag Patterns |
+|----------|-------|---------------|
+| TWL-only | HMM, HM, MM, BRR, GRR | 0x01, 0x0d, 0x1d, 0x5b |
+| OSW-only | GI, CH, GIE | 0x59, 0xf5, 0x31 |
+| Both | THE, CAT, QI | 0x1d, 0xf7 |
+
+Bits 1-6 cannot be dictionary flags because they're used for child calculation.
+
+### Dictionary Mode Implementation - FOUND (2026-01-23)
+
+**Lexicon Menu** (Menu ID 0x83 = 131):
+- Item 1: "North American" (TWL)
+- Item 2: "United Kingdom" (OSW)
+- Item 3: "Both N.A. And U.K." (SOWPODS)
+
+**Key Global Variables**:
+| Offset | Purpose |
+|--------|---------|
+| A5-8604 | **Lexicon mode** (1=NA/TWL, 2=UK/OSW, 3=Both/SOWPODS) |
+| A5-15514 | Dictionary pointer 1 (appears to be SOWPODS/combined) |
+| A5-15522 | Dictionary pointer 2 (appears to be OSW) |
+| A5-15498 | **Active dictionary pointer** (set based on mode) |
+
+**Menu Handler Code** (CODE resource at ~0x0185a0):
+```
+TST.W    param+24(A6)      ; Test if "Both" mode
+BEQ.S    uk_only           ; If zero, use UK only
+
+; Both mode (SOWPODS):
+LEA      -15514(A5),A0     ; A0 = dictionary 1
+MOVE.L   A0,-15498(A5)     ; Set as active
+...
+MOVE.W   #3,-8604(A5)      ; lexicon_mode = 3 (Both)
+BRA.S    done
+
+uk_only:
+LEA      -15522(A5),A0     ; A0 = dictionary 2 (OSW)
+MOVE.L   A0,-15498(A5)     ; Set as active
+...
+MOVE.W   #2,-8604(A5)      ; lexicon_mode = 2 (UK)
+```
+
+**Word Validation Code** (CODE resource at ~0x01b091):
+```asm
+; Function scans a lookup table at A5-24244 to determine dictionary validity
+MOVEM.L  D7/A3/A4,-(A7)    ; Save registers
+TST.W    -8604(A5)         ; Test lexicon_mode
+BEQ.S    skip_check        ; If 0, skip dictionary check
+LEA      -24188(A5),A4     ; A4 = end of lookup table
+LEA      -24244(A5),A3     ; A3 = start of lookup table
+BRA.S    loop_start
+
+loop:
+  MOVE.B   (A3),D7          ; Get byte 0 from table
+  MOVE.B   D7,D0
+  EXT.W    D0
+  CMP.W    -8602(A5),D0     ; Compare with state variable
+  BEQ.S    found
+  CMPI.B   #$FF,D7          ; Check for end marker
+  BNE.S    next_entry
+  MOVE.B   1(A3),D0         ; Get byte 1 (lexicon mode)
+  EXT.W    D0
+  CMP.W    -8604(A5),D0     ; Compare with current mode
+  BNE.S    next_entry
+  MOVE.B   2(A3),D0         ; Get byte 2 (validity flag)
+  EXT.W    D0
+  BRA.S    return
+next_entry:
+  ADDQ.L   #4,A3            ; Next 4-byte entry
+loop_start:
+  CMPA.L   A3,A4            ; Check bounds
+  BHI.S    loop
+  MOVEQ    #0,D0            ; Return 0 (not valid)
+return:
+  MOVEM.L  (A7)+,D7/A3/A4
+  RTS
+```
+
+**Lookup Table Structure** (A5-24244 to A5-24188, 56 bytes = 14 entries):
+Each 4-byte entry appears to contain:
+- Byte 0: State/condition value
+- Byte 1: Required lexicon mode (1=NA, 2=UK, 3=Both)
+- Byte 2: Validity result
+- Byte 3: (padding or flags)
+
+**Dictionary Selection Logic**:
+The validation is **table-driven**, not a simple if/else. The table encodes which words are valid for which lexicon mode. This suggests:
+- Words are tagged in the DAWG with dictionary membership
+- The validation table maps (word_flag, lexicon_mode) → valid/invalid
+
+### HYPOTHESIS: TWL Mode Implementation
+
+Based on analysis, TWL mode appears to work via **table-driven validation** rather than a separate DAWG:
+
+1. **File Structure**: maven2 contains only TWO DAWGs:
+   - DAWG1 (0x0 - 0x8e520): SOWPODS (combined TWL+OSW)
+   - DAWG2 (0x8e520+): OSW only
+
+2. **TWL Filtering**: When lexicon_mode=1 (North American):
+   - Words are looked up in the SOWPODS DAWG
+   - A validation table determines if the word is valid for TWL
+   - OSW-only words return "invalid" for TWL mode
+
+3. **Table-Driven Validity**: The lookup table at A5-24244 likely encodes:
+   - For each word flag value, which lexicon modes accept it
+   - This allows SOWPODS to serve as the master dictionary
+   - With per-word flags distinguishing TWL-only, OSW-only, or both
+
+**Evidence supporting this theory**:
+- No third DAWG found in the file
+- DAWG1 contains TWL-only words (HMM) that are absent from DAWG2 (OSW)
+- The validation code uses a table lookup, not a simple dictionary pointer switch
+- This approach saves memory (one DAWG instead of three)
+
+**Remaining mystery**: How are word-level dictionary flags stored?
+- Not in the node flags byte (bits 1-6 are for child calculation)
+- Possibly in an external table indexed by word ID
+- Or encoded in the DAWG structure in a way not yet identified
+
+### Section 3 Analysis
+
+Section 3 (entries 122,166-145,475) contains 23,310 entries:
+- First 25 entries are zeros
+- Remaining entries are valid DAWG nodes
+- Only 8 Section 2 entries point into Section 3 (letters s,t,u,v,w,x,y,z)
+- Section 3 entries point BACK to Section 1 (21,132 children → Section 1)
+- Purpose: Additional forward entry points, possibly for specific letter combinations
+
+### Related Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `find_dict_flags.py` | Search for dictionary flag patterns |
+| `analyze_dawg_header.py` | Analyze header structure |
+| `compare_dawgs.py` | Compare DAWG1 vs DAWG2 |
+| `trace_section1.py` | Trace Section 1 structure |
+| `trace_section2_queen.py` | Trace Section 2 word paths |
+
 ## Next Steps
 
-1. Debug in emulator to watch actual DAWG access
-2. Trace specific word lookups through structure
-3. Compare word counts with alternate dictionaries (our version uses OSWI 2000)
-4. Analyze second DAWG section separately
+1. ~~Debug in emulator to watch actual DAWG access~~
+2. ~~Trace specific word lookups through structure~~
+3. ~~Compare word counts with alternate dictionaries (our version uses OSWI 2000)~~
+4. ~~Analyze second DAWG section separately~~ DONE - it's OSW dictionary
 5. Look for endgame/leave value data structures
+6. ~~**Analyze CODE that handles lexicon menu**~~ DONE - found mode variable A5-8604
+7. **Locate TWL dictionary pointer** - trace A5-15514/A5-15522 to understand which is which
+8. **Find TWL DAWG data** - may be third embedded DAWG or computed from SOWPODS-OSW
+9. **Test validation in emulator** - set breakpoint on word validation to observe dictionary switching
