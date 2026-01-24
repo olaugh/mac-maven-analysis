@@ -46,6 +46,7 @@ class DAWGReader:
         self.header = self._parse_header()
         self.letter_index = self._parse_letter_index()
         self.letter_ranges = self._compute_ranges()
+        self.section2_index = self._build_section2_index()
 
     def _parse_header(self):
         return {
@@ -76,6 +77,16 @@ class DAWGReader:
             end = self.letter_index[letters[i+1]]['entry'] if i < 25 else SECTION1_END
             ranges[L] = (start, end)
         return ranges
+
+    def _build_section2_index(self):
+        """Build index of Section 2 entries grouped by first letter."""
+        index = {chr(ord('a') + i): [] for i in range(26)}
+        section2_end = self.header['section2_end']
+        for entry_idx in range(SECTION1_END, section2_end):
+            node = self.get_node(entry_idx)
+            if node and 'a' <= node['letter'] <= 'z':
+                index[node['letter']].append(entry_idx)
+        return index
 
     def get_node(self, entry_idx):
         """Get node at given entry index."""
@@ -122,53 +133,100 @@ class DAWGReader:
         """
         Validate a word exists in the DAWG.
 
-        The DAWG stores reversed words in Section 1. To validate "THE":
-        1. Reverse to get "EHT"
-        2. Look in E's range for H entries
-        3. Follow children to find T with WORD flag
+        Checks both sections:
+        - Section 1: Reversed words (THE -> EHT)
+        - Section 2: Forward entry points for words not found in Section 1
         """
         if len(word) < 2:
             return False
 
-        reversed_word = word[::-1].lower()
+        word = word.lower()
+
+        # Method 1: Check Section 1 with reversed word
+        if self._check_section1(word):
+            return True
+
+        # Method 2: Check Section 2 with forward word
+        if self._check_section2(word):
+            return True
+
+        return False
+
+    def _check_section1(self, word):
+        """Check reversed word in Section 1."""
+        reversed_word = word[::-1]
         first = reversed_word[0]
 
         if first not in self.letter_ranges:
             return False
 
         range_start, range_end = self.letter_ranges[first]
+        return self._search_section1(range_start, range_end, reversed_word[1:])
 
-        def search(entry_start, entry_end, remaining):
-            if not remaining:
+    def _search_section1(self, entry_start, entry_end, remaining):
+        """Search Section 1 for remaining letters."""
+        if not remaining:
+            return True
+
+        target = remaining[0]
+        rest = remaining[1:]
+
+        entry = entry_start
+        while entry < entry_end:
+            sibs = self.get_siblings(entry)
+            if not sibs:
+                break
+
+            for node in sibs:
+                if node['letter'] == target:
+                    if not rest:
+                        if node['is_word']:
+                            return True
+                    else:
+                        child = self.get_child_entry(node)
+                        if child and child < SECTION1_END:
+                            if self._search_section1(child, SECTION1_END, rest):
+                                return True
+
+            entry += len(sibs)
+
+        return False
+
+    def _check_section2(self, word):
+        """Check forward word starting from Section 2."""
+        first = word[0]
+
+        # Use pre-built index for fast lookup
+        for entry_idx in self.section2_index.get(first, []):
+            node = self.get_node(entry_idx)
+            if node and self._match_forward(node, word[1:]):
                 return True
 
-            target = remaining[0]
-            rest = remaining[1:]
+        return False
 
-            entry = entry_start
-            while entry < entry_end:
-                sibs = self.get_siblings(entry)
-                if not sibs:
-                    break
+    def _match_forward(self, node, remaining):
+        """Match remaining letters by following children."""
+        if not remaining:
+            return node['is_word']
 
-                for node in sibs:
-                    if node['letter'] == target:
-                        if not rest:
-                            # Last letter - must have WORD flag
-                            if node['is_word']:
-                                return True
-                        else:
-                            # Continue via children
-                            child = self.get_child_entry(node)
-                            if child and child < SECTION1_END:
-                                if search(child, SECTION1_END, rest):
-                                    return True
-
-                entry += len(sibs)
-
+        child = self.get_child_entry(node)
+        if not child:
             return False
 
-        return search(range_start, range_end, reversed_word[1:])
+        target = remaining[0]
+        rest = remaining[1:]
+
+        sibs = self.get_siblings(child)
+        for s in sibs:
+            if s['letter'] == target:
+                if not rest:
+                    if s['is_word']:
+                        return True
+                else:
+                    if self._match_forward(s, rest):
+                        return True
+
+        return False
 
 
 def extract_dictionary(dawg_path, reference_path, output_path):
