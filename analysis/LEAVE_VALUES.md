@@ -254,32 +254,97 @@ The leave evaluation REPL (`leave_eval.py`) demonstrates this calculation using 
 
 ---
 
-## 6. Known Unknowns
+## 6. Critical Discovery: VCB May Not Be Used
 
-1. **VCB scaling for partial racks:** The disassembly is too corrupted to determine if/how Maven scales VCB adjustments for leaves smaller than 7 tiles.
+**IMPORTANT:** Detailed disassembly analysis reveals that Maven accesses the **FRST** resource (A5-10904), not VCBh (A5-10872), for leave adjustments. The FRST resource is **all zeros** on disk.
 
-2. **ESTR synergy values:** The actual numeric values for synergy patterns are computed at runtime, not stored in resources. Extracting them would require runtime debugging or more complete disassembly of CODE 39.
+### Evidence
+
+From CODE 32, CODE 35, and CODE 3 disassembly:
+```asm
+; CODE 35 at 0x03B6-0x03BE:
+03B6: JSR        66(A5)              ; Multiply D0 by 28
+03BA: MOVEA.L    -10904(A5),A0       ; Load FRST handle (NOT VCBh!)
+03BE: MOVE.L     24(A0,D0.L),D3      ; Get leave adjustment (always 0)
+```
+
+The handle array layout in memory:
+```
+A5-10908: EXPR resource handle
+A5-10904: FRST resource handle (224 bytes, all zeros)
+A5-10900: VCBa handle (start of VCB array)
+A5-10896: VCBb handle
+...
+A5-10872: VCBh handle (the only one with real data)
+```
+
+### CONFIRMED: FRST is All Zeros at Runtime
+
+**Verified via QEMU GDB debugging (2026-01-23):**
+
+Connected to Maven running in QEMU and read FRST memory directly at runtime:
+```
+=== FRST: Disk vs Memory ===
+Disk all zeros: True
+Memory all zeros: True
+```
+
+This disproves the hypothesis that FRST is computed at runtime. Maven genuinely does NOT apply vowel count adjustments during normal gameplay - the FRST resource remains all zeros.
+
+**VCBh data exists but is not used:**
+```
+=== VCBh: Disk vs Memory ===
+Vowels   Disk       Memory     Match
+0        -756       -757       ~1 diff
+1        -1015      -1016      ~1 diff
+2        -713       -713       Yes
+3        23         23         Yes
+4        368        368        Yes
+5        11         11         Yes
+6        -605       -605       Yes
+7        -1238      -1238      Yes
+```
+
+VCBh values are loaded into memory but the code accesses FRST (zeros) instead.
+
+### Current Status
+
+- **MUL values:** Used and working
+- **VCB adjustment:** NOT applied (FRST is zeros)
+- **Synergy (ESTR):** Needs CODE 39 analysis for values
+
+---
+
+## 7. Known Unknowns
+
+1. **~~Why FRST is all zeros~~:** CONFIRMED - FRST is vestigial or intentionally disabled. Maven does not apply VCB adjustments.
+
+2. **ESTR synergy values:** The actual numeric values for synergy patterns are computed at runtime by CODE 39, not stored in resources.
 
 3. **Secondary double in MUL records:** The purpose of the double at offset 8-15 is unclear.
 
 4. **Unknown int in MUL records:** The int32 at offset 20-23 is not understood.
 
+5. **Why VCBh exists but isn't used:** VCBh data is loaded but FRST (zeros) is accessed instead. This could be:
+   - Legacy code from an earlier version
+   - An option that was disabled before release
+   - Reserved for a "simulation mode" that uses different evaluation
+
 ---
 
-## 7. Implementation Notes
+## 8. Implementation Notes
 
 ### For Reimplementation
 
 1. Load all 27 MUL resources and extract offset-24 values for each tile count
-2. Load VCBh resource and extract offset-24 values for vowel count 0-7
-3. Sum per-tile adjustments based on tile counts in leave
-4. Add VCBh adjustment based on vowel count
-5. For full accuracy, would need to reimplement CODE 39's synergy calculation
+2. Sum per-tile adjustments based on tile counts in leave
+3. **Do NOT apply VCBh adjustment** (Maven uses FRST which is zeros)
+4. For full accuracy, would need to reimplement CODE 39's synergy calculation
 
 ### Confidence Level
 
 - **MUL structure and values:** HIGH (confirmed by CODE 32 analysis)
-- **VCBh values:** MEDIUM-HIGH (data extracted but usage logic unclear)
+- **VCBh NOT being used:** HIGH (FRST access confirmed in disassembly)
 - **ESTR pattern strings:** HIGH (directly readable)
 - **ESTR synergy values:** LOW (computed at runtime, not extracted)
 
@@ -291,3 +356,4 @@ The leave evaluation REPL (`leave_eval.py`) demonstrates this calculation using 
 - VCB resources: `/Volumes/T7/retrogames/oldmac/maven_re/resources/VCB*/0_0.bin`
 - ESTR patterns: `/Volumes/T7/retrogames/oldmac/maven_re/resources/ESTR/0_pattern_strings.bin`
 - Leave evaluator: `/Volumes/T7/retrogames/oldmac/maven_re/leave_eval.py`
+- QEMU debug tool: `/Volumes/T7/retrogames/oldmac/maven_re/qemu_debug.py`

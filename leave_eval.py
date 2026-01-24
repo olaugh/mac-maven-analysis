@@ -132,6 +132,32 @@ def load_vcb_data():
     return vcb_data
 
 
+def load_expr_data():
+    """Load EXPR (leave-size adjustment) data.
+
+    EXPR resource contains adjustments indexed by leave size (0-7 tiles).
+    These represent the expected value of drawing fresh tiles:
+    - Small leaves get bonuses (you draw more fresh tiles)
+    - Normal play (7 tiles) has no adjustment
+    """
+    expr_path = os.path.join(RESOURCES_DIR, "EXPR", "0_0.bin")
+    if not os.path.exists(expr_path):
+        return None
+
+    with open(expr_path, 'rb') as f:
+        data = f.read()
+
+    # Parse records - extract adjustment at offset 24
+    adjustments = {}
+    for i in range(min(8, len(data) // RECORD_SIZE)):
+        offset = i * RECORD_SIZE
+        rec = data[offset:offset + RECORD_SIZE]
+        adjust = struct.unpack('>i', rec[24:28])[0]
+        adjustments[i] = adjust
+
+    return adjustments
+
+
 def parse_estr_patterns():
     """Parse ESTR resource to get pattern strings."""
     estr_path = os.path.join(RESOURCES_DIR, "ESTR", "0_pattern_strings.bin")
@@ -174,7 +200,6 @@ def evaluate_leave(leave, mul_data, vcb_data=None, verbose=True):
     """
     counts = count_tiles(leave)
     total_centipoints = 0
-    total_expected = 0.0
 
     details = []
 
@@ -186,7 +211,6 @@ def evaluate_leave(leave, mul_data, vcb_data=None, verbose=True):
         if tile in mul_data:
             md = mul_data[tile]
             leave_adj = md.get_leave_value(count)
-            expected = md.get_expected_score(count)
 
             details.append({
                 'tile': tile,
@@ -194,11 +218,9 @@ def evaluate_leave(leave, mul_data, vcb_data=None, verbose=True):
                 'raw_adj': leave_adj,
                 'value_centipoints': leave_adj,
                 'value_points': leave_adj / 100.0,
-                'expected_score': expected,
             })
 
             total_centipoints += leave_adj
-            total_expected += expected
         else:
             details.append({
                 'tile': tile,
@@ -206,39 +228,61 @@ def evaluate_leave(leave, mul_data, vcb_data=None, verbose=True):
                 'raw_adj': None,
                 'value_centipoints': 0,
                 'value_points': 0.0,
-                'expected_score': 0.0,
                 'error': 'No MUL data'
             })
 
-    # Apply VCBh vowel count adjustment
-    # VCBh contains adjustments indexed by vowel count (0-7)
-    # Note: How Maven applies this to partial racks is unclear from disassembly
+    # VCB (Vowel Count Balance) Adjustment
+    #
+    # IMPORTANT DISCOVERY: Disassembly shows Maven accesses FRST resource
+    # (A5-10904) for this adjustment, NOT VCBh (A5-10872). The FRST resource
+    # is all zeros on disk! This suggests VCB adjustment may not actually
+    # be applied in normal gameplay.
+    #
+    # VCBh data exists but may only be used for simulation or as reference.
+    # We include it here for analysis purposes, but flag it as uncertain.
+    #
+    # If VCB were applied, it would likely be:
+    # - Scaled by (leave_tiles / 7) to proportion for partial racks
+    # - Or indexed by tile count, not vowel count
+    #
     vcb_adj = 0
     vcb_desc = None
     total_tiles = sum(counts.values())
 
-    if vcb_data and 'h' in vcb_data:
+    # By default, DON'T apply VCB since Maven appears to use FRST (all zeros)
+    # Set apply_vcb=True to see what VCBh would contribute
+    apply_vcb = False
+
+    if apply_vcb and vcb_data and 'h' in vcb_data and total_tiles > 0:
         vcb_h = vcb_data['h']
-        if 0 <= vowel_count < len(vcb_h):
-            vcb_adj = vcb_h[vowel_count]
-            vcb_desc = f"VCBh[{vowel_count}]"
+
+        # Speculative: Scale vowel count to 7-tile equivalent
+        vowel_ratio = vowel_count / total_tiles
+        scaled_vowel_count = round(vowel_ratio * 7)
+        scaled_vowel_count = max(0, min(7, scaled_vowel_count))  # Clamp to 0-7
+
+        if 0 <= scaled_vowel_count < len(vcb_h):
+            raw_vcb = vcb_h[scaled_vowel_count]
+            # Scale adjustment proportionally to leave size
+            vcb_adj = int(raw_vcb * total_tiles / 7)
+            vcb_desc = f"VCBh[{scaled_vowel_count}]*{total_tiles}/7 [UNCERTAIN]"
 
     if verbose:
         print(f"\nLeave: {leave.upper()}")
-        print("-" * 60)
-        print(f"{'Tile':<6} {'Count':<6} {'Raw':<10} {'Points':<10} {'Exp.Score':<10}")
-        print("-" * 60)
+        print("-" * 45)
+        print(f"{'Tile':<6} {'Count':<6} {'Raw':<10} {'Points':<10}")
+        print("-" * 45)
         for d in details:
             if d.get('error'):
-                print(f"{d['tile']:<6} {d['count']:<6} {'N/A':<10} {'N/A':<10} {'N/A':<10}")
+                print(f"{d['tile']:<6} {d['count']:<6} {'N/A':<10} {'N/A':<10}")
             else:
-                print(f"{d['tile']:<6} {d['count']:<6} {d['raw_adj']:<10} {d['value_points']:>+9.2f} {d['expected_score']:>9.2f}")
-        print("-" * 60)
-        print(f"{'Tiles':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f} {total_expected:>9.2f}")
+                print(f"{d['tile']:<6} {d['count']:<6} {d['raw_adj']:<10} {d['value_points']:>+9.2f}")
+        print("-" * 45)
+        print(f"{'TOTAL':<6} {'':<6} {'':<10} {total_centipoints/100:>+9.2f}")
         if vcb_adj != 0:
-            print(f"{'Vowels':<6} {vowel_count:<6} {vcb_adj:<10} {vcb_adj/100:>+9.2f}  ({vcb_desc})")
-            print("-" * 60)
-            print(f"{'TOTAL':<6} {'':<6} {'':<10} {(total_centipoints + vcb_adj)/100:>+9.2f}")
+            print(f"{'VCB':<6} {vowel_count:<6} {vcb_adj:<10} {vcb_adj/100:>+9.2f}  ({vcb_desc})")
+            print("-" * 45)
+            print(f"{'FINAL':<6} {'':<6} {'':<10} {(total_centipoints + vcb_adj)/100:>+9.2f}")
         print()
 
     return total_centipoints + vcb_adj, details
@@ -263,9 +307,9 @@ def show_tile_table(mul_data):
     """Show leave values for all tiles at count=1."""
     print("\nSingle-Tile Leave Values (count=1)")
     print("Source: Maven MUL resources, offset 24")
-    print("-" * 50)
-    print(f"{'Tile':<6} {'Raw Adj':<12} {'Points':<12} {'Exp.Score':<12}")
-    print("-" * 50)
+    print("-" * 35)
+    print(f"{'Tile':<6} {'Raw Adj':<12} {'Points':<12}")
+    print("-" * 35)
 
     tiles = sorted(mul_data.keys(), key=lambda t: (t == '?', t))
     for tile in tiles:
@@ -273,8 +317,7 @@ def show_tile_table(mul_data):
         if len(md.records) > 1:
             raw = md.records[1]['leave_adj']
             points = raw / 100.0
-            exp = md.records[1]['expected_score']
-            print(f"{tile:<6} {raw:<12} {points:>+11.2f} {exp:>11.2f}")
+            print(f"{tile:<6} {raw:<12} {points:>+11.2f}")
     print()
 
 
@@ -309,13 +352,13 @@ def show_tile_detail(tile, mul_data):
 
     md = mul_data[tile]
     print(f"\nMUL data for tile '{tile}'")
-    print("-" * 70)
-    print(f"{'Count':<6} {'Raw Adj':<12} {'Points':<10} {'Exp.Score':<12} {'Samples':<12}")
-    print("-" * 70)
+    print("-" * 45)
+    print(f"{'Count':<6} {'Raw Adj':<12} {'Points':<10} {'Samples':<12}")
+    print("-" * 45)
 
     for rec in md.records:
         points = rec['leave_adj'] / 100.0
-        print(f"{rec['count']:<6} {rec['leave_adj']:<12} {points:>+9.2f} {rec['expected_score']:>11.2f} {rec['sample_count']:>11}")
+        print(f"{rec['count']:<6} {rec['leave_adj']:<12} {points:>+9.2f} {rec['sample_count']:>11}")
     print()
 
 
