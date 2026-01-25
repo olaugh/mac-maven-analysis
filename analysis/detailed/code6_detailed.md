@@ -35,9 +35,10 @@ CODE 6 handles window/display operations:
 0006: 30280302      MOVE.W     770(A0),D0           ; D0 = direction flag (offset 0x302)
 000A: 670E          BEQ.S      $001A                ; If 0, use horizontal
 000C: 6B52          BMI.S      $0060                ; If negative, error/return
-000E: 5740          ...                             ; Compare with 1
-0012: 6A4C          ...
-0016: 6A26          BPL.S      $003E                ; If 1, use vertical
+000E: 5740          SUBQ.W     #3,D0               ; Subtract 3 for range check
+0010: 6C4E          BGE.S      $0060               ; If >= 3, error
+0012: 5340          SUBQ.W     #1,D0               ; Now check 1 vs 2
+0014: 6728          BEQ.S      $003E               ; If was 1, use direction 1
 0018: 6012          BRA.S      $002C                ; Else use horizontal variant
 
 ; Direction 0: Horizontal only
@@ -142,18 +143,18 @@ void update_display_pointers(void) {
 00EE: MOVEA.L    -8584(A5),A0
 00F2: MOVE.L     (A0),D0
 00F4: MOVE.W     D7,10(A4,D0.L)       ; Set control value
-00F8: ... (more setup) ...
+      ; (control setup 0x00F8-0x0108 omitted)
 010A: DBF        D6,$00E6             ; Loop for all controls
 
 ; Display window
-0116: PEA        -28506(A5)           ; Rect?
-011A: JSR        696(PC)              ; Draw something
-011E: MOVE.L     -8584(A5),(A7)
+0116: PEA        -28506(A5)           ; Push rect
+011A: JSR        696(PC)              ; Draw content
+011E: MOVE.L     -8584(A5),(A7)       ; Push handle for HUnlock
 0122: A9AA                            ; HUnlock
-0124: CLR.W      -(A7)
+0124: CLR.W      -(A7)                ; Push false (not visible initially)
 0126: A994                            ; ShowWindow
-0128: ... check and show if needed ...
-0142: MOVEM.L    (SP)+,...
+      ; (visibility check 0x0128-0x0140 omitted)
+0142: MOVEM.L    (SP)+,D6/D7/A4       ; Restore registers
 0146: UNLK       A6
 0148: RTS
 ```
@@ -209,17 +210,18 @@ void toggle_active_buffer(void) {
 02C6: BNE.S      $02EE                ; If allocated, continue
 
 ; Allocation failed
-02C8: MOVE.L     -27736(A5),-24030(A5)
-... error handling ...
+02C8: MOVE.L     -27736(A5),-24030(A5) ; Set error pointer
+02CE: BRA.S      $033E                  ; Return early
 
 ; Setup handle fields
 02EE: MOVEA.L    -8584(A5),A0
 02F2: MOVEA.L    (A0),A0
-02F4: MOVE.W     #$0001,780(A0)       ; Set flag at offset 780
-...
-030C: MOVE.W     #$0001,778(A0)
-...
-0318: MOVE.W     #$0001,784(A0)
+02F4: MOVE.W     #$0001,780(A0)       ; Set visibility flag
+02FA: CLR.W      782(A0)              ; Clear ui_flag_2
+0300: MOVE.W     #$0001,776(A0)       ; Set another flag
+030C: MOVE.W     #$0001,778(A0)       ; Set ui_flag_1
+0312: CLR.W      786(A0)              ; Clear rack data
+0318: MOVE.W     #$0001,784(A0)       ; Set ui_flag_3
 
 ; Create window
 031E: MOVE.L     -8584(A5),-(A7)      ; Push handle
@@ -227,7 +229,8 @@ void toggle_active_buffer(void) {
 0328: CLR.W      -(A7)
 032A: MOVE.L     -3512(A5),-(A7)      ; Resource reference
 032E: A9AB                            ; GetNewWindow
-...
+0330: MOVE.L     D0,-8580(A5)         ; Store window pointer
+0334: MOVE.L     D0,-(A7)             ; Push for SelectWindow
 033A: A999                            ; SelectWindow
 033E: RTS
 ```
@@ -265,18 +268,30 @@ void toggle_active_buffer(void) {
 | Offset | Purpose |
 |--------|---------|
 | A5-8584 | Main window handle |
-| A5-8588 | Pointer 1 |
-| A5-8592 | Pointer 2 |
-| A5-8596 | Pointer 3 |
-| A5-8600 | Pointer 4 |
-| A5-11940 | Display pointer 5 |
-| A5-11948 | Display pointer 4 |
-| A5-11952 | Display pointer 3 |
-| A5-11956 | Display pointer 2 |
-| A5-11960 | Display pointer 1 |
+| A5-8588 | Section 1 node count (section1_end) |
+| A5-8592 | Section 2 node count (section2_end) |
+| A5-8596 | **DAWG Section 1 pointer** (reversed DAWG) - set by CODE 2 |
+| A5-8600 | **DAWG Section 2 pointer** (forward DAWG) - set by CODE 2 |
+| A5-11940 | Display pointer 5 (NULL terminator for direction 1) |
+| A5-11948 | Display pointer 4 (section2_end for direction 1) |
+| A5-11952 | Display pointer 3 (Section 2 ptr for direction 1) |
+| A5-11956 | Display pointer 2 (section count for active direction) |
+| A5-11960 | **Active DAWG base pointer** (Section 1 or 2 based on direction) |
 | A5-15498 | g_current_ptr |
 | A5-15514 | g_field_14 |
 | A5-15522 | g_field_22 |
+
+### DAWG Direction Selection
+
+The direction mode (offset 770 in window data) determines which DAWG section is active:
+
+| Direction | A5-11960 Source | DAWG Section | Traversal |
+|-----------|-----------------|--------------|-----------|
+| 0 (horizontal) | A5-8596 | Section 1 | Reversed (suffix-first) |
+| 2 (alternate) | A5-8600 | Section 2 | Forward (prefix-first) |
+| 1 (both) | Both | Both sections | Combined |
+
+This allows the move generator to use different DAWG sections for horizontal vs vertical word placement.
 
 ## Toolbox Traps Used
 
@@ -330,18 +345,18 @@ typedef struct WindowData {
  *============================================================*/
 extern Handle g_main_handle;         /* A5-8584: Main window handle */
 
-/* Source data pointers */
-extern void* g_ptr1;                 /* A5-8596 */
-extern void* g_ptr2;                 /* A5-8588 */
-extern void* g_ptr3;                 /* A5-8600 */
-extern void* g_ptr4;                 /* A5-8592 */
+/* DAWG section pointers (initialized by CODE 2) */
+extern void* g_dawg_section1_ptr;    /* A5-8596: Section 1 (reversed DAWG) */
+extern long  g_section1_end;         /* A5-8588: Node count for Section 1 */
+extern void* g_dawg_section2_ptr;    /* A5-8600: Section 2 (forward DAWG) */
+extern long  g_section2_end;         /* A5-8592: Total node count */
 
-/* Display data pointers (set by update_display_pointers) */
-extern void* g_display_ptr1;         /* A5-11960 */
-extern void* g_display_ptr2;         /* A5-11956 */
-extern void* g_display_ptr3;         /* A5-11952 */
-extern void* g_display_ptr4;         /* A5-11948 */
-extern void* g_display_ptr5;         /* A5-11940 */
+/* Active DAWG pointers (set by update_display_pointers based on direction) */
+extern void* g_active_dawg_base;     /* A5-11960: Active DAWG base pointer */
+extern long  g_active_dawg_count;    /* A5-11956: Active section node count */
+extern void* g_alt_dawg_base;        /* A5-11952: Alternate DAWG (direction 1) */
+extern long  g_alt_dawg_count;       /* A5-11948: Alternate section count */
+extern void* g_dawg_terminator;      /* A5-11940: NULL terminator */
 
 /* Board direction buffers */
 extern void* g_field_14;             /* A5-15514 */
@@ -362,26 +377,26 @@ void update_display_pointers(void) {
 
     switch (direction) {
     case 0:
-        /* Horizontal only - single direction display */
-        g_display_ptr1 = g_ptr1;     /* A5-8596 -> A5-11960 */
-        g_display_ptr2 = g_ptr2;     /* A5-8588 -> A5-11956 */
-        g_display_ptr3 = NULL;       /* Terminate list */
+        /* Horizontal only - use Section 1 (reversed DAWG) */
+        g_active_dawg_base = g_dawg_section1_ptr;   /* A5-8596 -> A5-11960 */
+        g_active_dawg_count = g_section1_end;       /* A5-8588 -> A5-11956 */
+        g_alt_dawg_base = NULL;                     /* Terminate list */
         break;
 
     case 2:
-        /* Alternate horizontal - uses second buffer set */
-        g_display_ptr1 = g_ptr3;     /* A5-8600 -> A5-11960 */
-        g_display_ptr2 = g_ptr4;     /* A5-8592 -> A5-11956 */
-        g_display_ptr3 = NULL;
+        /* Alternate - use Section 2 (forward DAWG) */
+        g_active_dawg_base = g_dawg_section2_ptr;   /* A5-8600 -> A5-11960 */
+        g_active_dawg_count = g_section2_end;       /* A5-8592 -> A5-11956 */
+        g_alt_dawg_base = NULL;
         break;
 
     case 1:
-        /* Both directions - combines buffer sets */
-        g_display_ptr1 = g_ptr1;
-        g_display_ptr2 = g_ptr2;
-        g_display_ptr3 = g_ptr3;     /* A5-8600 -> A5-11952 */
-        g_display_ptr4 = g_ptr4;     /* A5-8592 -> A5-11948 */
-        g_display_ptr5 = NULL;       /* Terminate */
+        /* Both directions - use both DAWG sections */
+        g_active_dawg_base = g_dawg_section1_ptr;   /* Section 1 */
+        g_active_dawg_count = g_section1_end;
+        g_alt_dawg_base = g_dawg_section2_ptr;      /* A5-8600 -> A5-11952 */
+        g_alt_dawg_count = g_section2_end;          /* A5-8592 -> A5-11948 */
+        g_dawg_terminator = NULL;                   /* Terminate */
         break;
 
     default:

@@ -28,7 +28,9 @@ CODE 2 handles loading and initializing game resources:
 0006: CLR.W      -(A7)            ; Push 0 (reply var)
 0008: PEA        -16(A6)          ; Push local buffer
 000C: A971                        ; _SFGetFile (Standard File)
-...
+000E: ADDQ.W     #4,A7            ; Clean stack (4 bytes)
+0010: TST.W      (A7)+            ; Check reply.good
+0012: BEQ.S      $0028            ; If cancelled, skip to return
 0014: PEA        -10496(A5)       ; Push g_pref_data (A5-10496)
 0018: JSR        3170(A5)         ; JT[3170] - init preferences
 001C: PEA        138(A5)          ; Push A5+138 (string buffer)
@@ -53,7 +55,7 @@ CODE 2 handles loading and initializing game resources:
 ; Handle update event
 004A: MOVE.L     A3,-(A7)         ; Push windowPtr
 004C: A873                        ; _GetPort
-...
+004E: PEA        -4(A6)           ; Push &savedPort
 0050: A922                        ; _SetPort
 0052: MOVE.L     A3,-(A7)
 0054: MOVE.L     24(A3),-(A7)     ; Push window's visRgn
@@ -64,14 +66,14 @@ CODE 2 handles loading and initializing game resources:
 007C: A884                        ; _EraseRect
 007E: MOVEA.L    -8584(A5),A0     ; A0 = g_dawg_handle
 0082: A029                        ; _HLock
-...
+      ; (drawing calls 0x084-0x092 omitted)
 0094: MOVEA.L    -8584(A5),A0     ; Dereference handle
 0096: MOVEA.L    (A0),A0          ; Get pointer
 009A: PEA        814(A0)          ; Push data at offset 814
-009E: ...
+      ; (draw_rack call 0x09E-0x0A2 omitted)
 00A4: MOVEA.L    -8584(A5),A0
 00A8: A02A                        ; _HUnlock
-00AC: ...
+00AA: MOVE.L     -4(A6),-(A7)     ; Restore saved port
 00AE: MOVE.L     A3,-(A7)
 00B0: A923                        ; _EndUpdate
 
@@ -137,31 +139,42 @@ Boolean handle_event(void* param1, EventRecord* event, WindowPtr window) {
 
 ; Load failed - use default pointers
 010E: MOVE.L     -24792(A5),-24030(A5)  ; Copy fallback pointer
-0114: ...                         ; Update counters/state
+      ; (instructions 0x114-0x132 set up default state)
 011E: LEA        -24026(A5),A0    ; A0 = g_common_data
-...
+0132: BRA.S      $0180            ; Skip to return
 
 ; Load succeeded - extract fields from loaded data
-0134: MOVE.L     4(A4),-8588(A5)  ; g_dawg_size1 = data->field_4
-013A: MOVE.L     8(A4),-8592(A5)  ; g_dawg_size2 = data->field_8
-0140: LEA        12(A4),A0        ; A0 = &data[12] (actual DAWG data)
-0144: MOVE.L     A0,-8596(A5)     ; g_dawg_data_ptr = A0
-0148: MOVE.L     -8588(A5),D0     ; Validate size1
-...
+; NOTE: Disassembly 0x148-0x15A is garbled; raw bytes decoded manually
+0134: MOVE.L     4(A4),-8588(A5)  ; g_section1_end = data->field_4 (node count)
+013A: MOVE.L     8(A4),-8592(A5)  ; g_section2_end = data->field_8 (total nodes)
+0140: LEA        12(A4),A0        ; A0 = &data[12] (letter index start)
+0144: MOVE.L     A0,-8596(A5)     ; g_dawg_section1_ptr = A0 (Section 1)
+0148: MOVE.L     -8588(A5),D0     ; D0 = section1_end
+0150: ASL.L      #2,D0            ; D0 = section1_end * 4 (byte offset)
+0152: LEA        0x74(A4,D0.L),A1 ; A1 = A4 + 116 + D0 = Section 2 start
+0156: MOVE.L     A1,-8600(A5)     ; g_dawg_section2_ptr = A1 (Section 2)
+015A: MOVE.L     -8588(A5),D0     ; D0 = section1_end (reload for validation)
+0162: BEQ.S      $0168            ; Skip check if zero
 0164: JSR        418(A5)          ; bounds_check (assert)
-0168: MOVE.L     -8592(A5),D0     ; Validate size2
-...
+0168: MOVE.L     -8592(A5),D0     ; D0 = section2_end
+0174: CMPI.B     #$61,3(A0)       ; Check byte 3 == 'a' (0x61) - magic validation
+017A: BEQ.S      $0180            ; Skip error if valid
 017C: JSR        418(A5)          ; bounds_check (assert)
-0180: MOVEA.L    (A7)+,A4
+0180: MOVEA.L    (A7)+,A4         ; Restore A4
 0182: UNLK       A6
 0184: RTS
 ```
 
-**Purpose**: Load DAWG dictionary data from a resource. The data structure appears to be:
+**Purpose**: Load DAWG dictionary data from a resource. The data structure is:
 - Bytes 0-3: Header/magic
-- Bytes 4-7: Size field 1
-- Bytes 8-11: Size field 2
-- Bytes 12+: Actual DAWG data
+- Bytes 4-7: section1_end (number of nodes in Section 1)
+- Bytes 8-11: section2_end (total node count)
+- Bytes 12-115: Letter index (26 × 4 = 104 bytes)
+- Bytes 116+: Node array (Section 1 nodes, then Section 2 nodes)
+
+**Section Pointers**:
+- A5-8596 = resource + 12 → Section 1 (reversed DAWG with letter index)
+- A5-8600 = resource + 116 + section1_end×4 → Section 2 (forward DAWG)
 
 ### Function 0x0186 - Allocate Game Buffers
 
@@ -185,13 +198,13 @@ Boolean handle_event(void* param1, EventRecord* event, WindowPtr window) {
 01E4: CMPI.L     #$00002000,D7    ; If > 8KB available
 01EE: BLE.S      $01F6            ; Use 8KB minimum
 01F0: MOVE.L     #$00002000,D7    ; Cap at 8KB (for search buffer)
-01F6: ...
+01F6: NOP                         ; (alignment)
 01FA: CMPI.L     #$000080CE,D7    ; If > 33KB available
 0200: BCC.S      $0206            ; Use that
 0206: MOVE.L     D7,-(A7)         ; Push calculated size
 0208: JSR        1666(A5)         ; Allocate main search buffer
 020C: MOVE.L     D0,-11980(A5)    ; g_search_buffer
-0210: ...
+0210: LEA        4(A7),A7         ; Clean stack
 0212: MOVE.L     D7,-11976(A5)    ; g_search_buffer_size
 0218: TST.L      D0               ; Check allocation succeeded
 021A: BNE.S      $0220
@@ -263,7 +276,7 @@ void allocate_game_buffers(void) {
 ; Main processing loop
 02A6: PEA        3210(A5)         ; Push constant/callback
 02AA: PEA        -2(A6)           ; Push &result
-02AE: ...
+      ; (additional setup pushes 0x2AE-0x2B6 omitted)
 02B8: MOVE.L     (A4),-(A7)       ; Push struct->field_0
 02BA: MOVE.W     4(A4),-(A7)      ; Push struct->field_4
 02BE: MOVE.L     8(A6),-(A7)      ; Push param1
@@ -273,7 +286,7 @@ void allocate_game_buffers(void) {
 02CC: MOVE.L     D0,(A7)
 02CE: MOVE.L     (A4),-(A7)
 02D0: JSR        3490(A5)         ; JT[3490] - copy_to_global
-...
+02D4: LEA        10(A7),A7        ; Clean stack
 02D8: TST.W      6(A4)            ; Check struct->field_6 (terminator?)
 02DC: BNE.S      $02E4            ; If non-zero, exit loop
 02DE: MOVEA.L    (A4),A0          ; Check if data continues
@@ -305,11 +318,26 @@ void allocate_game_buffers(void) {
 |--------|---------|
 | A5-10496 | Preference data |
 | A5-8584 | DAWG data handle |
-| A5-8588 | DAWG size field 1 |
-| A5-8592 | DAWG size field 2 |
-| A5-8596 | DAWG data pointer |
+| A5-8588 | Section 1 node count (section1_end) |
+| A5-8592 | Section 2 node count (section2_end) |
+| A5-8596 | **DAWG Section 1 pointer** (reversed DAWG, letter index + nodes) |
+| A5-8600 | **DAWG Section 2 pointer** (forward DAWG, nodes only) |
+| A5-11960 | Active DAWG pointer (set by CODE 6 from A5-8596 or A5-8600) |
 | A5-28652 | Board rectangle |
 | A5-28654 | Event flag |
+
+### DAWG Pointer Relationship
+
+```
+CODE 2 initializes:
+  A5-8596 = resource_base + 12      (Section 1: letter index + reversed nodes)
+  A5-8600 = resource_base + 116 + section1_end*4  (Section 2: forward nodes)
+
+CODE 6 selects active DAWG based on direction:
+  Direction 0 (horizontal): A5-11960 = A5-8596 (Section 1)
+  Direction 2 (alternate):  A5-11960 = A5-8600 (Section 2)
+  Direction 1 (both):       Uses both sections
+```
 
 ## Toolbox Traps Used
 
@@ -361,18 +389,29 @@ The patterns are clear Mac Toolbox usage:
 /*============================================================
  * Type Definitions for DAWG Resource
  *============================================================*/
-typedef struct DAWGHeader {
+typedef struct DAWGResource {
     long magic;              /* Offset 0: Header/magic number */
-    long node_count;         /* Offset 4: Number of DAWG nodes */
-    long edge_count;         /* Offset 8: Number of edges */
-    /* Offset 12+: Actual DAWG data */
-} DAWGHeader;
+    long section1_end;       /* Offset 4: Number of nodes in Section 1 */
+    long section2_end;       /* Offset 8: Total node count (both sections) */
+    /* Offset 12-115: Letter index (26 entries × 4 bytes = 104 bytes) */
+    /* Offset 116+: Node array (Section 1 reversed nodes, then Section 2 forward nodes) */
+} DAWGResource;
 
 typedef struct GameWindow {
-    /* Standard WindowRecord fields... */
-    char data[814];          /* Unknown fields 0-813 */
+    char data[770];          /* Unknown fields 0-769 */
+    short direction_mode;    /* Offset 770: 0=horiz, 1=both, 2=alt */
+    char data2[42];          /* Fields 772-813 */
     char rack_display[17];   /* Offset 814: Current rack for display */
 } GameWindow;
+
+/*============================================================
+ * Global Variables - DAWG Pointers
+ *============================================================*/
+extern long   g_section1_end;           /* A5-8588: Section 1 node count */
+extern long   g_section2_end;           /* A5-8592: Section 2 node count (total) */
+extern char*  g_dawg_section1_ptr;      /* A5-8596: Section 1 data (letter index + reversed nodes) */
+extern char*  g_dawg_section2_ptr;      /* A5-8600: Section 2 data (forward nodes) */
+extern char*  g_active_dawg_base;       /* A5-11960: Currently active DAWG base (set by CODE 6) */
 
 /*============================================================
  * Function 0x0000 - Initialize Game Resources
@@ -496,23 +535,28 @@ void load_dawg_data(const char *resource_name /* 8(A6) */) {
     }
 
     /* Resource loaded successfully - parse DAWG header */
-    DAWGHeader *header = (DAWGHeader*)*dawg_handle;
+    char *base = (char*)*dawg_handle;
 
     /* Extract size fields */
-    g_dawg_node_count = header->node_count;  /* offset 4 -> A5-8588 */
-    g_dawg_edge_count = header->edge_count;  /* offset 8 -> A5-8592 */
+    g_section1_end = *(long*)(base + 4);     /* offset 4 -> A5-8588 */
+    g_section2_end = *(long*)(base + 8);     /* offset 8 -> A5-8592 */
 
-    /* Point to actual DAWG data after header */
-    g_dawg_data_ptr = (char*)header + 12;    /* LEA 12(A4) at 0x0140 */
+    /* Set up Section 1 pointer (letter index + reversed DAWG nodes) */
+    g_dawg_section1_ptr = base + 12;         /* LEA 12(A4) at 0x0140 -> A5-8596 */
+
+    /* Set up Section 2 pointer (forward DAWG nodes) */
+    /* Section 2 starts after: 12-byte header + 104-byte letter index + Section 1 nodes */
+    /* = base + 116 + section1_end * 4 */
+    g_dawg_section2_ptr = base + 116 + (g_section1_end * 4);  /* -> A5-8600 */
 
     /* Validate the DAWG data */
-    /* Check that node_count has certain bits set */
-    if ((g_dawg_node_count & 0x0800) == 0) {  /* uncertain bit check */
+    /* Check that section1_end has certain bits set */
+    if ((g_section1_end & 0x0800) == 0) {    /* uncertain bit check */
         fatal_bounds_error();                 /* JT[418] at 0x0164 */
     }
 
-    /* Check edge_count byte 3 equals 'a' (0x61) - magic validation */
-    if (((g_dawg_edge_count >> 24) & 0xFF) != 0x61) {
+    /* Check section2_end byte 3 equals 'a' (0x61) - magic validation */
+    if (((g_section2_end >> 24) & 0xFF) != 0x61) {
         fatal_bounds_error();                 /* JT[418] at 0x017C */
     }
 }
