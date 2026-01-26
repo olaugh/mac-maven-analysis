@@ -1,4 +1,4 @@
-# CODE 6 Detailed Analysis - Window & Display Management
+# CODE 6 Detailed Analysis - DAWG Direction Selector
 
 ## Overview
 
@@ -8,568 +8,308 @@
 | JT Offset | 168 |
 | JT Entries | 7 |
 | Functions | 10 |
-| Purpose | **Window management, display updates, player switching** |
+| Purpose | **DAWG direction selection for move generation** |
+| Confidence | **HIGH** (verified against binary) |
 
+## Critical Function: DAWG Direction Selection
 
-## System Role
+This is the core function that enables efficient move generation. Maven uses **two DAWG structures**:
 
-**Category**: User Interface
-**Function**: Window Management
+1. **Reversed DAWG** (Section 1 at A5-8596): Words stored backwards (AARDVARK → KRAVDRAA)
+2. **Forward DAWG** (Section 2 at A5-8600): Words stored normally (AARDVARK → AARDVARK)
 
-Display pointers, window creation and visibility
-## Architecture Role
+### Why Two DAWGs?
 
-CODE 6 handles window/display operations:
-1. Buffer pointer management for h/v directions
-2. Window initialization and drawing
-3. Player turn switching
-4. Display refresh
+As the user correctly noted: when placing tiles to the LEFT of already-played tiles, anchoring at the end of the word and searching in reverse order is much more efficient than searching forward, which would require starting 7 empty spaces away with many search paths failing to reach the anchor.
 
-## Key Functions
-
-### Function 0x0000 - Update Display Pointers
-```asm
-; From disassembly - switch statement based on direction flag
-0000: 206DDE78      MOVEA.L    -8584(A5),A0         ; A0 = g_main_handle
-0004: 2050          MOVEA.L    (A0),A0              ; A0 = *handle (dereference)
-0006: 30280302      MOVE.W     770(A0),D0           ; D0 = direction flag (offset 0x302)
-000A: 670E          BEQ.S      $001A                ; If 0, use horizontal
-000C: 6B52          BMI.S      $0060                ; If negative, error/return
-000E: 5740          SUBQ.W     #3,D0               ; Subtract 3 for range check
-0010: 6C4E          BGE.S      $0060               ; If >= 3, error
-0012: 5340          SUBQ.W     #1,D0               ; Now check 1 vs 2
-0014: 6728          BEQ.S      $003E               ; If was 1, use direction 1
-0018: 6012          BRA.S      $002C                ; Else use horizontal variant
-
-; Direction 0: Horizontal only
-001A: 2B6DDE6CD148  MOVE.L     -8596(A5),-11960(A5) ; g_display_ptr1 = g_ptr1
-0020: 2B6DDE74D14C  MOVE.L     -8588(A5),-11956(A5) ; g_display_ptr2 = g_ptr2
-0026: 42ADD154      CLR.L      -11948(A5)           ; g_display_ptr3 = NULL
-002A: 6034          BRA.S      $0060                ; Return
-
-; Direction 2: Hook-after with alternate buffer set
-002C: 2B6DDE68D148  MOVE.L     -8600(A5),-11960(A5) ; g_display_ptr1 = g_ptr3
-0032: 2B6DDE70D14C  MOVE.L     -8592(A5),-11956(A5) ; g_display_ptr2 = g_ptr4
-0038: 42ADD154      CLR.L      -11948(A5)           ; g_display_ptr3 = NULL
-003C: 6022          BRA.S      $0060                ; Return
-
-; Direction 1: Hook-before (uses both buffer sets)
-003E: 2B6DDE6CD148  MOVE.L     -8596(A5),-11960(A5) ; g_display_ptr1 = g_ptr1
-0044: 2B6DDE74D14C  MOVE.L     -8588(A5),-11956(A5) ; g_display_ptr2 = g_ptr2
-004A: 2B6DDE68D150  MOVE.L     -8600(A5),-11952(A5) ; g_display_ptr3 = g_ptr3
-0050: 2B6DDE70D154  MOVE.L     -8592(A5),-11948(A5) ; g_display_ptr4 = g_ptr4
-0056: 42ADD15C      CLR.L      -11940(A5)           ; g_display_ptr5 = NULL
-005A: 6004          BRA.S      $0060                ; Return
-005C: 4EAD01A2      JSR        418(A5)              ; JT[418] - bounds_check/assert
-0060: 4E75          RTS
-```
-
-**C equivalent**:
-```c
-void update_display_pointers(void) {
-    Handle h = g_main_handle;
-    int direction = (*h)->direction;  // offset 770
-
-    switch (direction) {
-    case 0:  // Horizontal only
-        g_display_ptr1 = g_ptr1;      // A5-11960 = A5-8596
-        g_display_ptr2 = g_ptr2;      // A5-11956 = A5-8588
-        g_display_ptr3 = NULL;
-        break;
-    case 2:  // Horizontal alternate
-        g_display_ptr1 = g_ptr3;      // A5-8600
-        g_display_ptr2 = g_ptr4;      // A5-8592
-        g_display_ptr3 = NULL;
-        break;
-    case 1:  // Both directions
-        g_display_ptr1 = g_ptr1;
-        g_display_ptr2 = g_ptr2;
-        g_display_ptr3 = g_ptr3;
-        g_display_ptr4 = g_ptr4;
-        g_display_ptr5 = NULL;
-        break;
-    default:
-        error();
-    }
-}
-```
-
-### Function 0x0062 - Initialize Game Window
-```asm
-0062: LINK       A6,#-258             ; 258 bytes local
-0066: MOVEM.L    D6/D7/A4,-(SP)
-006A: JSR        722(PC)              ; Check something
-006E: TST.W      D0
-0070: BNE.W      $0128                ; If true, skip init
-
-0074: JSR        578(PC)              ; Setup call
-0078: CLR.B      -256(A6)             ; Clear string buffer
-
-; Get string from resource
-007C: MOVE.L     #$00020000,-(A7)     ; Resource type/ID
-0082: MOVE.W     #$03FA,-(A7)         ; String ID 1018
-0086: PEA        -256(A6)             ; Destination
-008A: JSR        122(A5)              ; JT[122] - GetIndString
-
-; Get another string
-0096: MOVE.L     #$00020001,-(A7)     ; Resource type/ID
-00A0: MOVE.W     #$03F9,-(A7)         ; String ID 1017
-00A4: PEA        -256(A6)
-00A8: JSR        122(A5)
-
-; Parse numeric value from string
-00AC: PEA        -258(A6)             ; Result
-00B0: PEA        -28510(A5)           ; Format string
-00B4: PEA        -256(A6)             ; Input
-00B8: JSR        2074(A5)             ; JT[2074] - sscanf
-
-; Check time limit range
-00BE: MOVEQ      #1,D7                ; Default = 1
-00C0: CMPI.W     #700,-258(A6)        ; If value < 700 (0x2BC)
-00C8: BGE.S      $00D4
-00CA: MOVE.W     #700,-258(A6)        ; Clamp to 700
-00D0: MOVEQ      #18,D7               ; Flag = 18
-00D2: BRA.S      $00E2
-00D4: CMPI.W     #2100,-258(A6)       ; If value > 2100 (0x834)
-00DC: BLE.S      $00E2
-00DC: MOVE.W     #2100,-258(A6)       ; Clamp to 2100
-
-; Set up window controls
-00E2: MOVEQ      #4,D6                ; Start at control 4
-00E4: BRA.S      $010C
-00E6: MOVE.W     #192,D0              ; 0xC0
-00EA: MULS.W     D6,D0                ; Offset = 192 * index
-00EC: MOVEA.L    D0,A4
-00EE: MOVEA.L    -8584(A5),A0
-00F2: MOVE.L     (A0),D0
-00F4: MOVE.W     D7,10(A4,D0.L)       ; Set control value
-      ; (control setup 0x00F8-0x0108 omitted)
-010A: DBF        D6,$00E6             ; Loop for all controls
-
-; Display window
-0116: PEA        -28506(A5)           ; Push rect
-011A: JSR        696(PC)              ; Draw content
-011E: MOVE.L     -8584(A5),(A7)       ; Push handle for HUnlock
-0122: A9AA                            ; HUnlock
-0124: CLR.W      -(A7)                ; Push false (not visible initially)
-0126: A994                            ; ShowWindow
-      ; (visibility check 0x0128-0x0140 omitted)
-0142: MOVEM.L    (SP)+,D6/D7/A4       ; Restore registers
-0146: UNLK       A6
-0148: RTS
-```
-
-### Function 0x020E - Toggle Active Buffer
-```asm
-; From disassembly - toggles between hook-after and hook-before search buffers
-020E: 206DDE78      MOVEA.L    -8584(A5),A0         ; A0 = g_main_handle
-0212: 2050          MOVEA.L    (A0),A0              ; Dereference
-0214: 4A680304      TST.W      772(A0)              ; Check direction flag at offset 0x304
-0218: 6714          BEQ.S      $022E                ; If 0, switch to field_14
-
-; Flag is set - switch to field_22 (horizontal)
-021A: 41EDC35E      LEA        -15522(A5),A0        ; A0 = &g_field_22
-021E: 2B48C376      MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_22
-0222: 226DDE78      MOVEA.L    -8584(A5),A1         ; Get handle again
-0226: 2251          MOVEA.L    (A1),A1              ; Dereference
-0228: 42690304      CLR.W      772(A1)              ; Clear flag (now horizontal)
-022C: 6014          BRA.S      $0242                ; Return
-
-; Flag is clear - switch to field_14 (vertical)
-022E: 41EDC366      LEA        -15514(A5),A0        ; A0 = &g_field_14
-0232: 2B48C376      MOVE.L     A0,-15498(A5)        ; g_current_ptr = g_field_14
-0236: 226DDE78      MOVEA.L    -8584(A5),A1         ; Get handle again
-023A: 2251          MOVEA.L    (A1),A1              ; Dereference
-023C: 337C00010304  MOVE.W     #$0001,772(A1)       ; Set flag (now vertical)
-0242: 4E75          RTS
-```
-
-**C equivalent**:
-```c
-void toggle_active_buffer(void) {
-    Handle h = g_main_handle;
-
-    if ((*h)->direction_flag) {
-        // Switch to field_22
-        g_current_ptr = &g_field_22;
-        (*h)->direction_flag = 0;
-    } else {
-        // Switch to field_14
-        g_current_ptr = &g_field_14;
-        (*h)->direction_flag = 1;
-    }
-}
-```
-
-### Function 0x02B8 - Create Main Window
-```asm
-02B8: MOVE.L     #$0000042E,D0        ; Size = 1070 bytes
-02BE: A322                            ; NewHandle
-02C0: MOVE.L     A0,-8584(A5)         ; Store handle
-02C4: MOVE.L     A0,D0
-02C6: BNE.S      $02EE                ; If allocated, continue
-
-; Allocation failed
-02C8: MOVE.L     -27736(A5),-24030(A5) ; Set error pointer
-02CE: BRA.S      $033E                  ; Return early
-
-; Setup handle fields
-02EE: MOVEA.L    -8584(A5),A0
-02F2: MOVEA.L    (A0),A0
-02F4: MOVE.W     #$0001,780(A0)       ; Set visibility flag
-02FA: CLR.W      782(A0)              ; Clear ui_flag_2
-0300: MOVE.W     #$0001,776(A0)       ; Set another flag
-030C: MOVE.W     #$0001,778(A0)       ; Set ui_flag_1
-0312: CLR.W      786(A0)              ; Clear rack data
-0318: MOVE.W     #$0001,784(A0)       ; Set ui_flag_3
-
-; Create window
-031E: MOVE.L     -8584(A5),-(A7)      ; Push handle
-0322: MOVE.L     #'prfs',-(A7)        ; 'prfs' resource type
-0328: CLR.W      -(A7)
-032A: MOVE.L     -3512(A5),-(A7)      ; Resource reference
-032E: A9AB                            ; GetNewWindow
-0330: MOVE.L     D0,-8580(A5)         ; Store window pointer
-0334: MOVE.L     D0,-(A7)             ; Push for SelectWindow
-033A: A999                            ; SelectWindow
-033E: RTS
-```
-
-### Function 0x038A - Toggle Window Visibility
-```asm
-038A: MOVEA.L    -8584(A5),A0
-038E: MOVEA.L    (A0),A0
-0390: TST.W      780(A0)              ; Check visibility flag
-0394: SEQ        D0                   ; D0 = (flag == 0) ? 0xFF : 0
-0396: NEG.B      D0                   ; D0 = (flag == 0) ? 1 : 0
-0398: EXT.W      D0
-039A: MOVEA.L    -8584(A5),A0
-039E: MOVEA.L    (A0),A0
-03A0: MOVE.W     D0,780(A0)           ; Toggle flag
-03A4: JSR        1266(A5)             ; JT[1266] - redraw?
-03A8: RTS
-```
-
-## Window Data Structure (at handle offset)
-
-| Offset | Size | Purpose |
-|--------|------|---------|
-| 770 | 2 | Direction flag (0/1/2) |
-| 772 | 2 | Buffer selection flag |
-| 778 | 2 | UI flag 1 |
-| 780 | 2 | Visibility flag |
-| 782 | 2 | UI flag 2 |
-| 784 | 2 | UI flag 3 |
-| 786 | var | Rack data (17 bytes) |
-| 814 | var | More data |
-
-## Global Variables
-
-| Offset | Purpose |
-|--------|---------|
-| A5-8584 | Main window handle |
-| A5-8588 | Section 1 node count (section1_end) |
-| A5-8592 | Section 2 node count (section2_end) |
-| A5-8596 | **DAWG Section 1 pointer** (reversed DAWG) - set by CODE 2 |
-| A5-8600 | **DAWG Section 2 pointer** (forward DAWG) - set by CODE 2 |
-| A5-11940 | Display pointer 5 (NULL terminator for direction 1) |
-| A5-11948 | Display pointer 4 (section2_end for direction 1) |
-| A5-11952 | Display pointer 3 (Section 2 ptr for direction 1) |
-| A5-11956 | Display pointer 2 (section count for active direction) |
-| A5-11960 | **Active DAWG base pointer** (Section 1 or 2 based on direction) |
-| A5-15498 | g_current_ptr |
-| A5-15514 | g_field_14 |
-| A5-15522 | g_field_22 |
-
-### DAWG Direction Selection
-
-The direction mode (offset 770 in window data) determines which DAWG section is active:
-
-| Direction | A5-11960 Source | DAWG Section | Traversal |
-|-----------|-----------------|--------------|-----------|
-| 0 (horizontal) | A5-8596 | Section 1 | Reversed (suffix-first) |
-| 2 (alternate) | A5-8600 | Section 2 | Forward (prefix-first) |
-| 1 (both) | Both | Both sections | Combined |
-
-This allows the move generator to use different DAWG sections for horizontal vs vertical word placement.
-
-## Toolbox Traps Used
-
-| Trap | Purpose |
-|------|---------|
-| A322 | NewHandle |
-| A873 | GetPort |
-| A922 | SetPort |
-| A9AA | HUnlock |
-| A9AB | GetNewWindow |
-| A994 | ShowWindow |
-| A999 | SelectWindow |
-
-## Confidence: HIGH
-
-Clear window management patterns:
-- Handle allocation and management
-- Buffer pointer switching
-- Window creation and display
-- Standard Mac Toolbox calls
+**Example**: Board has `CAT` played. To find words ending in `CAT`:
+- **Forward search**: Would need to start at every position up to 7 squares left, searching ACAT, BCAT, CCAT... then AACAT, ABCAT... Most paths waste time.
+- **Backward search**: Start at `C`, search reversed DAWG for `TAC...` paths. Only valid prefixes are explored.
 
 ---
 
-## Speculative C Translation
+## Function 0x0000 - select_dawg_direction (VERIFIED)
+
+```asm
+; void select_dawg_direction(void)
+; Selects which DAWG section(s) to use based on direction_mode in game state.
+;
+; Direction modes:
+;   0 = Backward search only (extending LEFT from anchor)
+;   1 = Forward search only (extending RIGHT from anchor)
+;   2 = Both directions (exhaustive move search)
+
+0000: 206D DE78      MOVEA.L  -8584(A5),A0      ; A0 = g_main_handle
+0004: 2050           MOVEA.L  (A0),A0           ; A0 = *handle (dereference)
+0006: 3028 0302      MOVE.W   770(A0),D0        ; D0 = direction_mode (offset 770)
+000A: 670E           BEQ.S    $001A             ; if direction==0, goto backward_only
+000C: 6B52           BMI.S    $0060             ; if direction<0, return (invalid)
+000E: 5740           SUBQ.W   #3,D0             ; D0 = direction - 3
+0010: 674A           BEQ.S    $005C             ; if direction==3, goto error
+0012: 6A4C           BPL.S    $0060             ; if direction>3, return
+0014: 5240           ADDQ.W   #1,D0             ; D0 = direction - 2
+0016: 6A26           BPL.S    $003E             ; if direction>=2, goto both_directions
+0018: 6012           BRA.S    $002C             ; else direction==1, goto forward_only
+
+; === Direction 0: BACKWARD SEARCH ONLY ===
+; Use reversed DAWG (Section 1) for extending LEFT from anchor
+001A: 2B6D DE6C D148 MOVE.L   -8596(A5),-11960(A5)  ; g_active_dawg = Section1 (reversed)
+0020: 2B6D DE74 D14C MOVE.L   -8588(A5),-11956(A5)  ; g_active_count = section1_count
+0026: 42AD D154      CLR.L    -11948(A5)            ; g_alt_dawg = NULL (single section)
+002A: 6034           BRA.S    $0060                 ; return
+
+; === Direction 1: FORWARD SEARCH ONLY ===
+; Use forward DAWG (Section 2) for extending RIGHT from anchor
+002C: 2B6D DE68 D148 MOVE.L   -8600(A5),-11960(A5)  ; g_active_dawg = Section2 (forward)
+0032: 2B6D DE70 D14C MOVE.L   -8592(A5),-11956(A5)  ; g_active_count = section2_count
+0038: 42AD D154      CLR.L    -11948(A5)            ; g_alt_dawg = NULL (single section)
+003C: 6022           BRA.S    $0060                 ; return
+
+; === Direction 2: BOTH DIRECTIONS ===
+; Use both DAWGs for exhaustive move search
+003E: 2B6D DE6C D148 MOVE.L   -8596(A5),-11960(A5)  ; g_active_dawg = Section1 (reversed)
+0044: 2B6D DE74 D14C MOVE.L   -8588(A5),-11956(A5)  ; g_active_count = section1_count
+004A: 2B6D DE68 D150 MOVE.L   -8600(A5),-11952(A5)  ; g_alt_dawg = Section2 (forward)
+0050: 2B6D DE70 D154 MOVE.L   -8592(A5),-11948(A5)  ; g_alt_count = section2_count
+0056: 42AD D15C      CLR.L    -11940(A5)            ; g_terminator = NULL
+005A: 6004           BRA.S    $0060                 ; return
+
+; === Error handler ===
+005C: 4EAD 01A2      JSR      418(A5)               ; bounds_check / assert
+0060: 4E75           RTS
+```
+
+### C Translation (VERIFIED)
 
 ```c
-/* CODE 6 - Speculative C Translation */
-/* Window & Display Management */
-
-/*============================================================
- * Data Structures
- *============================================================*/
-
-/* Main window handle structure - 1070 bytes */
-typedef struct WindowData {
-    char reserved[770];              /* Offset 0-769: various fields */
-    short direction_mode;            /* Offset 770 (0x302): 0=horiz, 1=both, 2=alt */
-    short buffer_select_flag;        /* Offset 772 (0x304): toggle flag */
-    short reserved2[2];              /* Offset 774-777 */
-    short ui_flag_1;                 /* Offset 778 */
-    short visibility_flag;           /* Offset 780 (0x30C) */
-    short ui_flag_2;                 /* Offset 782 */
-    short ui_flag_3;                 /* Offset 784 */
-    char rack_display[17];           /* Offset 786 */
-    char reserved3[11];              /* Padding to 814 */
-    char board_data[256];            /* Offset 814+: board/game data */
-} WindowData;
-
-/*============================================================
- * Global Variables
- *============================================================*/
-extern Handle g_main_handle;         /* A5-8584: Main window handle */
-
-/* DAWG section pointers (initialized by CODE 2) */
-extern void* g_dawg_section1_ptr;    /* A5-8596: Section 1 (reversed DAWG) */
-extern long  g_section1_end;         /* A5-8588: Node count for Section 1 */
-extern void* g_dawg_section2_ptr;    /* A5-8600: Section 2 (forward DAWG) */
-extern long  g_section2_end;         /* A5-8592: Total node count */
-
-/* Active DAWG pointers (set by update_display_pointers based on direction) */
-extern void* g_active_dawg_base;     /* A5-11960: Active DAWG base pointer */
-extern long  g_active_dawg_count;    /* A5-11956: Active section node count */
-extern void* g_alt_dawg_base;        /* A5-11952: Alternate DAWG (direction 1) */
-extern long  g_alt_dawg_count;       /* A5-11948: Alternate section count */
-extern void* g_dawg_terminator;      /* A5-11940: NULL terminator */
-
-/* Board direction buffers */
-extern void* g_field_14;             /* A5-15514 */
-extern void* g_field_22;             /* A5-15522 */
-extern void* g_current_ptr;          /* A5-15498 */
-
-/*============================================================
- * Function 0x0000 - Update Display Pointers
- * JT offset: 168(A5)
+/*
+ * select_dawg_direction - Choose DAWG section(s) for move search
  *
- * Sets up display pointers based on current direction mode.
- * Direction determines whether displaying h, v, or both directions.
- *============================================================*/
-void update_display_pointers(void) {
-    WindowData *win = (WindowData*)*g_main_handle;
-
-    short direction = win->direction_mode;  /* Offset 770 */
+ * This is critical for efficient move generation. The direction_mode
+ * determines whether we're searching:
+ *   - Backward (extending left from anchor tile)
+ *   - Forward (extending right from anchor tile)
+ *   - Both (exhaustive search for all legal moves)
+ *
+ * The reversed DAWG allows efficient backward search by storing words
+ * in reverse order. Without it, backward search would require starting
+ * up to 7 squares away and most search paths would fail to connect.
+ */
+void select_dawg_direction(void) {
+    GameState *state = (GameState*)*g_main_handle;
+    short direction = state->direction_mode;  /* offset 770 */
 
     switch (direction) {
     case 0:
-        /* Horizontal only - use Section 1 (reversed DAWG) */
-        g_active_dawg_base = g_dawg_section1_ptr;   /* A5-8596 -> A5-11960 */
-        g_active_dawg_count = g_section1_end;       /* A5-8588 -> A5-11956 */
-        g_alt_dawg_base = NULL;                     /* Terminate list */
-        break;
-
-    case 2:
-        /* Alternate - use Section 2 (forward DAWG) */
-        g_active_dawg_base = g_dawg_section2_ptr;   /* A5-8600 -> A5-11960 */
-        g_active_dawg_count = g_section2_end;       /* A5-8592 -> A5-11956 */
-        g_alt_dawg_base = NULL;
+        /* BACKWARD SEARCH: Extending LEFT from anchor
+         * Use reversed DAWG - words stored backwards
+         * Example: Finding words ending in "CAT" by searching "TAC" paths
+         */
+        g_active_dawg_base = g_reversed_dawg_ptr;    /* A5-8596 → A5-11960 */
+        g_active_dawg_count = g_reversed_dawg_count; /* A5-8588 → A5-11956 */
+        g_alt_dawg_base = NULL;                      /* Single section mode */
         break;
 
     case 1:
-        /* Both directions - use both DAWG sections */
-        g_active_dawg_base = g_dawg_section1_ptr;   /* Section 1 */
-        g_active_dawg_count = g_section1_end;
-        g_alt_dawg_base = g_dawg_section2_ptr;      /* A5-8600 -> A5-11952 */
-        g_alt_dawg_count = g_section2_end;          /* A5-8592 -> A5-11948 */
-        g_dawg_terminator = NULL;                   /* Terminate */
+        /* FORWARD SEARCH: Extending RIGHT from anchor
+         * Use forward DAWG - words stored normally
+         * Example: Finding words starting with "CAT" by searching "CAT" paths
+         */
+        g_active_dawg_base = g_forward_dawg_ptr;     /* A5-8600 → A5-11960 */
+        g_active_dawg_count = g_forward_dawg_count;  /* A5-8592 → A5-11956 */
+        g_alt_dawg_base = NULL;                      /* Single section mode */
+        break;
+
+    case 2:
+        /* BOTH DIRECTIONS: Exhaustive move search
+         * Use both DAWGs - search left AND right from every anchor
+         * This is used for complete move generation
+         */
+        g_active_dawg_base = g_reversed_dawg_ptr;    /* Primary: reversed */
+        g_active_dawg_count = g_reversed_dawg_count;
+        g_alt_dawg_base = g_forward_dawg_ptr;        /* Alternate: forward */
+        g_alt_dawg_count = g_forward_dawg_count;
+        g_terminator = NULL;                         /* Mark end of list */
         break;
 
     default:
-        /* Invalid direction - assert */
-        bounds_check_error();        /* JT[418] at 0x005C */
+        bounds_check_error();  /* Invalid direction */
     }
 }
-
-/*============================================================
- * Function 0x0062 - Initialize Game Window
- * Frame size: 258 bytes
- *============================================================*/
-void init_game_window(void) {
-    char string_buffer[256];         /* -256(A6) */
-    short time_value;                /* -258(A6) */
-    short setup_flag;                /* D7 */
-    short control_index;             /* D6 */
-
-    /* Check if already initialized */
-    if (check_init_status()) {       /* JSR 722(PC) at 0x006A */
-        goto show_if_needed;
-    }
-
-    /* Do setup */
-    do_setup_call();                 /* JSR 578(PC) at 0x0074 */
-
-    /* Clear string buffer */
-    string_buffer[0] = '\0';
-
-    /* Load string resources */
-    GetIndString(string_buffer,      /* JT[122] at 0x008A */
-                 0x00020000,          /* Resource type/ID */
-                 0x03FA);             /* String ID 1018 */
-
-    GetIndString(string_buffer,      /* JT[122] at 0x00A8 */
-                 0x00020001,
-                 0x03F9);             /* String ID 1017 */
-
-    /* Parse time value from string */
-    sscanf(string_buffer,            /* JT[2074] at 0x00B8 */
-           g_format_string,           /* A5-28510 */
-           &time_value);
-
-    /* Validate and clamp time value */
-    setup_flag = 1;
-    if (time_value < 700) {          /* CMPI.W #700 at 0x00C0 */
-        time_value = 700;             /* Minimum 700 (7 seconds?) */
-        setup_flag = 18;
-    }
-    else if (time_value > 2100) {    /* CMPI.W #2100 at 0x00D4 */
-        time_value = 2100;            /* Maximum 2100 (21 seconds?) */
-    }
-
-    /* Set up window controls (loop for controls 4 down to 0) */
-    WindowData *win = (WindowData*)*g_main_handle;
-
-    for (control_index = 4; control_index >= 0; control_index--) {
-        /* Calculate control offset: 192 * index */
-        short offset = 192 * control_index;  /* MULS.W at 0x00EA */
-
-        /* Set control value */
-        /* uncertain: exact field access */
-        /* *(short*)(((char*)win) + offset + 10) = setup_flag; */
-    }
-
-    /* Draw and show window */
-    draw_something(&g_some_rect);    /* JSR 696(PC) at 0x011A */
-    HUnlock(g_main_handle);          /* A9AA at 0x0122 */
-    ShowWindow((WindowPtr)g_main_handle, true);  /* A994 at 0x0126 */
-
-show_if_needed:
-    /* Additional visibility check/update if needed */
-    return;
-}
-
-/*============================================================
- * Function 0x020E - Toggle Active Buffer (Direction Switch)
- * JT offset: (varies)
- *
- * Toggles between horizontal (g_field_22) and vertical (g_field_14)
- * search directions. Used when player wants to change word direction.
- *============================================================*/
-void toggle_active_buffer(void) {
-    WindowData *win = (WindowData*)*g_main_handle;
-
-    if (win->buffer_select_flag != 0) {  /* TST.W 772(A0) at 0x0214 */
-        /* Flag set -> switch to horizontal (field_22) */
-        g_current_ptr = &g_field_22;     /* LEA -15522(A5) at 0x021A */
-        win->buffer_select_flag = 0;      /* Clear flag */
-    } else {
-        /* Flag clear -> switch to vertical (field_14) */
-        g_current_ptr = &g_field_14;     /* LEA -15514(A5) at 0x022E */
-        win->buffer_select_flag = 1;      /* Set flag */
-    }
-}
-
-/*============================================================
- * Function 0x02B8 - Create Main Window
- *============================================================*/
-void create_main_window(void) {
-    Handle h;
-
-    /* Allocate 1070-byte handle for window data */
-    h = NewHandle(0x042E);           /* A322 at 0x02BE, size = 1070 */
-
-    if (h == NULL) {                 /* BNE.S $02EE at 0x02C6 */
-        /* Allocation failed - set up error state */
-        g_error_ptr = g_fallback_ptr;  /* A5-24030 = A5-27736 */
-        /* ... error handling ... */
-        return;
-    }
-
-    /* Store handle in global */
-    g_main_handle = h;               /* MOVE.L A0,-8584(A5) */
-
-    /* Initialize window data fields */
-    WindowData *win = (WindowData*)*h;
-
-    win->visibility_flag = 1;        /* MOVE.W #1,780(A0) at 0x02F4 */
-    win->ui_flag_1 = 1;              /* MOVE.W #1,778(A0) at 0x030C */
-    win->ui_flag_3 = 1;              /* MOVE.W #1,784(A0) at 0x0318 */
-
-    /* Create actual window using resource */
-    WindowPtr window = GetNewWindow(
-        g_resource_ref,              /* A5-3512 */
-        'prfs',                      /* Resource type 'prfs' at 0x0322 */
-        0,                           /* Resource ID */
-        (Ptr)h                       /* Storage */
-    );                               /* A9AB at 0x032E */
-
-    /* Bring to front */
-    SelectWindow(window);            /* A999 at 0x033A */
-}
-
-/*============================================================
- * Function 0x038A - Toggle Window Visibility
- *============================================================*/
-void toggle_window_visibility(void) {
-    WindowData *win = (WindowData*)*g_main_handle;
-
-    /* Toggle visibility flag (0 <-> 1) */
-    short new_state;
-    if (win->visibility_flag == 0) { /* TST.W 780(A0) at 0x0390 */
-        new_state = 1;                /* SEQ/NEG at 0x0394-0x0396 */
-    } else {
-        new_state = 0;
-    }
-
-    win->visibility_flag = new_state; /* MOVE.W D0,780(A0) at 0x03A0 */
-
-    /* Trigger redraw */
-    redraw_window();                 /* JT[1266] at 0x03A4 */
-}
-
-/*============================================================
- * Direction Mode Summary
- *
- * The direction_mode field (offset 770) controls display:
- *
- * Mode 0: Horizontal only
- *   - Uses g_ptr1, g_ptr2
- *   - For horizontal word display
- *
- * Mode 1: Both directions
- *   - Uses all four pointers
- *   - For showing both h/v possibilities
- *
- * Mode 2: Alternate horizontal
- *   - Uses g_ptr3, g_ptr4
- *   - Alternate buffer for comparison?
- *
- * The buffer_select_flag (offset 772) toggles between:
- *   - g_field_14: Vertical/hook-before buffer
- *   - g_field_22: Horizontal/hook-after buffer
- *============================================================*/
 ```
+
+---
+
+## Global Variables (VERIFIED)
+
+### DAWG Pointers (Set by CODE 2 during resource loading)
+
+| Offset | Name | Description |
+|--------|------|-------------|
+| A5-8596 | g_reversed_dawg_ptr | **Section 1**: Reversed DAWG (words stored backwards) |
+| A5-8588 | g_reversed_dawg_count | Node count for reversed DAWG |
+| A5-8600 | g_forward_dawg_ptr | **Section 2**: Forward DAWG (words stored normally) |
+| A5-8592 | g_forward_dawg_count | Node count for forward DAWG |
+
+### Active DAWG Pointers (Set by select_dawg_direction)
+
+| Offset | Name | Description |
+|--------|------|-------------|
+| A5-11960 | g_active_dawg_base | Current active DAWG base pointer |
+| A5-11956 | g_active_dawg_count | Current active DAWG node count |
+| A5-11952 | g_alt_dawg_base | Alternate DAWG (direction 2 only) |
+| A5-11948 | g_alt_dawg_count | Alternate DAWG count (direction 2 only) |
+| A5-11940 | g_terminator | NULL terminator (direction 2 only) |
+
+### Game State Structure (at handle dereference)
+
+| Offset | Size | Name | Description |
+|--------|------|------|-------------|
+| 770 | 2 | direction_mode | 0=backward, 1=forward, 2=both |
+| 772 | 2 | board_direction_flag | 0=horizontal, 1=vertical tile placement |
+
+---
+
+## Move Generation Algorithm
+
+The two-DAWG architecture enables this efficient algorithm:
+
+```
+For each anchor square (adjacent to existing tiles):
+
+    1. BACKWARD SEARCH (direction 0):
+       - Set active DAWG = reversed DAWG
+       - Start at anchor, search LEFT
+       - Each path in reversed DAWG represents valid suffixes
+       - Track letters used from rack
+
+    2. FORWARD SEARCH (direction 1):
+       - Set active DAWG = forward DAWG
+       - From each valid backward position, search RIGHT
+       - Complete the word using remaining rack tiles
+
+    3. VALIDATE:
+       - Check cross-words (perpendicular intersections)
+       - Score the move
+       - Add to move list if legal
+```
+
+### Why This Is Efficient
+
+**Without reversed DAWG** (naive forward-only approach):
+```
+To find words ending at anchor 'T':
+  Start 7 squares left, try A______T, B______T, C______T...
+  Then 6 squares left, try AA_____T, AB_____T...
+  Most paths never reach the anchor - wasted computation
+```
+
+**With reversed DAWG**:
+```
+To find words ending at anchor 'T':
+  Search reversed DAWG starting with 'T'
+  'T' → 'TA' → 'TAC' (matches CAT backwards)
+  Only valid paths are explored
+  Dramatically reduces search space
+```
+
+---
+
+## Function 0x020E - toggle_board_direction (VERIFIED)
+
+This toggles between horizontal and vertical tile placement (separate from DAWG direction).
+
+```asm
+; void toggle_board_direction(void)
+; Switches between horizontal (across) and vertical (down) word placement
+
+020E: 206D DE78      MOVEA.L  -8584(A5),A0      ; A0 = g_main_handle
+0212: 2050           MOVEA.L  (A0),A0           ; dereference
+0214: 4A68 0304      TST.W    772(A0)           ; test board_direction_flag
+0218: 6714           BEQ.S    $022E             ; if 0 (horizontal), switch to vertical
+
+; Currently vertical → switch to horizontal
+021A: 41ED C35E      LEA      -15522(A5),A0     ; A0 = &g_horizontal_buffer
+021E: 2B48 C376      MOVE.L   A0,-15498(A5)     ; g_current_buffer = horizontal
+0222: 226D DE78      MOVEA.L  -8584(A5),A1
+0226: 2251           MOVEA.L  (A1),A1
+0228: 4269 0304      CLR.W    772(A1)           ; board_direction_flag = 0
+022C: 6014           BRA.S    $0242
+
+; Currently horizontal → switch to vertical
+022E: 41ED C366      LEA      -15514(A5),A0     ; A0 = &g_vertical_buffer
+0232: 2B48 C376      MOVE.L   A0,-15498(A5)     ; g_current_buffer = vertical
+0236: 226D DE78      MOVEA.L  -8584(A5),A1
+023A: 2251           MOVEA.L  (A1),A1
+023C: 337C 0001 0304 MOVE.W   #1,772(A1)        ; board_direction_flag = 1
+0242: 4E75           RTS
+```
+
+### C Translation
+
+```c
+/*
+ * toggle_board_direction - Switch between horizontal/vertical placement
+ *
+ * This is SEPARATE from DAWG direction (forward/backward).
+ * Board direction determines whether tiles are placed:
+ *   - Horizontally (left-to-right in a row)
+ *   - Vertically (top-to-bottom in a column)
+ *
+ * Both board directions can use either DAWG direction depending on
+ * where the anchor is relative to existing tiles.
+ */
+void toggle_board_direction(void) {
+    GameState *state = (GameState*)*g_main_handle;
+
+    if (state->board_direction_flag != 0) {
+        /* Currently vertical → switch to horizontal */
+        g_current_buffer = &g_horizontal_buffer;  /* A5-15522 */
+        state->board_direction_flag = 0;
+    } else {
+        /* Currently horizontal → switch to vertical */
+        g_current_buffer = &g_vertical_buffer;    /* A5-15514 */
+        state->board_direction_flag = 1;
+    }
+}
+```
+
+---
+
+## Word Lister Integration
+
+The Word Lister dialog uses direction mode 2 (both DAWGs) to enumerate all words matching a pattern:
+
+1. User enters rack letters (e.g., "AEINRST" or "???????" for wildcards)
+2. CODE 15 calls select_dawg_direction with mode 2
+3. Both DAWGs are searched to find all valid words
+4. Results displayed in scrollable list
+
+For anagram search, using both DAWGs ensures completeness - every valid word arrangement is found regardless of which direction it would be played on the board.
+
+---
+
+## Remaining Functions
+
+### Function 0x0062 - init_game_window
+Window initialization with time limit parsing (700-2100 range, possibly centiseconds).
+
+### Function 0x029C - create_main_window
+Allocates 1070-byte handle for game state, creates window from 'prfs' resource.
+
+### Function 0x038A - toggle_window_visibility
+Toggles visibility flag at offset 780, triggers redraw.
+
+---
+
+## Summary
+
+| Concept | Meaning |
+|---------|---------|
+| **DAWG Direction** | Forward (→) or Backward (←) search through word structure |
+| **Board Direction** | Horizontal (across) or Vertical (down) tile placement |
+| **Direction 0** | Backward search using reversed DAWG |
+| **Direction 1** | Forward search using forward DAWG |
+| **Direction 2** | Both searches for exhaustive move generation |
+
+The two-DAWG architecture is a key optimization that makes Maven's move generation efficient by avoiding wasteful search paths that would never reach anchor tiles.

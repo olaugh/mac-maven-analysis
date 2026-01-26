@@ -512,11 +512,11 @@ typedef int (*PatternCallback)(char* result, void* context);
 /*
  * DAWG pointer chain:
  *   CODE 2 loads resource and sets:
- *     A5-8596 = Section 1 pointer (reversed DAWG)
- *     A5-8600 = Section 2 pointer (forward DAWG)
- *   CODE 6 selects active DAWG based on direction:
- *     A5-11960 = A5-8596 (direction 0: horizontal)
- *     A5-11960 = A5-8600 (direction 2: alternate/vertical)
+ *     A5-8596 = Section 1 pointer (reversed DAWG - words stored right-to-left)
+ *     A5-8600 = Section 2 pointer (forward DAWG - words stored left-to-right)
+ *   CODE 6 selects active DAWG based on search direction:
+ *     A5-11960 = A5-8596 (backward search from anchor)
+ *     A5-11960 = A5-8600 (forward search from anchor)
  */
 extern long*  g_dawg_base_ptr;          /* A5-11960: Active DAWG base (set by CODE 6) */
 extern long   g_dawg_current_pos;       /* A5-11964: Current traversal position */

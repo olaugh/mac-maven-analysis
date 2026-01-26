@@ -1,4 +1,4 @@
-# CODE 15 Analysis
+# CODE 15 Analysis - Word Lister
 
 ## Overview
 
@@ -9,8 +9,22 @@
 | JT Entries | 5 |
 | Functions | 20 |
 | Categories | DAWG_ACCESS, UI_DRAWING |
-| Purpose | UI Drawing |
-| Confidence | LOW |
+| Purpose | **Word Lister Dialog** |
+| Confidence | **HIGH** (confirmed via QEMU tracing) |
+
+## Function
+
+**Word Lister** - The "Word Lister..." menu item handler that allows users to:
+- Enter a rack of letters (or wildcards like `?`)
+- Find all valid words that can be formed
+- Display results in a scrollable list
+
+### Verified via QEMU Tracing
+
+Testing with 7 wildcards (`???????`) showed:
+- First 1000 words displayed from "aa" to "alef"
+- Enumerates words by walking the DAWG structure
+- Uses both Section 1 and Section 2 of the DAWG
 
 ## Functions
 
@@ -78,12 +92,57 @@ Also references 61 unknown A5-relative globals.
 
 ## Refined Analysis (Second Pass)
 
-**Cluster**: Dawg Support
-
-**Category**: DAWG_MINOR
-
+**Cluster**: DAWG Engine
+**Category**: DAWG_TRAVERSAL
 **Global Variable Profile**: 2 DAWG, 2 UI, 67 total
-
 **Calls functions in**: CODE 3, 7, 9, 11, 12, 14, 17, 21, 22, 27, 34, 36, 41, 46, 47, 51, 52
 
-**Assessment**: DAWG support
+**Assessment**: DAWG traversal support for Word Lister
+
+## Speculative Decompilation
+
+**Full decompilation available**: See `analysis/detailed/code15_detailed.md`
+
+### Key Functions
+
+#### walk_to_next_child (0x00CE)
+```c
+long walk_to_next_child(char** pattern_ptr) {
+    char target_letter = **pattern_ptr;
+    long current_pos = g_dawg_current_pos;      /* A5-11964 */
+    long* dawg_base = g_dawg_base_ptr;          /* A5-11960 */
+
+    while (target_letter != '\0') {
+        long entry = dawg_base[current_pos];
+        char entry_letter = (char)(entry & 0xFF);
+
+        if (entry_letter == target_letter) {
+            long child_pos = entry >> 10;  /* Child index */
+            if (child_pos == 0) break;
+            (*pattern_ptr)++;
+            target_letter = **pattern_ptr;
+            current_pos = child_pos;
+        } else if (entry & 0x200) {  /* Bit 9 = last sibling */
+            return 0;
+        } else {
+            current_pos++;
+        }
+    }
+    return current_pos;
+}
+```
+
+### DAWG Entry Format (Runtime)
+```
+Bits 0-7:   Letter (ASCII)
+Bit 8:      End-of-word flag
+Bit 9:      Last-sibling flag
+Bits 10-31: Child node index (22 bits)
+```
+
+### Key Discovery: Cross-Check Flag Semantics
+
+The DAWG's `is_word` flag (bit 8) marks positions valid for **cross-checking**, not just dictionary words. This explains:
+- Brute-force validation produces ~5x more 2-letter "words" than real dictionary
+- Direct enumeration produces 49M+ entries vs ~267K actual words
+- Reference-based validation is required for accurate dictionary extraction
