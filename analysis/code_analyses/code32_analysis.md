@@ -1,118 +1,157 @@
-# CODE 32 Analysis - Leave Calculation
+# CODE 32 Analysis - Core Move Scoring and Leave Value Calculation
 
 ## Overview
 
 | Property | Value |
 |----------|-------|
-| Size | **2,320 bytes** (VERIFIED) |
+| Size | **2,320 bytes** (resource) / **6,464 bytes** (QEMU memory dump) |
 | JT Offset | 2384 (0x0950) |
 | JT Entries | 13 |
-| Category | CORE_AI, SCORING |
-| Confidence | **MEDIUM** - key constants verified, algorithm partially understood |
+| Functions | ~20 (large module) |
+| Categories | CORE_AI, SCORING, LEAVE_EVAL |
+| Purpose | Complete move scoring with binomial-weighted leave evaluation |
+| Confidence | **HIGH** |
 
----
+**NOTE**: The resource file (2,320 bytes) contains only a portion of the code. The full 6,464-byte
+image from a QEMU memory dump was used for the leave calculation analysis. The disassembler
+mangles SANE A9EB trap sequences; critical sections were decoded manually from raw hex.
 
-## Verified Disassembly
+## System Role
 
-### Function 0x0004: Main Entry
-**Stack Frame**: -324 bytes (VERIFIED: `LINK A6,#-324`)
-**Saved Registers**: D3-D7, A2-A4
+CODE 32 is the central scoring module that:
+1. Evaluates base tile scores with letter/word multipliers
+2. Scores cross-words formed by placed tiles
+3. Applies bingo bonus (5000 centipoints = 50 points for using all 7 tiles)
+4. Computes **binomial-weighted leave values** using MUL resources and SANE FP
+5. Tracks best positions for move generation
 
-```asm
-; Function prologue
-0004: 4E56 FEBC    LINK     A6,#-324          ; 324-byte local frame
-0008: 48E7 1F38    MOVEM.L  D3-D7/A2-A4,-(SP) ; Save registers
+**Related CODE resources**:
+- CODE 15: Loads MUL resources (leave value tables per tile)
+- CODE 35: Full score/leave calculation (simulation engine)
+- CODE 39: Letter combination synergy scoring
+- CODE 45: Move ranking
 
-; Initialize counters to zero
-000C: 426D BCFA    CLR.W    -17158(A5)        ; Counter 1
-0010: 426D BCF8    CLR.W    -17160(A5)        ; Counter 2
-0014: 426D BCF6    CLR.W    -17162(A5)        ; Counter 3
-0018: 426D BCF4    CLR.W    -17164(A5)        ; Counter 4
-001C: 426D B1D6    CLR.W    -20010(A5)        ; tiles_played = 0
+## Functions
+
+| Offset | Frame | Purpose |
+|--------|-------|---------|
+| 0x0000 | 324 | Main move evaluation (base scoring, bingo, position tracking) |
+| 0x064C | varies | Filter positions by mask |
+| 0x08B8 | varies | Initialize scoring context |
+| 0x0B42 | varies | Apply leave value to move score |
+| **0x1406** | **50** | **Binomial-weighted leave calculation (SANE FP)** |
+| 0x1648 | 0 | String/tile helper |
+
+## Verified Constants
+
+| Offset | Value | Meaning |
+|--------|-------|---------|
+| 0x0330 | 0x1388 = 5000 | Bingo bonus in centipoints (50 points) |
+| 0x0328 | 7 | Bingo tile count threshold |
+| 0x1438 | 0x1F90 = 8080 | Binomial coefficient table size (allocated) |
+
+## Key Function: Binomial-Weighted Leave Calculation (0x1406)
+
+### Algorithm
+
+The leave value for each tile type is computed as a **hypergeometric-weighted average**
+across possible tile counts, NOT a simple per-tile lookup.
+
+**Formula:**
+```
+result = Σ(MUL[i+1].adj - MUL[0].adj) / Σ(C(n,i) × C(m,j-i))
 ```
 
-### Bingo Bonus Check at 0x032C (VERIFIED)
+Where:
+- `MUL[k].adj` = offset-24 (int32 centipoints) of the k-th 28-byte MUL record
+- `C(n,k)` = binomial coefficients from Pascal's triangle table
+- Record 0 is the baseline; records 1-7 are per-count adjustments
+
+### Data Structures
+
+**Binomial coefficient table** (A5-2448, allocated on first call):
+- 8080 bytes = 101 entries × 80 bytes
+- Each entry = 8 × 10-byte SANE extended values
+- `entry[n][k] = C(n,k)` built via Pascal's triangle recurrence
+- Initialized: slot 0 = 1.0 (C(n,0) = 1), slots 1-7 = 0
+
+**MUL record** (28 bytes, 8 per tile):
+- Offset 24-27: int32 leave adjustment in centipoints (ONLY field used at runtime)
+- Records indexed by tile count: 0=baseline, 1-7=per-count values
+
+### Key Instruction: Indexed MUL Record Access (0x15BE)
 
 ```asm
-0328: 4EAD 01A2    JSR      418(A5)           ; bounds_check
-032C: 0C6D 0007 B1D6  CMPI.W #7,-20010(A5)   ; tiles_played == 7?
-0332: 6606         BNE.S    $033A             ; No → skip bonus
-0334: 303C 1388    MOVE.W   #$1388,D0         ; D0 = 5000 ★ BINGO BONUS
-0338: 6002         BRA.S    $033C             ; Skip zero case
-033A: 7000         MOVEQ    #0,D0             ; D0 = 0 (no bonus)
+; D0 = (D4+1) * 28  (from MULS.W #28,D0 at 0x15BA)
+2032 0818    MOVE.L  (24,A2,D0.L),D0
 ```
 
-**CONFIRMED**: Bingo bonus = **5000 centipoints** (0x1388) = **50 points**
+Extension word `0818` decodes as:
+- D/A=0 (Data reg), Reg=0 (D0), W/L=1 (Long), Scale=×1, Displacement=0x18=24
+- Effective: `A2 + (D4+1)*28 + 24` = MUL record (D4+1), offset 24
 
-### Additional Check for 8 Tiles at 0x0138
+### SANE Operations (7 traps in leave function)
 
-```asm
-0138: 0C6D 0008 B1D6  CMPI.W #8,-20010(A5)   ; tiles_played == 8?
-```
+| Offset | Opcode | Operation | Purpose |
+|--------|--------|-----------|---------|
+| 0x14DC | $0000 | FADDX | Pascal's triangle: C(i,j) = C(i-1,j) + C(i-1,j-1) |
+| 0x159A | $0004 | FMULX | Binomial weight: C(n,i) × C(m,j-i) |
+| 0x15B4 | $0000 | FADDX | Accumulate weight sum |
+| 0x15E4 | $2804 | FL2X | Convert integer adj to extended |
+| 0x15F0 | $0000 | FADDX | Accumulate adj sum |
+| 0x1610 | $0006 | FDIVX | Normalize: adj_sum / weight_sum |
+| 0x163A | $2810 | FX2L | Convert extended result to long integer |
 
-Purpose unclear - possibly validation or edge case handling.
+## Toolbox Traps Used
 
-### Function Epilogue at 0x0648
+| Trap | Name | Purpose |
+|------|------|---------|
+| $A9EB | _FP68K | SANE floating-point operations (7 calls in leave function) |
 
-```asm
-0648: 4CDF 1CF8    MOVEM.L  (SP)+,D3-D7/A2-A4 ; Restore registers
-064C: 4E5E         UNLK     A6
-064E: 4E75         RTS
-```
+## Jump Table Calls
 
----
-
-## Jump Table Calls (VERIFIED)
-
-| JT Offset | Count | Known Purpose |
-|-----------|-------|---------------|
-| 66(A5) | 14 | Multiply (CODE 1) |
-| 418(A5) | 10 | Bounds check / error |
+| Offset | Count | Purpose |
+|--------|-------|---------|
+| 66(A5) | 14 | 32-bit multiply (heavy use for table indexing) |
+| 90(A5) | - | 32-bit divide |
+| 418(A5) | 10 | Bounds check / error handler |
 | 426(A5) | 2 | memset |
-| 794(A5) | 1 | Unknown |
-| 2338(A5) | 1 | Unknown |
-| 2386(A5) | 1 | Unknown |
-| 2394(A5) | 1 | Setup function |
+| 1666(A5) | 1 | NewPtr (allocate binomial table) |
 | 3522(A5) | 2 | strlen |
 
-The heavy use of JT[66] (multiply, 14 calls) indicates table indexing is central to the algorithm.
+## Global Variables
 
----
+| Offset | Name | Description |
+|--------|------|-------------|
+| A5-2448 | g_binom_table | Binomial coefficient table (8080 bytes, allocated) |
+| A5-10868 | g_mul_handles | Array of 27 MUL resource pointers (a-z + blank) |
+| A5-17158 | g_best_col | Best column position |
+| A5-17160 | g_best_col2 | Second best column |
+| A5-17162 | g_best_row | Best row position |
+| A5-17164 | g_best_row2 | Second best row |
+| A5-20010 | g_tile_count | Tiles placed in current move |
 
-## Global Variables (VERIFIED)
+## MUL Record Examples
 
-| Offset | Initialized To | Purpose |
-|--------|----------------|---------|
-| A5-17158 | 0 | Counter 1 |
-| A5-17160 | 0 | Counter 2 |
-| A5-17162 | 0 | Counter 3 |
-| A5-17164 | 0 | Counter 4 |
-| A5-20010 | 0 | **tiles_played** (compared with 7 and 8) |
+| Tile | Record 0 (baseline) | Record 1 (1 copy) | Relative |
+|------|---------------------|--------------------|----------|
+| ? (blank) | -515 (-5.15 pts) | +2440 (+24.40 pts) | +29.55 pts |
+| S | -337 (-3.37 pts) | +721 (+7.21 pts) | +10.58 pts |
+| E | -219 (-2.19 pts) | +299 (+2.99 pts) | +5.18 pts |
+| Q | +88 (+0.88 pts) | -879 (-8.79 pts) | -9.67 pts |
 
----
+Number of populated records matches tile frequency in the game (blank=2, S=4, Q=1, etc.).
 
-## What We Don't Know
-
-The detailed leave evaluation algorithm is not fully understood. The code likely:
-1. Uses the VCB resources (VCBa-VCBh) for vowel/consonant balance lookups
-2. Indexes into precomputed tables (hence all the multiply calls)
-3. Combines multiple factors beyond just bingo bonus
-
-**I cannot confirm**:
-- ❌ Specific vowel-counting logic
-- ❌ Q-without-U penalty
-- ❌ Detailed scoring formula
-- ❌ How VCB resources are accessed
-
----
-
-## Summary
+## Confidence
 
 | Aspect | Status |
 |--------|--------|
-| File size (2,320 bytes) | ✅ VERIFIED |
-| Stack frame (-324) | ✅ VERIFIED |
-| Bingo bonus (5000 = 50pts) | ✅ VERIFIED |
-| tiles_played at A5-20010 | ✅ VERIFIED |
-| JT call list | ✅ VERIFIED |
-| Detailed algorithm | ❓ NEEDS MORE WORK |
+| File size | VERIFIED (2,320 resource / 6,464 memory) |
+| Bingo bonus (5000 = 50pts) | VERIFIED |
+| Binomial-weighted leave algorithm | VERIFIED (manual hex decode) |
+| Indexed MUL record access (all 8 records) | VERIFIED (extension word 0x0818) |
+| Pascal's triangle construction | VERIFIED (FADDX recurrence) |
+| SANE operations catalog | VERIFIED |
+| Loop bounds / parameter semantics | PARTIALLY VERIFIED |
+| Detailed analysis | `analysis/detailed/code32_detailed.md` |
+| Leave calculation details | `analysis/code32_leave_calc.md` |

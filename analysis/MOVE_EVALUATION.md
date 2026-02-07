@@ -137,36 +137,22 @@ fhwyx, dgbmp, fhkjwyx
 
 ### Data Format (Confirmed via CODE 32 analysis)
 
-Each MUL resource is 224 bytes containing up to **8 records of 28 bytes each**, one per copy count (1 copy, 2 copies, etc.):
+Each MUL resource is 224 bytes containing **8 records of 28 bytes each**, indexed by tile count (0-7 copies):
 
 ```
 Record format (28 bytes per copy count):
-  Bytes 0-7:   IEEE 754 double (big-endian) - expected turn score with N copies
-  Bytes 8-15:  Secondary double (often garbage/unused)
-  Bytes 16-19: Unsigned int - simulation count (number of samples)
-  Bytes 20-23: Signed int - (purpose unclear)
-  Bytes 24-27: Signed int - LEAVE ADJUSTMENT VALUE (loaded by CODE 32 at offset 0x156A)
+  Bytes 0-7:   IEEE 754 double (big-endian) - expected turn score from simulation
+  Bytes 8-15:  Unknown (simulation metadata - NOT reliably decodable as IEEE double)
+  Bytes 16-19: Unknown (values in billions range - NOT simulation count)
+  Bytes 20-23: int32 (likely simulation sample count, values 25-55K)
+  Bytes 24-27: int32 - LEAVE ADJUSTMENT VALUE (ONLY field used at runtime by CODE 32)
 ```
 
-The signed integer at **offset 24** is the key leave adjustment value, used in SANE FP operations (FMULX, FADDX).
+CODE 32 at offset 0x156A reads **only offset 24** and subtracts it from the score.
 
-**Observed values for single-tile leaves (offset 24):**
-| Letter | Adjustment | Interpretation |
-|--------|------------|----------------|
-| Blank (?) | -515 | Strong bonus (keep the blank) |
-| S | -337 | Strong bonus |
-| E | -219 | Moderate bonus |
-| R | -85 | Small bonus |
-| Q | +88 | Small penalty |
-| V | +68 | Small penalty |
+**MUL data origin:** CODE 35's header note states it "computes FP averages from simulation, results stored as centipoints in MUL resources." This implies the MUL resources were pre-computed by running Maven's simulation engine.
 
 **Scale: Centipoints (1/100 of a point)**
-
-Like the bingo bonus (5000 centipoints = 50 points), leave adjustments are stored in centipoints:
-- Blank: -515 = **-5.15 points** (bonus to keep)
-- S: -337 = **-3.37 points**
-- E: -219 = **-2.19 points**
-- Q: +88 = **+0.88 points** (penalty)
 
 Note: Values appear inverted from traditional notation (negative = good, positive = bad).
 
@@ -176,9 +162,9 @@ Note: Values appear inverted from traditional notation (negative = good, positiv
 
 CODE 39 (1784 bytes) handles multi-letter combination analysis with a massive 9632-byte stack frame.
 
-### Score Tables
+### Score Tables (Working Buffers)
 
-Six parallel tables for directional scoring:
+Six parallel tables for directional scoring. These are **working buffers** allocated by CODE 2 and dynamically populated by CODE 39 during each position evaluation (NOT pre-loaded from resources):
 
 | Offset | Table | Purpose |
 |--------|-------|---------|
@@ -188,6 +174,8 @@ Six parallel tables for directional scoring:
 | A5-12520 | g_vert_scores1 | Vertical base letter scores |
 | A5-12516 | g_vert_scores2 | Vertical letter combination bonuses |
 | A5-12512 | g_vert_scores3 | Vertical position multipliers |
+
+Each table: 2304 bytes = 128 entries × 18 bytes (ESTRRecord). Tables are cleared and repopulated per position by CODE 39's multi-pass algorithm. Initial data comes from cross-check scores near A5-13318.
 
 ### Letter Pair Table
 
@@ -465,19 +453,29 @@ See **LEAVE_VALUES.md** for comprehensive documentation.
 | 4 | +368 | +3.68 | Optimal |
 | 7 | -1238 | -12.38 | Poor (all vowels) |
 
-### CODE 32 Usage (offsets 0x156A and 0x15C4)
-```asm
-; At 0x156A - Load leave adjustment
-2068 d58c       MOVEA.L -10868(A0),A0   ; Load MUL data ptr from handle
-2d68 0018 ffdc  MOVE.L  24(A0),-36(A6)  ; Load offset-24 to local var
+### CODE 32 Leave Calculation (function at 0x1406)
 
-; At 0x15C4 - Apply leave adjustment
-90ae ffdc       SUB.L   -36(A6),D0      ; SUBTRACT adjustment from D0
+The leave value is computed as a **binomial-weighted average** across all possible tile counts, NOT a simple per-tile lookup. The full algorithm:
+
+1. Build Pascal's triangle table: `C(n,k)` for n=0..100, k=0..7 (8080 bytes, SANE 80-bit)
+2. For each tile type, compute binomial convolution: `Σ C(unseen,i) × C(rack,j-i)`
+3. Sum relative adjustments: `Σ (MUL[i+1].adj - MUL[0].adj)` for valid tile counts
+4. Divide: `result = adj_sum / weight_sum` (hypergeometric normalization)
+5. Convert SANE extended → 32-bit integer centipoints
+
+**Key indexed addressing** at 0x15BE accesses per-count MUL records:
+```asm
+2032 0818    MOVE.L  (24,A2,D0.L),D0  ; MUL_record[(D4+1)*28 + 24]
+90AE FFDC    SUB.L   -36(A6),D0       ; Subtract baseline (record 0)
 ```
 
-**Key finding:** The adjustment is **subtracted** from the score accumulator, so:
+This reads offset-24 from MUL records 1-7 (not just record 0), using D0.L as the record index × 28.
+
+**Sign convention:** The final adjustment is **subtracted** from the score:
 - Positive offset-24 (e.g., S=+721) → subtracted → reduces move score (incentivizes keeping)
 - Negative offset-24 (e.g., Q=-879) → subtracted → increases move score (incentivizes playing)
+
+See `analysis/code32_leave_calc.md` for full disassembly and algorithm details.
 
 ---
 

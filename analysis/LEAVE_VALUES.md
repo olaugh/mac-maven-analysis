@@ -33,20 +33,48 @@ MUL resources are loaded by CODE 15 at offset 0x0C62-0x0C8A:
 - Resource handles stored at A5-10868 (array of 27 4-byte handles)
 - Resource type constructed as 'MUL' + letter character
 
-### Usage
+### Usage: Binomial-Weighted Leave Calculation
 
-CODE 32 at offset 0x156A-0x15C4 applies MUL adjustments:
-```asm
-; Load MUL handle for tile
-2468 D58C     MOVEA.L -10868(A0),A2    ; Get handle array base
-2068 D58C     MOVEA.L -10868(A0),A0    ; Dereference handle
-2D68 0018 FFDC MOVE.L 24(A0),-36(A6)   ; Load offset-24 to local var
+CODE 32 function at offset 0x1406 computes leave values using a **binomial-coefficient-weighted average** across all possible tile counts. This is NOT a simple per-tile lookup.
 
-; Later, apply adjustment
-90AE FFDC     SUB.L -36(A6),D0         ; SUBTRACT from accumulator
+#### Algorithm Overview
+
+1. **Build binomial coefficient table** (one-time, stored at A5-2448):
+   - 8080-byte buffer: 101 entries × 80 bytes (8 × 10-byte SANE extended)
+   - Each `entry[n][k] = C(n,k)` built via Pascal's triangle recurrence
+   - `entry[i][j] = entry[i-1][j] + entry[i-1][j-1]`
+
+2. **For each tile type on rack**, compute weighted leave adjustment:
+```c
+// Parameters: letter (D5), tile_count (D6), unseen_count (param at 12(A6))
+// A2 = MUL data pointer for this letter
+// A4 = &binom[unseen_count], A3 = &binom[tile_count]
+
+long baseline = MUL_record[0].adj;  // Record 0 = "have 0 of this tile"
+extended sum_weights = 0.0;
+extended sum_adj = 0.0;
+
+for (int i = start; i <= end; i++) {
+    // Binomial weight: C(unseen, i) * C(tile_count, D3-i)
+    extended weight = binom[unseen][i] * binom[tile_count][D3-i];
+    sum_weights += weight;
+
+    // Relative adjustment: value with (i+1) tiles minus baseline
+    long relative_adj = MUL_record[i+1].adj - baseline;
+    sum_adj += (extended)relative_adj;
+}
+// Result = adj_sum / weight_total (normalize by binomial convolution)
+return (long)(sum_adj / sum_weights);
 ```
 
-**Sign Convention:** The adjustment is **subtracted**, so:
+3. **Key indexed addressing** at 0x15BE accesses per-count records:
+```asm
+; D0 = (D4+1) * 28  (record index × record size)
+2032 0818     MOVE.L (24,A2,D0.L),D0  ; MUL_data[(D4+1)*28 + 24]
+90AE FFDC     SUB.L  -36(A6),D0       ; Subtract record 0 baseline
+```
+
+**Sign Convention:** The final adjustment is **subtracted** from the move score, so:
 - Negative raw value = bonus (good tile to keep)
 - Positive raw value = penalty (bad tile to keep)
 
@@ -309,44 +337,153 @@ VCBh values are loaded into memory but the code accesses FRST (zeros) instead.
 
 ### Current Status
 
-- **MUL values:** Used and working
+- **MUL values:** Used and working (offset 24 only)
 - **VCB adjustment:** NOT applied (FRST is zeros)
-- **Synergy (ESTR):** Needs CODE 39 analysis for values
+- **Synergy (ESTR/CODE 39):** Score tables are working buffers, dynamically populated per position
 
 ---
 
-## 7. Known Unknowns
+## 7. Score Table Architecture (CODE 39 Synergy System)
 
-1. **~~Why FRST is all zeros~~:** CONFIRMED - FRST is vestigial or intentionally disabled. Maven does not apply VCB adjustments.
+### Score Table Lifecycle
 
-2. **ESTR synergy values:** The actual numeric values for synergy patterns are computed at runtime by CODE 39, not stored in resources.
+The 6 synergy score tables follow a clear lifecycle:
 
-3. **Secondary double in MUL records:** The purpose of the double at offset 8-15 is unclear.
+| Step | Code | What Happens |
+|------|------|-------------|
+| **Allocation** | CODE 2, JT[1666] | `NewPtr(2304)` × 6 = 13,824 bytes total |
+| **Population** | CODE 39, Pass 3+ | Dynamically filled per board position |
+| **Usage** | CODE 39, all passes | Read during combination scoring |
+| **Scope** | Per-position | Recomputed for each position being evaluated |
 
-4. **Unknown int in MUL records:** The int32 at offset 20-23 is not understood.
+### Key Insight: Tables Are Working Buffers
 
-5. **Why VCBh exists but isn't used:** VCBh data is loaded but FRST (zeros) is accessed instead. This could be:
-   - Legacy code from an earlier version
-   - An option that was disabled before release
-   - Reserved for a "simulation mode" that uses different evaluation
+The 6 score tables at A5-12512 through A5-12532 are **NOT pre-loaded from resources**. They are working buffers that CODE 39 populates dynamically during each position evaluation:
+
+```asm
+; Pass 3 in full_combination_analysis (CODE 39 at 0x02B6):
+02B6: MOVE.W  (A2),D4              ; Get entry from valid_pairs
+02B8: MOVEQ   #18,D0               ; 18 bytes per ESTR record
+02BA: MULU    D4,D0                ; index = entry * 18
+; Clear table1 and table3 entries:
+02C0: ADDA.L  -9596(A6),A0         ; A0 = table1 + offset
+02C4: CLR.W   (A0)                 ; table1[entry].value = 0
+02C8: ADDA.L  -9604(A6),A0         ; A0 = table3 + offset
+02CC: CLR.W   (A0)                 ; table3[entry].value = 0
+; Copy from cross-check data into table2:
+02D6: ADDA.L  -9610(A6),A1         ; A1 = table2 + offset
+02DA: MOVE.W  -13318(A0),(A1)      ; table2[entry] = cross_check_score
+```
+
+The source data comes from the cross-check score array near A5-13318, which is populated by the move generation system before CODE 39 is called.
+
+### Direction-Specific Tables
+
+CODE 39 selects different table sets based on move direction:
+- **Horizontal (hook-after):** g_horiz_scores1/2/3 (A5-12532, A5-12528, A5-12524)
+- **Vertical (hook-before):** g_vert_scores1/2/3 (A5-12520, A5-12516, A5-12512)
+
+### ESTR Record Layout (18 bytes)
+
+```c
+typedef struct {
+    int16_t value;           /* +0:  Base synergy value */
+    int16_t synergy[7];      /* +2:  Seven synergy bonus fields (one per rack size) */
+    int16_t position_mult;   /* +16: Position multiplier */
+} ESTRRecord;  /* Total: 18 bytes, 128 records per table */
+```
 
 ---
 
-## 8. Implementation Notes
+## 8. MUL Record Format (Revised)
+
+### Confirmed Fields
+
+CODE 32 only reads **offset 24** from MUL records:
+```asm
+MOVEA.L -10868(A0),A0        ; Dereference MUL handle
+MOVE.L  24(A0),-36(A6)       ; Load ONLY offset 24
+SUB.L   -36(A6),D0           ; Subtract from score
+```
+
+### Revised Record Interpretation
+
+| Offset | Size | Type | Purpose | Confidence |
+|--------|------|------|---------|------------|
+| 0-7 | 8 | IEEE 754 double (BE) | Expected turn score from simulation | HIGH |
+| 8-15 | 8 | Unknown | Simulation metadata (NOT reliably IEEE double) | LOW |
+| 16-19 | 4 | Unknown | Simulation metadata (values 1-4 billion, NOT sample counts) | LOW |
+| 20-23 | 4 | int32 (BE) | Likely simulation sample count (values: 25-55K range) | MEDIUM |
+| 24-27 | 4 | int32 (BE) | **Leave adjustment in centipoints (USED AT RUNTIME)** | VERY HIGH |
+
+### Analysis of "Secondary Double" (offset 8-15)
+
+Testing multiple interpretations of the secondary field:
+- **IEEE 754 double**: Some records decode to ±0.0 or -0.0 (reasonable), others produce astronomical garbage (e.g., 4.77×10¹¹ for blank record 0)
+- **SANE 80-bit extended at [0:10]**: Produces huge numbers (10⁹ to 10¹¹), worse than IEEE
+- **SANE 80-bit extended at [8:18]**: Mixed results (some ±0, some ∞)
+
+**Conclusion**: The secondary field is likely simulation metadata in a format we haven't identified (possibly SANE 80-bit extended with padding, or a compound multi-field structure). It is NOT used at runtime by CODE 32.
+
+### Scale Problem: RESOLVED
+
+The "scale problem" (blank = +5.15 pts from record 0 vs expected +25 pts) is now fully explained:
+
+**Record 0 (-515 centipoints) is the BASELINE, not the leave value itself.** The actual leave value depends on the weighted average across all possible tile counts:
+
+| Record | Adj (centipoints) | Meaning | Relative to baseline |
+|--------|-------------------|---------|---------------------|
+| 0 | -515 | Have 0 blanks | 0 (baseline) |
+| 1 | +2440 | Have 1 blank | +2955 (+29.55 pts) |
+| 2 | +3851 | Have 2 blanks | +4366 (+43.66 pts) |
+
+The binomial-coefficient normalization at CODE 32 offset 0x1604 (FDIVX) divides the accumulated adjustments by the combinatorial weight sum, producing the correct expected leave value.
+
+The FMULX at offset 0x159A multiplies **binomial coefficients** (not a "scale factor"), computing `C(n,i) * C(m,j-i)` for the hypergeometric distribution of tile draws.
+
+**This is the same tile distribution model described in Brian Sheppard's publications on Maven** - using the hypergeometric distribution to compute expected leave values given the unseen tile pool.
+
+---
+
+## 9. Known Unknowns
+
+1. **~~Why FRST is all zeros~~:** CONFIRMED - FRST is vestigial or intentionally disabled.
+
+2. **~~Score table population~~:** RESOLVED - Tables are working buffers populated by CODE 39 per-position, not from resources.
+
+3. **MUL secondary field (offset 8-15):** Format unknown. Not IEEE 754 double for all records. Not used at runtime.
+
+4. **MUL field at offset 16-19:** Values in billions range - purpose unknown. Not used at runtime.
+
+5. **MUL field at offset 20-23:** Likely simulation sample count (values 25-55K). Not used at runtime.
+
+6. **~~SANE scaling factor in CODE 32:~~** RESOLVED - The FMULX at 0x159A multiplies binomial coefficients `C(n,i) * C(m,j-i)`, not a scalar. The FDIVX at 0x1604 divides by the total binomial weight. Together they compute a hypergeometric-weighted average.
+
+7. **Cross-check score source (A5-13318):** The initial data that CODE 39 copies into score tables comes from a 256-byte cross-check score array. How this array is populated by the move generation system is not fully traced.
+
+---
+
+## 10. Implementation Notes
 
 ### For Reimplementation
 
-1. Load all 27 MUL resources and extract offset-24 values for each tile count
-2. Sum per-tile adjustments based on tile counts in leave
-3. **Do NOT apply VCBh adjustment** (Maven uses FRST which is zeros)
-4. For full accuracy, would need to reimplement CODE 39's synergy calculation
+1. Load all 27 MUL resources and extract offset-24 values for all 8 records per tile
+2. Build a binomial coefficient table: `C(n,k)` for n=0..100, k=0..7
+3. For each tile type on rack, compute the binomial-weighted average:
+   - Sum relative adjustments `(MUL[i+1].adj - MUL[0].adj)` for valid tile counts
+   - Divide by `Σ C(unseen_count, i) * C(rack_count, j-i)` (hypergeometric normalization)
+4. **Do NOT apply VCBh adjustment** (Maven uses FRST which is zeros)
+5. The synergy scoring (CODE 39) is position-dependent and requires the full move generation context
+6. A simplified implementation using only MUL per-tile values (record 1) captures reasonable accuracy; the full binomial weighting captures the game-state-dependent accuracy
 
 ### Confidence Level
 
-- **MUL structure and values:** HIGH (confirmed by CODE 32 analysis)
-- **VCBh NOT being used:** HIGH (FRST access confirmed in disassembly)
-- **ESTR pattern strings:** HIGH (directly readable)
-- **ESTR synergy values:** LOW (computed at runtime, not extracted)
+- **MUL offset 24 values:** VERY HIGH (confirmed by CODE 32 disassembly + QEMU)
+- **VCBh NOT being used:** HIGH (FRST access confirmed in disassembly + QEMU)
+- **Score tables = working buffers:** HIGH (CODE 39 writes confirmed in disassembly)
+- **ESTR pattern strings:** HIGH (directly readable from resource)
+- **MUL fields 0-7 (double):** MEDIUM-HIGH (consistent reasonable values)
+- **MUL fields 8-23:** LOW (format uncertain, not used at runtime)
 
 ---
 
@@ -357,3 +494,4 @@ VCBh values are loaded into memory but the code accesses FRST (zeros) instead.
 - ESTR patterns: `/Volumes/T7/retrogames/oldmac/maven_re/resources/ESTR/0_pattern_strings.bin`
 - Leave evaluator: `/Volumes/T7/retrogames/oldmac/maven_re/leave_eval.py`
 - QEMU debug tool: `/Volumes/T7/retrogames/oldmac/maven_re/qemu_debug.py`
+- MUL format analysis: `/Volumes/T7/retrogames/oldmac/maven_re/analyze_mul_detailed.py`

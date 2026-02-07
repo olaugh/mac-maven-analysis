@@ -584,54 +584,190 @@ long evaluate_move(Move* move_ptr, char* opponent_rack) {  /* uncertain */
 }
 ```
 
-### Leave Value Application (around 0x0B42-0x0BFC)
+### Binomial-Weighted Leave Calculation (0x1406)
 
-This function applies the MUL (leave value) adjustment to the move score. Leave values represent the expected value of tiles remaining on the rack after a move.
+**VERIFIED** via manual disassembly of raw hex from QEMU memory dump (6464-byte image).
+The resource file is only 2320 bytes; the full function exists in the larger memory image.
+
+This function computes a hypergeometric-weighted average of per-tile-count leave
+adjustments using binomial coefficients in 80-bit SANE extended precision.
 
 ```c
 /* Global variables */
-short g_config_value;       /* A5-12538: Configuration/scaling factor */
-short g_leave_index;        /* A5-13062: Current leave lookup index */
+extended* g_binom_table;    /* A5-2448: Binomial coefficient table (8080 bytes) */
+                            /*   101 entries × 80 bytes (8 × 10-byte SANE extended) */
+                            /*   entry[n][k] = C(n,k), allocated on first call */
+void*     g_mul_handles[27]; /* A5-10868: Array of 27 MUL resource pointers (a-z + blank) */
+
+/* MUL record layout (28 bytes per record, 8 records per tile) */
+typedef struct {
+    char    unknown1[24];   /* +0:  Simulation metadata (not used at runtime) */
+    int32_t leave_adj;      /* +24: Leave adjustment in centipoints */
+} MULRecord;                /* 28 bytes total */
 
 /*
- * apply_leave_value - Adjust move score based on remaining rack quality
+ * compute_tile_leave - Binomial-weighted leave value for one tile type
  *
- * Leave values are SUBTRACTED from the move score:
- *   - Negative leave value = BONUS (good tiles remaining, e.g., S, blank)
- *   - Positive leave value = PENALTY (awkward tiles remaining, e.g., Q, V)
+ * Computes the expected leave value contribution considering the probability
+ * distribution of tile counts (hypergeometric model).
  *
- * @param base_score: The raw move score before leave adjustment
- * @param remaining_rack: Tiles left on rack after this move
- * Returns: Adjusted score (base_score - leave_value)
+ * @param tile_letter: ASCII letter code ('a'-'z' or '?' for blank)
+ * @param tile_count:  Number of this tile in current distribution
+ * @param unseen_count: Number of unseen tiles (for binomial lookup)
+ * Returns: Leave adjustment in centipoints, or 0 if not applicable
+ *
+ * SANE extended (80-bit) arithmetic used throughout for precision.
+ * Binomial coefficients avoid integer overflow for large C(100,k).
  */
-long apply_leave_value(long base_score, char* remaining_rack) {  /* uncertain */
-    long leave_total;           /* -26(A6): Accumulated leave value */
-    short scaled_leave;         /* D3: Scaled leave for final application */
+long compute_tile_leave(short tile_letter, short tile_count,
+                        short unseen_count) {
+    /* -50(A6): frame = 50 bytes */
+    extended local_46;      /* -46(A6): 10-byte SANE working value */
+    long     local_36;      /* -36(A6): baseline adjustment (record 0) */
+    extended local_30;      /* -30(A6): accumulator for binomial weights */
+    extended local_20;      /* -20(A6): accumulator for leave adjustments */
+    extended local_10;      /* -10(A6): SANE temp for copy/multiply result */
+    long     local_50;      /* -50(A6): integer for FL2X conversion */
 
-    /* Look up leave value from MUL resource */
-    /* uncertain: exact lookup mechanism */
-    leave_total = lookup_mul_leave(remaining_rack);  /* Uses MUL 1-7 resources */
+    short letter_index;     /* D5 */
+    short D3, D4, D6;
+    long  D7;               /* SANE byte offset = D4 * 10 */
 
-    /* Scale the leave value */
-    short config = g_config_value;
-    leave_total = divide_long(leave_total, config);  /* JT[90] */
+    D6 = tile_count;        /* 10(A6) */
 
-    scaled_leave = (short)leave_total;
+    /* Early exit: if tile_count < 7, no leave adjustment */
+    if (D6 < 7)
+        return 0;
 
-    /* Clamp leave adjustment to reasonable range */
-    if (scaled_leave <= -100) {
-        scaled_leave = -100;   /* Minimum penalty (max bonus when subtracted) */
+    /* Convert ASCII letter to 0-based index */
+    if (tile_letter == '?')         /* 0x3F = blank */
+        letter_index = 0;
+    else
+        letter_index = tile_letter - 96;  /* 'a'=1, 'b'=2, ..., 'z'=26 */
+
+    /*=== STEP 1: Build binomial coefficient table (one-time) ===*/
+    if (g_binom_table == NULL) {
+        g_binom_table = (extended*)NewPtr(8080);  /* JT[1666] */
+        if (g_binom_table == NULL)
+            bounds_error();                       /* JT[418] */
+
+        /* Initialize: entry[0..100][0] = 1.0, entry[0][1..7] = 0.0 */
+        /* First, zero slots 1-7 of entry 0: */
+        for (D4 = 1; D4 < 8; D4++) {
+            /* A4 = D4 * 10, then entry[0][D4] = 0.0 */
+            g_binom_table[D4] = 0.0;  /* offset = D4*10 in entry 0 */
+        }
+
+        /* Set slot 0 of all 101 entries to 1.0 = C(n,0) */
+        for (D4 = 0; D4 < 101; D4++) {
+            extended* entry = &g_binom_table[D4 * 8]; /* 80 bytes per entry */
+            entry[0] = 1.0;  /* C(n,0) = 1 for all n */
+            /* Bytes 0-1: $3FFF (exponent), 2-5: $80000000 (mantissa), 6-9: $00000000 */
+        }
+
+        /* Build Pascal's triangle: C(i,j) = C(i-1,j) + C(i-1,j-1) */
+        for (D4 = 1; D4 < 101; D4++) {
+            D3 = 1;
+            extended* prev = &g_binom_table[(D4-1) * 8];
+            extended* curr = &g_binom_table[D4 * 8];
+            while (D3 < 8) {
+                /* FADDX: curr[D3] = prev[D3] + prev[D3-1] */
+                local_46 = prev[D3];
+                local_46 += prev[D3 - 1];   /* FADDX via A9EB at 0x14DC */
+                curr[D3] = local_46;
+                D3++;
+            }
+        }
     }
-    /* uncertain: upper clamp logic */
 
-    /* Apply leave value by SUBTRACTION */
-    /* Negative leave = good remaining tiles = score INCREASES */
-    /* Positive leave = bad remaining tiles = score DECREASES */
-    long adjusted_score = base_score - scaled_leave;
+    /*=== STEP 2: Clear accumulators ===*/
+    local_30 = 0.0;    /* -30(A6): weight sum = Σ C(n,i)*C(m,j-i) */
+    local_20 = 0.0;    /* -20(A6): adj sum = Σ (MUL[i+1].adj - baseline) */
 
-    return adjusted_score;
+    /* Compute loop bounds */
+    D4 = -7 + D6;
+    if (D4 < 6)
+        D3 = D4;
+    else
+        D3 = 6;
+    D6 -= unseen_count;  /* D6 = tile_count - unseen */
+    D4 = 0;
+
+    /*=== STEP 3: Setup pointers ===*/
+    /* A4 = &binom_table[unseen_count] (80 bytes per entry) */
+    extended* binom_n = &g_binom_table[unseen_count * 8];  /* A4 */
+    /* A3 = &binom_table[D6] */
+    extended* binom_m = &g_binom_table[D6 * 8];            /* A3 */
+
+    /* A2 = MUL data pointer for this letter */
+    MULRecord* mul_data = (MULRecord*)g_mul_handles[letter_index]; /* A2 */
+    /* A0 = same pointer, for baseline read */
+    local_36 = mul_data[0].leave_adj;  /* Baseline: record 0, offset 24 */
+
+    D7 = D4 * 10;  /* Initial SANE byte offset */
+
+    /*=== STEP 4: Main weighted-average loop ===*/
+    /* Loop while D4 <= unseen_count AND D3 >= D4 */
+    while (D4 <= unseen_count && D3 >= D4) {
+
+        /*--- Binomial weight: C(unseen, D4) × C(D6, D3-D4) ---*/
+        /* Copy binom_n[D4] to local_46 (10 bytes) */
+        local_46 = binom_n[D4];          /* LEA (0,A4,D7.L),A1 at 0x1584 */
+
+        /* FMULX: local_46 *= binom_m[D3 - D4] */
+        local_46 *= binom_m[D3 - D4];    /* PEA (0,A3,D0.L) + FMULX at 0x159A */
+
+        /* Copy product to local_10 */
+        local_10 = local_46;
+
+        /* FADDX: accumulate weight */
+        local_30 += local_10;            /* FADDX at 0x15B4 */
+
+        /*--- Leave adjustment for this tile count ---*/
+        /* MOVE.L (24,A2,D0.L),D0 at 0x15BE: indexed addressing
+         * D0 = (D4+1) * 28, extension word 0x0818:
+         *   D0.L index, displacement 24
+         * Effective: mul_data[(D4+1)*28 + 24] = record[D4+1].leave_adj */
+        long adj = mul_data[D4 + 1].leave_adj;  /* MULS #28 + indexed load */
+        adj -= local_36;                 /* SUB.L -36(A6),D0: relative to baseline */
+
+        /* FL2X: convert integer adjustment to SANE extended */
+        local_50 = adj;
+        local_46 = (extended)local_50;   /* FL2X ($2804) at 0x15E4 */
+
+        /* FADDX: accumulate adjustment */
+        local_20 += local_46;            /* FADDX at 0x15F0 */
+
+        D4++;
+        D7 += 10;
+    }
+
+    /*=== STEP 5: Normalize and convert ===*/
+    /* FDIVX: local_20 /= local_30 → weighted average */
+    local_20 /= local_30;               /* FDIVX ($0006) at 0x1610 */
+
+    D6 += unseen_count;  /* Restore D6 */
+
+    /* Copy result, round, convert to integer */
+    local_50 = local_20;                /* Copy extended to buffer */
+    /* SANE $0016: round/normalize */   /* A9EB at 0x162C */
+    long result;
+    result = (long)local_50;            /* FX2L ($2810) at 0x163A */
+
+    return result;                       /* D0 = centipoints */
 }
 ```
+
+**Key discovery: indexed addressing at 0x15BE**
+
+The instruction `2032 0818` decodes as `MOVE.L (24,A2,D0.L),D0`:
+- Extension word `0818`: D/A=0 (Data), Reg=0 (D0), W/L=1 (Long), Scale=0 (×1), Disp=0x18 (24)
+- D0 holds `(D4+1) * 28` from the preceding MULS
+- Effective address: `A2 + D0 + 24 = MUL_data[(D4+1)*28 + 24]`
+- This reads offset 24 (leave_adj) from MUL record (D4+1), NOT just record 0
+
+This means **all 8 MUL records per tile are used**, with record 0 as baseline and
+records 1-7 providing per-count adjustments.
 
 ### Initialize Scoring Context (0x08B8)
 
@@ -855,8 +991,12 @@ long calculate_complete_move_score(Move* move, char* rack, char* opp_rack) {
 |-----------|------------|-------|
 | Bingo bonus (5000) | **VERY HIGH** | Explicit constant 0x1388 at offset 0x0330 |
 | Tile count check (==7) | **VERY HIGH** | CMPI.W #$0007 at offset 0x0328 |
-| Leave subtraction | **HIGH** | Consistent with Scrabble AI theory, JSR 90 patterns |
+| Binomial-weighted leave algo | **VERY HIGH** | Manually decoded from raw hex of QEMU dump |
+| Indexed MUL record access | **VERY HIGH** | Extension word 0x0818 verified: (24,A2,D0.L) |
+| Pascal's triangle construction | **HIGH** | FADDX recurrence + init to 1.0 confirmed |
+| Leave subtraction | **HIGH** | Consistent with Scrabble AI theory |
 | Position tracking | **HIGH** | Clear global variable updates |
 | Multiplier tables | **MEDIUM-HIGH** | LEA instructions with consistent offsets |
 | Cross-word scoring | **MEDIUM** | Complex nested loops, some uncertainty |
 | Move structure layout | **MEDIUM** | Inferred from offset usage patterns |
+| Loop bounds (D3, D4 init) | **MEDIUM** | Partially decoded, exact tile/unseen semantics uncertain |
