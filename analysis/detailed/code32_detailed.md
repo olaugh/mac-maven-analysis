@@ -1905,7 +1905,11 @@ short score = g_board_scores[row * 34 + col * 2];
 | A5-10900 | g_mul_handles_alt | 108 | Secondary MUL handle array |
 | A5-12538 | g_unseen_count | 2 | Unseen tiles in bag |
 | A5-12683 | g_config_byte | 1 | Configuration byte |
-| A5-12804 | g_pattern_strings | ~256 | ESTR pattern string table |
+| A5-10908 | g_expr_handle | 4 (ptr) | EXPR resource data pointer (320×28-byte records) |
+| A5-10912 | g_estr_strings | 4 (ptr) | ESTR string pool (from ESTR resource) |
+| A5-10914 | g_estr_entry_count | 2 | PATB entry count × 8 |
+| A5-10918 | g_estr_entries | 4 (ptr) | PATB entry table (from PATB resource, NOT ESTR) |
+| A5-12804 | g_pattern_strings | ~256 | Working pattern string buffer |
 | A5-13060 | g_secondary_buffer | 256 | Scoring work buffer |
 | A5-13062 | g_leave_index | 2 | Leave evaluation index |
 | A5-13064 | g_estr_records | ~2304 | ESTR record base (18 bytes each) |
@@ -1957,3 +1961,6 @@ short score = g_board_scores[row * 34 + col * 2];
 | Position tracking | **HIGH** | Clear global variable updates |
 | Cross-word scoring | **MEDIUM** | Complex nested loops |
 | Move structure layout | **MEDIUM** | Inferred from offset patterns |
+| ESTR/PATB/EXPR pipeline | **VERY HIGH** | Full resource decode, see estr_patb_expr_analysis.md |
+| PATB source = PATB resource, not ESTR | **VERY HIGH** | CODE 15 hex manually verified |
+| EXPR = 8960 bytes (320 records) | **VERY HIGH** | Extracted from resource fork |

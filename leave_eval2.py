@@ -54,6 +54,8 @@ VOWELS = set('AEIOU')
 
 RECORD_SIZE = 28  # MUL record: 28 bytes
 
+RECORD_SIZE_EXPR = 28  # EXPR record: same 28-byte format as MUL
+
 
 # ─── Data Loading ───────────────────────────────────────────────────
 
@@ -103,6 +105,61 @@ def load_estr_patterns():
     return patterns
 
 
+def load_patb_expr():
+    """Load PATB + EXPR resources and build pattern → EXPR value mapping.
+
+    PATB (Pattern Table): 8-byte entries mapping ESTR string offsets to EXPR indices.
+    EXPR: 320 × 28-byte records; offset 26 = int16 centipoints.
+
+    binary_search_expr (0x16BC) filters by status_word != 0 && flag_byte == 0.
+    Entry 0 (status_word=0) is excluded.
+
+    Returns dict mapping pattern string → EXPR centipoints value.
+    """
+    estr_path = os.path.join(RESOURCES_DIR, "ESTR", "0_pattern_strings.bin")
+    patb_path = os.path.join(RESOURCES_DIR, "PATB", "0_entries.bin")
+    expr_path = os.path.join(RESOURCES_DIR, "EXPR", "0_full.bin")
+
+    with open(estr_path, 'rb') as f:
+        estr_data = f.read()
+    with open(patb_path, 'rb') as f:
+        patb_data = f.read()
+    with open(expr_path, 'rb') as f:
+        expr_data = f.read()
+
+    # Parse PATB Section 1 entries (8 bytes each)
+    # Format: {uint32 string_offset, uint16 status_word, uint8 flag_byte, uint8 reserved}
+    # binary_search_expr includes only entries where status_word != 0 && flag_byte == 0
+    expr_values = {}
+    num_entries = min(113, len(patb_data) // 8)  # Section 1 = first 113 entries
+
+    for i in range(num_entries):
+        offset = i * 8
+        str_offset = struct.unpack('>I', patb_data[offset:offset + 4])[0]
+        status_word = struct.unpack('>H', patb_data[offset + 4:offset + 6])[0]
+        flag_byte = patb_data[offset + 6]
+
+        # Filter: binary_search_expr only includes entries with
+        # status_word != 0 AND flag_byte == 0
+        if status_word == 0 or flag_byte != 0:
+            continue
+
+        # Read null-terminated string from ESTR data
+        end = estr_data.index(b'\x00', str_offset)
+        pattern = estr_data[str_offset:end].decode('ascii')
+
+        # Read EXPR centipoints at record[status_word].offset_26
+        expr_offset = status_word * RECORD_SIZE_EXPR + 26
+        if expr_offset + 2 <= len(expr_data):
+            centipoints = struct.unpack('>h', expr_data[expr_offset:expr_offset + 2])[0]
+        else:
+            centipoints = 0
+
+        expr_values[pattern] = centipoints
+
+    return expr_values
+
+
 def find_matching_patterns(leave_counts, patterns):
     """Find which ESTR patterns are multiset subsets of the leave.
 
@@ -124,6 +181,40 @@ def find_matching_patterns(leave_counts, patterns):
         if all(leave_lower[ch] >= cnt for ch, cnt in pat_counts.items()):
             matching.append(pattern)
     return matching
+
+
+def tile_string_helper(pattern, unseen, mul_data, expr_values):
+    """Reimplements CODE 32 function 0x1648.
+
+    For multi-letter patterns: returns EXPR synergy value directly (0 if not
+    in EXPR table). For single-letter patterns: returns EXPR value + binomial
+    correction that adjusts for actual vs baseline tile distribution.
+
+    Returns 0 for patterns without EXPR data → orchestrator SKIPS them.
+    """
+    expr_val = expr_values.get(pattern, 0)
+
+    if len(pattern) > 1:
+        return expr_val
+
+    # Single-letter pattern: add binomial correction
+    # D7 += binomial_leave(letter, total_unseen, dist_count)
+    # D7 -= binomial_leave(letter, 96, orig_count - 1)
+    letter = pattern[0]
+    tile = letter.upper() if letter != '?' else '?'
+
+    if tile not in mul_data:
+        return expr_val
+
+    records = mul_data[tile]
+    total_unseen = sum(unseen.values())
+    dist_count = unseen.get(tile, 0)
+    orig_count = STANDARD_BAG.get(tile, 0)
+
+    correction1 = binomial_tile_leave(tile, dist_count, total_unseen, records)
+    correction2 = binomial_tile_leave(tile, max(0, orig_count - 1), 96, records)
+
+    return expr_val + correction1 - correction2
 
 
 # ─── Binomial Coefficients ──────────────────────────────────────────
@@ -353,7 +444,8 @@ def compute_unseen(bag_contents, rack=None, board_tiles=None):
 
 
 def evaluate_leave(leave_str, mul_data, bag=None, rack=None,
-                   board_tiles=None, verbose=True, estr_patterns=None):
+                   board_tiles=None, verbose=True, estr_patterns=None,
+                   expr_values=None):
     """Evaluate a leave using Maven's algorithm.
 
     Parameters:
@@ -425,97 +517,81 @@ def evaluate_leave(leave_str, mul_data, bag=None, rack=None,
             tile_values[tile] = (count, val * count, "binomial")
             tile_total += val * count
 
-    # ─── Component 2: V/C balance via ESTR coverage ─────────────
-    # Maven's leave_orchestrator (0x09D8) has THREE channels:
-    #   a. Per-pattern EXPR synergy values (tile_string_helper 0x1648)
-    #      → NOT YET DECODED (96-byte EXPR resource format unknown)
-    #   b. Per-pattern V/C balance (blank_dispatcher chain)
-    #      → IMPLEMENTED (quadratic approximation of 0x0DAC DP)
-    #   c. Q-without-U penalty
-    #      → IMPLEMENTED: (counter - unseen) / unseen, clamped to -100
+    # ─── Component 2: Per-pattern ESTR scoring ───────────────────
+    # Maven's leave_orchestrator (0x09D8) iterates 130 ESTR patterns.
+    # For each matching pattern where tile_string_helper (0x1648) returns
+    # non-zero, THREE channels accumulate:
+    #   a. EXPR synergy (tile_string_helper result → work buffer via 0x18E4)
+    #   b. V/C balance (blank_dispatcher 0x0CC0 → pattern score)
+    #   c. Q-without-U penalty (replaces EXPR for q-no-u patterns)
     #
-    # ESTR pattern matching determines which tiles get V/C credit:
-    # Q alone has no matching pattern → no V/C, while QU matches "qu".
+    # tile_string_helper returns:
+    #   Multi-letter: EXPR value directly (0 if pattern not in EXPR table)
+    #   Single-letter: EXPR value + binomial correction for game state
+    # Patterns returning 0 are SKIPPED (no V/C computation).
 
-    # Unseen V/C counts for the draw probability model
     unseen_vowels = sum(unseen.get(v, 0) for v in VOWELS)
     unseen_consonants = sum(unseen.get(c, 0) for c in unseen
                            if c not in VOWELS and c != '?')
 
     vc_cache = {}
     matching = []
-    covered = set()
+    active_patterns = []  # patterns that pass tile_string_helper gate
     vc_total = 0
-    vc_vowels = 0
-    vc_consonants = 0
-    vc_blanks = 0
+    synergy_total = 0
     q_penalty = 0
 
-    draw_count = 7 - leave_size
-    if draw_count < 0:
-        draw_count = 0
+    # Use PATB pattern set (expr_values.keys()) as the master list.
+    # This includes 7 "hidden" single-letter patterns (g,h,k,q,t,u,w) that
+    # exist as substring offsets in ESTR data, not as standalone ESTR strings.
+    pattern_set = list(expr_values.keys()) if expr_values else (estr_patterns or [])
+    if pattern_set:
+        matching = find_matching_patterns(leave_counts, pattern_set)
 
-    if estr_patterns:
-        matching = find_matching_patterns(leave_counts, estr_patterns)
-
-        # Find which leave tile types are "covered" by matching patterns
-        covered = set()
         for pattern in matching:
-            for ch in pattern:
-                covered.add(ch)
-
-        # Count V/C from covered leave tiles only
-        for tile, count in leave_counts.items():
-            tile_lower = tile.lower() if tile != '?' else '?'
-            if tile_lower not in covered:
+            # tile_string_helper gate (0x1648)
+            helper_val = tile_string_helper(pattern, unseen, mul_data,
+                                            expr_values or {})
+            if helper_val == 0:
                 continue
-            if tile == '?':
-                vc_blanks += count
-            elif tile in VOWELS:
-                vc_vowels += count
-            else:
-                vc_consonants += count
 
-        vc_total = blank_dispatcher(vc_vowels, vc_consonants, vc_blanks,
-                                    unseen_vowels, unseen_consonants,
-                                    draw_count, mul_data, vc_cache)
+            # Q-without-U check (0x0B1E-0x0B62): OVERWRITES helper_val
+            is_q_no_u = False
+            if 'q' in pattern and 'u' not in pattern:
+                # Maven: penalty = (counter - unseen) / unseen, clamped -100
+                # At game start, counter ≈ unseen → penalty ≈ 0
+                helper_val = 0
+                is_q_no_u = True
 
-        # Q-without-U penalty (decoded from orchestrator at 0x0B1E-0x0B62)
-        # For each matching pattern containing 'q' but not 'u':
-        #   penalty = (counter - unseen) / unseen, clamped to -100
-        # With full bag, counter ≈ unseen, so penalty ≈ 0.
-        # We approximate by checking if Q is in leave without U.
-        if leave_counts.get('Q', 0) > 0 and leave_counts.get('U', 0) == 0:
-            # Check if any matching pattern contains q without u
-            q_no_u_patterns = [p for p in matching
-                               if 'q' in p and 'u' not in p]
-            if q_no_u_patterns:
-                # Maven's formula: (counter - unseen) / unseen
-                # counter is a running total; at start of game, ≈ unseen
-                # Penalty is per-pattern, clamped to -100
-                q_penalty = -100 * len(q_no_u_patterns)
-    else:
-        # Fallback: single whole-leave V/C (no ESTR data)
-        vc_vowels = sum(leave_counts.get(v, 0) for v in VOWELS)
-        vc_consonants = sum(leave_counts.get(c, 0) for c in leave_counts
-                            if c not in VOWELS and c != '?')
-        vc_blanks = leave_counts.get('?', 0)
+            # Channel a: EXPR synergy (stored in work buffer via 0x18E4)
+            # Only add multi-letter EXPR values as synergy, since single-letter
+            # EXPR values overlap with Component 1 MUL per-tile values.
+            # (In Maven, both channels go to separate buffers combined by CODE 35;
+            # this approximation avoids double-counting until CODE 35 is decoded.)
+            if len(pattern) > 1:
+                synergy_total += helper_val
 
-        vc_total = blank_dispatcher(vc_vowels, vc_consonants, vc_blanks,
-                                    unseen_vowels, unseen_consonants,
-                                    draw_count, mul_data, vc_cache)
+            # Classify pattern V/C for channel b
+            pat_v = sum(1 for ch in pattern if ch in 'aeiou')
+            pat_c = sum(1 for ch in pattern
+                        if ch.isalpha() and ch not in 'aeiou')
+            pat_b = pattern.count('?')
 
-    # V/C adjustment is a penalty (positive = more imbalanced than baseline).
-    # Subtract it so imbalanced leaves score lower.
-    # Q-without-U penalty is negative (bad), so subtracting it adds to score
-    # (wait — it's a penalty that should make the score worse, so ADD it)
-    total = tile_total - vc_total + q_penalty
+            # draw_count = 7 - pattern_length (per-pattern, not per-leave)
+            draw = max(0, 7 - len(pattern))
 
-    # NOTE: Maven's full algorithm also adds per-pattern EXPR synergy values
-    # from tile_string_helper (0x1648). These capture pattern-specific
-    # combination bonuses (e.g., QU synergy, ING-potential for GIN, etc.)
-    # that go beyond V/C balance. The 96-byte EXPR resource format is not
-    # yet decoded. Without EXPR, multi-letter synergies are under-valued.
+            # Channel b: V/C balance (blank_dispatcher 0x0CC0)
+            vc = blank_dispatcher(pat_v, pat_c, pat_b,
+                                  unseen_vowels, unseen_consonants,
+                                  draw, mul_data, vc_cache)
+            vc_total += vc
+
+            active_patterns.append((pattern, helper_val, vc, is_q_no_u))
+
+    # Combine: MUL per-tile + EXPR synergies - V/C penalties
+    # EXPR synergy is positive for good combos → added
+    # V/C is (actual_penalty - baseline_penalty) → subtracted
+    total = tile_total + synergy_total - vc_total + q_penalty
 
     if verbose:
         print(f"\nLeave: {leave}")
@@ -532,31 +608,46 @@ def evaluate_leave(leave_str, mul_data, bag=None, rack=None,
         print("-" * 60)
         print(f"{'Tiles':<6} {'':<6} {tile_total:<12} {tile_total/100:>+9.2f}")
 
-        if matching or vc_total != 0 or q_penalty != 0:
-            vc_str = f"{vc_vowels}V {vc_consonants}C"
-            if vc_blanks:
-                vc_str += f" {vc_blanks}?"
-            vc_str += f", draw {draw_count}"
-            print(f"\nV/C balance: {vc_str}")
-            if estr_patterns and matching:
-                pat_strs = [repr(p) for p in matching]
-                if len(pat_strs) > 8:
-                    pat_strs = pat_strs[:8] + [f"...+{len(matching)-8} more"]
-                print(f"ESTR patterns ({len(matching)}): {', '.join(pat_strs)}")
+        if matching:
+            print(f"\nESTR patterns ({len(matching)} matching):")
+            pat_strs = [repr(p) for p in matching]
+            if len(pat_strs) > 10:
+                pat_strs = pat_strs[:10] + [f"...+{len(matching)-10} more"]
+            print(f"  all: {', '.join(pat_strs)}")
+
+        if active_patterns:
+            print(f"\nActive patterns ({len(active_patterns)} pass tile_string_helper gate):")
+            for pat, syn, vc, is_qnu in active_patterns:
+                parts = []
+                vp = sum(1 for ch in pat if ch in 'aeiou')
+                cp = sum(1 for ch in pat if ch.isalpha() and ch not in 'aeiou')
+                bp = pat.count('?')
+                draw = max(0, 7 - len(pat))
+                vc_desc = f"{vp}V{cp}C"
+                if bp:
+                    vc_desc += f"{bp}?"
+                vc_desc += f" draw{draw}"
+                if syn != 0:
+                    label = "EXPR" if len(pat) > 1 else "EXPR(gate)"
+                    parts.append(f"{label}={syn:+d}")
+                if vc != 0:
+                    parts.append(f"V/C={vc:+d}")
+                if is_qnu:
+                    parts.append("Q-no-U")
+                detail = ", ".join(parts) if parts else "~0"
+                print(f"  {repr(pat):<12} ({vc_desc})  {detail}")
+
+            if synergy_total != 0:
+                print(f"\nEXPR synergy: {synergy_total:>+6} cp  "
+                      f"({synergy_total/100:>+.2f} pts)")
             if vc_total != 0:
-                print(f"V/C penalty:  {vc_total:>+6} cp  ({vc_total/100:>+.2f} pts)"
-                      f"  [quadratic approx of 0x0DAC DP]")
+                print(f"V/C balance:  {vc_total:>+6} cp  "
+                      f"({vc_total/100:>+.2f} pts)")
             if q_penalty != 0:
-                print(f"Q-no-U:       {q_penalty:>+6} cp  ({q_penalty/100:>+.2f} pts)")
-            uncovered = []
-            for tile in sorted(leave_counts):
-                tl = tile.lower() if tile != '?' else '?'
-                if tl not in covered:
-                    uncovered.append(tile)
-            if uncovered:
-                print(f"No ESTR coverage: {', '.join(uncovered)}")
-            print(f"[EXPR synergy values not yet decoded - "
-                  f"multi-letter bonuses under-valued]")
+                print(f"Q-no-U:       {q_penalty:>+6} cp  "
+                      f"({q_penalty/100:>+.2f} pts)")
+        elif matching and not active_patterns:
+            print("  (no patterns pass tile_string_helper gate)")
 
         print("-" * 60)
         print(f"{'TOTAL':<6} {'':<6} {total:<12} {total/100:>+9.2f}")
@@ -566,12 +657,13 @@ def evaluate_leave(leave_str, mul_data, bag=None, rack=None,
 
 
 def compare_leaves(leaves, mul_data, bag=None, rack=None, board_tiles=None,
-                   estr_patterns=None):
+                   estr_patterns=None, expr_values=None):
     """Compare multiple leaves, sorted best to worst."""
     results = []
     for leave in leaves:
         total, _ = evaluate_leave(leave, mul_data, bag, rack, board_tiles,
-                                  verbose=False, estr_patterns=estr_patterns)
+                                  verbose=False, estr_patterns=estr_patterns,
+                                  expr_values=expr_values)
         results.append((leave.upper(), total))
 
     results.sort(key=lambda x: -x[1])
@@ -649,7 +741,7 @@ def show_best_worst(mul_data, n=10):
 
 # ─── REPL ───────────────────────────────────────────────────────────
 
-def repl(mul_data, bag, rack, board_tiles, estr_patterns=None):
+def repl(mul_data, bag, rack, board_tiles, estr_patterns=None, expr_values=None):
     """Interactive leave evaluator."""
     try:
         import readline
@@ -708,7 +800,8 @@ def repl(mul_data, bag, rack, board_tiles, estr_patterns=None):
         elif cmd == 'cmp' and len(parts) > 1:
             compare_leaves(parts[1:], mul_data, current_bag,
                            current_rack, current_board,
-                           estr_patterns=estr_patterns)
+                           estr_patterns=estr_patterns,
+                           expr_values=expr_values)
         elif cmd == 'rack' and len(parts) > 1:
             current_rack = parts[1].upper()
             print(f"Rack set to: {current_rack}")
@@ -727,7 +820,8 @@ def repl(mul_data, bag, rack, board_tiles, estr_patterns=None):
         elif all(c.isalpha() or c == '?' for c in line.replace(' ', '')):
             evaluate_leave(line, mul_data, current_bag,
                            current_rack, current_board,
-                           estr_patterns=estr_patterns)
+                           estr_patterns=estr_patterns,
+                           expr_values=expr_values)
         else:
             print(f"Unknown command: {cmd}")
 
@@ -775,18 +869,23 @@ def main():
     estr_patterns = load_estr_patterns()
     print(f"Loaded {len(estr_patterns)} ESTR patterns")
 
+    print("Loading PATB/EXPR data...")
+    expr_values = load_patb_expr()
+    print(f"Loaded {len(expr_values)} pattern→EXPR mappings")
+
     bag = parse_bag_string(args.bag) if args.bag else Counter(STANDARD_BAG)
     rack = args.rack.upper() if args.rack else None
     board = args.board.upper() if args.board else None
 
     if args.leave:
         evaluate_leave(args.leave, mul_data, bag, rack, board,
-                       estr_patterns=estr_patterns)
+                       estr_patterns=estr_patterns, expr_values=expr_values)
     elif args.cmp:
         compare_leaves(args.cmp, mul_data, bag, rack, board,
-                       estr_patterns=estr_patterns)
+                       estr_patterns=estr_patterns, expr_values=expr_values)
     else:
-        repl(mul_data, bag, rack, board, estr_patterns=estr_patterns)
+        repl(mul_data, bag, rack, board, estr_patterns=estr_patterns,
+             expr_values=expr_values)
 
 
 if __name__ == "__main__":
