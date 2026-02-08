@@ -1295,6 +1295,590 @@ long binomial_leave(short tile_letter, short tile_count, short unseen_count) {
 
 ---
 
+## Function 0x1648 - Tile String Helper (Frame: 0 bytes)
+
+### Annotated Disassembly (manually decoded from raw hex)
+
+```asm
+;======================================================================
+; tile_string_helper - Look up EXPR value for pattern, add binomial
+;   correction for single-letter patterns
+; Frame: 0 bytes
+; Parameters: 8(A6) = cross_check (pattern string, sorted lowercase)
+;             12(A6) = &local_30 (output pointer, receives entry address)
+; Returns: D0 = EXPR value (multi-letter) or EXPR+binomial correction (single)
+;          Returns 0 if pattern not found in EXPR binary search table
+;======================================================================
+0x1648: 4E56 0000    LINK    A6,#0
+0x164C: 48E7 0108    MOVEM.L D7/A4,-(SP)
+0x1650: 286E 0008    MOVEA.L 8(A6),A4         ; A4 = cross_check string
+
+; Call binary search for this pattern
+0x1654: 2F2E 000C    MOVE.L  12(A6),-(SP)     ; push &local_30
+0x1658: 2F0C         MOVE.L  A4,-(SP)         ; push cross_check
+0x165A: 4EBA 0060    JSR     0x16BC           ; binary_search_expr(cross_check, &local_30)
+0x165E: 3E00         MOVE.W  D0,D7            ; D7 = EXPR value (0 if not found)
+
+; Get pattern length
+0x1660: 2E8C         MOVE.L  A4,(SP)          ; reuse stack slot for strlen param
+0x1662: 4EAD 0DC2    JSR     3522(A5)         ; JT[3522] = strlen(cross_check)
+0x1666: 5380         SUBQ.L  #1,D0            ; D0 = strlen - 1
+0x1668: 508F         ADDQ.L  #8,SP            ; clean stack (2 longs from 0x16BC call)
+0x166A: 6646         BNE.S   0x16B2           ; if len > 1 → multi-letter, return D7
+
+; === SINGLE-LETTER PATH ===
+; For single-letter patterns, add binomial correction:
+;   D7 += binomial_leave(letter, g_unseen_count, dist_count)
+;   D7 -= binomial_leave(letter, 96, orig_count - 1)
+
+; Look up current unseen count for this letter
+0x166C: 1014         MOVE.B  (A4),D0          ; D0 = letter
+0x166E: 4880         EXT.W   D0
+0x1670: 204D         MOVEA.L A5,A0            ; A0 = A5
+0x1672: D0C0         ADDA.W  D0,A0            ; A0 = A5 + letter
+0x1674: 1028 CE04    MOVE.B  -12796(A0),D0    ; D0 = g_dist_table[letter] (current unseen per tile)
+0x1678: 4880         EXT.W   D0
+
+; Call 1: binomial_leave(letter, g_unseen_count, dist_count)
+0x167A: 3F00         MOVE.W  D0,-(SP)         ; push dist_count
+0x167C: 3F2D CF06    MOVE.W  -12538(A5),-(SP) ; push g_unseen_count (total unseen, ~93)
+0x1680: 1014         MOVE.B  (A4),D0          ; letter again
+0x1682: 4880         EXT.W   D0
+0x1684: 3F00         MOVE.W  D0,-(SP)         ; push letter
+0x1686: 4EBA FD7E    JSR     0x1406           ; binomial_leave(letter, unseen, dist_count)
+0x168A: DE40         ADD.W   D0,D7            ; D7 += result
+
+; Look up original bag count for this letter
+0x168C: 1014         MOVE.B  (A4),D0          ; letter
+0x168E: 4880         EXT.W   D0
+0x1690: 204D         MOVEA.L A5,A0            ; A0 = A5
+0x1692: D0C0         ADDA.W  D0,A0            ; A0 = A5 + letter
+0x1694: 1028 9512    MOVE.B  -27374(A0),D0    ; D0 = g_orig_dist[letter] (original bag count)
+0x1698: 4880         EXT.W   D0
+
+; Call 2: binomial_leave(letter, 96, orig_count - 1)
+0x169A: 5340         SUBQ.W  #1,D0            ; D0 = orig_count - 1
+0x169C: 3E80         MOVE.W  D0,(SP)          ; overwrite letter slot with (orig_count-1)
+0x169E: 3F3C 0060    MOVE.W  #96,-(SP)        ; push 96 (baseline unseen)
+0x16A2: 1014         MOVE.B  (A4),D0          ; letter
+0x16A4: 4880         EXT.W   D0
+0x16A6: 3F00         MOVE.W  D0,-(SP)         ; push letter
+0x16A8: 4EBA FD5C    JSR     0x1406           ; binomial_leave(letter, 96, orig_count-1)
+0x16AC: 9E40         SUB.W   D0,D7            ; D7 -= baseline result
+0x16AE: 4FEF 000A    LEA     10(SP),SP        ; clean stack (5 words = 10 bytes)
+
+; === RETURN ===
+0x16B2: 3007         MOVE.W  D7,D0            ; D0 = final value
+0x16B4: 4CDF 1080    MOVEM.L (SP)+,D7/A4
+0x16B8: 4E5E         UNLK    A6
+0x16BA: 4E75         RTS
+```
+
+### C Decompilation
+
+```c
+/* tile_string_helper - Look up pattern in EXPR table with binomial correction
+ *
+ * For multi-letter patterns: returns EXPR value directly (0 if not found).
+ * For single-letter patterns: returns EXPR value + binomial correction
+ *   that adjusts for actual vs baseline tile distribution.
+ *
+ * The binomial correction is:
+ *   + binomial_leave(letter, g_unseen_count, current_dist_count)
+ *   - binomial_leave(letter, 96, original_bag_count - 1)
+ *
+ * With a full bag (start of game), g_unseen_count ≈ 93 and
+ * current_dist ≈ original_bag, so the correction is small.
+ * As tiles are played, the correction adjusts for changed distribution.
+ *
+ * Returns 0 for patterns not in EXPR table → orchestrator SKIPS them.
+ */
+short tile_string_helper(char *cross_check, long **out_entry_ptr) {
+    short D7 = binary_search_expr(cross_check, out_entry_ptr);  /* 0x16BC */
+
+    short len = strlen(cross_check);                  /* JT[3522] */
+    if (len > 1) {
+        /* Multi-letter pattern: return EXPR value directly */
+        return D7;
+    }
+
+    /* Single-letter pattern: add binomial correction */
+    char letter = cross_check[0];
+
+    /* Current distribution count for this letter */
+    short dist_count = g_dist_table[(unsigned char)letter];    /* A5-12796 */
+
+    /* Correction for actual game state */
+    D7 += binomial_leave(letter, g_unseen_count, dist_count);
+
+    /* Subtract baseline expectation (full-bag reference: 96 tiles, count-1) */
+    short orig_count = g_orig_dist[(unsigned char)letter];     /* A5-27374 */
+    D7 -= binomial_leave(letter, 96, orig_count - 1);
+
+    return D7;
+}
+```
+
+---
+
+## Function 0x16BC - EXPR Binary Search / Pattern Table Builder (Frame: 0 bytes)
+
+### Annotated Disassembly (manually decoded from raw hex)
+
+```asm
+;======================================================================
+; binary_search_expr - Build and search EXPR pattern table
+; Frame: 0 bytes
+; Parameters: 8(A6) = search string (or init data on first call)
+;             12(A6) = output pointer (receives &entry.value_field)
+; Returns: D0 = EXPR-derived leave value (word), or 0 if not found
+;
+; First call: builds sorted binary search table from ESTR entries:
+;   - Phase 1: Count entries with non-zero word@4 and zero byte@6
+;   - Allocate 10-byte buffer entries for each qualifying entry
+;   - Phase 2: Populate entries (string ptr, value field, letter_id)
+;   - Phase 3: Sort by string comparison (insertion sort)
+;   - Phase 4: Final validation
+; Subsequent calls: binary search the pre-built table
+;
+; ESTR 8-byte entry structure (at g_estr_entries, A5-10918):
+;   offset 0-1: flags word
+;   offset 2-3: string offset into g_estr_strings (A5-10912)
+;   offset 4-5: status word (non-zero = has EXPR data)
+;   offset 6:   flag byte (must be 0 for EXPR entries)
+;   offset 7:   reserved
+;
+; 10-byte buffer entry (allocated, at g_expr_table, A5-2444):
+;   offset 0-3: pointer to sorted pattern string
+;   offset 4-7: value field (initially 0, written by orchestrator)
+;   offset 8-9: letter_id (from ESTR entry word@4, for MUL indexing)
+;======================================================================
+0x16BC: 4E56 0000    LINK    A6,#0
+0x16C0: 48E7 1F38    MOVEM.L D3-D7/A2-A4,-(SP)
+
+; Check if already initialized
+0x16C4: 4AAD F674    TST.L   -2444(A5)        ; g_expr_table ptr?
+0x16C8: 6600 01A4    BNE.W   0x186E           ; → main search path
+
+; === INITIALIZATION (first call only) ===
+
+; Validate state
+0x16CC: 4A6D F682    TST.W   -2430(A5)        ; g_expr_count must be 0
+0x16D0: 6704         BEQ.S   0x16D6
+0x16D2: 4EAD 01A2    JSR     418(A5)          ; bounds_error
+
+; --- Phase 1: Count qualifying ESTR entries ---
+0x16D6: 7C01         MOVEQ   #1,D6            ; D6 = 1 (start from entry 1)
+0x16D8: 387C 0008    MOVEA.W #8,A4            ; A4 = 8 (byte offset, stride=8)
+0x16DC: 601A         BRA.S   0x16F8           ; → loop test
+
+; Phase 1 loop body
+0x16DE: 264C         MOVEA.L A4,A3            ; A3 = current offset
+0x16E0: D7ED D55A    ADDA.L  -10918(A5),A3    ; A3 = &estr_entries[current]
+0x16E4: 4A6B 0004    TST.W   4(A3)            ; test entry.status_word
+0x16E8: 670A         BEQ.S   0x16F4           ; if 0 → skip (no EXPR data)
+0x16EA: 4A2B 0006    TST.B   6(A3)            ; test entry.flag_byte
+0x16EE: 6604         BNE.S   0x16F4           ; if non-zero → skip
+0x16F0: 526D F682    ADDQ.W  #1,-2430(A5)     ; g_expr_count++ (qualifying entry)
+
+; Phase 1 increment
+0x16F4: 5246         ADDQ.W  #1,D6            ; D6++ (entry counter)
+0x16F6: 508C         ADDQ.L  #8,A4            ; A4 += 8 (next 8-byte entry)
+
+; Phase 1 test
+0x16F8: BC6D D55E    CMP.W   -10914(A5),D6    ; D6 < g_estr_entry_count?
+0x16FC: 6DE0         BLT.S   0x16DE           ; loop
+
+; --- Allocate buffer: 10 bytes per qualifying entry ---
+0x16FE: 700A         MOVEQ   #10,D0
+0x1700: C1ED F682    MULS.W  -2430(A5),D0     ; D0 = 10 * g_expr_count
+0x1704: 2F00         MOVE.L  D0,-(SP)         ; push size
+0x1706: 4EAD 0682    JSR     1666(A5)         ; JT[1666] = NewPtr
+0x170A: 2B40 F674    MOVE.L  D0,-2444(A5)     ; g_expr_table = allocated ptr
+
+; Save count, reset for Phase 2
+0x170E: 3A2D F682    MOVE.W  -2430(A5),D5     ; D5 = total qualifying entries
+0x1712: 48C5         EXT.L   D5
+0x1714: 426D F682    CLR.W   -2430(A5)        ; reset counter = 0
+0x1718: 7C01         MOVEQ   #1,D6            ; D6 = 1 (restart from entry 1)
+0x171A: 387C 0008    MOVEA.W #8,A4            ; A4 = 8 (restart offset)
+0x171E: 588F         ADDQ.L  #8,SP            ; clean stack from NewPtr call
+
+; --- Phase 2: Populate buffer entries ---
+0x1720: 6064         BRA.S   0x1786           ; → loop test
+
+; Phase 2 loop body
+0x1722: 264C         MOVEA.L A4,A3            ; A3 = current offset
+0x1724: D7ED D55A    ADDA.L  -10918(A5),A3    ; A3 = &estr_entries[current]
+0x1728: 4A6B 0004    TST.W   4(A3)            ; test entry.status_word
+0x172C: 6754         BEQ.S   0x1782           ; if 0 → skip (not qualifying)
+0x172E: 4A2B 0006    TST.B   6(A3)            ; test entry.flag_byte
+0x1732: 664E         BNE.S   0x1782           ; if non-zero → skip
+
+; Qualifying entry: compute string pointer
+0x1734: 306B 0002    MOVEA.W 2(A3),A0         ; A0 = entry.string_offset
+0x1738: 700A         MOVEQ   #10,D0
+0x173A: C1ED F682    MULS.W  -2430(A5),D0     ; D0 = 10 * current_index
+0x173E: D1ED D560    ADDA.L  -10912(A5),A0    ; A0 = g_estr_strings + offset = string ptr
+0x1742: D0AD F674    ADD.L   -2444(A5),D0     ; D0 = g_expr_table + 10*index
+0x1746: 2240         MOVEA.L D0,A1            ; A1 = &buffer_entry
+0x1748: 2288         MOVE.L  A0,(A1)          ; buffer[0-3] = string pointer
+
+; Validate string is sorted (each byte >= previous)
+0x174A: 2448         MOVEA.L A0,A2            ; A2 = string ptr for validation
+0x174C: 600C         BRA.S   0x175A           ; → validation loop test
+0x174E: 1012         MOVE.B  (A2),D0          ; D0 = current byte
+0x1750: B02A FFFF    CMP.B   -1(A2),D0        ; compare with previous byte
+0x1754: 6C04         BGE.S   0x175A           ; ok if >= (sorted)
+0x1756: 4EAD 01A2    JSR     418(A5)          ; bounds_error (not sorted!)
+0x175A: 528A         ADDQ.L  #1,A2            ; A2++
+0x175C: 4A12         TST.B   (A2)             ; null terminator?
+0x175E: 66EE         BNE.S   0x174E           ; loop while not null
+
+; Clear value field, copy letter_id
+0x1760: 700A         MOVEQ   #10,D0
+0x1762: C1ED F682    MULS.W  -2430(A5),D0     ; D0 = 10 * index
+0x1766: D0AD F674    ADD.L   -2444(A5),D0     ; D0 = &buffer_entry
+0x176A: 2E00         MOVE.L  D0,D7            ; save in D7
+0x176C: 2047         MOVEA.L D7,A0
+0x176E: 42A8 0004    CLR.L   4(A0)            ; buffer[4-7] = 0 (value field)
+0x1772: 202D D55A    MOVE.L  -10918(A5),D0    ; D0 = estr_entries base
+0x1776: 2047         MOVEA.L D7,A0
+0x1778: 3174 0804 0008  MOVE.W (4,A4,D0.L),8(A0)  ; buffer[8-9] = estr_entry.word@4
+
+; Increment
+0x177E: 526D F682    ADDQ.W  #1,-2430(A5)     ; g_expr_count++
+
+; Phase 2 increment/test
+0x1782: 5246         ADDQ.W  #1,D6            ; D6++
+0x1784: 508C         ADDQ.L  #8,A4            ; A4 += 8
+0x1786: BC6D D55E    CMP.W   -10914(A5),D6    ; D6 < entry_count?
+0x178A: 6D96         BLT.S   0x1722           ; loop
+
+; ... Phase 3: Insertion sort by string comparison ...
+; (sorts buffer entries by their string pointers using strcmp)
+; ... Phase 4: Validation ...
+
+; === MAIN SEARCH PATH (0x186E) ===
+; Binary search the sorted table
+
+0x186E: 7A00         MOVEQ   #0,D5            ; D5 = 0 (low bound)
+0x1870: 7CFF         MOVEQ   #-1,D6           ; D6 = count - 1 (high bound)
+0x1872: DC6D F682    ADD.W   -2430(A5),D6     ; D6 = g_expr_count - 1
+0x1876: 206E 000C    MOVEA.L 12(A6),A0        ; A0 = output pointer
+0x187A: 4290         CLR.L   (A0)             ; *output = NULL (default)
+0x187C: 6054         BRA.S   0x18D2           ; → loop test
+
+; --- Binary search loop body ---
+0x187E: 3806         MOVE.W  D6,D4            ; D4 = high
+0x1880: D845         ADD.W   D5,D4            ; D4 = low + high
+0x1882: E244         ASR.W   #1,D4            ; D4 = (low + high) / 2 = mid
+
+; Compute buffer entry address
+0x1884: 700A         MOVEQ   #10,D0
+0x1886: C1C4         MULS.W  D4,D0            ; D0 = mid * 10
+0x1888: D0AD F674    ADD.L   -2444(A5),D0     ; D0 = &buffer[mid]
+0x188C: 2040         MOVEA.L D0,A0
+
+; Compare search string with entry's string
+0x188E: 2F10         MOVE.L  (A0),-(SP)       ; push buffer[mid].string_ptr
+0x1890: 2F2E 0008    MOVE.L  8(A6),-(SP)      ; push search_string
+0x1894: 4EAD 0DB2    JSR     3506(A5)         ; JT[3506] = strcmp
+0x1898: 3600         MOVE.W  D0,D3            ; D3 = strcmp result
+0x189A: 4A43         TST.W   D3
+0x189C: 508F         ADDQ.L  #8,SP            ; clean stack
+0x189E: 6624         BNE.S   0x18C4           ; not equal → adjust bounds
+
+; --- MATCH FOUND ---
+; Store pointer to value field in output
+0x18A0: 700A         MOVEQ   #10,D0
+0x18A2: C1C4         MULS.W  D4,D0            ; D0 = mid * 10
+0x18A4: D0AD F674    ADD.L   -2444(A5),D0     ; D0 = &buffer[mid]
+0x18A8: 2840         MOVEA.L D0,A4            ; A4 = &buffer[mid]
+0x18AA: 41EC 0004    LEA     4(A4),A0         ; A0 = &buffer[mid].value_field
+0x18AE: 226E 000C    MOVEA.L 12(A6),A1        ; A1 = output pointer
+0x18B2: 2288         MOVE.L  A0,(A1)          ; *output = &buffer[mid].value_field
+
+; Read EXPR-derived value: MUL_data[letter_id * 28 + 26]
+0x18B4: 701C         MOVEQ   #28,D0           ; 28 bytes per MUL record
+0x18B6: C1EC 0008    MULS.W  8(A4),D0         ; D0 = 28 * buffer[mid].letter_id
+0x18BA: 206D D564    MOVEA.L -10908(A5),A0    ; A0 = g_mul_data_ptr
+0x18BE: 3030 081A    MOVE.W  (26,A0,D0.L),D0  ; D0 = MUL_data[letter_id*28 + 26]
+0x18C2: 6014         BRA.S   0x18D8           ; → return (skip not-found path)
+
+; --- NOT MATCHED: adjust search bounds ---
+0x18C4: 4A43         TST.W   D3               ; strcmp result sign
+0x18C6: 6C06         BGE.S   0x18CE           ; if search >= entry → go right
+0x18C8: 7CFF         MOVEQ   #-1,D6           ; D6 = -1
+0x18CA: DC44         ADD.W   D4,D6            ; D6 = mid - 1 (narrow left)
+0x18CC: 6004         BRA.S   0x18D2           ; → loop test
+0x18CE: 7A01         MOVEQ   #1,D5            ; D5 = 1
+0x18D0: DA44         ADD.W   D4,D5            ; D5 = mid + 1 (narrow right)
+
+; --- Loop test ---
+0x18D2: BA46         CMP.W   D6,D5            ; low vs high
+0x18D4: 6FA8         BLE.S   0x187E           ; if low <= high, continue search
+
+; --- NOT FOUND ---
+0x18D6: 7000         MOVEQ   #0,D0            ; return 0
+
+; --- Epilogue ---
+0x18D8: 4CDF 1CF8    MOVEM.L (SP)+,D3-D7/A2-A4
+0x18DC: 4E5E         UNLK    A6
+0x18DE: 4E75         RTS
+```
+
+### C Decompilation
+
+```c
+/* Globals for EXPR pattern table */
+long  *g_estr_entries;          /* A5-10918: 8-byte ESTR entry array */
+short  g_estr_entry_count;      /* A5-10914: number of ESTR entries */
+long  *g_estr_strings;          /* A5-10912: ESTR string data base */
+long  *g_mul_data_ptr;          /* A5-10908: pointer to MUL leave data */
+char  *g_expr_table;            /* A5-2444: allocated 10-byte entry table */
+short  g_expr_count;            /* A5-2430: number of entries in expr_table */
+
+/* 8-byte ESTR entry structure (loaded from resource) */
+typedef struct {
+    short flags;                /* +0: flags word */
+    short string_offset;        /* +2: offset into g_estr_strings */
+    short status_word;          /* +4: non-zero = has EXPR data */
+    char  flag_byte;            /* +6: must be 0 for EXPR entries */
+    char  reserved;             /* +7 */
+} ESTREntry;                    /* 8 bytes */
+
+/* 10-byte buffer entry (built by binary_search_expr) */
+typedef struct {
+    char *string_ptr;           /* +0: pointer to sorted pattern string */
+    long  value_field;          /* +4: working value (initially 0) */
+    short letter_id;            /* +8: MUL letter index (from ESTR status_word) */
+} ExprEntry;                    /* 10 bytes */
+
+/* binary_search_expr - Build and search EXPR pattern table
+ *
+ * On first call: scans ESTR entries, builds sorted binary search table
+ * of patterns that have EXPR data (status_word != 0 && flag_byte == 0).
+ * Table entries are 10 bytes: {string_ptr, value_field, letter_id}.
+ *
+ * On match: returns word at MUL_data[letter_id * 28 + 26], which is
+ * the low word of the MUL record[0] leave adjustment for that letter.
+ * Also stores &entry.value_field into *out_ptr for orchestrator use.
+ *
+ * On miss: returns 0.
+ */
+short binary_search_expr(char *search_string, long **out_ptr) {
+    /* One-time initialization */
+    if (g_expr_table == NULL) {
+        if (g_expr_count != 0)
+            bounds_error();
+
+        /* Phase 1: Count qualifying ESTR entries */
+        ESTREntry *entries = (ESTREntry *)g_estr_entries;
+        for (int i = 1; i < g_estr_entry_count; i++) {
+            if (entries[i].status_word != 0 && entries[i].flag_byte == 0)
+                g_expr_count++;
+        }
+
+        /* Allocate 10-byte buffer entries */
+        g_expr_table = (char *)NewPtr(10 * g_expr_count);
+
+        short total = g_expr_count;
+        g_expr_count = 0;  /* reset for Phase 2 */
+
+        /* Phase 2: Populate buffer entries */
+        for (int i = 1; i < g_estr_entry_count; i++) {
+            if (entries[i].status_word == 0 || entries[i].flag_byte != 0)
+                continue;
+
+            ExprEntry *buf = (ExprEntry *)(g_expr_table + 10 * g_expr_count);
+
+            /* Compute string pointer from offset */
+            char *str = (char *)g_estr_strings + entries[i].string_offset;
+            buf->string_ptr = str;
+
+            /* Validate string is sorted (each char >= previous) */
+            for (char *p = str + 1; *p; p++) {
+                if (*p < *(p - 1))
+                    bounds_error();  /* pattern not sorted! */
+            }
+
+            /* Clear value field, copy letter_id */
+            buf->value_field = 0;
+            buf->letter_id = entries[i].status_word;
+
+            g_expr_count++;
+        }
+
+        /* Phase 3: Insertion sort by string comparison */
+        /* (sorts buffer entries so binary search works) */
+        /* ... omitted: standard insertion sort using strcmp ... */
+
+        /* Phase 4: Validation */
+        /* ... omitted: verify sort order and consistency ... */
+    }
+
+    /* === Binary search === */
+    short low = 0;
+    short high = g_expr_count - 1;
+    *out_ptr = NULL;
+
+    while (low <= high) {
+        short mid = (low + high) / 2;
+        ExprEntry *entry = (ExprEntry *)(g_expr_table + 10 * mid);
+
+        int cmp = strcmp(search_string, entry->string_ptr);  /* JT[3506] */
+
+        if (cmp == 0) {
+            /* Found: store value_field pointer for orchestrator */
+            *out_ptr = &entry->value_field;
+
+            /* Return EXPR-derived value from MUL data */
+            /* MUL records are 28 bytes; offset 26 = low word of adj at offset 24 */
+            short *mul = (short *)g_mul_data_ptr;
+            return mul[entry->letter_id * 14 + 13];  /* 28*id+26 as word index */
+        }
+
+        if (cmp < 0)
+            high = mid - 1;     /* search string < entry → go left */
+        else
+            low = mid + 1;      /* search string > entry → go right */
+    }
+
+    return 0;  /* not found */
+}
+```
+
+### EXPR Resource Structure
+
+The EXPR resource is 96 bytes. When accessed as 28-byte records with the leave
+adjustment at offset 24 (same layout as MUL records), it yields:
+
+| Record | Offset 24 (int32) | Value |
+|--------|-------------------|-------|
+| 0 | -878 cp | -8.78 pts |
+| 1 | +2791 cp | +27.91 pts |
+| 2 | +875 cp | +8.75 pts |
+| 3 | (partial, 12 bytes only) | — |
+
+The mapping from ESTR patterns to EXPR record indices depends on the runtime
+ESTR 8-byte entry structure (status_word field), which is loaded by CODE 15
+and cannot be determined from static analysis alone. QEMU tracing is needed
+to observe which patterns map to which records.
+
+The +2791 cp value is consistent with QU synergy (expert Scrabble value for
+the Q-U combination benefit is typically 15-30 points = 1500-3000 cp).
+
+---
+
+## Function 0x18E4 - Pre-VCB Helper / Pattern Tree Propagator (Frame: 0 bytes)
+
+### Annotated Disassembly (manually decoded from raw hex)
+
+```asm
+;======================================================================
+; pre_vcb_helper - Store tile_string_helper result and propagate through
+;   pattern tree via recursive calls
+; Frame: 0 bytes
+; Parameters: 8(A6) = pattern_index, 10(A6) = value (D3 from orchestrator)
+; Uses: g_score_counter at A5-20004 for visited-check
+;       g_work_buffer at A5-17420 for per-pattern accumulator
+;       Child pattern table at A5-26154 (7 entries × 4 bytes per pattern)
+;======================================================================
+0x18E4: 4E56 0000    LINK    A6,#0
+0x18E8: 48E7 0308    MOVEM.L D6-D7/A4,-(SP)
+0x18EC: 3E2E 0008    MOVE.W  8(A6),D7         ; D7 = pattern_index
+
+; Compute address in visited-check table
+0x18F0: 2007         MOVE.L  D7,D0
+0x18F2: 48C0         EXT.L   D0
+0x18F4: E588         LSL.L   #2,D0            ; D0 = index * 4
+0x18F6: 49ED B1E0    LEA     -20000(A5),A4    ; A4 = visit table base
+0x18FA: D08C         ADD.L   A4,D0
+0x18FC: 2840         MOVEA.L D0,A4            ; A4 = &visit_table[index]
+0x18FE: 2014         MOVE.L  (A4),D0          ; D0 = visit_table[index]
+0x1900: B0AD B1DC    CMP.L   -20004(A5),D0    ; already visited this round?
+0x1904: 6736         BEQ.S   0x193C           ; if yes → return (prevent re-visit)
+
+; Mark as visited
+0x1906: 28AD B1DC    MOVE.L  -20004(A5),(A4)  ; visit_table[index] = g_score_counter
+
+; Store value into per-pattern accumulator
+0x190A: 302E 000A    MOVE.W  10(A6),D0        ; D0 = value (tile_string_helper result)
+0x190E: 204D         MOVEA.L A5,A0
+0x1910: D0C7         ADDA.W  D7,A0            ; A0 = A5 + index
+0x1912: D0C7         ADDA.W  D7,A0            ; A0 = A5 + 2*index (word array)
+0x1914: D168 BBF4    ADD.W   D0,-17420(A0)    ; g_work_buffer[index] += value
+
+; Propagate through 7 child patterns
+0x1918: 7C00         MOVEQ   #0,D6            ; D6 = 0 (child counter)
+0x191A: 49ED 99D6    LEA     -26154(A5),A4    ; A4 = child_table base
+
+; Child propagation loop
+0x191E: 6016         BRA.S   0x1936           ; → loop test
+0x1920: 3F2E 000A    MOVE.W  10(A6),-(SP)     ; push value
+0x1924: 302C 0002    MOVE.W  2(A4),D0         ; D0 = child_table[D6].pattern_ref
+0x1928: 8047         OR.W    D7,D0            ; D0 = pattern_index | child_ref
+0x192A: 3F00         MOVE.W  D0,-(SP)         ; push combined_index
+0x192C: 4EBA FFB6    JSR     0x18E4           ; RECURSIVE: pre_vcb_helper(combined, value)
+0x1930: 588F         ADDQ.L  #4,SP            ; clean stack (2 words)
+0x1932: 5246         ADDQ.W  #1,D6            ; D6++
+0x1934: 588C         ADDQ.L  #4,A4            ; A4 += 4 (next child entry)
+
+; Loop test
+0x1936: 0C46 0007    CMPI.W  #7,D6            ; D6 < 7?
+0x193A: 6DE4         BLT.S   0x1920           ; loop
+
+; Epilogue
+0x193C: 4CDF 10C0    MOVEM.L (SP)+,D6-D7/A4
+0x1940: 4E5E         UNLK    A6
+0x1942: 4E75         RTS
+```
+
+### C Decompilation
+
+```c
+/* Pattern visit tracking table */
+long g_visit_table[128];        /* A5-20000: 128 longs, one per pattern */
+
+/* pre_vcb_helper - Store EXPR value and propagate through pattern tree
+ *
+ * Each pattern has 7 "child" patterns in a lookup table at A5-26154.
+ * Child indices are OR'd with the parent index to form composite pattern IDs.
+ * The visit table (checked against g_score_counter) prevents infinite recursion.
+ *
+ * The value from tile_string_helper is added to g_work_buffer[pattern_index],
+ * then the same value is recursively propagated to all 7 child patterns.
+ * This builds a per-pattern scoring tree where parent EXPR values cascade
+ * to child patterns.
+ *
+ * NOTE: g_work_buffer values are consumed SEPARATELY from the V/C balance
+ * computed by blank_dispatcher. The EXPR channel (g_work_buffer) and V/C
+ * channel (pattern_base from orchestrator) are independent scoring components.
+ */
+void pre_vcb_helper(short pattern_index, short value) {
+    /* Check if already visited this scoring round */
+    if (g_visit_table[pattern_index] == g_score_counter)
+        return;  /* already processed */
+
+    /* Mark as visited */
+    g_visit_table[pattern_index] = g_score_counter;
+
+    /* Accumulate value into per-pattern buffer */
+    g_work_buffer[pattern_index] += value;
+
+    /* Propagate to 7 child patterns */
+    short *child_table = (short *)(-26154 + (long)A5);
+    for (int i = 0; i < 7; i++) {
+        short child_ref = child_table[i * 2 + 1];  /* word at offset 2 */
+        short combined = pattern_index | child_ref;
+        pre_vcb_helper(combined, value);            /* recursive call */
+    }
+}
+```
+
+---
+
 ## Board Layout
 
 17×17 arrays with border cells:
