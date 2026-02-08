@@ -739,6 +739,64 @@ def show_best_worst(mul_data, n=10):
     print()
 
 
+# ─── Rack Subset Evaluation ────────────────────────────────────────
+
+def unique_subsets(tiles):
+    """Generate all unique multiset subsets of a tile list.
+
+    Returns list of sorted tuples, deduplicated for repeated tiles.
+    E.g., tiles=['A','A','B'] → [(), ('A',), ('A','A'), ('A','A','B'),
+                                  ('A','B'), ('B',)]
+    """
+    tiles_sorted = sorted(tiles)
+    results = set()
+    n = len(tiles_sorted)
+    for mask in range(1 << n):
+        subset = tuple(tiles_sorted[i] for i in range(n) if mask & (1 << i))
+        results.add(subset)
+    return sorted(results)
+
+
+def top_leaves(rack_str, mul_data, bag=None, rack_for_unseen=None,
+               board_tiles=None, estr_patterns=None, expr_values=None,
+               n=10):
+    """Evaluate all subsets of a rack and show the top N leaves."""
+    if bag is None:
+        bag = Counter(STANDARD_BAG)
+
+    rack_tiles = []
+    for c in rack_str.upper():
+        rack_tiles.append('?' if c == '?' else c)
+
+    subsets = unique_subsets(rack_tiles)
+
+    results = []
+    for subset in subsets:
+        leave_str = ''.join(subset)
+        if not leave_str:
+            leave_str = '-'  # empty leave
+        total, _ = evaluate_leave(
+            leave_str if leave_str != '-' else '',
+            mul_data, bag, rack_for_unseen or rack_str.upper(),
+            board_tiles, verbose=False,
+            estr_patterns=estr_patterns, expr_values=expr_values)
+        played = len(rack_tiles) - len(subset)
+        results.append((leave_str, total, played, len(subset)))
+
+    results.sort(key=lambda x: -x[1])
+
+    print(f"\nTop {min(n, len(results))} Leaves for Rack: {rack_str.upper()}")
+    print(f"({len(results)} unique subsets evaluated)")
+    print("-" * 55)
+    print(f"  {'Leave':<14} {'Play':<6} {'Points':>10}  {'Centipts':>8}")
+    print("-" * 55)
+    for leave, centipts, played, kept in results[:n]:
+        display = leave if leave else '(empty)'
+        print(f"  {display:<14} {played:>1}→{kept:<3}"
+              f" {centipts/100:>+9.2f}  {centipts:>+8}")
+    print()
+
+
 # ─── REPL ───────────────────────────────────────────────────────────
 
 def repl(mul_data, bag, rack, board_tiles, estr_patterns=None, expr_values=None):
@@ -763,6 +821,7 @@ def repl(mul_data, bag, rack, board_tiles, estr_patterns=None, expr_values=None)
     print("  table         Show all single-tile values")
     print("  best          Show best/worst tiles")
     print("  detail X      Show all MUL records for tile X")
+    print("  top RACK      Top 10 leaves from all subsets of RACK")
     print("  rack TILES    Set player rack")
     print("  bag TILES     Set custom bag contents")
     print("  reset         Reset to full bag, no rack")
@@ -802,6 +861,11 @@ def repl(mul_data, bag, rack, board_tiles, estr_patterns=None, expr_values=None)
                            current_rack, current_board,
                            estr_patterns=estr_patterns,
                            expr_values=expr_values)
+        elif cmd == 'top' and len(parts) > 1:
+            top_leaves(parts[1], mul_data, current_bag,
+                       current_rack, current_board,
+                       estr_patterns=estr_patterns,
+                       expr_values=expr_values)
         elif cmd == 'rack' and len(parts) > 1:
             current_rack = parts[1].upper()
             print(f"Rack set to: {current_rack}")
@@ -855,6 +919,8 @@ def main():
                         help='Evaluate this leave and exit')
     parser.add_argument('--cmp', nargs='+', default=None,
                         help='Compare multiple leaves and exit')
+    parser.add_argument('--top', type=str, default=None,
+                        help='Show top 10 leaves from all subsets of RACK')
     args = parser.parse_args()
 
     print("Loading MUL resources...")
@@ -880,6 +946,9 @@ def main():
     if args.leave:
         evaluate_leave(args.leave, mul_data, bag, rack, board,
                        estr_patterns=estr_patterns, expr_values=expr_values)
+    elif args.top:
+        top_leaves(args.top, mul_data, bag, rack, board,
+                   estr_patterns=estr_patterns, expr_values=expr_values)
     elif args.cmp:
         compare_leaves(args.cmp, mul_data, bag, rack, board,
                        estr_patterns=estr_patterns, expr_values=expr_values)
