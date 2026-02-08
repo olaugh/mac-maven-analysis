@@ -404,6 +404,32 @@ def evaluate_leave(leave_str, mul_data, bag=None, rack=None,
     # Subtract it so imbalanced leaves score lower.
     total = tile_total - vc_adj
 
+    # ─── Component 3: Letter synergies ────────────────────────────
+    # Maven handles synergies via:
+    #   - ESTR pattern iteration (128 subsets) in leave_orchestrator
+    #   - Explicit Q-without-U penalty (CODE 32, 0x0B1E-0x0B62)
+    #   - CODE 39 letter combination scoring (not yet decoded)
+    # We approximate the most impactful known synergies here.
+    synergy_adj = 0
+    synergy_notes = []
+
+    has_q = leave_counts.get('Q', 0) > 0
+    has_u = leave_counts.get('U', 0) > 0
+
+    if has_q and not has_u:
+        # Q-without-U penalty. Maven computes (counter-unseen)/unseen
+        # clamped to -100, then processes through 0x18E4.
+        # Net effect: Q alone is ~5 pts worse than Q with U.
+        synergy_adj -= 500
+        synergy_notes.append("Q without U: -5.00")
+    elif has_q and has_u:
+        # Q-with-U bonus: the U mitigates Q's liability.
+        # Maven's ESTR patterns give credit for playable QU combos.
+        synergy_adj += 200
+        synergy_notes.append("Q+U synergy: +2.00")
+
+    total += synergy_adj
+
     if verbose:
         print(f"\nLeave: {leave}")
         print(f"Unseen tiles: {total_unseen}  "
@@ -423,6 +449,10 @@ def evaluate_leave(leave_str, mul_data, bag=None, rack=None,
             vstr = f"{vowel_count}V {consonant_count}C {blank_count}?"
             print(f"{'V/C':<6} {vstr:<6} {vc_adj:<12} {vc_adj/100:>+9.2f}  "
                   f"balance adj")
+        if synergy_adj != 0:
+            for note in synergy_notes:
+                print(f"{'Syn':<6} {'':<6} {synergy_adj:<12} {synergy_adj/100:>+9.2f}  "
+                      f"{note}")
         print("-" * 55)
         print(f"{'TOTAL':<6} {'':<6} {total:<12} {total/100:>+9.2f}")
         print()
