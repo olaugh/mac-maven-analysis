@@ -13,6 +13,24 @@ resources/
 # Debug traces (large)
 traces/
 
+# Rebuilt binary (regenerable via build_dawg.py)
+maven2_rebuilt
+
+# Large intermediate word lists (regenerable from maven2 data fork)
+lexica/maven_stream_enum.txt
+lexica/extracted_words.txt
+lexica/extracted_simple.txt
+lexica/code15_enumerated.txt
+lexica/enumerated_words.txt
+lexica/section2_enumerated.txt
+lexica/extracted_section2.txt
+lexica/extracted_backtrack.txt
+lexica/open_validated.txt
+lexica/dawg_dump.txt
+lexica/dawg_validated.txt
+lexica/maven_enumerated_bfs.txt
+lexica/short_words_enumerated.txt
+
 # Temporary files
 *.tmp
 /tmp/

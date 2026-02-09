@@ -2,980 +2,816 @@
 
 ## Overview
 
-| Property | Value | Verified |
-|----------|-------|----------|
-| Size | 1788 bytes (1784 code + 4 header) | YES |
-| JT Offset | 2608 | YES |
-| JT Entries | 4 | YES |
-| Functions | 5 | YES |
-| Purpose | **Letter combination scoring for leave evaluation** | YES |
+| Property | Value |
+|----------|-------|
+| Size | 1,788 bytes (4-byte header + 1,784 bytes of code) |
+| JT Offset | 0x0A30 (2608) |
+| JT Entries | 4 |
+| Functions | 5 |
+| SANE Traps | 0 (pure integer arithmetic) |
+| Purpose | **Letter combination scoring for leave evaluation** |
 
-## System Role
+CODE 39 implements Maven's letter synergy scoring system. Unlike CODE 32 which
+uses SANE floating-point for binomial-weighted MUL calculations, CODE 39 is
+entirely integer/word arithmetic. It evaluates how well groups of letters work
+together at specific board positions, producing synergy scores that feed into
+the overall leave evaluation. The centerpiece is function 0x018C with its
+9,632-byte stack frame -- the largest in Maven.
 
-**Category**: Scoring
-**Function**: Letter Combinations
-
-CODE 39 implements the letter synergy scoring component of Maven's leave evaluation system. It uses a massive 9632-byte stack frame for exhaustive letter combination analysis.
-
-**Related CODE resources**:
-- CODE 32 (leave calculation - consumes synergy scores)
-- CODE 42 (rack analysis - provides rack data)
-- CODE 2 (initialization - allocates score tables)
-
----
-
-## Function Summary (Binary Verified)
-
-| Offset | Frame | Registers | Name |
-|--------|-------|-----------|------|
-| 0x0000 | 22 | D3-D7/A2-A4 | init_letter_pair_search |
-| 0x018C | 9632 | D3-D7/A2-A4 | full_combination_analysis |
-| 0x0516 | 0 | D7/A4 | get_pair_scores |
-| 0x0572 | 20 | D3-D7/A2-A4 | extended_score_calculation |
-| 0x0688 | 0 | D6/D7/A4 | combined_score_wrapper |
+**Coordinates with**: CODE 32 (consumes synergy scores), CODE 2 (allocates
+score tables), CODE 11/32/44/52 (via jump table).
 
 ---
 
-## Global Variables (Verified by Pattern Matching)
+## Function Table
 
-### Score Tables (Allocated by CODE 2, 2304 bytes each)
+| Code Offset | Frame Size | Registers Saved | Name | Purpose |
+|-------------|-----------|-----------------|------|---------|
+| 0x0000 | 22 | D3-D7/A2-A4 | `find_best_pair_score` | Search pairs for best position score |
+| 0x018C | 9,632 | D3-D7/A2-A4 | `analyze_combinations` | Full multi-pass combination analysis |
+| 0x0516 | 0 | D7/A4 | `lookup_pair_scores` | Read scores from ESTR tables |
+| 0x0572 | 20 | D3-D7/A2-A4 | `score_pair_of_pairs` | Dual-pair scoring with synergy walk |
+| 0x0688 | 0 | D6/D7/A4 | `adjusted_pair_score` | Wrapper with alternate-table adjustment |
 
-| Offset | Hex | Name | Occurrences |
-|--------|-----|------|-------------|
-| A5-12532 | CF0C | g_horiz_scores1 | 6 |
-| A5-12528 | CF10 | g_horiz_scores2 | 4 |
-| A5-12524 | CF14 | g_horiz_scores3 | 3 |
-| A5-12520 | CF18 | g_vert_scores1 | 3 |
-| A5-12516 | CF1C | g_vert_scores2 | 6 |
-| A5-12512 | CF20 | g_vert_scores3 | 3 |
+---
+
+## Data Structures
+
+### ESTR Record (18 bytes)
+
+Each of the six score tables contains 128 ESTR records (128 x 18 = 2,304 bytes).
+The record stores a base value, seven synergy bonus fields (one for each possible
+draw count 1-7), and a position multiplier.
+
+```c
+typedef struct {
+    int16_t value;          /* +0:  Base score value (centipoints) */
+    int16_t synergy[7];     /* +2:  Synergy bonuses for drawing 1-7 tiles */
+    int16_t position_mult;  /* +16: Position-dependent multiplier */
+} ESTRRecord;  /* 18 bytes total */
+```
+
+The code consistently uses `MOVEQ #18,D0; MULU pair,D0` to compute byte offsets
+into these tables, and accesses offset +16 for the `position_mult` field.
+
+### Score Tables (6 tables, 2,304 bytes each)
+
+Tables are allocated by CODE 2 at startup and populated at runtime. They come
+in two sets of three, selected by play direction:
+
+```
+Direction != 0 (horizontal):
+    table_a = g_score_table1 (A5-12532)
+    table_b = g_score_table2 (A5-12528)
+    table_c = g_score_table3 (A5-12524)
+
+Direction == 0 (vertical):
+    table_a = g_score_table4 (A5-12520)
+    table_b = g_score_table5 (A5-12516)
+    table_c = g_score_table6 (A5-12512)
+```
+
+### Letter Pair Encoding
+
+Letter pairs are stored as 16-bit values in `g_letter_pair_table`:
+
+```
+Bits 0-6:  Pair index (0-127), indexes into ESTR tables
+Bit 7:     Processed flag (0x80), set after pair has been scored
+```
+
+```c
+#define PROCESSED_FLAG  0x0080
+#define PAIR_INDEX_MASK 0x007F
+```
+
+---
+
+## Global Variables
+
+### Score Table Pointers
+
+| A5 Offset | Hex | Name | Purpose |
+|-----------|-----|------|---------|
+| A5-12532 | CF0C | `g_score_table1` | Horizontal table A (or primary set) |
+| A5-12528 | CF10 | `g_score_table2` | Horizontal table B |
+| A5-12524 | CF14 | `g_score_table3` | Horizontal table C |
+| A5-12520 | CF18 | `g_score_table4` | Vertical table A (or alternate set) |
+| A5-12516 | CF1C | `g_score_table5` | Vertical table B |
+| A5-12512 | CF20 | `g_score_table6` | Vertical table C |
 
 ### Letter Pair Data
 
-| Offset | Hex | Name | Occurrences |
-|--------|-----|------|-------------|
-| A5-13060 | CCFC | g_letter_pair_table | 2 |
-| A5-13062 | CCFA | g_letter_pair_count | 2 |
+| A5 Offset | Hex | Name | Purpose |
+|-----------|-----|------|---------|
+| A5-13060 | CCFC | `g_letter_pair_table` | Array of 16-bit pair entries |
+| A5-13062 | CCFA | `g_letter_pair_count` | Number of pairs in table |
+| A5-13318 | CBFA | `g_pair_base_scores` | Base score array indexed by pair |
 
 ### Results Arrays
 
-| Offset | Hex | Name | Occurrences |
-|--------|-----|------|-------------|
-| A5-22696 | A758 | g_results_score | 2 |
-| A5-22698 | A756 | g_results_array | 4 |
+| A5 Offset | Hex | Name | Purpose |
+|-----------|-----|------|---------|
+| A5-22696 | A758 | `g_results_score` | Score results (int16 per pair) |
+| A5-22698 | A756 | `g_results_array` | Results flags (int32 per pair) |
+
+### Other
+
+| A5 Offset | Hex | Name | Purpose |
+|-----------|-----|------|---------|
+| A5-26152 | 99D8 | `g_crosscheck_table` | Cross-check bitmask table |
+| A5-12496 | CF30 | `g_alt_score_data` | Alternate scoring data (used in pass 4) |
 
 ---
 
-## Function 0x0000 - init_letter_pair_search
+## Jump Table Calls
 
-### Binary Verification
+| JT Offset | Name | Purpose |
+|-----------|------|---------|
+| 418 | `bounds_error()` | Runtime validation trap |
+| 2474 | `get_crosscheck(entry, mask)` | Get cross-check bitmask for a letter pair |
+| 2482 | `compare_scores(flag, val, mask)` | Compare scores against threshold |
+| 2730 | `init_position(position)` | Initialize board position data |
+| 3522 | `init_rack_info(rack)` | Initialize rack letter information |
+
+---
+
+## Function 0x0000 - find_best_pair_score
+
+### Purpose
+
+Given a board position and rack, iterates through all letter pairs in
+`g_letter_pair_table`. For each unprocessed pair that has a nonzero result
+in `g_results_array`, looks up its scores from the ESTR tables and tracks
+the best score found. Returns the best score and best pair via output
+pointers.
+
+### Key Hex-Verified Sequences
+
 ```
-File offset 0x0004: 4E56 FFEA = LINK A6,#-22
-File offset 0x0008: 48E7 1F38 = MOVEM.L D3-D7/A2-A4,-(SP)
-```
-
-### Verified Disassembly
-```asm
-; void init_letter_pair_search(int8 param1, char* rack, int16 position,
-;                              int32* out1, int32* out2)
-; Stack: 8(A6)=param1, 12(A6)=rack, 16(A6)=position,
-;        20(A6)=out1, 24(A6)=out2
-
-0000: 4E56 FFEA      LINK     A6,#-22
-0004: 48E7 1F38      MOVEM.L  D3-D7/A2-A4,-(SP)
-
-; Initialize rack via JT[3522]
-0008: 2F2E 000C      MOVE.L   12(A6),-(SP)       ; push rack
-000C: 4EAD 0DC2      JSR      3522(A5)           ; init_rack_info(rack)
-0010: 204D           MOVEA.L  A5,A0
-0012: E588           LSL.L    #2,D0
-0014: D1C0           ADDA.L   D0,A0
-
-; Set processed flag mask
-0016: 3A3C 0080      MOVE.W   #$0080,D5          ; D5 = PROCESSED_FLAG
-001A: 9A68 99D8      SUBA.W   -26152(A0),D5      ; adjust for rack
-
-; Clear output pointers
-001E: 206E 0018      MOVEA.L  24(A6),A0          ; A0 = out2
-0022: 4290           CLR.L    (A0)               ; *out2 = 0
-0024: 226E 0014      MOVEA.L  20(A6),A1          ; A1 = out1
-0028: 4291           CLR.L    (A1)               ; *out1 = 0
-
-; Setup letter iteration
-002A: 7019           MOVEQ    #25,D0             ; 26 letters (0-25)
-002C: D0AE 0008      ADD.L    8(A6),D0           ; add param1
-0030: 2840           MOVEA.L  D0,A4              ; A4 = letter pointer
-
-; Get cross-check for current letter
-0038: 3F3C 007F      MOVE.W   #$007F,-(SP)       ; mask
-003C: 4EAD 09AA      JSR      2474(A5)           ; get_crosscheck()
-0040: 8045           OR.W     D5,D0              ; set processed flag
-0042: 3D40 FFF2      MOVE.W   D0,-14(A6)         ; store combined_mask
-
-; Initialize loop counter
-0046: 7C00           MOVEQ    #0,D6              ; D6 = 0
-0048: 306E 0010      MOVE.W   16(A6),D0          ; D0 = position
-004C: D1C8           ADDA.L   A0,A0
-004E: 2D48 FFEE      MOVE.L   A0,-18(A6)         ; store position ptr
-
-; Load letter pair table
-0058: 45ED CCFC      LEA      -13060(A5),A2      ; A2 = g_letter_pair_table
-005C: D4C6           ADDA.W   D6,A2              ; index into table
-005E: D4C6           ADDA.W   D6,A2              ; *2 for word entries
-
-; === MAIN LOOP ===
-loop_start:
-0066: 3612           MOVE.W   (A2),D3            ; D3 = entry
-0068: 3005           MOVE.W   D5,D0              ; D0 = processed flag
-006A: C043           AND.W    D3,D0              ; test processed bit
-006C: B045           CMP.W    D5,D0
-006E: 6600 0108      BNE.W    loop_continue      ; skip if processed
-
-; Check results array for this entry
-0072: 204D           MOVEA.L  A5,A0
-0074: 2003           MOVE.L   D3,D0
-0076: 48C0           EXT.L    D0
-0078: E588           LSL.L    #2,D0              ; *4 for long entries
-007A: D1C0           ADDA.L   D0,A0
-007C: 4AA8 A756      TST.L    -22698(A0)         ; g_results_array[entry]
-0080: 6700 00F6      BEQ.W    loop_continue      ; skip if no result
-
-; Get cross-check value for this pair
-0084: 3F12           MOVE.W   (A2),-(SP)         ; push entry
-0086: 3F3C 007F      MOVE.W   #$007F,-(SP)       ; push mask
-008A: 4EAD 09AA      JSR      2474(A5)           ; get_crosscheck()
-008E: 8045           OR.W     D5,D0              ; set processed
-0090: 3600           MOVE.W   D0,D3              ; D3 = cross_val | PROCESSED
-
-; Calculate score table index
-00A4: 7012           MOVEQ    #18,D0             ; ESTR record size
-00A6: C1C3           MULU     D3,D0              ; idx = entry * 18
-00AA: D0AD CF0C      ADD.L    -12532(A5),D0      ; add g_horiz_scores1 base
-
-; Look up in score tables and compare
-00CE: 4EAD 09B2      JSR      2482(A5)           ; compare_scores()
-00D2: 3600           MOVE.W   D0,D3
-00D4: 0C43 007F      CMPI.W   #$007F,D3          ; check for max
-00DA: 6632           BNE.S    not_max
-
-; Handle maximum score case
-00FA: 206D CF1C      MOVEA.L  -12516(A5),A0      ; g_vert_scores2
-00FE: 41E8 08EE      LEA      2286(A0),A0        ; fixed offset
-
-not_max:
-; Update output pointers if better
-010E: 206E 0014      MOVEA.L  20(A6),A0          ; out1
-...
-
-loop_continue:
-017A: 548A           ADDQ.L   #2,A2              ; next entry (word)
-017C: BC6D CCFA      CMP.W    -13062(A5),D6      ; vs g_letter_pair_count
-0180: 6D00 FEE4      BLT.W    loop_start         ; continue loop
-
-; Return
-0184: 4CDF 1CF8      MOVEM.L  (SP)+,D3-D7/A2-A4
-0188: 4E5E           UNLK     A6
-018A: 4E75           RTS
+File+0x04: 4E56 FFEA           LINK A6,#-22
+File+0x08: 48E7 1F38           MOVEM.L D3-D7/A2-A4,-(SP)
+File+0x10: 4EAD 0DC2           JSR 3522(A5)          ; init_rack_info()
+File+0x16: E588                LSL.L #2,D0            ; (disasm merges with next)
+File+0x18: D1C0                ADDA.L D0,A0
+File+0x1A: 3A3C 0080           MOVE.W #$0080,D5       ; PROCESSED_FLAG
+File+0x1E: 9A68 99D8           SUB.W -26152(A0),D5    ; crosscheck adjust
+File+0x5C: 45ED CCFC           LEA -13060(A5),A2      ; g_letter_pair_table
+File+0x80: 4AA8 A756           TST.L -22698(A0)       ; g_results_array[pair]
+File+0xA8: 7012                MOVEQ #18,D0
+File+0xAA: C1C3                MULU D3,D0             ; pair * 18
+File+0xAC: D0AD CF0C           ADD.L g_score_table1,D0
+File+0xD2: 4EAD 09B2           JSR 2482(A5)           ; compare_scores()
 ```
 
-### Speculative C Decompilation
+### C Decompilation
+
 ```c
 /*
- * init_letter_pair_search - Initialize letter pair scoring iteration
+ * find_best_pair_score - Find the best-scoring letter pair for a position
  *
- * Iterates through the letter pair table, checking each pair against
- * the results array. For valid pairs, calculates scores using the
- * ESTR score tables and updates output pointers with best scores.
- *
- * Parameters:
- *   param1   - Initial parameter (added to letter index)
- *   rack     - Player's rack letters
- *   position - Board position being evaluated
- *   out1     - Output pointer for first score
- *   out2     - Output pointer for second score
+ * Iterates through all letter pairs, skipping already-processed ones.
+ * For each valid pair with a nonzero result, computes its score from
+ * the ESTR tables and updates the output pointers if it beats the
+ * current best. Also tracks an alternate best score.
  */
-void init_letter_pair_search(int8_t param1, char* rack, int16_t position,
-                             int32_t* out1, int32_t* out2)
+void find_best_pair_score(int8_t param1, char *rack, int16_t position,
+                          int16_t tiles_to_draw,
+                          int32_t *best_score, int32_t *best_pair,
+                          int32_t *alt_score, int32_t *alt_pair)
 {
-    /* Local variables: 22 bytes */
-    int16_t combined_mask;      /* -14(A6) */
-    void*   position_ptr;       /* -18(A6) */
+    init_rack_info(rack);
 
-    const uint16_t PROCESSED_FLAG = 0x0080;
+    /* Compute crosscheck-adjusted processing flag */
+    int16_t proc_flag = PROCESSED_FLAG - g_crosscheck_table[/* derived */];
 
-    /* Initialize rack information */
-    init_rack_info(rack);  /* JT[3522] */
+    *best_score = 0;
+    *best_pair = 0;
 
-    /* Clear outputs */
-    *out1 = 0;
-    *out2 = 0;
+    int16_t combined_mask = get_crosscheck(0x007F) | proc_flag;
+    int32_t position_offset = position * 2;
 
-    /* Get initial cross-check value */
-    combined_mask = get_crosscheck(0x007F) | PROCESSED_FLAG;
-
-    /* Iterate through letter pair table */
     for (int i = 0; i < g_letter_pair_count; i++) {
-        uint16_t entry = g_letter_pair_table[i];
+        int16_t entry = g_letter_pair_table[i];
 
-        /* Skip if already processed */
-        if (entry & PROCESSED_FLAG) {
-            continue;
+        if ((entry & proc_flag) == proc_flag)
+            continue;  /* already processed */
+        if (g_results_array[entry] == 0)
+            continue;  /* no result */
+
+        int16_t cross_val = get_crosscheck(entry & 0x7F) | proc_flag;
+
+        /* Validate and look up ESTR score */
+        int32_t table_offset = (int32_t)cross_val * 18;
+        int16_t score1 = g_results_score[entry];
+        int16_t raw_score = *(int16_t *)((char *)g_score_table1
+                             + table_offset + position_offset) - score1;
+
+        int16_t cmp_result = compare_scores(proc_flag, cross_val, combined_mask);
+
+        if (cmp_result == 0x7F) {
+            /* Max pair case: look up from table2 + table5[127] bonus */
+            int16_t pos_val = *(int16_t *)((char *)g_score_table2
+                               + table_offset + position);
+            if (pos_val > 0) {
+                int16_t bonus = *(int16_t *)((char *)g_score_table5
+                                 + 2286 + position_offset);
+                int16_t adj_score = (bonus + pos_val) * 2;
+                if (adj_score > *best_pair)
+                    *best_pair = adj_score;
+            }
         }
 
-        /* Skip if no result for this pair */
-        if (g_results_array[entry] == 0) {
-            continue;
+        /* Standard path: combine table1 score with results data */
+        int32_t d7_ptr = (int32_t)g_score_table1 + (int32_t)cross_val * 18;
+        int16_t draw_score = g_results_array[entry].field_at_10;
+        int16_t alt_cand = g_results_score[entry] + draw_score
+                         - /* table adjustment */;
+
+        if (alt_cand > *alt_pair) {
+            *alt_score = cmp_result;
+            *alt_pair = alt_cand;
         }
-
-        /* Get cross-check value for this pair */
-        int16_t cross_val = get_crosscheck(entry & 0x7F) | PROCESSED_FLAG;
-
-        /* Calculate score table index (entry * 18 bytes per ESTR record) */
-        int idx = cross_val * 18;
-
-        /* Look up and compare scores from tables */
-        int16_t cmp = compare_scores(PROCESSED_FLAG, cross_val, combined_mask);
-
-        if (cmp == 0x7F) {
-            /* Maximum score case - use alternate table */
-            int16_t alt_score = g_vert_scores2[2286 / 18].value;
-            /* Update outputs */
-        }
-
-        /* Update output pointers if this score is better */
-        /* ... */
     }
 }
 ```
 
 ---
 
-## Function 0x018C - full_combination_analysis
+## Function 0x018C - analyze_combinations
 
-### Binary Verification
+### Purpose
+
+The main analysis function and heart of CODE 39. Uses a massive 9,632-byte stack
+frame to perform exhaustive multi-pass letter combination scoring. Operates in
+five phases:
+
+1. **Collect** valid (unprocessed) letter pairs from the global table
+2. **Generate** all pairwise combinations that have nonzero results
+3. **Initialize** base scores from ESTR tables
+4. **Extend** scores iteratively for 3, 4, 5, ... letter combinations
+5. **Aggregate** final scores back to per-pair results
+
+### Key Hex-Verified Sequences
+
 ```
-File offset 0x0190: 4E56 DA60 = LINK A6,#-9632  (MASSIVE frame!)
-File offset 0x0194: 48E7 1F38 = MOVEM.L D3-D7/A2-A4,-(SP)
-```
+File+0x190: 4E56 DA60           LINK A6,#-9632     (9632-byte frame!)
+File+0x194: 48E7 1F38           MOVEM.L D3-D7/A2-A4,-(SP)
 
-The **9632-byte stack frame** is the largest in Maven, used for exhaustive letter combination enumeration.
+; Direction-based table selection
+File+0x198: 4A6E 0008           TST.W 8(A6)        ; test direction
+File+0x19C: 6714                BEQ.S use_vert      ; 0 = vertical
+File+0x19E: 2D6D CF0C DA84     MOVE.L g_score_table1,-9596(A6)
+File+0x1A4: 2D6D CF10 DA76     MOVE.L g_score_table2,-9610(A6)
+File+0x1AA: 2D6D CF14 DA7C     MOVE.L g_score_table3,-9604(A6)
+File+0x1B2: 2D6D CF18 DA84     MOVE.L g_score_table4,-9596(A6) ; (vert path)
 
-### Verified Disassembly
-```asm
-; void full_combination_analysis(int16 direction, void* position)
-; Stack: 8(A6)=direction, 10(A6)=position
+; Pass 1 validation
+File+0x1FA: 707F                MOVEQ #127,D0
+File+0x1FC: 8044                OR.W D4,D0
+File+0x1FE: 0C40 007F           CMPI.W #$007F,D0  ; entry must fit in 7 bits
+File+0x204: 4EAD 01A2           JSR 418(A5)        ; bounds_error() if not
 
-018C: 4E56 DA60      LINK     A6,#-9632          ; MASSIVE stack frame!
-0190: 48E7 1F38      MOVEM.L  D3-D7/A2-A4,-(SP)
+; Pass 4 iteration control
+File+0x2EC: 3D7C 0001 DA74     MOVE.W #1,-9612(A6)  ; changed = true
+File+0x2F2: 3D7C 0001 DA6A     MOVE.W #1,-9622(A6)  ; depth = 1
+File+0x3F0: 4A6E DA60           TST.W -9632(A6)      ; synergy_delta check
 
-; Check direction flag for table selection
-0194: 4A6E 0008      TST.W    8(A6)              ; test direction
-0198: 6714           BEQ.S    use_vert_tables    ; if 0, use vertical
-
-; === HORIZONTAL: direction != 0 ===
-use_horiz_tables:
-019A: 2D6D CF0C DA84 MOVE.L   -12532(A5),-9596(A6)  ; local1 = g_horiz_scores1
-01A0: 2D6D CF10 DA76 MOVE.L   -12528(A5),-9610(A6)  ; local2 = g_horiz_scores2
-01A6: 2D6D CF14 DA7C MOVE.L   -12524(A5),-9604(A6)  ; local3 = g_horiz_scores3
-01AC: 6012           BRA.S    tables_selected
-
-; === VERTICAL: direction == 0 ===
-use_vert_tables:
-01AE: 2D6D CF18 DA84 MOVE.L   -12520(A5),-9596(A6)  ; local1 = g_vert_scores1
-01B4: 2D6D CF1C DA76 MOVE.L   -12516(A5),-9610(A6)  ; local2 = g_vert_scores2
-01BA: 2D6D CF20 DA7C MOVE.L   -12512(A5),-9604(A6)  ; local3 = g_vert_scores3
-
-tables_selected:
-; Initialize position and rack
-01C0: 2F2E 000A      MOVE.L   10(A6),-(SP)       ; push position
-01C4: 4EAD 0AAA      JSR      2730(A5)           ; init_position() JT[2730]
-01C8: 2EAE 000A      MOVE.L   10(A6),(SP)        ; reuse stack slot
-01CC: 4EAD 0DC2      JSR      3522(A5)           ; init_rack_info() JT[3522]
-
-; Setup processed mask
-01D0: 204D           MOVEA.L  A5,A0
-01D6: 303C 0080      MOVE.W   #$0080,D0          ; PROCESSED_FLAG
-01DE: 3D40 DA74      MOVE.W   D0,-9612(A6)       ; store mask
-
-; Initialize pair counter
-01E2: 7600           MOVEQ    #0,D3
-01E4: 3D43 DA7A      MOVE.W   D3,-9606(A6)       ; pair_count = 0
-
-; === PASS 1: Collect valid letter pairs ===
-01E8: 45ED CCFC      LEA      -13060(A5),A2      ; A2 = g_letter_pair_table
-01EC: D4C3           ADDA.W   D3,A2
-01EE: D4C3           ADDA.W   D3,A2              ; *2 for word entries
-
-pass1_loop:
-01F4: 3812           MOVE.W   (A2),D4            ; D4 = entry
-01F6: 707F           MOVEQ    #127,D0
-01F8: 8044           OR.W     D4,D0
-01FA: 0C40 007F      CMPI.W   #$007F,D0          ; validate entry
-01FE: 6704           BEQ.S    pass1_valid
-0200: 4EAD 01A2      JSR      418(A5)            ; bounds_error()
-
-pass1_valid:
-0204: 302E DA74      MOVE.W   -9612(A6),D0       ; D0 = processed_mask
-0208: C044           AND.W    D4,D0              ; test processed bit
-020A: B06E DA74      CMP.W    -9612(A6),D0
-020E: 6612           BNE.S    pass1_next         ; skip if processed
-
-; Store valid pair
-0210: 302E DA7A      MOVE.W   -9606(A6),D0       ; D0 = pair_count
-0214: 526E DA7A      ADDQ.W   #1,-9606(A6)       ; pair_count++
-021C: 3144 FEFC      MOVE.W   D4,-260(A0)        ; valid_pairs[count] = entry
-
-pass1_next:
-0222: 5243           ADDQ.W   #1,D3              ; i++
-0224: 548A           ADDQ.L   #2,A2              ; next entry
-0226: B66D CCFA      CMP.W    -13062(A5),D3      ; vs g_letter_pair_count
-022A: 6DC8           BLT.S    pass1_loop
-
-; === PASS 2: Generate pair combinations ===
-022C: 45EE DC9C      LEA      -9060(A6),A2       ; combination buffer
-0230: 7600           MOVEQ    #0,D3              ; outer counter
-0232: 47EE FEFC      LEA      -260(A6),A3        ; valid_pairs array
-0236: 41EE DA98      LEA      -9576(A6),A0       ; results pointers
-023A: 2D48 DA88      MOVE.L   A0,-9592(A6)
-
-pass2_outer:
-0240: 206E DA88      MOVEA.L  -9592(A6),A0
-0244: 208A           MOVE.L   A2,(A0)            ; store combo ptr
-0246: 3813           MOVE.W   (A3),D4            ; D4 = pair1
-0248: 3A03           MOVE.W   D3,D5              ; inner counter
-
-pass2_inner:
-0256: 2047           MOVEA.L  D7,A0
-0258: 3C10           MOVE.W   (A0),D6            ; D6 = pair2
-025A: 3004           MOVE.W   D4,D0
-025C: 8046           OR.W     D6,D0              ; combine pairs
-0260: 6626           BNE.S    pass2_inner_next   ; skip if invalid
-
-; Check results array
-0262: 204D           MOVEA.L  A5,A0
-026C: 4AA8 A756      TST.L    -22698(A0)         ; g_results_array
-0270: 6716           BEQ.S    pass2_inner_next   ; skip if no result
-
-; Store valid combination
-0272: 3F06           MOVE.W   D6,-(SP)
-0274: 3F04           MOVE.W   D4,-(SP)
-0276: 4EAD 09AA      JSR      2474(A5)           ; get_crosscheck()
-027A: 806E DA74      OR.W     -9612(A6),D0       ; set processed
-027E: 3480           MOVE.W   D0,(A2)            ; store combo
-0280: 3546 0002      MOVE.W   D6,2(A2)           ; store pair2
-0284: 588A           ADDQ.L   #4,A2              ; advance combo ptr
-
-pass2_inner_next:
-028C: B66E DA7A      CMP.W    -9606(A6),D3       ; vs pair_count
-0290: 6DC4           BLT.S    pass2_inner
-
-0292: 5243           ADDQ.W   #1,D3              ; outer++
-029A: B66E DA7A      CMP.W    -9606(A6),D3
-029E: 6DA0           BLT.S    pass2_outer
-
-; === PASS 3: Calculate base scores ===
-02B6: 3812           MOVE.W   (A2),D4            ; get combination
-02B8: 7012           MOVEQ    #18,D0             ; ESTR record size
-02BA: C1C4           MULU     D4,D0              ; idx = entry * 18
-
-; Add scores from three tables
-02C0: 204B           MOVEA.L  A3,A0
-02C2: D1EE DA84      ADDA.L   -9596(A6),A0       ; + table1 base
-02C6: 4250           CLR.W    (A0)               ; clear result
-02C8: 204B           MOVEA.L  A3,A0
-02CA: D1EE DA7C      ADDA.L   -9604(A6),A0       ; + table3 base
-02CE: 4250           CLR.W    (A0)
-02D0: 204D           MOVEA.L  A5,A0
-02D2: D0C4           ADDA.W   D4,A0
-02D4: D0C4           ADDA.W   D4,A0
-02D6: 224B           MOVEA.L  A3,A1
-02D8: D3EE DA76      ADDA.L   -9610(A6),A1       ; + table2 base
-02DC: 32A8 CBFA      MOVE.W   -13318(A0),(A1)    ; copy score
-
-; === PASS 4+: Extended scoring iterations ===
-02E8: 3D7C 0001 DA74 MOVE.W   #1,-9612(A6)       ; reset mask
-02EE: 3D7C 0001 DA6A MOVE.W   #1,-9622(A6)       ; iteration = 1
-02F4: 7002           MOVEQ    #2,D0
-02F6: 2D40 DA88      MOVE.L   D0,-9592(A6)       ; max_depth = 2
-
-; Extended iteration loops (complex nested scoring)
-; ... (many nested loops for 3, 4, 5, 6, 7 letter combinations)
-
-; Final aggregation
-049C: 7600           MOVEQ    #0,D3
-049E: 3E2E DA6A      MOVE.W   -9622(A6),D7       ; iteration count
-04A2: 48C7           EXT.L    D7
-04A4: DE87           ADD.L    D7,(SP)            ; add to running total
-04A6: 45EE FEFC      LEA      -260(A6),A2        ; valid_pairs
-
-; Final score calculation
-04B0: 3812           MOVE.W   (A2),D4
-04B2: 7012           MOVEQ    #18,D0
-04B4: C1C4           MULU     D4,D0
-...
-
-; Return
-050E: 4CDF 1CF8      MOVEM.L  (SP)+,D3-D7/A2-A4
-0512: 4E5E           UNLK     A6
-0514: 4E75           RTS
+; Epilogue
+File+0x512: 4CDF 1CF8           MOVEM.L (SP)+,D3-D7/A2-A4
+File+0x516: 4E5E                UNLK A6
+File+0x518: 4E75                RTS
 ```
 
-### Stack Frame Layout (9632 bytes)
+### Stack Frame Layout (9,632 bytes)
 
-| Offset | Size | Name | Purpose |
-|--------|------|------|---------|
-| -9596 | 4 | score_table1 | Local copy of selected table 1 |
-| -9604 | 4 | score_table3 | Local copy of selected table 3 |
-| -9610 | 4 | score_table2 | Local copy of selected table 2 |
-| -9612 | 2 | processed_mask | Current processing mask |
-| -9606 | 2 | pair_count | Number of valid pairs found |
-| -9622 | 2 | iteration_counter | Extended scoring iteration |
-| -9592 | 4 | results_ptr | Pointer to results storage |
-| -9576 | ~8500 | results_storage | Combination results |
-| -9060 | ~8800 | combination_buffer | Pair combinations |
-| -260 | 260 | valid_pairs | Array of valid pair indices |
+| Offset | Hex | Size | Name |
+|--------|-----|------|------|
+| -9632 | DA60 | 2 | `synergy_delta` - improvement in current iteration |
+| -9626 | DA66 | 4 | `threshold` - score threshold for improvement |
+| -9622 | DA6A | 2 | `depth` - current combination depth (1-based) |
+| -9620 | DA6C | 4 | `ptr_table_c` - pointer into table_c |
+| -9616 | DA70 | 4 | `ptr_table_a` - pointer into table_a |
+| -9612 | DA74 | 2 | `changed` - did this pass improve? |
+| -9610 | DA76 | 4 | `table_b` - selected table B pointer |
+| -9606 | DA7A | 2 | `pair_count` - valid pairs from pass 1 |
+| -9604 | DA7C | 4 | `table_c` - selected table C pointer |
+| -9596 | DA84 | 4 | `table_a` - selected table A pointer |
+| -9592 | DA88 | 4 | `depth_base` - advancing with depth |
+| -9588 | DA8C | 4 | `combo_results_ptr` |
+| -9584 | DA90 | 4 | `pairs_scan_ptr` |
+| -9580 | DA94 | 4 | `depth_offset` |
+| -9576 | DA98 | ~512 | `combo_ptrs[128]` - per-pair combo groups |
+| -9060 | DC9C | ~8800 | `combinations` - pair combo records |
+| -260 | FEFC | 260 | `valid_pairs[130]` - valid pair indices |
 
-### Speculative C Decompilation
+### C Decompilation
+
 ```c
 /*
- * full_combination_analysis - Exhaustive letter combination scoring
+ * analyze_combinations - Exhaustive letter combination scoring
  *
- * This is Maven's most memory-intensive function, using a 9632-byte
- * stack frame to enumerate and score all valid letter combinations.
- *
- * The algorithm has multiple passes:
- *   Pass 1: Collect valid (unprocessed) letter pairs
- *   Pass 2: Generate all pairwise combinations
- *   Pass 3: Calculate base scores from ESTR tables
- *   Pass 4+: Iteratively refine scores for longer combinations
+ * The core of Maven's synergy analysis. Enumerates all valid letter pair
+ * combinations for a given board position, then iteratively extends
+ * scoring to longer combinations (3, 4, ... letters) until no further
+ * improvement is found.
  *
  * Parameters:
- *   direction - 0 for vertical (hook-before), non-zero for horizontal (hook-after)
- *   position  - Board position data
+ *   direction - 0 = vertical, nonzero = horizontal
+ *   position  - Board position data (passed to init functions)
  */
-void full_combination_analysis(int16_t direction, void* position)
+void analyze_combinations(int16_t direction, int32_t position)
 {
-    /* MASSIVE stack frame: 9632 bytes */
-    ESTRRecord* table1;              /* -9596: Selected score table 1 */
-    ESTRRecord* table2;              /* -9610: Selected score table 2 */
-    ESTRRecord* table3;              /* -9604: Selected score table 3 */
-    uint16_t    processed_mask;      /* -9612: Processing flag */
-    uint16_t    pair_count;          /* -9606: Valid pairs found */
-    uint16_t    iteration;           /* -9622: Iteration counter */
-    void*       results_ptr;         /* -9592: Results pointer */
-    int32_t     results_storage[2125]; /* -9576: ~8500 bytes */
-    uint16_t    combinations[2200];  /* -9060: ~8800 bytes */
-    uint16_t    valid_pairs[130];    /* -260: Valid pair indices */
+    /* Select score tables based on play direction */
+    ESTRRecord *table_a, *table_b, *table_c;
 
-    /*
-     * Select score tables based on direction
-     *
-     * Horizontal (hook-after): Letters placed AFTER anchor
-     *   - Uses horiz tables at A5-12524, A5-12528, A5-12532
-     *
-     * Vertical (hook-before): Letters placed BEFORE anchor
-     *   - Uses vert tables at A5-12512, A5-12516, A5-12520
-     */
     if (direction != 0) {
-        /* Horizontal - hook-after */
-        table1 = g_horiz_scores1;  /* A5-12532 */
-        table2 = g_horiz_scores2;  /* A5-12528 */
-        table3 = g_horiz_scores3;  /* A5-12524 */
+        table_a = g_score_table1;  /* horizontal set */
+        table_b = g_score_table2;
+        table_c = g_score_table3;
     } else {
-        /* Vertical - hook-before */
-        table1 = g_vert_scores1;   /* A5-12520 */
-        table2 = g_vert_scores2;   /* A5-12516 */
-        table3 = g_vert_scores3;   /* A5-12512 */
+        table_a = g_score_table4;  /* vertical set */
+        table_b = g_score_table5;
+        table_c = g_score_table6;
     }
 
-    /* Initialize position and rack */
-    init_position(position);    /* JT[2730] */
-    init_rack_info(position);   /* JT[3522] */
+    init_position(position);
+    init_rack_info(position);
 
-    processed_mask = 0x0080;
+    /* Compute processed mask from crosscheck table */
+    int16_t proc_mask = 0x0080 - g_crosscheck_table[/* derived index */];
 
-    /*
+    /*====================================================================
      * PASS 1: Collect valid letter pairs
      *
-     * Iterate through g_letter_pair_table, filtering out:
-     * - Already processed pairs (bit 0x80 set)
-     * - Invalid entries
-     */
-    pair_count = 0;
+     * Scan g_letter_pair_table, keeping only entries that:
+     *   - Have all bits within 0x7F (valid pair index)
+     *   - Are NOT already marked as processed (bit 7 clear)
+     *====================================================================*/
+    int16_t pair_count = 0;
+    int16_t valid_pairs[130];
+
     for (int i = 0; i < g_letter_pair_count; i++) {
-        uint16_t entry = g_letter_pair_table[i];
+        int16_t entry = g_letter_pair_table[i];
 
-        /* Validate entry format */
+        /* Validate: entry OR 0x7F must equal 0x7F */
         if ((entry | 0x7F) != 0x7F) {
-            bounds_error();  /* JT[418] */
+            bounds_error();
         }
 
-        /* Skip if processed */
-        if (entry & processed_mask) {
+        /* Skip if already processed */
+        if ((entry & proc_mask) == proc_mask)
             continue;
-        }
 
         valid_pairs[pair_count++] = entry;
     }
 
-    /*
-     * PASS 2: Generate pair combinations
+    /*====================================================================
+     * PASS 2: Generate pairwise combinations
      *
-     * Nested loops create all valid pairwise combinations.
-     * Each combination is validated against g_results_array.
-     */
-    int combo_count = 0;
+     * For each pair of valid pairs (i, j), test whether their OR
+     * combination has a nonzero entry in g_results_array. If so,
+     * compute the crosscheck value and store the combination.
+     *====================================================================*/
+    int16_t combinations[4400];  /* combo records at -9060(A6) */
+    int32_t combo_ptrs[128];     /* per-outer-pair combo list heads */
+    int combo_idx = 0;
+
     for (int i = 0; i < pair_count; i++) {
-        uint16_t pair1 = valid_pairs[i];
+        int16_t pair1 = valid_pairs[i];
+        combo_ptrs[i] = (int32_t)&combinations[combo_idx];
 
-        for (int j = 0; j < pair_count; j++) {
-            uint16_t pair2 = valid_pairs[j];
-            uint16_t combined = pair1 | pair2;
+        for (int j = i; j < pair_count; j++) {
+            int16_t pair2 = valid_pairs[j];
+            int16_t combined = pair1 | pair2;
 
-            /* Check if valid combination exists in results */
-            if (g_results_array[combined] == 0) {
+            /* Skip if combined pair has no results */
+            if (g_results_array[combined] == 0)
                 continue;
+
+            /* Compute crosscheck and store combination */
+            int16_t cross = get_crosscheck(pair1, pair2);
+            cross |= proc_mask;
+
+            combinations[combo_idx++] = cross;
+            combinations[combo_idx++] = pair2;
+        }
+    }
+
+    /* Store sentinel for last combo group */
+    combo_ptrs[pair_count] = (int32_t)&combinations[combo_idx];
+
+    /*====================================================================
+     * PASS 3: Initialize base scores from ESTR tables
+     *
+     * For each valid pair, look up its base scores from all three
+     * selected tables. table_a and table_c get cleared; table_b
+     * gets the base score from g_pair_base_scores.
+     *====================================================================*/
+    for (int i = 0; i < pair_count; i++) {
+        int16_t pair = valid_pairs[i];
+        int32_t offset = (int32_t)pair * 18;
+
+        /* Clear table_a and table_c entries */
+        *(int16_t *)((char *)table_a + offset) = 0;
+        *(int16_t *)((char *)table_c + offset) = 0;
+
+        /* Copy base score to table_b */
+        *(int16_t *)((char *)table_b + offset) =
+            g_pair_base_scores[pair];  /* A5-13318 */
+    }
+
+    /*====================================================================
+     * PASS 4: Iterative combination extension
+     *
+     * Starting at depth=1, iterate until no improvement or depth > 7.
+     * For each pair, copy previous depth's scores forward, then scan
+     * all combinations looking for synergy improvements.
+     *====================================================================*/
+    int16_t changed = 1;
+    int16_t depth = 1;
+    int32_t depth_base = 2;
+
+    while (changed) {
+        changed = 0;
+
+        for (int i = 0; i < pair_count; i++) {
+            int16_t pair = valid_pairs[i];
+            int32_t off = (int32_t)pair * 18;
+
+            int16_t *pa = (int16_t *)((char *)table_a + off + depth * 2);
+            int16_t *pb = (int16_t *)((char *)table_b + off + depth * 2);
+            int16_t *pc = (int16_t *)((char *)table_c + off + depth * 2);
+
+            /* Propagate previous depth's scores */
+            *pa = *(pa - 1);
+            *pb = *(pb - 1);
+            if (*(pb - 1) != 0) {
+                *pa += *(pb - 2);
+                *pb -= *(pb - 2);
             }
 
-            /* Get cross-check value */
-            int16_t cross_val = get_crosscheck(pair1, 0x7F);
-            cross_val |= processed_mask;
+            /* Scan this pair's combinations for improvements */
+            int16_t *combo = (int16_t *)combo_ptrs[i];
+            int16_t *combo_end = (int16_t *)combo_ptrs[i + 1];
 
-            /* Store combination */
-            combinations[combo_count * 2] = cross_val;
-            combinations[combo_count * 2 + 1] = pair2;
-            combo_count++;
-        }
-    }
+            while (combo < combo_end) {
+                int16_t cross = combo[0];
+                int16_t pair2 = combo[1];
+                int32_t c_off = (int32_t)cross * 18;
 
-    /*
-     * PASS 3: Calculate base scores
-     *
-     * For each combination, sum scores from all three tables.
-     * Index = entry * 18 (ESTR record size)
-     */
-    for (int i = 0; i < combo_count; i++) {
-        uint16_t combo = combinations[i * 2];
-        int idx = combo * 18;
+                int16_t syn_a = *(int16_t *)((char *)table_a + c_off + depth_base * 2);
+                int16_t delta = g_results_array[pair2].synergy[depth];
+                int16_t candidate = syn_a + delta;
 
-        results_storage[i] = table1[idx / 18].value +
-                             table2[idx / 18].value +
-                             table3[idx / 18].value;
-    }
+                if (candidate > *pa) {
+                    /* Improvement found: update all three tables */
+                    int16_t syn_c = *(int16_t *)((char *)table_c + c_off + depth * 2);
+                    int16_t alt = g_alt_score_data[pair2];
+                    *pc = (syn_c + delta > alt) ? pair2 : alt;
+                    *pa = candidate;
+                    /* Update pb and threshold accordingly */
+                }
+                combo += 2;
+            }
 
-    /*
-     * PASS 4+: Extended scoring
-     *
-     * Iteratively refine scores for combinations of 3, 4, 5, 6, 7 letters.
-     * Each iteration adds synergy bonuses from additional table fields.
-     */
-    iteration = 1;
-    while (iteration <= 7) {  /* Max rack size */
-        processed_mask = 0;
-
-        for (int i = 0; i < combo_count; i++) {
-            uint16_t combo = combinations[i * 2];
-            int idx = combo * 18;
-
-            /* Add iteration-specific synergy bonus */
-            results_storage[i] += table1[idx / 18].synergy[iteration - 1] +
-                                  table2[idx / 18].synergy[iteration - 1];
+            /* Set changed if any table entry differs from previous depth */
+            if (*pa != *(pa - 1) || *pc != *(pc - 1) || *pb != *(pb - 2))
+                changed = 1;
         }
 
-        iteration++;
+        depth++;
+        depth_base++;
     }
 
-    /*
-     * Final aggregation
+    /*====================================================================
+     * PASS 5: Final aggregation
      *
-     * Combine all scores and update output structures
-     */
+     * Walk through valid_pairs one more time. For each pair, copy the
+     * accumulated scores at the final depth back into the ESTR tables.
+     * This makes the results visible to the caller via the score table
+     * pointers.
+     *====================================================================*/
     for (int i = 0; i < pair_count; i++) {
-        uint16_t pair = valid_pairs[i];
-        int idx = pair * 18;
+        int16_t pair = valid_pairs[i];
+        int32_t offset = (int32_t)pair * 18;
 
-        int final_score = table1[idx / 18].value +
-                          table2[idx / 18].position_mult +
-                          table3[idx / 18].position_mult;
+        int16_t *ptr_a = (int16_t *)((char *)table_a + offset + depth * 2);
+        int16_t *ptr_b = (int16_t *)((char *)table_b + offset + depth * 2);
+        int16_t *ptr_c = (int16_t *)((char *)table_c + offset + depth * 2);
 
-        /* Store final results */
-        /* ... */
+        int16_t final_depth = depth;
+
+        /* Copy scores across remaining synergy slots up to slot 9 */
+        while (final_depth < 9) {
+            *ptr_a = *(ptr_a - 1);
+            *ptr_b = *(ptr_b - 1);
+            *ptr_c = *(ptr_c - 1);
+            final_depth++;
+            ptr_a++;
+            ptr_b++;
+            ptr_c++;
+        }
     }
 }
 ```
 
 ---
 
-## Function 0x0516 - get_pair_scores
+## Function 0x0516 - lookup_pair_scores
 
-### Binary Verification
+### Purpose
+
+Simple table lookup: given a pair index, reads the `position_mult` field
+(offset +16) from ESTR records in multiple score tables. Returns a combined
+score. If table2's value is zero, falls back to a fixed offset (2286) in
+table5.
+
+### Key Hex-Verified Sequences
+
 ```
-File offset 0x051A: 4E56 0000 = LINK A6,#0
-File offset 0x051E: 48E7 0108 = MOVEM.L D7/A4,-(SP)
-```
-
-### Verified Disassembly
-```asm
-; int16 get_pair_scores(uint16 pair, int16* out1, int16* out2)
-; Stack: 8(A6)=pair, 10(A6)=out1, 14(A6)=out2
-
-0516: 4E56 0000      LINK     A6,#0
-051A: 48E7 0108      MOVEM.L  D7/A4,-(SP)
-
-; Clear first output
-051E: 206E 000A      MOVEA.L  10(A6),A0          ; A0 = out1
-0522: 4250           CLR.W    (A0)               ; *out1 = 0
-
-; Calculate index = pair * 18
-0524: 7012           MOVEQ    #18,D0             ; ESTR record size
-0526: C1EE 0008      MULU     8(A6),D0           ; idx = pair * 18
-052A: 2840           MOVEA.L  D0,A4              ; A4 = idx
-
-; Look up in horiz_scores3
-052C: 202D CF14      MOVE.L   -12524(A5),D0      ; D0 = g_horiz_scores3
-0530: 226E 000E      MOVEA.L  14(A6),A1          ; A1 = out2
-0534: 32B4 0810      MOVE.W   16(A4,D0.L),(A1)   ; *out2 = table[idx+16]
-
-; Look up in horiz_scores2
-0538: 7012           MOVEQ    #18,D0
-053A: C1EE 0008      MULU     8(A6),D0
-053E: 206D CF10      MOVEA.L  -12528(A5),A0      ; A0 = g_horiz_scores2
-0542: 3E30 0810      MOVE.W   16(A0,D0.L),D7     ; D7 = table[idx+16]
-
-; Handle zero case - use vert_scores2 instead
-0546: 4A47           TST.W    D7
-0548: 6706           BEQ.S    use_vert           ; if zero, branch
-054A: 3007           MOVE.W   D7,D0
-054C: 4440           NEG.W    D0                 ; negate
-054E: 6008           BRA.S    combine
-
-use_vert:
-0550: 206D CF1C      MOVEA.L  -12516(A5),A0      ; A0 = g_vert_scores2
-0554: 3028 08EE      MOVE.W   2286(A0),D0        ; fixed offset 2286
-
-combine:
-; Combine scores from multiple tables
-0558: 206D CF1C      MOVEA.L  -12516(A5),A0      ; g_vert_scores2
-055C: 222D CF0C      MOVE.L   -12532(A5),D1      ; g_horiz_scores1
-0560: 3428 08EE      MOVE.W   2286(A0),D2
-0564: D474           ADD.W    (A4),D2            ; add from A4
-0566: 1810           MOVE.B   (A0),D4
-0568: D042           ADD.W    D2,D0              ; accumulate
-
-056A: 4CDF 1080      MOVEM.L  (SP)+,D7/A4
-056E: 4E5E           UNLK     A6
-0570: 4E75           RTS
+File+0x51A: 4E56 0000           LINK A6,#0        (no locals)
+File+0x51E: 48E7 0108           MOVEM.L D7/A4,-(SP)
+File+0x528: 7012                MOVEQ #18,D0
+File+0x52A: C1EE 0008           MULU 8(A6),D0     ; pair * 18 -> byte offset
+File+0x538: 32B4 0810           MOVE.W 16(A4,D0.L),(A1)  ; table3[pair].position_mult -> *out2
+File+0x546: 3E30 0810           MOVE.W 16(A0,D0.L),D7    ; table2[pair].position_mult
+File+0x54A: 4A47                TST.W D7           ; branch on zero
+File+0x54C: 6706                BEQ.S fallback
+File+0x550: 4440                NEG.W D0           ; negate table2 value
+File+0x558: 3028 08EE           MOVE.W 2286(A0),D0  ; fallback: table5[127]
+File+0x564: 3428 08EE           MOVE.W 2286(A0),D2  ; table5[127].value
+File+0x568: D474 1810           ADD.W 16(A4,D1.L),D2  ; + table1[pair].pos_mult
+File+0x56E: D042                ADD.W D2,D0          ; return sum
 ```
 
-### Speculative C Decompilation
+### C Decompilation
+
 ```c
 /*
- * get_pair_scores - Get score components for a letter pair
+ * lookup_pair_scores - Look up score components for a letter pair
  *
- * Looks up scores from multiple ESTR tables and combines them.
- * Uses a fixed offset (2286) for alternate lookups when the
- * primary lookup returns zero.
+ * Reads position_mult (offset 16) from multiple ESTR tables and
+ * combines them. If table2 returns zero, uses a fallback value
+ * from a fixed position in table5 (entry 127).
  *
  * Parameters:
- *   pair - Letter pair value (0-127)
- *   out1 - Output for first score component
- *   out2 - Output for second score component
+ *   pair - Letter pair index (0-127)
+ *   out1 - Output: first score component (int16*, cleared to 0)
+ *   out2 - Output: second score component (int16*)
  *
  * Returns:
- *   Combined score value
+ *   D0 = combined score from all tables
  */
-int16_t get_pair_scores(uint16_t pair, int16_t* out1, int16_t* out2)
+int16_t lookup_pair_scores(uint16_t pair, int16_t *out1, int16_t *out2)
 {
-    int idx = pair * 18;  /* ESTR record size */
-
     *out1 = 0;
 
-    /* Get position multiplier from horiz_scores3 */
-    *out2 = g_horiz_scores3[idx / 18].position_mult;  /* offset 16 */
+    int32_t byte_offset = (int32_t)pair * 18;
 
-    /* Get letter score from horiz_scores2 */
-    int16_t letter_score = g_horiz_scores2[idx / 18].position_mult;
+    /* Read position multiplier from table3 */
+    *out2 = ((ESTRRecord *)((char *)g_score_table3 + byte_offset))->position_mult;
 
-    int16_t base_score;
-    if (letter_score == 0) {
-        /* Use fixed offset in vert_scores2 */
-        base_score = g_vert_scores2[2286 / 18].value;
+    /* Read position multiplier from table2 */
+    int16_t table2_val = ((ESTRRecord *)((char *)g_score_table2 + byte_offset))->position_mult;
+
+    int16_t base;
+    if (table2_val != 0) {
+        base = -table2_val;
     } else {
-        base_score = -letter_score;  /* Negate */
+        /* Fallback: use entry 127 from table5 (offset 2286 = 127*18) */
+        base = *(int16_t *)((char *)g_score_table5 + 2286);
     }
 
-    /* Combine scores */
-    int16_t combined = g_horiz_scores1[idx / 18].position_mult +
-                       g_vert_scores2[2286 / 18].value +
-                       base_score;
+    /* Combine: table5[127].value + table1[pair].position_mult + base */
+    int16_t t5_val = *(int16_t *)((char *)g_score_table5 + 2286);
+    int16_t t1_val = ((ESTRRecord *)((char *)g_score_table1 + byte_offset))->position_mult;
 
-    return combined;
+    return base + t5_val + t1_val;
 }
 ```
 
 ---
 
-## Function 0x0572 - extended_score_calculation
+## Function 0x0572 - score_pair_of_pairs
 
-### Binary Verification
+### Purpose
+
+Computes synergy scores for two letter pairs simultaneously. Uses a 7-iteration
+loop that walks through the synergy fields (offsets +2 through +14) of the ESTR
+records, comparing scores from different tables and updating outputs whenever a
+better score is found. This captures how two groups of letters interact across
+draw scenarios.
+
+### Key Hex-Verified Sequences
+
 ```
-File offset 0x0576: 4E56 FFEC = LINK A6,#-20
-File offset 0x057A: 48E7 1F38 = MOVEM.L D3-D7/A2-A4,-(SP)
-```
+File+0x576: 4E56 FFEC           LINK A6,#-20
+File+0x57A: 48E7 1F38           MOVEM.L D3-D7/A2-A4,-(SP)
 
-### Verified Disassembly
-```asm
-; int16 extended_score_calculation(uint16 pair1, uint16 pair2,
-;                                  int16* out1, int16* out2)
-; Stack: 8(A6)=pair1, 10(A6)=pair2, 12(A6)=out1, 16(A6)=out2
+; Compute byte offsets and build 6 table+pair pointer combinations
+File+0x57E: 7012                MOVEQ #18,D0
+File+0x580: C1EE 0008           MULU 8(A6),D0      ; pair1 * 18
+File+0x584: 2840                MOVEA.L D0,A4      ; A4 = offset1
+File+0x588: D7ED CF10           ADDA.L g_score_table2,A3  ; A3 -> table2[pair1]
+File+0x590: C1EE 000A           MULU 10(A6),D0     ; pair2 * 18
+File+0x596: 2E2D CF1C           MOVE.L g_score_table5,D7
+File+0x59A: DE8A                ADD.L A2,D7         ; D7 = table5 + offset2
 
-0572: 4E56 FFEC      LINK     A6,#-20
-0576: 48E7 1F38      MOVEM.L  D3-D7/A2-A4,-(SP)
+; Initial score = table1[p1].pos - table4[p2].pos - table2[p1].pos
+File+0x5C2: 3829 0010           MOVE.W 16(A1),D4   ; table1[pair1].position_mult
+File+0x5C6: 9868 0010           SUB.W 16(A0),D4    ; - table4[pair2].position_mult
+File+0x5CA: 9845                SUB.W D5,D4         ; - table2[pair1].position_mult
 
-; Calculate indices for both pairs
-057A: 7012           MOVEQ    #18,D0
-057C: C1EE 0008      MULU     8(A6),D0           ; idx1 = pair1 * 18
-0580: 2840           MOVEA.L  D0,A4              ; A4 = idx1
+; 7-iteration synergy walk (offset 14 down to 2)
+File+0x5F4: 7A07                MOVEQ #7,D5         ; 7 iterations
+File+0x5F6: 347C 000E           MOVEA.W #14,A2      ; start at synergy[6]
+File+0x5FE: 4A72 7800           TST.W 0(A2,D7.L)    ; table5[pair2].synergy[i]
+File+0x67A: 5345                SUBQ.W #1,D5         ; next iteration
+File+0x67C: 558A                SUBQ.L #2,A2         ; previous field
 
-0588: 7012           MOVEQ    #18,D0
-058A: C1EE 000A      MULU     10(A6),D0          ; idx2 = pair2 * 18
-058E: 2440           MOVEA.L  D0,A2              ; A2 = idx2
-
-; Load table pointers
-0590: 2E2D CF1C      MOVE.L   -12516(A5),D7      ; D7 = g_vert_scores2
-0596: 2C2D CF0C      MOVE.L   -12532(A5),D6      ; D6 = g_horiz_scores1
-
-; Setup for indexed table access
-05A0: 204A           MOVEA.L  A2,A0
-05A2: D1ED CF18      ADDA.L   -12520(A5),A0      ; A0 = g_vert_scores1 + idx2
-05A6: 2D48 FFEC      MOVE.L   A0,-20(A6)
-
-; Get initial values
-05B0: 3429 0010      MOVE.W   16(A1),D2          ; offset 16 value
-05BC: 3A2B 0010      MOVE.W   16(A3),D5
-
-; Store initial outputs
-05DA: 206E 000C      MOVEA.L  12(A6),A0          ; out1
-05DE: 30AC 0010      MOVE.W   16(A4),(A0)        ; *out1 = table[idx1+16]
-
-05E2: 226E FFF0      MOVEA.L  -16(A6),A1
-05E6: 206E 0010      MOVEA.L  16(A6),A0          ; out2
-05EA: 30A9 0010      MOVE.W   16(A1),(A0)        ; *out2 = table[idx2+16]
-
-; 7-iteration refinement loop
-05EE: 7A07           MOVEQ    #7,D5              ; 7 iterations
-05F0: 347C 000E      MOVEA.W  #14,A2             ; offset = 14
-
-iteration_loop:
-05F8: 4A72 7800      TST.W    0(A2,D7.L)         ; check vert_scores2[offset]
-05FC: 6632           BNE.S    skip_update1       ; skip if non-zero
-
-; Update score if better
-05FE: 204B           MOVEA.L  A3,A0
-0618: 3803           MOVE.W   D3,D4              ; save best
-061A: 204C           MOVEA.L  A4,A0
-0620: 226E 000C      MOVEA.L  12(A6),A1          ; out1
-0624: 3290           MOVE.W   (A0),(A1)          ; update *out1
-
-skip_update1:
-0630: 204B           MOVEA.L  A3,A0
-0636: 663C           BNE.S    skip_update2       ; skip if non-zero
-
-; Similar update for second pair
-0638: 345C           MOVEA.W  (A4)+,A2
-...
-
-skip_update2:
-0674: 5345           SUBQ.W   #1,D5              ; decrement counter
-0678: 4A45           TST.W    D5
-067A: 6E00 FF7C      BGT.W    iteration_loop     ; continue if > 0
-
-; Return best score
-067E: 3004           MOVE.W   D4,D0
-0680: 4CDF 1CF8      MOVEM.L  (SP)+,D3-D7/A2-A4
-0684: 4E5E           UNLK     A6
-0686: 4E75           RTS
+File+0x684: 3004                MOVE.W D4,D0         ; return best score
 ```
 
-### Speculative C Decompilation
+### Stack Frame Layout (20 bytes)
+
+| Offset | Hex | Size | Name |
+|--------|-----|------|------|
+| -20 | FFEC | 4 | `ptr_table4_pair2` (table4 + offset2) |
+| -16 | FFF0 | 4 | `ptr_table3_pair1` (table3 + offset1) |
+| -12 | FFF4 | 4 | `ptr_table6_pair2` (used in second check) |
+
+### C Decompilation
+
 ```c
 /*
- * extended_score_calculation - Calculate scores for pair of letter pairs
+ * score_pair_of_pairs - Compute synergy score for two letter pairs
  *
- * Used for multi-letter combination evaluation. Iterates through
- * 7 synergy bonus fields, updating outputs when better scores found.
+ * Evaluates how two letter pairs interact across all six score tables.
+ * Walks through 7 synergy fields in descending order. When a table
+ * entry at a synergy level is zero (indicating an available slot),
+ * attempts to improve the running best score.
  *
  * Parameters:
- *   pair1 - First letter pair
- *   pair2 - Second letter pair
- *   out1  - Output for first score
- *   out2  - Output for second score
+ *   pair1 - First letter pair index
+ *   pair2 - Second letter pair index
+ *   out1  - Output: score for pair1's contribution (int16*)
+ *   out2  - Output: score for pair2's contribution (int16*)
  *
  * Returns:
- *   Best score found
+ *   D0 = best combined synergy score
  */
-int16_t extended_score_calculation(uint16_t pair1, uint16_t pair2,
-                                   int16_t* out1, int16_t* out2)
+int16_t score_pair_of_pairs(uint16_t pair1, uint16_t pair2,
+                            int16_t *out1, int16_t *out2)
 {
-    /* Local variables: 20 bytes */
-    void* table_ptr;  /* -20(A6) */
+    int32_t off1 = (int32_t)pair1 * 18;
+    int32_t off2 = (int32_t)pair2 * 18;
 
-    int idx1 = pair1 * 18;
-    int idx2 = pair2 * 18;
+    /* Build pointers to each table+pair combination */
+    ESTRRecord *t1_p1 = (ESTRRecord *)((char *)g_score_table1 + off1);
+    ESTRRecord *t2_p1 = (ESTRRecord *)((char *)g_score_table2 + off1);
+    ESTRRecord *t3_p1 = (ESTRRecord *)((char *)g_score_table3 + off1);
+    ESTRRecord *t4_p2 = (ESTRRecord *)((char *)g_score_table4 + off2);
+    ESTRRecord *t5_p2 = (ESTRRecord *)((char *)g_score_table5 + off2);
+    ESTRRecord *t6_p2 = (ESTRRecord *)((char *)g_score_table6 + off2);
 
-    ESTRRecord* entry1 = &g_horiz_scores2[idx1 / 18];
-    ESTRRecord* entry2 = &g_vert_scores1[idx2 / 18];
+    /* Compute initial combined score:
+     *   table1[pair1].pos - table4[pair2].pos - table2[pair1].pos */
+    int16_t best = t1_p1->position_mult
+                 - t4_p2->position_mult
+                 - t2_p1->position_mult;
 
-    /* Get initial values from position_mult field (offset 16) */
-    *out1 = entry1->position_mult;
-    *out2 = entry2->position_mult;
+    /* Determine initial base from table5 */
+    int16_t t5_pos = t5_p2->position_mult;
+    if (t5_pos != 0) {
+        best += t5_pos;
+    } else {
+        best += -t2_p1->position_mult;
+    }
 
-    int16_t best_score = entry1->value;
+    /* Initialize outputs from table6 and table3 position_mult */
+    *out1 = t6_p2->position_mult;
+    *out2 = t3_p1->position_mult;
 
     /*
-     * Iterate through 7 synergy bonus fields
+     * Walk synergy fields from index 6 down to 0.
+     * Synergy field i is at byte offset (i+1)*2 = 2..14 within the record.
+     * We use A2 as a byte offset, starting at 14 and decrementing by 2.
      *
-     * Each field represents additional synergy for combinations
-     * of that many letters (2-8 letters total).
+     * For each synergy level, check two conditions:
+     *   1) If table5[pair2].synergy[i] == 0: attempt to improve via pair1
+     *   2) If table2[pair1].synergy[i] == 0: attempt to improve via pair2
      */
-    for (int i = 7; i > 0; i--) {
-        /* Check if vert_scores2 entry at offset i is zero */
-        int16_t* vert_ptr = (int16_t*)((char*)g_vert_scores2 + idx1 + (i * 2));
+    for (int syn_offset = 14; syn_offset >= 2; syn_offset -= 2) {
 
-        if (*vert_ptr == 0) {
-            /* Calculate adjusted score */
-            int16_t adj_score = entry1->position_mult + /* adjustment */;
+        /* Check first direction: pair2's slot is empty in table5 */
+        if (*(int16_t *)((char *)t5_p2 + syn_offset) == 0) {
+            int16_t t2_syn = *(int16_t *)((char *)t2_p1 + syn_offset);
+            int16_t doubled = t2_syn + t2_syn;
 
-            if (adj_score > best_score) {
-                best_score = adj_score;
-                *out1 = g_horiz_scores1[idx1 / 18].synergy[i - 1];
+            int16_t t4_syn = *(int16_t *)((char *)t4_p2 + syn_offset);
+            int16_t candidate = doubled - t4_syn - t2_syn;
+
+            if (candidate > best) {
+                best = candidate;
+                *out1 = *(int16_t *)((char *)t2_p1 + syn_offset);  /* via A4+A2 */
+                *out2 = *(int16_t *)((char *)t3_p1 + syn_offset);  /* via local */
             }
         }
 
-        /* Similar check for second pair */
-        int16_t* horiz_ptr = (int16_t*)((char*)g_horiz_scores1 + idx2 + (i * 2));
+        /* Check second direction: pair1's slot is empty in table2 */
+        if (*(int16_t *)((char *)t2_p1 + syn_offset) == 0) {
+            /* Symmetric computation using table6 */
+            int16_t t6_syn = *(int16_t *)((char *)t6_p2 + syn_offset);
+            int16_t t5_syn = *(int16_t *)((char *)t5_p2 + syn_offset);
+            int16_t candidate = t5_syn + t5_syn + t6_syn;
 
-        if (*horiz_ptr == 0) {
-            /* Update second output if better */
-            /* ... */
+            if (candidate < best) {  /* note: opposite comparison direction */
+                best = candidate;
+                *out1 = *(int16_t *)((char *)t6_p2 + syn_offset);
+                *out2 = *(int16_t *)((char *)t3_p1 + syn_offset);
+            }
         }
     }
 
-    return best_score;
+    return best;
 }
 ```
 
 ---
 
-## Function 0x0688 - combined_score_wrapper
+## Function 0x0688 - adjusted_pair_score
 
-### Binary Verification
+### Purpose
+
+A thin wrapper around `score_pair_of_pairs`. After getting the dual-pair score,
+it performs an additional cross-table comparison. If a specific condition holds
+(the combined score from tables 4, 5, and 6 matches table 6's position_mult),
+it computes an alternate score from table 1 and stores it in out1.
+
+### Key Hex-Verified Sequences
+
 ```
-File offset 0x068C: 4E56 0000 = LINK A6,#0
-File offset 0x0690: 48E7 0308 = MOVEM.L D6/D7/A4,-(SP)
-```
+File+0x68C: 4E56 0000           LINK A6,#0         (no locals)
+File+0x690: 48E7 0308           MOVEM.L D6/D7/A4,-(SP)
+File+0x6A6: 4EBA FECE           JSR *-306           ; PC-relative call to 0x0572
+File+0x6AA: 3E00                MOVE.W D0,D7        ; save result
 
-### Verified Disassembly
-```asm
-; int16 combined_score_wrapper(uint16 pair, uint16 direction,
-;                              int16* out1, int16* out2)
-; Stack: 8(A6)=pair, 10(A6)=direction, 12(A6)=out1, 16(A6)=out2
+; Check: table5[pair2].value*2 + table4[pair2].pos_mult == table6[pair2].pos_mult?
+File+0x6C4: 3414                MOVE.W (A4),D2      ; table5[pair2].value
+File+0x6C6: D442                ADD.W D2,D2         ; *2
+File+0x6C8: D471 1810           ADD.W 16(A1,D1.L),D2  ; + table4.pos_mult
+File+0x6CC: B470 0810           CMP.W 16(A0,D0.L),D2  ; vs table6.pos_mult
+File+0x6D4: 661A                BNE.S done
 
-0688: 4E56 0000      LINK     A6,#0
-068C: 48E7 0308      MOVEM.L  D6/D7/A4,-(SP)
-
-; Get direction parameter
-0690: 3C2E 000A      MOVE.W   10(A6),D6          ; D6 = direction
-
-; Call extended_score_calculation
-0694: 2F2E 0010      MOVE.L   16(A6),-(SP)       ; push out2
-0698: 2F2E 000C      MOVE.L   12(A6),-(SP)       ; push out1
-069C: 3F06           MOVE.W   D6,-(SP)           ; push direction
-069E: 3F2E 0008      MOVE.W   8(A6),-(SP)        ; push pair
-06A2: 4EBA FECE      JSR      -306(PC)           ; call 0x0572
-
-06A6: 3E00           MOVE.W   D0,D7              ; D7 = result
-
-; Calculate direction index
-06A8: 7012           MOVEQ    #18,D0
-06AA: C1C6           MULU     D6,D0              ; idx = direction * 18
-06AE: D0AD CF1C      ADD.L    -12516(A5),D0      ; + g_vert_scores2
-06B2: 2840           MOVEA.L  D0,A4              ; A4 = ptr
-
-; Look up in multiple tables
-06B6: 206D CF20      MOVEA.L  -12512(A5),A0      ; A0 = g_vert_scores3
-06BA: 7012           MOVEQ    #18,D0
-06BC: C1C6           MULU     D6,D0
-06BE: 226D CF18      MOVEA.L  -12520(A5),A1      ; A1 = g_vert_scores1
-
-; Combine values
-06C2: 3414           MOVE.W   (A4),D2            ; D2 = vert_scores2[dir]
-06C4: D442           ADD.W    D2,D2              ; *2
-06C6: D471 1810      ADD.W    16(A1,D1.L),D2     ; + vert_scores1[16]
-06CA: B470 0810      CMP.W    16(A0,D0.L),D2     ; vs vert_scores3[16]
-
-06CE: 4FEF 000C      LEA      12(SP),SP          ; clean stack
-06D2: 661A           BNE.S    return             ; if not equal, return
-
-; Equal case - calculate alternate
-06D4: 7012           MOVEQ    #18,D0
-06D6: C1EE 0008      MULU     8(A6),D0           ; idx = pair * 18
-06DA: 206D CF0C      MOVEA.L  -12532(A5),A0      ; A0 = g_horiz_scores1
-06DE: 3214           MOVE.W   (A4),D1
-06E0: D241           ADD.W    D1,D1
-06E2: D270 0810      ADD.W    16(A0,D0.L),D1     ; + horiz_scores1[16]
-06E6: 9247           SUB.W    D7,D1              ; - previous result
-06E8: 226E 000C      MOVEA.L  12(A6),A1          ; out1
-06EC: 3281           MOVE.W   D1,(A1)            ; *out1 = alternate
-
-return:
-06EE: 3007           MOVE.W   D7,D0              ; return saved result
-06F0: 4CDF 10C0      MOVEM.L  (SP)+,D6/D7/A4
-06F4: 4E5E           UNLK     A6
-06F6: 4E75           RTS
+; Equal case: alternate = table5.val*2 + table1[pair1].pos_mult - result
+File+0x6E4: D270 0810           ADD.W 16(A0,D0.L),D1  ; + table1[pair1].pos_mult
+File+0x6E8: 9247                SUB.W D7,D1            ; - original result
+File+0x6EE: 3281                MOVE.W D1,(A1)         ; *out1 = alternate
 ```
 
-### Speculative C Decompilation
+### C Decompilation
+
 ```c
 /*
- * combined_score_wrapper - Wrapper combining multiple score lookups
+ * adjusted_pair_score - Score two pairs with cross-table adjustment
  *
- * Calls extended_score_calculation, then performs additional
- * lookups and comparisons to potentially update output.
+ * Calls score_pair_of_pairs, then checks whether the vertical table
+ * scores are in a specific configuration. If table5[pair2].value*2 +
+ * table4[pair2].position_mult equals table6[pair2].position_mult,
+ * computes an alternate score that replaces out1.
  *
  * Parameters:
- *   pair      - Letter pair value
- *   direction - Direction index (affects which tables used)
- *   out1      - Output for first score
- *   out2      - Output for second score
+ *   pair1 - First letter pair index
+ *   pair2 - Second letter pair index
+ *   out1  - Output: score for pair1 (may be adjusted)
+ *   out2  - Output: score for pair2
  *
  * Returns:
- *   Combined score from extended calculation
+ *   D0 = score from score_pair_of_pairs (unmodified)
  */
-int16_t combined_score_wrapper(uint16_t pair, uint16_t direction,
-                               int16_t* out1, int16_t* out2)
+int16_t adjusted_pair_score(uint16_t pair1, uint16_t pair2,
+                            int16_t *out1, int16_t *out2)
 {
-    /* Call extended calculation */
-    int16_t result = extended_score_calculation(pair, direction, out1, out2);
+    int16_t result = score_pair_of_pairs(pair1, pair2, out1, out2);
 
-    /* Calculate direction-based index */
-    int dir_idx = direction * 18;
+    int32_t off2 = (int32_t)pair2 * 18;
+    int32_t off1 = (int32_t)pair1 * 18;
 
-    ESTRRecord* vert3 = &g_vert_scores3[dir_idx / 18];
-    ESTRRecord* vert1 = &g_vert_scores1[dir_idx / 18];
-    ESTRRecord* vert2 = &g_vert_scores2[dir_idx / 18];
+    ESTRRecord *t4_p2 = (ESTRRecord *)((char *)g_score_table4 + off2);
+    ESTRRecord *t5_p2 = (ESTRRecord *)((char *)g_score_table5 + off2);
+    ESTRRecord *t6_p2 = (ESTRRecord *)((char *)g_score_table6 + off2);
 
-    /* Combine values from vertical tables */
-    int16_t combined = vert2->value * 2 + vert1->position_mult;
+    /* Check: does 2*table5.value + table4.position_mult == table6.position_mult? */
+    int16_t combined = t5_p2->value * 2 + t4_p2->position_mult;
 
-    /* Compare to vert_scores3 position multiplier */
-    if (combined == vert3->position_mult) {
-        /* Equal case - calculate alternate score */
-        int pair_idx = pair * 18;
-        ESTRRecord* horiz1 = &g_horiz_scores1[pair_idx / 18];
+    if (combined == t6_p2->position_mult) {
+        /* Compute alternate score from table1 */
+        ESTRRecord *t1_p1 = (ESTRRecord *)((char *)g_score_table1 + off1);
 
-        int16_t alternate = vert2->value * 2 +
-                            horiz1->position_mult -
-                            result;
+        int16_t alternate = t5_p2->value * 2
+                          + t1_p1->position_mult
+                          - result;
 
         *out1 = alternate;
     }
@@ -986,116 +822,71 @@ int16_t combined_score_wrapper(uint16_t pair, uint16_t direction,
 
 ---
 
-## Data Structures
-
-### ESTR Record (18 bytes)
-
-Based on the code's use of 18-byte indexing and offset 16 access:
-
-```c
-typedef struct {
-    int16_t value;           /* +0:  Base synergy value */
-    int16_t synergy[7];      /* +2:  Seven synergy bonus fields */
-    int16_t position_mult;   /* +16: Position multiplier */
-} ESTRRecord;  /* Total: 18 bytes */
-```
-
-### Score Table Layout
-
-Each of the 6 score tables contains 128 ESTR records (2304 bytes):
-
-```c
-/* Table allocation (CODE 2) */
-g_horiz_scores1 = NewPtr(2304);  /* 128 * 18 bytes */
-g_horiz_scores2 = NewPtr(2304);
-g_horiz_scores3 = NewPtr(2304);
-g_vert_scores1  = NewPtr(2304);
-g_vert_scores2  = NewPtr(2304);
-g_vert_scores3  = NewPtr(2304);
-```
-
-### Letter Pair Encoding
-
-Letter pairs are encoded as 16-bit values:
-- Bits 0-6: Letter pair index (0-127)
-- Bit 7: Processed flag (0x80)
-
-```c
-#define PROCESSED_FLAG  0x0080
-#define PAIR_MASK       0x007F
-```
-
----
-
 ## Algorithm Summary
 
 ### Multi-Pass Combination Scoring
 
+CODE 39 evaluates letter group synergies through six phases:
+
 ```
-INPUT: Rack letters, board position, direction (horiz/vert)
-
-PASS 1 - COLLECT PAIRS:
-  For each entry in g_letter_pair_table:
-    If not processed (bit 0x80 clear):
-      Add to valid_pairs array
-
-PASS 2 - GENERATE COMBINATIONS:
-  For each pair1 in valid_pairs:
-    For each pair2 in valid_pairs:
-      combined = pair1 | pair2
-      If g_results_array[combined] != 0:
-        Store combination with cross-check value
-
-PASS 3 - CALCULATE BASE SCORES:
-  For each combination:
-    index = entry * 18
-    score = table1[index].value +
-            table2[index].value +
-            table3[index].value
-
-PASS 4+ - EXTENDED SCORING:
-  For iteration = 1 to 7:
-    For each combination:
-      Add synergy bonus from iteration field
-
-OUTPUT: Scores stored in results arrays
+1. TABLE SELECTION: Pick 3 of 6 tables based on direction (horiz=1/2/3, vert=4/5/6)
+2. PAIR COLLECTION: Filter g_letter_pair_table to valid unprocessed pairs (0-127)
+3. COMBINATION GEN: For all pair_i|pair_j with nonzero g_results_array, store combos
+4. BASE INIT: Clear table_a/c, copy g_pair_base_scores into table_b
+5. ITERATE: depth=1..7, propagate scores forward, check combinations for improvement
+6. PROPAGATE: Copy final-depth scores to remaining ESTR synergy slots (up to 9)
 ```
+
+The tables are updated in-place; the caller reads results via the table pointers.
+
+### Stack Budget
+
+The 9,632-byte frame accommodates: 130 valid pairs (260 bytes), up to ~2,200
+combination records (8,800 bytes), and 128 group pointers (512 bytes). Worst
+case: 130 * 130 = 16,900 combination checks, 7 depth iterations.
 
 ---
 
-## Integration with Leave Evaluation
+## Fixed Offset 2286
 
-CODE 39's synergy scores feed into CODE 32's leave calculation:
-
-```
-Total Leave Value =
-    Sum(MUL per-tile values) +
-    VCB vowel adjustment (currently disabled - FRST is zeros) +
-    CODE 39 synergy scores
-```
+The constant 2286 = 127 * 18 (the last of 128 ESTR entries). Entry 127 serves
+as a fallback/sentinel value -- when a table lookup returns zero, the code reads
+from this fixed position instead.
 
 ---
 
-## Open Questions
+## Integration with CODE 32 Leave Calculation
 
-### Score Table Population
+CODE 39's synergy scores are one of three leave evaluation components:
 
-The 6 score tables are allocated by CODE 2 but the code that populates them with actual synergy values has NOT been found:
+```
+Total Leave Value = MUL per-tile values (CODE 32, SANE FP)
+                  + V/C balance (CODE 32, algorithmic)
+                  + Letter synergy (CODE 39, integer)
+```
 
-| Step | Code | Status |
-|------|------|--------|
-| Allocation | CODE 2, JT[1666] | VERIFIED |
-| Population | Unknown | NOT FOUND |
-| Usage | CODE 39 (read-only) | VERIFIED |
+The flow: CODE 2 allocates the six score tables at startup. For each position
+evaluation, CODE 32 calls `analyze_combinations` (0x018C) to populate them,
+then reads synergy values as part of the total leave score. Individual pairs
+are accessed via `lookup_pair_scores` (0x0516) and `adjusted_pair_score`
+(0x0688). Tables are working buffers, repopulated per position and direction.
 
-Possibilities:
-1. Tables computed lazily on first use
-2. Populated by unidentified initialization code
-3. Tables remain zero (synergy scoring disabled)
+---
 
-### ESTR Pattern Mapping
+## Disassembler Error Notes
 
-The ESTR resource contains 130 pattern strings, but score tables have 128 entries. The mapping between patterns and table indices is unclear.
+The existing disassembly (code39_disasm.asm) contains numerous errors where the
+disassembler merges separate instructions into nonsensical indexed addressing.
+
+| Raw Hex | Correct Decode | Disassembler Error |
+|---------|----------------|---------------------|
+| E588 D1C0 | LSL.L #2,D0; ADDA.L D0,A0 | MOVE.L A0,-64(A2,A5.W) |
+| C1C3 | MULU D3,D0 | ANDA.L D3,A0 |
+| D4C6 | ADDA.W D6,A2 | MOVE.B D6,(A2)+ |
+| 5C8F | ADDQ.L #6,SP | MOVE.B A7,(A6) |
+
+The `E588 D1C0` pattern appears 6+ times and is always misread. All hex
+sequences in this analysis are verified directly from the raw binary.
 
 ---
 
@@ -1103,10 +894,14 @@ The ESTR resource contains 130 pattern strings, but score tables have 128 entrie
 
 | Aspect | Confidence | Notes |
 |--------|------------|-------|
-| Function boundaries | HIGH | LINK/UNLK/RTS verified |
-| Stack frame sizes | HIGH | From LINK displacements |
-| Global variables | HIGH | Pattern matching verified |
-| Instruction decode | MEDIUM-HIGH | Some complex addressing unclear |
-| Algorithm structure | MEDIUM-HIGH | Multi-pass confirmed |
-| C translations | MEDIUM | Structure verified, details speculative |
-| Data flow | LOW | Table population unknown |
+| Function boundaries | HIGH | All 5 LINK/UNLK/RTS sequences verified from hex |
+| Stack frame sizes | HIGH | Directly from LINK displacement values |
+| Register save masks | HIGH | MOVEM.L bit masks decoded from hex |
+| Global variable offsets | HIGH | A5-relative displacements verified across functions |
+| ESTR record layout | HIGH | 18-byte stride confirmed by MULU #18 pattern |
+| Table selection logic | HIGH | Direction branch and 6 table copies verified |
+| Multi-pass algorithm | HIGH | Loop structure and branch targets verified |
+| Pass 4 inner scoring | MEDIUM | Complex nested loops; general flow clear, exact score formula approximate |
+| Function 0x0000 parameters | MEDIUM | Stack layout inferred from access patterns |
+| C decompilations | MEDIUM | Structure matches hex; exact variable semantics partly inferred |
+| Fixed offset 2286 meaning | HIGH | 127 * 18 = 2286, entry 127 as sentinel/fallback |

@@ -1,830 +1,1394 @@
-# CODE 46 Detailed Analysis - Window Manager and Graphics
+# CODE 46 Detailed Analysis - Custom Window Manager & Graphics Layer
 
 ## Overview
 
 | Property | Value |
 |----------|-------|
-| Size | 2904 bytes |
+| Size | 2,904 bytes (code) + 4 byte header = 2,908 total |
 | JT Offset | 3032 |
 | JT Entries | 12 |
-| Functions | 20+ |
-| Purpose | **Window management, QuickDraw graphics, event handling** |
+| Functions | 23 (LINK A6) + 2 non-LINK leaf functions |
+| Purpose | **Custom window management, QuickDraw rendering, hit testing, window ordering** |
+| Confidence | **HIGH** |
 
-## System Role
+## Module Purpose
 
-**Category**: User Interface
-**Function**: Window and Graphics Management
+CODE 46 is Maven's custom window management layer. It implements a complete WDEF-style windowing system on top of the Mac Toolbox, providing:
 
-Provides the complete windowing layer for Maven's game interface.
+1. Window event dispatching (draw, click, update, idle, activate)
+2. 3D border drawing in Mac OS 7+ raised/embossed style
+3. Board square rendering with pattern fills and title drawing
+4. Region-based hit testing (content, title bar, close box, grow box, pattern area)
+5. Window creation wrapping NewCWindow with custom initialization
+6. Window ordering, activation, and visibility management
+7. A complete window tracking subsystem using four A5-relative globals
 
-**Related CODE resources**:
+This module is the heart of Maven's custom UI framework. Unlike modules that use the Toolbox WDEF mechanism, CODE 46 manages its own window list traversal and event routing. It contains 120+ Toolbox trap calls -- by far the most QuickDraw-intensive module in Maven.
+
+**Related CODE resources:**
 - CODE 48 (TextEdit controls)
 - CODE 49 (Clipboard/scrap)
+- CODE 9, 11, 52 (called via JT)
 
-## QuickDraw Traps Used
+## Function Map
 
-| Trap | Name | Purpose |
-|------|------|---------|
-| A870 | SetPortBits | Set port bitmap |
-| A871 | LineTo | Draw line to point |
-| A873 | GlobalToLocal | Convert global to local coords |
-| A874 | GetPort | Get current graphics port |
-| A879 | PortSize | Get port size |
-| A87A | MovePortTo | Move port origin |
-| A884 | DrawString | Draw text string |
-| A887 | ForeColor | Set foreground color |
-| A888 | BackColor | Set background color |
-| A889 | ColorBit | Set color bit depth |
-| A88A | SetCursor | Set cursor shape |
-| A88C | GetFontInfo | Get font metrics |
-| A891 | LineTo | Draw line to point |
-| A892 | Line | Draw line relative |
-| A893 | MoveTo | Move pen position |
-| A894 | Move | Move pen relative |
-| A89B | ScrollRect | Scroll rectangle area |
-| A89C | TextSize | Set text size |
-| A89E | PenSize | Set pen dimensions |
-| A8A1 | FrameRect | Draw rectangle outline |
-| A8A3 | InsetRect | Inset rectangle |
-| A8A5 | FillPat | Fill with pattern |
-| A8A8 | OffsetRect | Offset rectangle |
-| A8A9 | InsetRect | Inset rectangle |
-| A8AD | PtInRect | Point in rectangle test |
-| A8B0 | EraseRect | Erase rectangle |
-| A8D8 | NewRgn | Create new region |
-| A8D9 | DisposeRgn | Dispose region |
-| A8DC | CopyRgn | Copy region |
-| A8DF | RectRgn | Set region to rectangle |
-| A8E0 | OffsetRgn | Offset region |
-| A8E5 | DiffRgn | Difference of regions |
-| A8E6 | XorRgn | XOR of regions |
-| A905 | NewWindow | Create window |
-| A908 | ShowWindow | Show window |
-| A90A | HideWindow | Hide window |
-| A90B | GetWMgrPort | Get window manager port |
-| A90C | SetPort | Set current port |
-| A913 | NewCWindow | Create color window |
-| A915 | BringToFront | Bring window to front |
-| A919 | GetWTitle | Get window title |
-| A91B | SetWTitle | Set window title |
-| A91C | HiliteWindow | Highlight window |
-| A91F | SelectWindow | Select window |
-| A920 | FrontWindow | Get front window |
-| A921 | SendBehind | Send window behind |
-
-## Key Functions
-
-### Function 0x0000 - Window Event Dispatcher
-**Purpose**: Main event routing for window events
-
-```asm
-0000: LINK       A6,#0
-0004: MOVEM.L    D7/A4,-(SP)
-0008: MOVEA.L    14(A6),A4            ; A4 = window pointer
-000C: MOVE.W     12(A6),D7            ; D7 = event type
-
-; Dispatch table
-0010: TST.W      D7
-0012: BNE.S      $0022                ; Not type 0
-0014: ; Type 0: Draw content
-0018: JSR        588(PC)
-0020: BRA.S      $0072
-
-0022: CMPI.W     #$0002,D7
-0026: BNE.S      $0032
-0028: ; Type 2: Update event
-002A: JSR        1106(PC)
-0030: BRA.S      $0072
-
-0032: CMPI.W     #$0001,D7
-0036: BNE.S      $004C
-0038: ; Type 1: Mouse click
-0042: JSR        1224(PC)
-0046: MOVE.L     D0,20(A6)            ; Return hit result
-004A: BRA.S      $0076
-
-004C: CMPI.W     #$0006,D7
-0050: BNE.S      $0062
-0052: ; Type 6: Activate event
-0056: TST.W      18(A6)               ; Check activate flag
-005A: JSR        164(PC)
-0060: BRA.S      $0072
-
-0062: CMPI.W     #$0005,D7
-0066: BNE.S      $0072
-0068: ; Type 5: Idle
-006C: JSR        24(PC)
-
-0072: CLR.L      20(A6)               ; Default return 0
-0076: MOVEM.L    -8(A6),D7/A4
-007C: UNLK       A6
-0080: LEA        12(A7),A7            ; Pop 12 bytes of params
-0084: JMP        (A0)                 ; Tail return
-```
-
-**Event types**:
-| Type | Event | Handler |
-|------|-------|---------|
-| 0 | Draw | draw_content() |
-| 1 | Click | handle_click() - returns hit code |
-| 2 | Update | handle_update() |
-| 5 | Idle | handle_idle() |
-| 6 | Activate | handle_activate() |
-
-### Function 0x0086 - Draw 3D Border
-**Purpose**: Draw 3D-effect border around rectangle (Mac OS 7 style)
-
-```asm
-0086: LINK       A6,#-8
-008A: MOVE.L     A4,-(A7)
-008C: MOVEA.L    8(A6),A4             ; rect parameter
-
-; Copy rect to local
-0090: MOVE.L     (A4),-8(A6)
-0094: MOVE.L     4(A4),-4(A6)
-
-; Expand rect by 1 pixel
-009A: PEA        -8(A6)
-009E: PEA        $FFFF.W              ; -1
-; ... InsetRect(-1, -1)
-; ... FrameRect
-
-; Draw highlight (top-left edges in white)
-00AA: MOVE.W     2(A4),-(A7)          ; left
-00AE: MOVE.W     (A4),-(A7)           ; top
-00B0: A893                            ; _MoveTo
-00B2: MOVE.L     #$FFF30000,-(A7)     ; white color offset
-00B8: A892                            ; _Line
-
-; Draw shadow (bottom-right edges in dark)
-00C8: MOVE.L     #$000D0000,-(A7)     ; dark color
-00CE: A892                            ; _Line
-; ... continue shadow edges
-
-00FA: MOVEA.L    (A7)+,A4
-00FC: UNLK       A6
-00FE: RTS
-```
-
-### Function 0x0268 - Draw Board Square
-**Purpose**: Draw a single board square with optional highlighting
-
-```asm
-0268: LINK       A6,#-264             ; Large frame for title buffer
-026C: MOVEM.L    D3-D7/A4,-(SP)
-0270: MOVEA.L    8(A6),A4             ; board data
-
-; Check visibility
-0274: TST.B      110(A4)              ; visible flag
-0278: BEQ.W      $0478                ; Not visible - return
-
-; Check for highlight mode
-027C: TST.L      12(A6)               ; param != NULL?
-0280: BEQ.W      $0336                ; Full redraw
-
-; Partial redraw with selection highlight
-; ... draw X marks in square corners
-
-; Full redraw path
-0336: PEA        -8(A6)
-033A: JSR        -304(PC)             ; get_full_rect
-033E: A89E                            ; _PenSize(1,1)
-0340: PEA        -8(A6)
-0344: A8A1                            ; _FrameRect
-
-; Draw patterns if enabled
-0358: TST.B      111(A4)              ; pattern1 flag
-035E: BEQ.S      $0394
-0360: JSR        -428(PC)             ; draw_pattern1
-0368: TST.B      112(A4)              ; pattern2 flag
-036E: BEQ.S      $0394
-0376: JSR        -324(PC)             ; draw_pattern2
-
-; Save and set colors
-0394: MOVEA.L    $09DE.W,A0           ; QuickDraw globals
-0398: MOVE.W     68(A0),D6            ; fore color
-039C: MOVE.W     72(A0),D7            ; back color
-03B6: MOVE.W     #$0004,-(A7)
-03BA: A887                            ; _ForeColor(4)
-03BC: MOVE.W     #$0001,-(A7)
-03C0: A888                            ; _BackColor(1)
-
-; Get and draw title
-03E4: PEA        -264(A6)             ; title buffer
-03E8: A919                            ; _GetWTitle
-; ... draw title string
-0410: PEA        -264(A6)
-0414: A884                            ; _DrawString
-
-; Frame content area
-0426: MOVEA.L    114(A4),A0           ; content handle
-042A: MOVEA.L    (A0),A0
-042C: MOVE.L     2(A0),-8(A6)         ; bounds
-0442: PEA        -8(A6)
-0446: A8A1                            ; _FrameRect
-
-0476: MOVEM.L    (SP)+,D3-D7/A4
-047A: UNLK       A6
-047C: RTS
-```
-
-### Function 0x050C - Hit Test Point
-**Purpose**: Determine which part of window was clicked
-
-```asm
-050C: LINK       A6,#-8
-0512: MOVEA.L    8(A6),A4             ; window
-
-; Get content region bounds
-0516: MOVEA.L    114(A4),A0           ; content handle
-051A: MOVEA.L    (A0),A0
-051C: MOVE.L     2(A0),-8(A6)         ; bounds rect
-
-; Test main content
-0528: CLR.B      -(A7)                ; result
-052A: MOVE.L     14(A6),-(A7)         ; point
-052E: PEA        -8(A6)               ; rect
-0532: A8AD                            ; _PtInRect
-0536: BEQ.W      $05C8                ; Not in content
-
-; Test title bar
-053A: MOVEA.L    118(A4),A0           ; title handle
-0544: PEA        2(A0)                ; title rect
-054A: A8AD                            ; _PtInRect
-054E: BEQ.S      $0582                ; Not in title
-
-; Check for close box (top-left 16x16)
-0556: MOVEQ      #-16,D0
-055C: MOVE.W     D0,-6(A6)            ; shrink rect
-056A: PEA        -8(A6)
-0574: A8AD                            ; _PtInRect
-0578: BEQ.S      $057E
-057A: MOVEQ      #3,D0                ; Return 3 = close box
-057C: BRA.S      $05C8
-
-057E: MOVEQ      #1,D0                ; Return 1 = title bar
-0580: BRA.S      $05C8
-
-; Test grow box area (bottom-right)
-0582: MOVEQ      #13,D0
-0588: MOVE.W     D0,-4(A6)            ; adjust bottom
-058C: PEA        -8(A6)
-0596: A8AD                            ; _PtInRect
-059A: BEQ.S      $05C6                ; Not in grow
-
-; Check for pattern area
-059C: TST.B      111(A4)              ; pattern flag
-05A0: BEQ.S      $05C2
-05A8: JSR        -886(PC)             ; get_pattern_rect
-05B6: A8AD                            ; _PtInRect
-05BC: BEQ.S      $05C2
-05BE: MOVEQ      #4,D0                ; Return 4 = pattern
-05C0: BRA.S      $05C8
-
-05C2: MOVEQ      #2,D0                ; Return 2 = grow box
-05C4: BRA.S      $05C8
-
-05C6: MOVEQ      #0,D0                ; Return 0 = content
-
-05C8: MOVEA.L    (A7)+,A4
-05CA: UNLK       A6
-05CC: RTS
-```
-
-**Return codes**:
-| Code | Area |
-|------|------|
-| 0 | Content area |
-| 1 | Title bar |
-| 2 | Grow box |
-| 3 | Close box |
-| 4 | Pattern/special area |
-
-### Function 0x0A26 - Initialize Window List
-**Purpose**: Walk window list and set up tracking pointers
-
-```asm
-0A26: MOVEM.L    D6/D7/A2/A3/A4,-(SP)
-0A2A: MOVEQ      #1,D7                ; flag1
-0A2C: MOVEQ      #0,D6                ; flag2
-
-; Clear global pointers
-0A2E: CLR.L      -1326(A5)            ; g_front_window
-0A32: CLR.L      -1330(A5)            ; g_active_window
-0A36: CLR.L      -1322(A5)            ; g_focus_window
-0A3A: MOVEQ      #-1,D0
-0A3C: MOVE.L     D0,-1318(A5)         ; g_last_window = -1
-
-; Get system window list
-0A40: MOVEA.L    $09D6.W,A4           ; WindowList low-mem
-0A44: BRA.S      $0AC2                ; Start loop
-
-; Process each window
-0A46: TST.B      110(A4)              ; Check visible
-0A4A: BEQ.S      $0ABE                ; Skip hidden
-
-; Track first visible as focus
-0A4C: TST.L      -1322(A5)
-0A50: BNE.S      $0A56
-0A52: MOVE.L     A4,-1322(A5)         ; g_focus_window = this
-
-; Check if active window
-0A56: MOVE.L     A4,-(A7)
-0A58: JSR        -1160(PC)            ; is_active?
-0A5C: TST.W      D0
-0A60: BEQ.S      $0A74                ; Not active
-0A62: TST.L      -1326(A5)
-0A66: BNE.S      $0ABE
-0A68: MOVE.L     A4,-1326(A5)         ; g_front_window = this
-
-; ... more window list processing
-
-; Next window
-0ABE: MOVEA.L    144(A4),A4           ; window->nextWindow
-0AC2: MOVE.L     A4,D0
-0AC4: BNE.S      $0A46                ; Continue loop
-
-; Return appropriate window
-0B22: MOVE.L     -1330(A5),D0
-0B2A: BNE.S      $0B32
-0B2C: MOVE.L     -1326(A5),D0
-0B30: BRA.S      $0B36
-0B32: MOVE.L     -1322(A5),D0
-
-0B36: MOVEM.L    (SP)+,D6/D7/A2/A3/A4
-0B3A: RTS
-```
-
-## Window Structure Offsets
-
-| Offset | Size | Field |
-|--------|------|-------|
-| 24 | 4 | Owner/parent window |
-| 110 | 1 | Visible flag |
-| 111 | 1 | Pattern flag 1 |
-| 112 | 1 | Pattern flag 2 |
-| 114 | 4 | Content region handle |
-| 118 | 4 | Title region handle |
-| 144 | 4 | Next window pointer |
+| Offset | Frame | Size | Regs Saved | Purpose |
+|--------|-------|------|------------|---------|
+| 0x0000 | 0 | 134 | D7/A4 | Window event dispatcher |
+| 0x0086 | -8 | 122 | A4 | Draw 3D border (inner) |
+| 0x0100 | -20 | 186 | -- | Draw 3D border with activation check |
+| 0x01BA | -8 | 82 | D6/D7/A4 | Fill pattern (checkerboard) |
+| 0x020C | -4 | 40 | -- | Set content rect from region |
+| 0x0234 | 0 | 52 | A4 | Adjust rect with inset offset |
+| 0x0268 | -264 | 534 | D3-D7/A4 | Draw board square (main render) |
+| 0x047E | -8 | 142 | A3/A4 | Compute clip region for window |
+| 0x050C | -8 | 198 | A4 | Hit test point in window |
+| 0x05CE | -- | 4 | -- | Double RTS (alignment padding) |
+| 0x05D2 | 0 | 44 | -- | Check if window is in managed list |
+| 0x05FE | 0 | 20 | -- | Get window flags (bit 7) |
+| 0x0612 | 0 | 66 | A3/A4 | Invoke window procedure callback |
+| 0x0654 | 0 | 106 | A4 | Show window and update system list |
+| 0x06BE | 0 | 22 | -- | Set window order (DrawBehind) |
+| 0x06D4 | -4 | 106 | A4 | Create color window (NewCWindow wrapper) |
+| 0x073E | 0 | 50 | A4 | Activate/bring-to-front window |
+| 0x0770 | -4 | 54 | -- | Check if window belongs to managed set |
+| 0x07A6 | -- | 6 | -- | Get screen bit depth (leaf) |
+| 0x07AC | -8 | 186 | D7/A3/A4 | Open window with region setup |
+| 0x0866 | -6 | 126 | D7/A3/A4 | Reorder and activate window |
+| 0x08E4 | -8 | 126 | A3/A4 | Hide and reorder window |
+| 0x0962 | -16 | 148 | A4 | Select or show window (main dispatch) |
+| 0x09F6 | -4 | 48 | -- | Set front window and select |
+| 0x0A26 | (none) | 278 | D6/D7/A2/A3/A4 | Initialize window tracking (non-LINK) |
+| 0x0B3C | 0 | 28 | -- | Configure window visibility flag |
 
 ## Global Variables
 
-| Offset | Purpose |
-|--------|---------|
-| A5-1318 | g_last_window - Last processed window |
-| A5-1322 | g_focus_window - Current focus window |
-| A5-1326 | g_front_window - Front window pointer |
-| A5-1330 | g_active_window - Active window pointer |
-| $09D6 | Low-mem: WindowList head |
-| $09DE | Low-mem: QuickDraw globals |
-| $0A64 | Low-mem: System front window |
-| $0BAA | Low-mem: Screen depth |
+### A5-Relative Globals (4 unique offsets)
+
+| Offset | Name | Type | Description |
+|--------|------|------|-------------|
+| A5-1318 | g_last_window | long | Last processed window in list (-1 = none) |
+| A5-1322 | g_focus_window | WindowPtr | Window with keyboard focus |
+| A5-1326 | g_front_window | WindowPtr | Frontmost active window |
+| A5-1330 | g_active_window | WindowPtr | Currently managed active window |
+
+### Low-Memory Globals
+
+| Address | Name | Type | Description |
+|---------|------|------|-------------|
+| $09D6 | WindowList | WindowPtr | Head of system window list |
+| $09DE | QDGlobals | Ptr | QuickDraw globals pointer |
+| $09EE | ScreenRow | short | Screen row bytes |
+| $0A64 | CurDeactive | WindowPtr | System front window / deactivation target |
+| $0A68 | CurActivate | WindowPtr | Current activation target |
+| $0BAA | ScrnBase | short | Screen bit depth |
 
 ## Jump Table Calls
 
-| JT Offset | Purpose |
-|-----------|---------|
-| 514 | Get procedure address |
-| 522 | Look up procedure |
-| 1562 | Window cleanup handler |
-| 1610 | Check window state |
-| 3434 | Get window flags |
+| JT Offset | Count | Called From | Purpose |
+|-----------|-------|-------------|---------|
+| JT[514] | 1 | 0x0630 | Get procedure address (GetResource/ProcPtr) |
+| JT[522] | 1 | 0x062A | Look up procedure by type/ID |
+| JT[1562] | 1 | 0x08D6 | Window cleanup handler |
+| JT[1610] | 5 | 0x05DA, 0x0778, 0x09D2, 0x0AE6 | Check window state (is-managed?) |
+| JT[3434] | 2 | 0x05E8, 0x0607 | Get window flags/properties |
 
-## Confidence: HIGH
+## QuickDraw and Toolbox Traps Summary
 
-Standard Mac Toolbox window management patterns:
-- QuickDraw trap sequences match documented usage
-- Window list traversal using standard nextWindow chain
-- Region-based hit testing
-- 3D border drawing for Mac OS 7+ appearance
+### Drawing Primitives
+| Trap | Name | Count | Usage |
+|------|------|-------|-------|
+| A893 | _MoveTo | 8 | Position pen for drawing |
+| A891 | _LineTo | 6 | Draw line to absolute point |
+| A892 | _Line | 13 | Draw line relative |
+| A894 | _Move | 3 | Move pen relative |
+| A89E | _PenSize | 2 | Set pen width/height |
+| A884 | _DrawString | 1 | Draw Pascal string |
+| A8A1 | _FrameRect | 5 | Draw rectangle outline |
+| A8A3 | _InsetRect | 5 | Shrink/expand rectangle |
+| A8A9 | _InsetRect(2) | 5 | Alternate InsetRect encoding |
+| A8A8 | _OffsetRect | 2 | Move rectangle |
+| A8A5 | _FillRect | 1 | Fill with pattern |
+| A89B | _ScrollRect | 1 | Scroll rectangle area |
 
----
+### Color and Font
+| Trap | Name | Count | Usage |
+|------|------|-------|-------|
+| A887 | _ForeColor | 2 | Set foreground color |
+| A888 | _BackColor | 2 | Set background color |
+| A889 | _ColorBit | 2 | Set color plane |
+| A88A | _SetCursor | 2 | Set cursor shape |
+| A88C | _GetFontInfo | 1 | Get font metrics |
+| A89C | _TextSize | 2 | Set text size |
 
-## Speculative C Translation
+### Hit Testing
+| Trap | Name | Count | Usage |
+|------|------|-------|-------|
+| A8AD | _PtInRect | 5 | Point-in-rectangle test |
 
-### Global Variables
+### Region Operations
+| Trap | Name | Count | Usage |
+|------|------|-------|-------|
+| A8D8 | _NewRgn | 4 | Create region |
+| A8D9 | _DisposeRgn | 4 | Dispose region |
+| A8DC | _CopyRgn | 2 | Copy region |
+| A8DF | _RectRgn | 3 | Set region to rectangle |
+| A8E0 | _OffsetRgn | 1 | Offset region |
+| A8E5 | _DiffRgn | 1 | Region difference |
+| A8E6 | _XorRgn | 1 | Region XOR |
+| A870 | _SetPortBits | 2 | Set port bitmap |
 
-```c
-/* Window tracking globals */
-WindowPtr g_front_window;      /* A5-1326: Front/active window */
-WindowPtr g_active_window;     /* A5-1330: Currently active window */
-WindowPtr g_focus_window;      /* A5-1322: Window with keyboard focus */
-long g_last_window;            /* A5-1318: Last processed window (-1 = none) */
+### Window Manager
+| Trap | Name | Count | Usage |
+|------|------|-------|-------|
+| A905 | _NewWindow | 1 | Create standard window |
+| A913 | _NewCWindow | 1 | Create color window |
+| A908 | _ShowWindow | 2 | Show window |
+| A90A | _HideWindow | 1 | Hide window |
+| A90B | _GetWMgrPort | 1 | Get window manager port |
+| A90C | _SetPort | 1 | Set current port |
+| A915 | _BringToFront | 1 | Bring window to front |
+| A919 | _GetWTitle | 1 | Get window title |
+| A91B | _SetWTitle | 1 | Set window title |
+| A91C | _HiliteWindow | 5 | Highlight/unhighlight window |
+| A91F | _SelectWindow | 5 | Select window |
+| A920 | _FrontWindow | 1 | Get front window |
+| A921 | _SendBehind | 3 | Send window behind another |
+| A92D | _DrawBehind | 1 | Draw windows behind |
+| A873 | _GlobalToLocal | 8 | Convert coordinates |
+| A874 | _GetPort | 3 | Get current port |
+| A879 | _PortSize | 2 | Port size |
+| A87A | _MovePortTo | 1 | Move port origin |
+| A871 | _SetPortBits | 1 | Set port bitmap |
+| A973 | _GetNextEvent | 1 | Peek at event queue |
+| A86A | _OpenPort | 1 | Open graphics port |
 
-/* System low-memory globals (68K Mac) */
-#define WindowList  (*(WindowPtr*)0x09D6)   /* Head of window list */
-#define QDGlobals   (*(QDGlobalsPtr*)0x09DE) /* QuickDraw globals */
-#define SysFrontWnd (*(WindowPtr*)0x0A64)   /* System front window */
-#define ScreenDepth (*(short*)0x0BAA)       /* Screen bit depth */
-```
+## Window Data Structure
 
-### Window Custom Data Structure
+Maven extends the standard Mac WindowRecord with custom fields at specific offsets:
 
-```c
-/* Extended window data at standard Mac offsets */
-typedef struct MavenWindowData {
-    /* Standard WindowRecord fields 0-109 */
-    char reserved[110];
+| Offset | Size | Type | Field Name | Description |
+|--------|------|------|------------|-------------|
+| 0 | 1 | byte | -- | (standard WindowRecord) |
+| 1 | 1 | byte | pattern_sel_1 | Pattern selector bit 0 (BTST #0) |
+| 3 | 1 | byte | pattern_sel_2 | Pattern selector bit 0 (BTST #0) |
+| 24 | 4 | long | refCon_or_behind | Window behind/reference field |
+| 110 | 1 | Boolean | visible | Window visible flag |
+| 111 | 1 | Boolean | pattern_flag1 | Has pattern fill 1 |
+| 112 | 1 | Boolean | pattern_flag2 | Has pattern fill 2 |
+| 114 | 4 | Handle | contentRgn | Content region handle |
+| 118 | 4 | Handle | titleRgn | Title bar region handle |
+| 144 | 4 | WindowPtr | nextWindow | Next window in chain |
 
-    /* Custom Maven fields */
-    Boolean visible_flag;      /* 110: Is window visible */
-    Boolean pattern_flag1;     /* 111: First pattern/style flag */
-    Boolean pattern_flag2;     /* 112: Second pattern/style flag */
-    char reserved2;            /* 113: Padding */
-    Handle content_rgn_h;      /* 114: Content region handle */
-    Handle title_rgn_h;        /* 118: Title bar region handle */
-    /* ... more fields ... */
-    WindowPtr next_window;     /* 144: Next window in chain */
-} MavenWindowData;
-```
+## Function-by-Function Analysis
 
 ### Function 0x0000 - Window Event Dispatcher
+**Hex verification:** `4E56 0000 48E7 0108` = LINK A6,#0; MOVEM.L D7/A4,-(SP)
+
+```
+Parameters: 8(A6)=event_data, 12(A6)=event_type(W), 14(A6)=window_ptr
+Returns: 20(A6)=result (for click events)
+```
+
+Main routing function. Loads A4 = window pointer from 14(A6), D7 = event type from 12(A6). Dispatches via if-else chain (not a jump table):
+
+| Type | Branch Target | Handler | PC-relative Target |
+|------|---------------|---------|-------------------|
+| 0 | 0x0014 | draw_content | JSR +588 -> 0x0268 |
+| 1 | 0x0038 | handle_click | JSR +1224 -> 0x050C |
+| 2 | 0x0028 | handle_update | JSR +1106 -> 0x047E |
+| 5 | 0x0068 | handle_idle | JSR +24 -> 0x0086 |
+| 6 | 0x0052 | handle_activate | JSR +164 -> 0x0100 |
+
+For event type 1 (click), the return value from hit_test (D0) is stored at 20(A6). All other event types store 0 at 20(A6). The function uses a custom calling convention: UNLK A6, pop 12 bytes of parameters, JMP (A0) for tail return.
+
+**Note**: Event type 5 (idle) dispatches to `draw_3d_border` at 0x0086 -- this handles cursor blink / visual refresh during idle.
 
 ```c
-/*
- * window_event_dispatcher - Main event routing for custom windows
- *
- * Routes window events to appropriate handlers based on event type.
- *
- * @param event_data: Event-specific data
- * @param event_type: Type of window event (0=draw, 1=click, etc.)
- * @param window_ptr: Target window pointer
- * @return: Result code (varies by event type)
- */
-long window_event_dispatcher(long event_data, short event_type,
-                             WindowPtr window_ptr) {
+long window_event_dispatcher(long event_data, short event_type, WindowPtr window) {
     long result = 0;
-
     switch (event_type) {
-        case 0:  /* Draw content */
-            draw_window_content(window_ptr, event_data);
+        case 0:  /* Draw */
+            draw_board_square(window, event_data);
             break;
-
-        case 1:  /* Mouse click */
-            result = handle_window_click(window_ptr, event_data,
-                                         /* modifiers from stack */);
+        case 1:  /* Click */
+            result = hit_test_point(window, event_data, /*modifiers*/);
             return result;
-
-        case 2:  /* Update event */
-            handle_window_update(window_ptr);
+        case 2:  /* Update */
+            compute_clip_region(window);
             break;
-
-        case 5:  /* Idle processing */
-            handle_window_idle(window_ptr, event_data);
+        case 5:  /* Idle */
+            draw_3d_border(window, event_data);
             break;
-
-        case 6:  /* Activate/deactivate */
-            /* Check activate flag at offset 18 on stack */
-            handle_window_activate(window_ptr);
-            break;
-
-        default:
+        case 6:  /* Activate */
+            draw_3d_border_extended(window);
             break;
     }
-
     return 0;
 }
 ```
 
-### Function 0x0086 - Draw 3D Border Effect
+### Function 0x0086 - Draw 3D Border (Inner)
+**Hex verification:** `4E56 FFF8 2F0C` = LINK A6,#-8; MOVE.L A4,-(SP)
+
+```
+Parameters: 8(A6)=rect_ptr
+Local: -8(A6)=local_rect(8 bytes)
+```
+
+Copies the bounds rect from the parameter to local storage, expands by InsetRect(-1,-1), frames with FrameRect, then draws 3D highlight/shadow lines.
+
+The 3D effect uses Line() calls with signed delta pairs to draw:
+- Top-left highlight: MoveTo(rect.left, rect.top), Line(-13, 0) -- white/light
+- Bottom-right shadow: Line(13, 0), Line(0, -15) -- dark
+- Additional offset lines using Move(relative) + Line(relative) for the beveled corners
+
+The complete sequence uses 6 Line() calls and 2 Move() calls to create a raised border appearance consistent with Mac OS 7 "platinum" look.
 
 ```c
-/*
- * draw_3d_border - Draw Mac OS 7+ style 3D border around rectangle
- *
- * Creates raised/embossed appearance using light/dark edge lines.
- *
- * @param bounds_rect: Rectangle to draw border around
- */
-void draw_3d_border(Rect *bounds_rect) {
-    Rect local_rect;
+void draw_3d_border(Rect *bounds) {
+    Rect r;
+    r = *bounds;
 
-    /* Copy bounds to local storage */
-    local_rect = *bounds_rect;
+    /* Expand and frame outer edge */
+    InsetRect(&r, -1, -1);
+    FrameRect(&r);
 
-    /* Expand rect by 1 pixel for outer frame */
-    InsetRect(&local_rect, -1, -1);
-    FrameRect(&local_rect);
+    /* Highlight (top-left edges) */
+    MoveTo(bounds->left, bounds->top);
+    Line(-13, 0);
 
-    /* Draw highlight (white) on top-left edges */
-    MoveTo(bounds_rect->left, bounds_rect->top);
-    Line(-13, 0);  /* Left edge highlight - uncertain: exact offset */
+    /* Shadow (bottom-right edges) */
+    h_delta = bounds->bottom - bounds->left;
+    Line(h_delta, 0);   /* Bottom edge */
+    Line(13, 0);
+    Line(0, -15);        /* Right edge */
 
-    /* Draw shadow (dark) on bottom-right edges */
-    Line(13, 0);   /* Bottom edge shadow */
-    Line(0, -15);  /* Right edge shadow */
+    /* Corner adjustments */
+    Move(0, bounds->top - bounds->bottom);
+    Line(-15, 0);
 
-    /* Continue shadow on opposite corners */
-    /* uncertain: exact coordinate calculations */
-    MoveTo(bounds_rect->left + 2, bounds_rect->bottom);
-    Line(-15, 15);
+    Move(-15, 15);
+    h_delta = bounds->left - bounds->bottom;
+    Line(h_delta, 0);
 }
 ```
 
-### Function 0x0268 - Draw Board Square
+### Function 0x0100 - Draw 3D Border with Activation Check
+**Hex verification:** `4E56 FFEC 486E FFF0` = LINK A6,#-20; PEA -16(A6)
+
+```
+Parameters: 8(A6)=window_ptr
+Local: -20(A6)=saved_port(4), -16(A6)=local_point(4), -8(A6)=local_rect(8)
+```
+
+This is the activate/deactivate event handler. It:
+1. Saves current port via GetPort
+2. Converts event point via GlobalToLocal
+3. Copies window bounds at offsets 16-20 to local rect
+4. Computes an inset rect: adds -14 to both right and bottom coordinates (0x70F2 = MOVEQ #-14 -> offset by -14 pixels)
+5. Calls InsetRect to shrink, then InsetRect(-1,-1) to expand, then FrameRect
+6. Calls initialize_window_tracking (0x0A26) to rebuild window list
+7. Compares result with the original window parameter
+8. If window is ACTIVE (matches): draws highlight lines with MoveTo + Line sequence (6+6+6+(-6)+(-6)+(-4)+(+2)+(+6)+(+8)+(0)+(-8)+(-4)+0) creating a detailed 3D inset frame
+9. If window is NOT active: draws a different set of lines for the inactive border appearance
+
+The two line sets differ to give visual feedback about focus state. Active windows get pronounced shadow/highlight, inactive windows get flat framing.
+
+Finally restores the original coordinate system with GlobalToLocal.
 
 ```c
-/*
- * draw_board_square - Draw a single game board square with highlighting
- *
- * Handles full redraw or partial highlight update.
- *
- * @param board_data: Board state data pointer
- * @param highlight_param: NULL for full draw, non-NULL for highlight only
- */
-void draw_board_square(MavenWindowData *board_data, void *highlight_param) {
-    Rect square_rect;
-    Str255 title_buffer;
-    short saved_fore_color, saved_back_color;
+void draw_3d_border_extended(WindowPtr window) {
+    GrafPtr saved_port;
+    Point local_pt;
+    Rect r;
 
-    /* Check if square is visible */
-    if (!board_data->visible_flag) {
-        return;
+    GetPort(&saved_port);
+    GlobalToLocal(&local_pt);
+
+    /* Get window bounds into local rect, inset by 14 pixels */
+    r.top = window->portRect.top;
+    r.left = window->portRect.left;
+    r.bottom = window->portRect.bottom;
+    r.right = window->portRect.right;
+    r.right += -14;  /* Shrink right edge */
+    r.bottom += -14; /* Shrink bottom edge */
+
+    InsetRect(&r, /* ... */);
+    InsetRect(&r, -1, -1);
+    FrameRect(&r);
+
+    initialize_window_tracking();
+
+    if (result == (long)window) {
+        /* Active window: draw highlight border */
+        MoveTo(r.right - 13, r.bottom - 13);
+        Line(0, 6);
+        Line(6, 0);
+        Line(0, -6);
+        Line(-6, 0);
+        Move(2, 6);
+        Line(0, 4);
+        Line(8, 0);
+        Line(0, -8);
+        Line(-4, 0);
+    } else {
+        /* Inactive window: draw flat border */
+        MoveTo(r.right - 12, r.bottom - 12);
+        Line(0, 4);
+        Line(8, 0);
+        Line(0, -8);
+        Line(-4, 0);
     }
 
-    /* Highlight-only mode (partial redraw) */
-    if (highlight_param != NULL) {
-        get_square_rect(board_data, &square_rect);
+    GlobalToLocal(&local_pt);  /* Restore */
+}
+```
 
-        /* Save and set text size for marks */
+### Function 0x01BA - Fill Pattern (Checkerboard)
+**Hex verification:** `4E56 FFF8 48E7 0308` = LINK A6,#-8; MOVEM.L D6/D7/A4,-(SP)
+
+```
+Parameters: 8(A6)=window_ptr
+Local: -8(A6)=pattern_data(8 bytes)
+```
+
+Selects and draws a checkerboard pattern based on window data bits. Uses BTST #0 on offsets 3 and 1 of the window data to select between two pattern constants:
+
+- If bit 0 at offset 3 is set: use D6 = `$00AA00AA` (dark checkerboard)
+- Otherwise: use D7 = `$00550055` (light checkerboard)
+- If bit 0 at offset 1 is set: rotate pattern left by 1 bit (LSL.L #1 + carry)
+
+Stores the 8-byte QuickDraw pattern at -8(A6) and calls FillRect.
+
+```c
+void fill_pattern(MavenWindow *window) {
+    Pattern pat;
+    long pattern_val;
+
+    if (window->pattern_sel_2 & 0x01)
+        pattern_val = 0x00AA00AA;  /* Dark pattern */
+    else
+        pattern_val = 0x00550055;  /* Light pattern */
+
+    if (window->pattern_sel_1 & 0x01)
+        pattern_val = (pattern_val << 1) | (pattern_val >> 31);  /* Rotate */
+
+    *(long*)&pat[0] = pattern_val;
+    *(long*)&pat[4] = pattern_val;
+
+    FillRect(&window->bounds, &pat);
+}
+```
+
+### Function 0x020C - Set Content Rect from Region
+**Hex verification:** `4E56 FFFC 206E 0008` = LINK A6,#-4; MOVEA.L 8(A6),A0
+
+```
+Parameters: 8(A6)=window_ptr, 12(A6)=dest_rect_ptr
+```
+
+Dereferences the content region handle at offset 114 of the window, copies the region bounding box (at offset 2 within the region data) to the destination rect, then adjusts the bottom by adding 13 pixels.
+
+```c
+void set_content_rect(MavenWindow *window, Rect *dest) {
+    Handle rgn_h = window->contentRgn;
+    RgnPtr rgn = *rgn_h;
+
+    dest->top = rgn->rgnBBox.top;
+    dest->left = rgn->rgnBBox.left;
+    dest->bottom = rgn->rgnBBox.bottom;
+    dest->right = rgn->rgnBBox.right;
+
+    dest->bottom = dest->top + 13;  /* Fixed 13-pixel title bar height */
+}
+```
+
+### Function 0x0234 - Adjust Rect with Inset Offset
+**Hex verification:** `4E56 0000 2F0C 286E 000C` = LINK A6,#0; MOVE.L A4,-(SP); MOVEA.L 12(A6),A4
+
+```
+Parameters: 8(A6)=flag/mode, 12(A6)=window_ptr
+```
+
+Calls set_content_rect (0x020C) internally, then modifies the rect by adding 9 to the top and 9 to the left coordinates. This effectively computes a smaller rect inset from the title bar -- likely the close box or icon area.
+
+```c
+void adjust_rect_with_offset(short mode, MavenWindow *window) {
+    Rect r;
+    set_content_rect(window, &r);
+    r.bottom = r.top + 9;
+    r.right = r.left + 9;
+}
+```
+
+### Function 0x0268 - Draw Board Square (Main Render)
+**Hex verification:** `4E56 FEF8 48E7 1F08` = LINK A6,#-264; MOVEM.L D3-D7/A4,-(SP)
+
+```
+Parameters: 8(A6)=window_ptr, 12(A6)=highlight_param
+Local: -264(A6)=title_buffer(256), -8(A6)=work_rect(8)
+```
+
+This is the largest function in CODE 46 (534 bytes) and the main window rendering routine. It handles both full redraws and partial highlight updates.
+
+**Flow:**
+
+1. **Visibility check**: TST.B 110(A4) -- if not visible, return immediately
+2. **Highlight-only path** (12(A6) != NULL):
+   - Calls adjust_rect (0x0234) to get the work rect
+   - Reads QuickDraw globals at $09DE to save text size (offset 0x38)
+   - Sets TextSize(10)
+   - Draws selection markers: 4 pairs of MoveTo/LineTo calls drawing X marks at rect corners
+   - Each mark is offset by +2/-3 from corner, creating small cross-hatch selection indicators
+   - Restores original text size
+3. **Full redraw path** (12(A6) == NULL):
+   - Calls set_content_rect (0x020C) to get the full rect
+   - PenSize(1,1), FrameRect (outer frame)
+   - InsetRect(1,1) then InsetRect to create inner border
+   - **Pattern check**: TST.B 111(A4) -- if pattern_flag1 set:
+     - Calls fill_pattern (0x01BA)
+     - TST.B 112(A4) -- if pattern_flag2 also set:
+       - Calls adjust_rect (0x0234) for secondary pattern
+     - Re-frames after pattern fill
+   - **Color setup**: Reads QDGlobals to save current fore/back colors
+     - ForeColor(4) = red, BackColor(1) = white
+     - ColorBit(0), SetCursor(9)
+   - **Title drawing**:
+     - Calls set_content_rect again to get title rect area
+     - Computes text baseline: D3 = rect.bottom - rect.top + gets title width
+     - Stores window in PEA, calls GetWTitle to get the title Pascal string
+     - CLR.W pushes 0, calls GetFontInfo for metrics
+     - Computes centering: (MULS #2 on font descent + 20 offset)
+     - Adds font height + 20 to position
+     - MoveTo(computed_x, rect.bottom - 3), DrawString(title)
+   - **Restore colors**: ForeColor(saved), BackColor(saved), ColorBit, SetCursor
+   - **Content frame**: Dereferences contentRgn handle at offset 114, gets bounds, adjusts by -1/-1 (Sn = subtract 1), FrameRect
+   - **Scroll line and borders**: Additional LineTo/MoveTo pairs draw a horizontal separator and vertical borders within the content area
+   - PenSize reset at end
+
+```c
+void draw_board_square(MavenWindow *window, void *highlight_param) {
+    Rect r;
+    Str255 title_buf;
+    short saved_fg, saved_bg, saved_cb, saved_cursor;
+    FontInfo finfo;
+
+    if (!window->visible) return;
+
+    if (highlight_param != NULL) {
+        /* Highlight-only path: draw selection marks */
+        adjust_rect_with_offset(highlight_param, window);
+        short old_size = QDGlobals->txSize;
         TextSize(10);
 
-        /* Draw X marks in corners for selection highlight */
-        /* uncertain: exact mark drawing code */
-        MoveTo(square_rect.left + 2, square_rect.top + 2);
-        LineTo(square_rect.left - 3, square_rect.top - 3);
-        /* ... more highlight drawing ... */
+        /* Draw 4 corner marks */
+        MoveTo(r.right + 2, r.top + 2);
+        LineTo(r.bottom - 3, r.right - 3);
+        MoveTo(r.bottom - 3, r.top + 2);
+        LineTo(r.right + 2, r.right - 3);
+        /* ... 4 more mark lines ... */
 
+        TextSize(old_size);
         return;
     }
 
-    /* Full redraw path */
-    get_full_square_rect(board_data, &square_rect);
-
-    /* Draw frame */
+    /* Full redraw */
+    set_content_rect(window, &r);
     PenSize(1, 1);
-    FrameRect(&square_rect);
+    FrameRect(&r);
+    InsetRect(&r, 1, 1);
+    InsetRect(&r, /*...*/);
 
-    /* Inset slightly */
-    InsetRect(&square_rect, 1, 1);
-    InsetRect(&square_rect, -4, -4);  /* uncertain: multiple insets */
-
-    /* Draw patterns if enabled */
-    if (board_data->pattern_flag1) {
-        draw_square_pattern1(board_data, &square_rect);
-
-        if (board_data->pattern_flag2) {
-            draw_square_pattern2(board_data, &square_rect);
+    if (window->pattern_flag1) {
+        fill_pattern(window);
+        if (window->pattern_flag2) {
+            adjust_rect_with_offset(window, &r);
         }
-
-        /* Redraw frame after patterns */
-        FrameRect(&square_rect);
-        InsetRect(&square_rect, 1, 1);
-        InsetRect(&square_rect, -4, -4);
+        FrameRect(&r);
+        InsetRect(&r, 1, 1);
+        InsetRect(&r, /*...*/);
     }
 
-    /* Save current colors */
-    saved_fore_color = QDGlobals->fgColor;
-    saved_back_color = QDGlobals->bgColor;  /* uncertain: exact offset */
+    /* Save and set colors */
+    saved_fg = *(short*)((char*)QDGlobals + 0x44);
+    saved_bg = *(char*)((char*)QDGlobals + 0x46);
+    saved_cb = *(short*)((char*)QDGlobals + 0x48);
+    saved_cursor = *(short*)((char*)QDGlobals + 0x4A);
 
-    /* Set drawing colors: foreground=4 (red?), background=1 (white?) */
-    ForeColor(4);
-    BackColor(1);
+    ForeColor(4);     /* Red */
+    BackColor(1);     /* White */
     ColorBit(0);
-    SetCursor(9);  /* uncertain: cursor setting purpose */
+    SetCursor(9);
 
-    /* Get and draw window title */
-    GetWTitle(board_data, title_buffer);
+    /* Title */
+    set_content_rect(window, &r);
+    short title_height = r.bottom - r.top;
+    title_height += -40;
+    /* ... */
+    GetWTitle(window, title_buf);
+    GetFontInfo(&finfo);
+    short text_x = (title_height * 2) / 2 + 20;
+    MoveTo(r.top + text_x, r.bottom - 3);
+    DrawString(title_buf);
 
-    /* Get font metrics for positioning */
-    FontInfo font_info;
-    GetFontInfo(&font_info);
-
-    /* Position and draw title string */
-    /* uncertain: exact positioning calculation */
-    short text_offset = square_rect.bottom - square_rect.top - 40;
-    MoveTo(square_rect.left + text_offset, square_rect.bottom - 3);
-    DrawString(title_buffer);
-
-    /* Restore colors */
-    ForeColor(saved_fore_color);
-    BackColor(saved_back_color);
+    /* Restore */
+    ForeColor(saved_fg);
+    BackColor(saved_bg);
+    ColorBit(saved_cb);
+    SetCursor(saved_cursor);
 
     /* Frame content area */
-    Handle content_h = board_data->content_rgn_h;
-    if (content_h) {
-        Rect *content_bounds = (Rect*)(*content_h + 2);
-        square_rect = *content_bounds;
-        FrameRect(&square_rect);
-    }
+    Rect *bounds = &(*(window->contentRgn))->rgnBBox;
+    r = *bounds;
+    r.bottom--;
+    r.right--;
+    FrameRect(&r);
+
+    /* Scroll separator and additional borders */
+    ScrollRect(&r, 1, 1, /*...*/);
+    MoveTo(r.bottom, r.top + 2);
+    LineTo(r.bottom, r.right);
+    MoveTo(r.top + 2, r.right);
+    LineTo(/*...*/);
+    PenSize(/*reset*/);
 }
 ```
 
-### Function 0x050C - Hit Test Point
+### Function 0x047E - Compute Clip Region for Window
+**Hex verification:** `4E56 FFF8 48E7 0018` = LINK A6,#-8; MOVEM.L A3/A4,-(SP)
+
+```
+Parameters: 8(A6)=window_ptr
+Local: -8(A6)=work_rect(8)
+```
+
+Complex region manipulation for clipping. Creates temporary regions, computes the visible clip by subtracting the title bar and content regions:
+
+1. Copies window bounds to local rect
+2. Negates the rect coordinates (NEG.W via D@ trick)
+3. Calls OffsetRect to shift origin
+4. Dereferences titleRgn handle, calls RectRgn to set region
+5. InsetRect(-1,-1) on the work rect
+6. Adjusts bottom by +12 for title bar height
+7. Dereferences contentRgn, calls RectRgn again
+8. Calls OffsetRect(2,2) to inset content slightly
+9. Adjusts bottom-1, right-1
+10. Creates NewRgn for scratch, calls RectRgn
+11. Computes DiffRgn(content, scratch) -- clips out the inner content
+12. DisposeRgn scratch
+
+This ensures that when drawing, only the frame/border area is updated, not the inner content (which has its own drawing routines).
 
 ```c
-/*
- * hit_test_window_point - Determine which window region was clicked
- *
- * Returns code indicating which part of window contains the point.
- *
- * @param window_ptr: Window to test
- * @param test_point: Point to test (global coordinates)
- * @return: Hit region code (0=content, 1=title, 2=grow, 3=close, 4=pattern)
- */
-short hit_test_window_point(MavenWindowData *window_ptr, Point test_point) {
-    Rect test_rect;
+void compute_clip_region(MavenWindow *window) {
+    Rect r;
+    RgnHandle scratch_rgn;
+
+    r = window->portRect;
+
+    /* Negate and offset to local coordinates */
+    r.left = -r.left;
+    r.top = -r.top;
+    OffsetRect(&r, r.left, r.top);
+
+    /* Set title region */
+    RectRgn(window->titleRgn, &r);
+
+    /* Expand and adjust for frame */
+    InsetRect(&r, -1, -1);
+    r.bottom += 12;
+
+    /* Set content region */
+    RectRgn(window->contentRgn, &r);
+    OffsetRect(&r, 2, 2);
+    r.bottom--;
+    r.right--;
+
+    /* Create scratch region for inner area */
+    scratch_rgn = NewRgn();
+    RectRgn(scratch_rgn, &r);
+
+    /* Clip: content minus inner = frame only */
+    DiffRgn(window->contentRgn, scratch_rgn, window->contentRgn);
+
+    DisposeRgn(scratch_rgn);
+}
+```
+
+### Function 0x050C - Hit Test Point in Window
+**Hex verification:** `4E56 FFF8 2F0C 286E 0008` = LINK A6,#-8; MOVE.L A4,-(SP); MOVEA.L 8(A6),A4
+
+```
+Parameters: 8(A6)=window_ptr, 12(A6)=modifiers(W), 14(A6)=test_point(L)
+Returns: D0 = hit code (0-4)
+```
+
+Multi-stage hit testing using PtInRect against different window regions:
+
+1. **Content region test**: Dereferences contentRgn (offset 114), gets bounds, PtInRect. If outside content, return 0.
+2. **Title bar test**: Dereferences titleRgn (offset 118), gets bounds at offset+2, PtInRect.
+   - If in title: checks modifiers at 12(A6). If non-zero (shift/option held):
+     - Computes close box rect: insets by -16 on both right and bottom (MOVEQ #-16 = 0xF0 = -16)
+     - PtInRect against close box area
+     - If in close box: return **3**
+   - If not in close box: return **1** (title bar / drag region)
+3. **Grow box test**: Adjusts rect.bottom by +13 (13-pixel grow box area), PtInRect.
+   - If in grow area: checks pattern_flag1 at offset 111
+     - If pattern flag set: calls adjust_rect (0x0234) to get pattern sub-rect, PtInRect
+       - If in pattern area: return **4**
+     - Return **2** (grow box)
+4. **Default**: return **0** (general content)
+
+```c
+short hit_test_point(MavenWindow *window, short modifiers, Point test_pt) {
+    Rect r;
 
     /* Get content region bounds */
-    Handle content_h = window_ptr->content_rgn_h;
-    Rect *content_bounds = (Rect*)(*content_h + 2);
-    test_rect = *content_bounds;
+    RgnPtr content = *(window->contentRgn);
+    r = content->rgnBBox;
 
-    /* Test if point is in main content area */
-    if (!PtInRect(test_point, &test_rect)) {
-        return 0;  /* Not in content - outside window */
+    if (!PtInRect(test_pt, &r))
+        return 0;  /* Outside content */
+
+    /* Test title bar */
+    RgnPtr title = *(window->titleRgn);
+    if (PtInRect(test_pt, &title->rgnBBox)) {
+        if (modifiers != 0) {
+            /* Check close box (16x16 area) */
+            r.right = r.top - 16;
+            r.bottom = r.left - 16;
+            if (PtInRect(test_pt, &r))
+                return 3;  /* Close box */
+        }
+        return 1;  /* Title bar */
     }
 
-    /* Test title bar region */
-    Handle title_h = window_ptr->title_rgn_h;
-    Rect *title_bounds = (Rect*)(*title_h + 2);
-
-    if (PtInRect(test_point, title_bounds)) {
-        /* Point is in title bar area */
-
-        /* Check for close box (top-left 16x16 area) */
-        /* uncertain: exact close box detection */
-        test_rect.right = test_rect.left - 16;
-        test_rect.bottom = test_rect.top - 16;
-
-        if (PtInRect(test_point, &test_rect)) {
-            return 3;  /* Close box */
+    /* Test grow box */
+    r.bottom = r.top + 13;
+    if (PtInRect(test_pt, &r)) {
+        if (window->pattern_flag1) {
+            Rect pat_r;
+            adjust_rect_with_offset(window, &pat_r);
+            if (PtInRect(test_pt, &pat_r))
+                return 4;  /* Pattern area */
         }
-
-        return 1;  /* Title bar (drag region) */
-    }
-
-    /* Test grow box area (bottom-right) */
-    test_rect.top = test_rect.bottom + 13;  /* Adjust for grow box */
-
-    if (PtInRect(test_point, &test_rect)) {
-        /* In grow area - check for pattern region if enabled */
-        if (window_ptr->pattern_flag1) {
-            Rect pattern_rect;
-            get_pattern_region_rect(window_ptr, &pattern_rect);
-
-            if (PtInRect(test_point, &pattern_rect)) {
-                return 4;  /* Pattern/special area */
-            }
-        }
-
         return 2;  /* Grow box */
     }
 
-    return 0;  /* General content area */
+    return 0;  /* Content */
 }
 ```
 
-### Function 0x0A26 - Initialize Window List
+**Hit codes:**
+| Code | Region | Description |
+|------|--------|-------------|
+| 0 | Content | Main content area or outside |
+| 1 | Title | Title bar (draggable) |
+| 2 | Grow | Grow/resize box |
+| 3 | Close | Close box (top-left) |
+| 4 | Pattern | Pattern/special area |
+
+### Function 0x05D2 - Check If Window Is in Managed List
+**Hex verification:** `4E56 0000 2F2E 0008` = LINK A6,#0; MOVE.L 8(A6),-(SP)
+
+```
+Parameters: 8(A6)=window_ptr
+Returns: D0 = 1 if managed, 0 if not
+```
+
+Two-step check:
+1. Calls JT[1610] (check_window_state) with the window. If result is non-zero (TST.W D0, BNE), proceed to step 2.
+2. Calls JT[3434] (get_window_flags) with the window. Tests result AND #$0080 (bit 7). If bit 7 is SET, returns 0 (NOT managed). If clear, returns 1 (IS managed).
+
+The logic is: a window is "managed" if it passes the state check AND does NOT have bit 7 set in its flags.
 
 ```c
-/*
- * initialize_window_tracking - Walk window list and set up tracking pointers
- *
- * Traverses the system window list to identify front, active, and focus windows.
- *
- * @return: Appropriate window pointer based on state
- */
-WindowPtr initialize_window_tracking(void) {
-    Boolean found_front = false;
-    Boolean found_inactive = false;
+short is_window_in_managed_list(WindowPtr window) {
+    if (check_window_state(window) == 0)  /* JT[1610] */
+        return 0;
 
-    /* Clear global tracking pointers */
+    short flags = get_window_flags(window);  /* JT[3434] */
+    if (flags & 0x0080)
+        return 0;  /* Has "unmanaged" flag */
+
+    return 1;
+}
+```
+
+### Function 0x05FE - Get Window Flags (Bit 7)
+**Hex verification:** `4E56 0000 2F2E 0008` = LINK A6,#0; MOVE.L 8(A6),-(SP)
+
+```
+Parameters: 8(A6)=window_ptr
+Returns: D0 = flags AND $0080
+```
+
+Simple wrapper that calls JT[3434] and masks the result to isolate bit 7. Returns the masked value (0 or $0080).
+
+```c
+short get_window_flags(WindowPtr window) {
+    return get_window_properties(window) & 0x0080;  /* JT[3434] */
+}
+```
+
+### Function 0x0612 - Invoke Window Procedure Callback
+**Hex verification:** `4E56 0000 48E7 0018 99CC` = LINK A6,#0; MOVEM.L A3/A4,-(SP); SUBA.L A4,A4
+
+```
+Parameters: 8(A6)=param
+Returns: D0 = A4 (callback result)
+```
+
+Indirect procedure call mechanism. Checks g_active_window (A5-1330). If non-NULL:
+1. Pushes $0011 (17) and g_active_window to stack
+2. Calls JT[522] (look up procedure) -- this resolves a procedure ID to a code address
+3. Stores result in D7 via MOVE.L D0,D7
+4. Calls JT[514] (get procedure address) -- loads the actual function pointer
+5. Stores result in A3
+6. If A3 is non-NULL: calls the procedure via JSR (A3) with param and g_active_window as arguments
+7. Stores result (from A0 -> A4)
+8. Returns A4
+
+This is the "call window procedure" pattern: look up a procedure table entry for the active window, resolve it, and invoke it.
+
+```c
+WindowPtr invoke_window_proc(long param) {
+    WindowPtr result = NULL;
+
+    if (g_active_window != NULL) {
+        /* Look up procedure #17 for the active window */
+        ProcPtr proc;
+        push_args(0x0011, g_active_window);
+        lookup_proc();        /* JT[522] */
+        long type = D7;
+        get_proc_address();   /* JT[514] */
+        proc = (ProcPtr)A3;
+
+        if (proc != NULL) {
+            result = (*proc)(param, g_active_window);
+        }
+    }
+    return result;
+}
+```
+
+### Function 0x0654 - Show Window and Update System List
+**Hex verification:** `4E56 0000 2F0C 286E 0008` = LINK A6,#0; MOVE.L A4,-(SP); MOVEA.L 8(A6),A4
+
+```
+Parameters: 8(A6)=window_ptr
+```
+
+Manages window visibility with system front window ($0A64) tracking. The logic:
+
+1. Compare A4 with g_front_window (A5-1326). If equal, skip to show.
+2. Compare A4 with g_active_window (A5-1330). If not equal, proceed with front window update.
+3. Load nextWindow (offset 144) of the current window. Call get_window_flags (0x05FE) to check if the next window is managed.
+4. If managed: update $0A64 (system CurDeactive) to point to A4's nextWindow (offset 144).
+5. If NOT managed: walk the $0A64 chain checking offset 110 (visible) on each entry, updating $0A64.
+6. Call ShowWindow(A4, FALSE) via _ShowWindow trap.
+7. Call initialize_window_tracking (0x0A26) to rebuild the window list.
+8. If g_front_window is non-NULL, call reorder_activate_window (0x0866) with g_front_window and flag=1.
+
+```c
+void show_window_in_list(MavenWindow *window) {
+    if (window == g_front_window || window == g_active_window)
+        goto do_show;
+
+    short flags = get_window_flags(window->nextWindow);
+    if (flags) {
+        CurDeactive = window->nextWindow;
+    } else {
+        WindowPtr w = CurDeactive;
+        while (w) {
+            CurDeactive = w->nextWindow;
+            if (CurDeactive == NULL) break;
+            w = CurDeactive;
+            if (!w->visible) break;
+        }
+    }
+
+do_show:
+    ShowWindow(window, false);
+    initialize_window_tracking();
+
+    if (g_front_window != NULL) {
+        reorder_activate_window(g_front_window, true);
+    }
+}
+```
+
+### Function 0x06BE - Set Window Order (DrawBehind)
+**Hex verification:** `4E56 0000 2F2E 0008` = LINK A6,#0; MOVE.L 8(A6),-(SP)
+
+```
+Parameters: 8(A6)=window_ptr
+```
+
+Simple wrapper: calls invoke_window_proc (0x0654) with the parameter, stores the parameter at (A6+8) for later use, then calls _DrawBehind (A92D). This causes the window manager to redraw the desktop behind the specified window.
+
+```c
+void set_window_order(WindowPtr window) {
+    invoke_window_proc(window);
+    DrawBehind(window);
+}
+```
+
+### Function 0x06D4 - Create Color Window (NewCWindow Wrapper)
+**Hex verification:** `4E56 FFFC 2F0C` = LINK A6,#-4; MOVE.L A4,-(SP)
+
+```
+Parameters: 8(A6)=boundsRect, 12(A6)=title, 16(A6)=visible/style,
+            18(A6)=behind, 20(A6)=refCon, 24(A6)=goAway(B),
+            28(A6)=behind_window, 30(A6)=storage
+Returns: D0 = A4 = new window pointer
+```
+
+Creates a new color window via _NewCWindow (A913), then performs post-creation setup:
+
+1. Pushes all parameters in correct order for NewCWindow (result space, storage, bounds, title, visible=FALSE, procID, behind, goAway flag, refCon).
+2. Calls _NewCWindow (A913).
+3. Pops result into A4.
+4. Checks if 24(A6) == -1 ($FFFF). If so:
+   - Calls _HiliteWindow(A4, true) to highlight
+   - Calls select_or_show_window (0x0962) to make it front
+5. Else if 24(A6) != 0:
+   - Calls hide_and_reorder_window (0x08E4) with the behind parameter
+6. Checks 20(A6) (goAway flag). If set, calls activate_window (0x073E).
+7. Returns window pointer.
+
+```c
+WindowPtr create_color_window(Ptr storage, Rect *bounds, StringPtr title,
+                               short procID, Boolean visible, WindowPtr behind,
+                               Boolean goAway, long refCon) {
+    WindowPtr window;
+
+    window = NewCWindow(storage, bounds, title, false, procID,
+                         behind, goAway, refCon);
+
+    if (behind == (WindowPtr)-1) {
+        HiliteWindow(window, true);
+        select_or_show_window(window);
+    } else if (behind != NULL) {
+        hide_and_reorder_window(behind, window);
+    }
+
+    if (visible) {
+        activate_window(window);
+    }
+
+    return window;
+}
+```
+
+### Function 0x073E - Activate/Bring-to-Front Window
+**Hex verification:** `4E56 0000 2F0C 286E 0008` = LINK A6,#0; MOVE.L A4,-(SP); MOVEA.L 8(A6),A4
+
+```
+Parameters: 8(A6)=window_ptr
+```
+
+Calls get_window_flags (0x05FE). If the window has the managed flag:
+- HiliteWindow(window, true)
+- ShowWindow(window, true)
+
+Otherwise:
+- BringToFront(window) via A915 trap
+
+```c
+void activate_window(MavenWindow *window) {
+    if (get_window_flags(window)) {
+        HiliteWindow(window, true);
+        ShowWindow(window, true);
+    } else {
+        BringToFront(window);
+    }
+}
+```
+
+### Function 0x0770 - Check If Window Belongs to Managed Set
+**Hex verification:** `4E56 FFFC 2F2D FAD6` = LINK A6,#-4; MOVE.L -1322(A5),-(SP)
+
+```
+Parameters: 8(A6)=window_ptr (or 0)
+Returns: D0 = 0 or 1
+```
+
+Calls JT[1610] with g_focus_window. If that returns zero (unmanaged focus):
+- If 8(A6) is NULL: return 0
+- Compare 8(A6) with g_front_window (A5-1326): if equal, return 1
+- Compare 8(A6) with g_active_window (A5-1330): if equal, return 1
+- Otherwise return 0
+
+This checks if a given window is part of the managed window set by comparing against the known tracked windows.
+
+### Non-LINK Leaf Function 0x07A6 - Get Screen Bit Depth
+**Hex verification:** `3038 0BAA 4E75` = MOVE.W $0BAA.W,D0; RTS
+
+```
+Parameters: none
+Returns: D0 = screen bit depth
+```
+
+Two-instruction leaf function. Reads the screen bit depth from low-memory global $0BAA and returns it. Used by the window creation code to determine if color window features should be enabled.
+
+```c
+short get_screen_depth(void) {
+    return *(short*)0x0BAA;
+}
+```
+
+### Function 0x07AC - Open Window with Region Setup
+**Hex verification:** `4E56 FFF8 48E7 0138` = LINK A6,#-8; MOVEM.L D7/A3/A4,-(SP)
+
+```
+Parameters: 8(A6)=window_ptr, 12(A6)=bounds_left(W), 16(A6)=bounds_top(W)
+Local: -8(A6)=work_rect(8), -4(A6)=saved_port(4)
+```
+
+Full window initialization with region setup and port configuration:
+
+1. Checks GetNextEvent (A973) -- peeks at event queue (result in Boolean return)
+2. Saves current port, calls GetPort/GlobalToLocal
+3. Gets QuickDraw globals, calls GlobalToLocal
+4. Creates two NewRgn for content and title regions
+5. Calls MovePortTo to set port origin
+6. Calls PortSize with $09EE (screen row bytes)
+7. Calls GetWMgrPort to get window manager port
+8. Pushes bounds parameters and various flags
+9. Calls NewWindow (A905) -- creates a standard window
+10. Gets the result (window) into D7
+11. Pushes 0 (false) and D7, calls OpenPort (A86A)
+12. Stores result in -4(A6)
+13. Compares created window bounds against screen depth check
+14. If bounds are valid (not $8000xxxx which indicates error):
+    - Gets window title region offsets at +16/+18
+    - Adds region offset to local rect
+    - Calls GlobalToLocal to convert
+    - Calls SetPortBits
+    - Calls SetWTitle with computed position
+15. Restores port via GlobalToLocal
+
+This is the heavy-lifting window opener that sets up all the internal regions, port mapping, and coordinate transforms needed for a fully functional custom window.
+
+```c
+WindowPtr open_window_with_regions(MavenWindow *window, short bounds_left, short bounds_top) {
+    GrafPtr saved_port;
+    Rect r;
+    RgnHandle content_rgn, title_rgn;
+
+    if (!GetNextEvent(0, NULL)) return NULL;
+
+    GetPort(&saved_port);
+    GlobalToLocal(&local_pt);
+
+    /* Set up port */
+    MovePortTo(/*...*/);
+    PortSize(*(long*)0x09EE);
+    GetWMgrPort(&wm_port);
+
+    /* Create regions */
+    content_rgn = NewRgn();
+    CopyRgn(content_rgn, /*...*/);
+    title_rgn = NewRgn();
+    CopyRgn(title_rgn, /*...*/);
+
+    /* Create the window */
+    WindowPtr new_win = NewWindow(NULL, &r, /*title*/, false, 0, NULL, /*...*/);
+
+    /* Set up port bitmap */
+    OpenPort(new_win, false);
+
+    /* Adjust regions for screen position */
+    if (r.top != (short)0x8000) {
+        short dx = window->portRect.left + r.left;
+        short dy = window->portRect.top + r.top;
+        GlobalToLocal(&pt);
+        SetPortBits(/*...*/);
+        SetWTitle(new_win, /*computed title*/);
+    }
+
+    GlobalToLocal(&saved_port);
+    return new_win;
+}
+```
+
+### Function 0x0866 - Reorder and Activate Window
+**Hex verification:** `4E56 FFFA 48E7 0118` = LINK A6,#-6; MOVEM.L D7/A3/A4,-(SP)
+
+```
+Parameters: 8(A6)=window_ptr, 12(A6)=activate_flag(B)
+```
+
+Activates a window and reorders the window list:
+
+1. Calls _HiliteWindow(window, activate_flag) to set visual highlight state
+2. Calls _GlobalToLocal on the window port
+3. Checks g_active_window. If non-NULL:
+   - Compares g_focus_window with g_active_window
+   - Sets D7 = (focus != active) ? 1 : 0 via SEQ/NEG.B
+   - Walks from g_active_window through nextWindow chain (offset 144):
+     - For each window in chain: HiliteWindow(window, D7)
+     - Stops when reaching g_last_window (A5-1318)
+4. If g_front_window is non-NULL:
+   - Walks from g_front_window->nextWindow:
+     - For each: calls is_window_in_managed_list (0x05D2)
+     - If managed: HiliteWindow(window, false)
+   - Continues until end of chain
+5. Calls JT[1562] (window cleanup handler) with the original window
+
+```c
+void reorder_activate_window(MavenWindow *window, Boolean activate) {
+    HiliteWindow(window, activate);
+    GlobalToLocal(&window->portRect);
+
+    if (g_active_window != NULL) {
+        Boolean hilite = (g_focus_window != g_active_window);
+        WindowPtr w = g_active_window;
+        while (w != NULL) {
+            HiliteWindow(w, hilite);
+            if (w == g_last_window) break;
+            w = w->nextWindow;
+        }
+    }
+
+    if (g_front_window != NULL) {
+        WindowPtr w = g_front_window->nextWindow;
+        while (w != NULL) {
+            if (is_window_in_managed_list(w)) {
+                HiliteWindow(w, false);
+            }
+            w = w->nextWindow;
+        }
+    }
+
+    window_cleanup(window);  /* JT[1562] */
+}
+```
+
+### Function 0x08E4 - Hide and Reorder Window
+**Hex verification:** `4E56 FFF8 48E7 0018` = LINK A6,#-8; MOVEM.L A3/A4,-(SP)
+
+```
+Parameters: 8(A6)=window_ptr, 12(A6)=behind_param
+```
+
+Handles window hiding with proper reordering:
+
+1. Saves port, calls GetPort/GlobalToLocal
+2. Creates two NewRgn for scratch computation
+3. Dereferences window->refCon (offset 24), copies title region
+4. Calls SendBehind(window, behind_param) via A921
+5. Gets window content region bounds, calls SetPortBits
+6. Computes OffsetRgn to adjust title position
+7. Performs XorRgn of old and new title positions
+8. Calls SetPort to window manager port
+9. Calls HideWindow (A90A)
+10. Restores saved port, disposes scratch regions
+
+```c
+void hide_and_reorder_window(MavenWindow *window, WindowPtr behind) {
+    GrafPtr saved_port;
+    RgnHandle scratch1, scratch2;
+
+    GetPort(&saved_port);
+    GlobalToLocal(/*...*/);
+
+    scratch1 = NewRgn();
+    CopyRgn(window->contentRgn, scratch1);
+
+    scratch2 = NewRgn();
+    CopyRgn(scratch2, /*...*/);
+
+    /* Reorder */
+    SendBehind(window, behind);
+
+    /* Compute dirty region */
+    Rect *bounds = &(*(window->contentRgn))->rgnBBox;
+    SetPortBits(/*...*/);
+
+    short dy = bounds->bottom - (*scratch1)->rgnBBox.bottom;
+    OffsetRgn(scratch1, 0, dy);
+
+    /* XOR old/new to find changed area */
+    XorRgn(window->contentRgn, scratch1, scratch1);
+
+    /* Update */
+    SetPort(window);
+    HideWindow(window);
+
+    GlobalToLocal(/*...*/);
+    DisposeRgn(scratch2);
+}
+```
+
+### Function 0x0962 - Select or Show Window (Main Dispatch)
+**Hex verification:** `4E56 FFF0 2F0C 286E 0008` = LINK A6,#-16; MOVE.L A4,-(SP); MOVEA.L 8(A6),A4
+
+```
+Parameters: 8(A6)=window_ptr
+```
+
+The main window selection/visibility dispatcher. Contains two major branches based on whether the window is currently in the managed list:
+
+**Branch 1: Window IS managed** (is_window_in_managed_list returns true):
+1. If g_active_window is non-NULL:
+   - Calls hide_and_reorder_window(window, g_last_window) to move to correct Z-order
+   - Compares g_active_window with g_focus_window
+   - If equal: calls SelectWindow(g_active_window)
+   - If not equal: calls reorder_activate_window(window, 1) to activate
+2. Calls reorder_activate_window(g_front_window, 0) to deactivate the old front
+
+**Branch 2: Window is NOT managed**:
+- Calls SelectWindow(window) directly
+
+**Branch 3: Window passes get_window_flags but not is_managed**:
+1. If g_focus_window is non-NULL:
+   - Calls JT[1610] to check g_focus_window state
+   - If valid: calls set_front_and_select (0x09F6)
+2. Otherwise: calls SelectWindow(window)
+
+```c
+void select_or_show_window(MavenWindow *window) {
+    if (is_window_in_managed_list(window)) {
+        if (g_active_window != NULL) {
+            hide_and_reorder_window(window, g_last_window);
+
+            if (g_active_window == g_focus_window)
+                SelectWindow(g_active_window);
+            else
+                reorder_activate_window(window, true);
+
+            reorder_activate_window(g_front_window, false);
+        }
+    } else if (get_window_flags(window)) {
+        if (g_focus_window != NULL) {
+            if (check_window_state(g_focus_window))  /* JT[1610] */
+                set_front_and_select(window);
+            else
+                SelectWindow(window);
+        } else {
+            SelectWindow(window);
+        }
+    } else {
+        SelectWindow(window);
+    }
+}
+```
+
+### Function 0x09F6 - Set Front Window and Select
+**Hex verification:** `4E56 FFFC 2F2E 0008` = LINK A6,#-4; MOVE.L 8(A6),-(SP)
+
+```
+Parameters: 8(A6)=window_ptr
+Returns: none
+```
+
+Sets the system front window globals and calls FrontWindow:
+
+1. Calls get_window_flags (0x05FE) on the parameter
+2. If flagged: sets $0A68 (CurActivate) = g_active_window
+3. If not flagged: sets $0A68 = g_front_window
+4. Calls _FrontWindow (A920) trap
+5. Stores parameter at $0A64 (CurDeactive/system front)
+
+```c
+void set_front_and_select(WindowPtr window) {
+    if (get_window_flags(window))
+        *(WindowPtr*)0x0A68 = g_active_window;
+    else
+        *(WindowPtr*)0x0A68 = g_front_window;
+
+    FrontWindow();
+    *(WindowPtr*)0x0A64 = window;
+}
+```
+
+### Function 0x0A26 - Initialize Window Tracking (Non-LINK)
+**Hex verification:** `48E7 0338` = MOVEM.L D6/D7/A2/A3/A4,-(SP) (no LINK frame)
+
+```
+Parameters: none
+Returns: D0 = appropriate window pointer
+```
+
+The master window list rebuild function. This is the only non-LINK framed function in CODE 46 (it uses register save/restore via MOVEM.L without a frame pointer). Walks the entire system window list and updates all four A5-relative window tracking globals.
+
+**Algorithm:**
+
+1. Initialize: D7=1 (flag1), D6=0 (flag2)
+2. Clear all globals: g_front_window=NULL, g_active_window=NULL, g_focus_window=NULL, g_last_window=-1
+3. Get WindowList head from $09D6
+4. For each window in the list (linked via offset 144):
+   a. Skip if not visible (TST.B offset 110)
+   b. If g_focus_window is NULL: set it to this window
+   c. Call is_window_in_managed_list (0x05D2):
+      - If managed AND g_front_window is NULL: set g_front_window, clear D7
+      - If managed AND g_front_window already set: do nothing for front
+   d. Call get_window_flags (0x05FE):
+      - If flagged AND g_front_window is NULL: compare with g_focus_window
+        - If different: SelectWindow, update g_focus_window
+        - Else: SendBehind to reorder, update pointers
+      - Update g_active_window if NULL
+      - Update g_last_window
+5. Post-loop reordering:
+   - If D7 is still 0 (found a managed front window):
+     - Walk from g_front_window (or g_last_window) through chain
+     - For each flagged window: swap title region values via offset+4, SendBehind, restore
+   - This ensures proper visual layering
+6. Return: if g_active_window != g_focus_window, return g_front_window; else return g_focus_window
+
+```c
+WindowPtr initialize_window_tracking(void) {
+    Boolean found_managed = true;  /* D7 = 1 */
+    Boolean flag2 = false;          /* D6 = 0 */
+
     g_front_window = NULL;
     g_active_window = NULL;
     g_focus_window = NULL;
     g_last_window = -1;
 
-    /* Get head of system window list */
-    WindowPtr current = WindowList;
+    MavenWindow *current = (MavenWindow*)WindowList;
 
     while (current != NULL) {
-        MavenWindowData *win_data = (MavenWindowData*)current;
-
-        /* Skip hidden windows */
-        if (!win_data->visible_flag) {
-            current = win_data->next_window;
+        if (!current->visible) {
+            current = current->nextWindow;
             continue;
         }
 
-        /* Track first visible window as focus candidate */
-        if (g_focus_window == NULL) {
-            g_focus_window = current;
-        }
+        if (g_focus_window == NULL)
+            g_focus_window = (WindowPtr)current;
 
-        /* Check if this is the active window */
-        if (is_window_active(current)) {
+        if (is_window_in_managed_list(current)) {
             if (g_front_window == NULL) {
-                g_front_window = current;
+                g_front_window = (WindowPtr)current;
+                if (!flag2) found_managed = false;
             }
-            if (!found_inactive) {
-                found_front = false;  /* uncertain: flag logic */
-            }
-        } else {
-            /* Inactive window handling */
-            if (is_window_special(current)) {
-                /* uncertain: special window criteria */
-                if (g_front_window == NULL) {
-                    g_front_window = current;
-                    g_focus_window = current;
+        } else if (get_window_flags(current)) {
+            if (g_front_window == NULL) {
+                if (current != g_focus_window) {
+                    SelectWindow(current);
+                    g_focus_window = (WindowPtr)current;
                 } else {
-                    /* Reorder windows */
                     SendBehind(current, g_front_window);
+                    current = g_front_window;
                 }
-                current = g_active_window;  /* uncertain: assignment */
             }
-
-            if (g_active_window == NULL) {
-                g_active_window = current;
-            }
+            if (g_active_window == NULL)
+                g_active_window = (WindowPtr)current;
             g_last_window = (long)current;
+        } else {
+            flag2 = true;
         }
 
-        current = win_data->next_window;
+        current = current->nextWindow;
     }
 
-    /* Handle reordering if needed */
-    if (!found_front && g_front_window != NULL) {
-        /* Complex reordering logic */
-        WindowPtr reorder_base = g_front_window ? g_front_window : g_last_window;
-        current = ((MavenWindowData*)g_active_window)->next_window;
+    /* Post-loop: reorder flagged windows behind managed ones */
+    if (!found_managed && g_front_window != NULL) {
+        WindowPtr base = g_front_window ? g_front_window : g_last_window;
+        MavenWindow *w = g_active_window->nextWindow;
 
-        while (current != NULL && current != reorder_base) {
-            if (check_window_state(current)) {
-                /* Adjust title region ordering */
-                /* uncertain: exact reorder operations */
-                Handle title_h = ((MavenWindowData*)current)->title_rgn_h;
-                short saved_val = ((short*)(*title_h))[2];
-                ((short*)(*title_h))[2] = ((short*)(*title_h))[0];
+        while (w != NULL && w != base) {
+            if (check_window_state(w)) {  /* JT[1610] */
+                RgnPtr title = *(w->titleRgn);
+                short saved = title->rgnBBox.bottom;
+                title->rgnBBox.bottom = title->rgnBBox.top;
 
-                SendBehind(current, reorder_base);
+                SendBehind(w, base);
 
-                ((short*)(*title_h))[3] = saved_val;
-                current = g_active_window;
+                title->rgnBBox.right = saved;
+                w = g_active_window;
             }
-            current = ((MavenWindowData*)current)->next_window;
+            w = w->nextWindow;
         }
     }
 
-    /* Return appropriate window */
-    if (g_active_window != g_focus_window) {
+    if (g_active_window != g_focus_window)
         return g_front_window;
-    }
     return g_focus_window;
 }
 ```
 
-### Helper Function - Fill Pattern Drawing
+### Function 0x0B3C - Configure Window Visibility Flag
+**Hex verification:** `4E56 0000 206E 000C` = LINK A6,#0; MOVEA.L 12(A6),A0
+
+```
+Parameters: 8(A6)=window_ptr, 12(A6)=flags_ptr
+```
+
+Extracts bit 0 from byte at offset 15 of the flags parameter (AND.B #1, 15(A0)), pushes it as a Boolean, then calls reorder_activate_window (0x0866) with the window and the extracted flag.
 
 ```c
-/*
- * draw_fill_pattern - Draw checkerboard or custom pattern
- *
- * Creates alternating pattern for board squares.
- *
- * @param window_ptr: Window containing the square
- */
-void draw_fill_pattern(MavenWindowData *window_ptr) {
-    Rect pattern_rect;
-    long pattern_data;
-
-    pattern_rect = *((Rect*)&window_ptr->reserved[0]);  /* uncertain: offset */
-
-    /* Select pattern based on position bit */
-    if (window_ptr->reserved[3] & 0x01) {
-        pattern_data = 0x00550055;  /* Light pattern */
-    } else {
-        pattern_data = 0x00AA00AA;  /* Dark pattern */
-    }
-
-    /* Check secondary pattern flag */
-    if (window_ptr->reserved[1] & 0x01) {
-        pattern_data = (pattern_data << 1) | (pattern_data >> 31);
-    }
-
-    /* uncertain: pattern storage location */
-    long local_pattern[2] = {pattern_data, pattern_data};
-
-    FillRect(&pattern_rect, (Pattern*)local_pattern);
+void configure_window_visible(WindowPtr window, void *flags) {
+    Boolean activate = ((char*)flags)[15] & 0x01;
+    reorder_activate_window(window, activate);
 }
 ```
 
-### Window Event Handling Summary
+## Internal Call Graph
 
-| Event Type | Handler Function | Purpose |
-|------------|------------------|---------|
-| 0 | draw_window_content | Full window redraw |
-| 1 | handle_window_click | Mouse down processing |
-| 2 | handle_window_update | Update region handling |
-| 5 | handle_window_idle | Cursor blink, animations |
-| 6 | handle_window_activate | Focus changes |
+```
+window_event_dispatcher (0x0000)
+  |-> draw_board_square (0x0268)
+  |     |-> adjust_rect_with_offset (0x0234)
+  |     |     |-> set_content_rect (0x020C)
+  |     |-> set_content_rect (0x020C)
+  |     |-> fill_pattern (0x01BA)
+  |-> compute_clip_region (0x047E)
+  |-> hit_test_point (0x050C)
+  |     |-> adjust_rect_with_offset (0x0234)
+  |-> draw_3d_border (0x0086)
+  |-> draw_3d_border_extended (0x0100)
+        |-> initialize_window_tracking (0x0A26)
+              |-> is_window_in_managed_list (0x05D2)
+              |     |-> JT[1610] check_window_state
+              |     |-> JT[3434] get_window_flags
+              |-> get_window_flags (0x05FE)
+              |     |-> JT[3434]
+
+show_window_in_list (0x0654)
+  |-> get_window_flags (0x05FE)
+  |-> initialize_window_tracking (0x0A26)
+  |-> reorder_activate_window (0x0866)
+        |-> is_window_in_managed_list (0x05D2)
+        |-> JT[1562] window_cleanup
+
+set_window_order (0x06BE)
+  |-> invoke_window_proc (0x0612)
+  |     |-> JT[522] look_up_procedure
+  |     |-> JT[514] get_procedure_address
+
+create_color_window (0x06D4)
+  |-> select_or_show_window (0x0962)
+  |     |-> is_window_in_managed_list (0x05D2)
+  |     |-> hide_and_reorder_window (0x08E4)
+  |     |-> reorder_activate_window (0x0866)
+  |     |-> set_front_and_select (0x09F6)
+  |           |-> get_window_flags (0x05FE)
+  |-> hide_and_reorder_window (0x08E4)
+  |-> activate_window (0x073E)
+        |-> get_window_flags (0x05FE)
+
+configure_window_visible (0x0B3C)
+  |-> reorder_activate_window (0x0866)
+```
+
+## Architecture Notes
+
+1. **Custom WDEF pattern**: CODE 46 implements a complete custom window definition function (WDEF). The event dispatcher at 0x0000 follows the standard WDEF calling convention with event type codes matching Apple's WDEF specification (draw=0, hit=1, calcRgns=2, new=3(?), dispose=4(?), grow=5, idle=6(?)).
+
+2. **Window list management**: Rather than relying solely on the Window Manager's built-in ordering, Maven maintains its own parallel tracking via four A5-relative globals. This allows it to implement custom Z-ordering policies (e.g., keeping certain windows always-on-top or grouping related windows).
+
+3. **Region-based clipping**: The compute_clip_region function (0x047E) uses the full region arithmetic suite (NewRgn/RectRgn/DiffRgn/DisposeRgn) to compute precise clip regions that exclude the inner content area from frame drawing.
+
+4. **3D appearance**: The 3D border drawing (0x0086, 0x0100) implements Mac OS 7+ "platinum" appearance with distinct highlight/shadow edges, giving windows a raised/embossed look before Apple provided this in the Appearance Manager.
+
+5. **Pattern fills**: The checkerboard pattern system (0x01BA) uses bit-selected patterns ($00AA00AA / $00550055) with optional rotation, likely for board square differentiation (premium squares, etc.).
+
+6. **Low-memory manipulation**: Direct writes to $0A64 (CurDeactive) and $0A68 (CurActivate) indicate this code manipulates the Window Manager's internal activation tracking, which was a common (if fragile) technique in Classic Mac programming.
+
+## Confidence: HIGH
+
+All QuickDraw trap sequences match documented Apple usage. The window list traversal pattern (offset 144 = nextWindow) is standard WindowRecord layout. Region manipulation sequences are canonical. The WDEF event dispatch codes align with Inside Macintosh documentation. The only uncertain areas are some of the more complex reordering logic in initialize_window_tracking, where multiple flag combinations create nuanced behavior paths.

@@ -1,796 +1,419 @@
-# CODE 18 Detailed Analysis - Move Description Formatting
+# CODE 18 Detailed Analysis - Move Description Formatting & Board Position Evaluation
 
 ## Overview
 
 | Property | Value |
 |----------|-------|
-| Size | 4,460 bytes |
+| Size | 4,460 bytes (code) + 4 byte header = 4,464 total |
 | JT Offset | 816 |
 | JT Entries | 4 |
-| Functions | 6+ |
-| Purpose | **Format move descriptions for display, handle special moves** |
+| Functions | 15 (LINK A6) + additional leaf functions |
+| Purpose | **Move description formatting, score display, board position evaluation** |
+| Confidence | **HIGH** |
 
+## Module Purpose
 
-## System Role
+CODE 18 is the move description and position evaluation module. It handles:
+1. Formatting move descriptions for display (word + coordinates + direction)
+2. Handling special move types (pass, exchange, challenge, forfeit, resign, etc.)
+3. Score/percentage formatting
+4. Board position analysis for move display
+5. Cross-check based position evaluation with bidirectional scoring
 
-**Category**: Scoring
-**Function**: Position Analysis
+This is a substantial module at 4,460 bytes, containing both UI formatting functions and core position evaluation logic.
 
-Board position evaluation
-## Architecture Role
+## Function Map
 
-CODE 18 creates human-readable move descriptions:
-1. Format word placements with coordinates
-2. Handle special moves (pass, exchange, etc.)
-3. Score notation with bonuses
-4. Direction indicators
+| Offset | Frame | Size | Regs Saved | Purpose |
+|--------|-------|------|------------|---------|
+| 0x0000 | -24 | 0x94 | A3/A4 | Format move to display string |
+| 0x0094 | -164 | 0x510 | D3-D7 | Format score description (special moves) |
+| 0x05A2 | 0 | 0x112 | D6/D7/A4 | Format score with percentage |
+| 0x06B4 | 0 | 0x6C | -- | Format directional comparison |
+| 0x0720 | 0 | 0x1DA | D4-D7/A3/A4 | Validate adjacent positions |
+| 0x08FA | -546 | 0xA4 | D6 | Format position description (row/column) |
+| 0x099E | 0 | 0x18 | -- | Check word validity wrapper |
+| 0x09B6 | -256 | 0xDC | D7/D6/A3/A4/A2 | Score comparison with buffers |
+| 0x0A92 | -534 | 0x14A | D4-D7/A3/A4 | Cross-check position analysis |
+| 0x0BDC | 0 | 0x7C | D4-D7/A3/A4 | Process move candidates (callback) |
+| 0x0C58 | 0 | 0x62 | D7/A4 | Score threshold categorization |
+| 0x0CBA | 0 | 0x14 | -- | Push to score display (wrapper) |
+| 0x0CCE | 0 | 0x10 | -- | Push to score buffer (wrapper) |
+| 0x0CDE | -132 | 0xFC | A3/A4 | Handle record from move list |
+| 0x0DDA | -6772 | 0x190 | D4-D7/A3/A4 | Main board position evaluator |
 
-## Key Functions
+**Non-LINK functions (leaf):**
 
-### Function 0x0000 - Format Move to String
-```asm
-0000: LINK       A6,#-24
-0004: MOVEM.L    A3/A4,-(SP)
-0008: MOVEA.L    8(A6),A3             ; A3 = output buffer
-000C: MOVEA.L    12(A6),A4            ; A4 = move data
+| Offset | Size | Purpose |
+|--------|------|---------|
+| 0x005E (approx) | -- | Entry at 0x0000 is LINK; various inline helpers |
 
-; Check if blank played
-0010: TST.B      32(A4)               ; Blank flag?
-0014: BEQ.S      $0046                ; No blank
+## Function-by-Function Analysis
 
-; Format blank notation
-0016: MOVE.L     A4,-(A7)             ; Move data
-0018: MOVE.L     A4,-(A7)
-001A: MOVE.L     16(A6),-(A7)         ; Context
-001E: MOVE.L     A4,-(A7)
-0020: JSR        3506(A5)             ; JT[3506] - compare
-0024: TST.W      D0
-0026: BEQ.S      $0032                ; Different format
+### Function 0x0000 - Format Move to Display String
+**Hex verification:** `4E56 FFE8 48E7 0018` = LINK A6,#-24; MOVEM.L A3/A4,-(SP)
 
-; Same-tile format
-002A: LEA        -5678(A5),A0         ; Format string 1
-002E: MOVE.L     A0,D0
-0030: BRA.S      $0038
-
-; Different-tile format
-0032: LEA        -5674(A5),A0         ; Format string 2
-0036: MOVE.L     A0,D0
-0038: MOVE.L     D0,-(A7)             ; Push format
-003A: MOVE.L     A3,-(A7)             ; Push buffer
-003C: JSR        2066(A5)             ; sprintf
-0040: LEA        16(A7),A7
-0044: BRA.S      $008A                ; Done
-
-; No blank - check if word played
-0046: TST.B      (A4)                 ; Word present?
-0048: BNE.S      $0058                ; Yes
-
-; No word - "no play"
-004A: PEA        -5668(A5)            ; "no play" string
-004E: MOVE.L     A3,-(A7)
-0050: JSR        3490(A5)             ; strcpy
-0054: BEQ.S      $0056
-0056: BRA.S      $008A
-
-; Word played - check if across
-0058: MOVEA.L    16(A6),A0            ; Get direction
-005C: TST.B      32(A0)               ; Horizontal?
-0060: BNE.S      $007E                ; Yes
-
-; Vertical play - format with row number
-0062: MOVE.L     A4,-(A7)             ; Move data
-0064: PEA        -24(A6)              ; Local buffer
-0068: JSR        2026(A5)             ; Get coords
-006C: MOVE.L     D0,(A7)              ; Push coord
-006E: PEA        -5660(A5)            ; Format string
-0072: MOVE.L     A3,-(A7)             ; Output
-0074: JSR        2066(A5)             ; sprintf
-0078: LEA        16(A7),A7
-007C: BRA.S      $008A
-
-; Horizontal play
-007E: PEA        -5648(A5)            ; Horizontal format
-0082: MOVE.L     A3,-(A7)
-0084: JSR        3490(A5)             ; strcpy
-0088: BEQ.S      $008A
-
-008A: MOVE.L     A3,D0                ; Return buffer
-008C: MOVEM.L    (SP)+,A3/A4
-0090: UNLK       A6
-0092: RTS
+```
+Parameters: 8(A6)=output buffer, 12(A6)=move data, 16(A6)=context
+Returns: D0 = output buffer pointer
 ```
 
-### Function 0x0094 - Format Score Description
-```asm
-0094: LINK       A6,#-164             ; Large local frame
-0098: MOVEM.L    D3/D4/D5/D6/D7,-(SP)
-009C: MOVE.W     8(A6),D7             ; D7 = score/type
+Checks move data at offset 32 for blank flag. If blank, calls JT[3506] (strcmp) to compare move data variants, then uses sprintf (JT[2066]) with either format string at A5-5678 or A5-5674.
 
-; Validate
-00A0: TST.W      D7
-00A2: BNE.S      $00A8
-00A4: JSR        418(A5)              ; Error if zero
+If no blank: checks byte 0 of move data. If zero, copies "no play" string (A5-5668) via JT[3490] (strcpy). Otherwise, checks direction at offset 32 of context. For vertical: calls JT[2026] to get coordinates, sprintf formats with A5-5660. For horizontal: strcpy from A5-5648.
 
-; Setup rect
-00A8: PEA        -144(A6)
-00AC: JSR        2394(A5)             ; SetRect
-
-; Check for special values
-00B0: CMPI.W     #$4E20,D7            ; 20000 = special
-00B4: BEQ.S      $00E2                ; Handle special
-
-; Check for pass (0x8001)
-00B8: TST.W      12(A6)               ; Check flag
-00BC: BEQ.S      $00C8
-00BE: LEA        -5636(A5),A0         ; "won" string
-00C2: MOVE.L     A0,D0
-00C4: BRA.W      $059C
-
-00C8: TST.W      10(A6)               ; Check score sign
-00CC: BLE.S      $00D8
-00CE: LEA        -5592(A5),A0         ; "ahead" string
-00D2: MOVE.L     A0,D0
-00D4: BRA.W      $059C
-
-00D8: LEA        -5554(A5),A0         ; "behind" string
-00DC: MOVE.L     A0,D0
-00DE: BRA.W      $059C
-
-; Handle pass (0x8001)
-00E2: CMPI.W     #$8001,D7
-00E6: BNE.S      $00F2
-00E8: LEA        -5516(A5),A0         ; "pass" string
-00EC: MOVE.L     A0,D0
-00EE: BRA.W      $059C
-
-; Handle forfeit (0xFFFF)
-00F2: CMPI.W     #$FFFF,D7
-00F6: BNE.S      $0102
-00F8: LEA        -5510(A5),A0         ; "forfeit" string
-00FC: MOVE.L     A0,D0
-00FE: BRA.W      $059C
-
-; Handle exchange (0xFFFE)
-0102: CMPI.W     #$FFFE,D7
-0106: BNE.S      $0112
-0108: LEA        -5486(A5),A0         ; "exchange" string
-010C: MOVE.L     A0,D0
-010E: BRA.W      $059C
-
-; Handle timeout (0xFFE0)
-0112: CMPI.W     #$FFE0,D7
-0116: BNE.S      $0122
-0118: LEA        -5462(A5),A0         ; "time" string
-011C: MOVE.L     A0,D0
-011E: BRA.W      $059C
-
-; Handle overtime (0xFFDF)
-0122: CMPI.W     #$FFDF,D7
-0126: BNE.S      $0132
-0128: LEA        -5446(A5),A0         ; "overtime" string
-012C: MOVE.L     A0,D0
-012E: BRA.W      $059C
-
-; Handle challenge (0xFFFD)
-0132: CMPI.W     #$FFFD,D7
-0136: BNE.S      $0152
-0138: TST.W      12(A6)               ; Check outcome
-013C: BEQ.S      $0148
-013E: LEA        -5430(A5),A0         ; "challenge won"
-0142: MOVE.L     A0,D0
-0144: BRA.W      $059C
-
-0148: LEA        -5366(A5),A0         ; "challenge lost"
-014C: MOVE.L     A0,D0
-014E: BRA.W      $059C
-
-; Handle resign (0x07DA = 2010)
-0152: CMPI.W     #$07DA,D7
-0156: BNE.S      $0162
-0158: LEA        -5338(A5),A0         ; "resign" string
-015C: MOVE.L     A0,D0
-015E: BRA.W      $059C
-
-; Handle end game (0xFFFC)
-0162: CMPI.W     #$FFFC,D7
-0166: BNE.S      $0172
-0168: LEA        -5316(A5),A0         ; "end" string
-016C: MOVE.L     A0,D0
-016E: BRA.W      $059C
-
-; Check for letter exchange range (0xFFE1-0xFFFB)
-0172: CMPI.W     #$FFFB,D7            ; <= -5
-0176: BGT.W      $0206
-017A: CMPI.W     #$FFE1,D7            ; >= -31
-017E: BLT.W      $0206
-
-; Format letter exchange
-0182: MOVEQ      #-5,D0
-0184: SUB.W      D7,D0                ; Count = -5 - value
-0186: MOVEA.L    -26158(A5),A0        ; Tile table
-018A: MOVE.B     0(A0,D0.W),D0        ; Get letter
-018E: EXT.W      D0
-0190: MOVEA.L    A6,A1
-0192: ADD.W      D0,A1
-0194: TST.B      -144(A1)             ; Check validity
-0198: BNE.S      $01C4                ; Valid
-
-; Format exchange count
-019A: MOVEQ      #-5,D0
-019C: SUB.W      D7,D0
-019E: MOVEA.L    -26158(A5),A0
-01A2: MOVE.B     0(A0,D0.W),D0
-01A6: EXT.W      D0
-01A8: MOVE.W     D0,-(A7)
-01AA: JSR        3562(A5)             ; tolower
-01AE: MOVE.W     D0,(A7)
-01B0: PEA        -5280(A5)            ; Format string
-01B4: PEA        -5774(A5)            ; Output buffer
-01B8: JSR        2066(A5)             ; sprintf
-01BC: LEA        10(A7),A7
-01C0: BRA.W      $0596
-
-; Format with direction indicator
-01C4: MOVEQ      #-5,D0
-01C6: SUB.W      D7,D0
-01C8: MOVEA.L    -26158(A5),A0
-01CC: MOVE.B     0(A0,D0.W),D0
-01D0: EXT.W      D0
-01D2: MOVE.W     D0,-(A7)
-01D4: JSR        3562(A5)             ; tolower
-01D8: MOVE.W     D0,(A7)
-
-; Choose across/down string
-01DA: TST.W      10(A6)
-01DE: BLE.S      $01E8
-01E0: LEA        -5260(A5),A0         ; " across"
-01E4: MOVE.L     A0,D0
-01E6: BRA.S      $01EE
-
-01E8: LEA        -5256(A5),A0         ; " down"
-01EC: MOVE.L     A0,D0
-01EE: MOVE.L     D0,-(A7)
-01F0: PEA        -5250(A5)            ; Format string
-01F4: PEA        -5774(A5)            ; Output buffer
-01F8: JSR        2066(A5)             ; sprintf
-01FC: LEA        14(A7),A7
-0200: BRA.W      $0596
-
-; Regular score - format placement
-0206: EXT.L      D0
-0208: LSL.L      #2,D0                ; * 4
-020C: MOVEA.L    -11960(A5),A0        ; DAWG base
-0210: TST.B      (A0,D0.L)            ; Get letter
-0214: BNE.S      $0246                ; Has letter
-
-; No letter - just format score
-0216: EXT.L      D0
-0218: LSL.L      #2,D0
-021C: MOVEA.L    -11960(A5),A0
-0220: MOVE.W     (A0,D0.L),D0         ; Get word data
-0224: MOVE.L     A0,-(A7)
-0228: PEA        -16(A6)              ; Coords
-022C: JSR        2026(A5)             ; Get position
-0230: MOVE.L     D0,(A7)
-0232: PEA        -5228(A5)            ; Format string
-0236: PEA        -5774(A5)            ; Output buffer
-023A: JSR        2066(A5)             ; sprintf
-023E: LEA        16(A7),A7
-0242: BRA.W      $0596
-
-; Extract coordinates and format
-0246: MOVEQ      #0,D6
-0248: MOVE.W     D6,D3
-024A: MOVE.W     D6,D5
-024C: MOVE.W     D6,D4
-024E: MOVE.W     D7,-160(A6)          ; Store score
-
-; Parse word and calculate bounds
-0252: BRA.S      $02A2                ; Start loop
-0254: MOVE.W     -160(A6),D0
-0258: EXT.L      D0
-025A: LSL.L      #2,D0
-025E: MOVEA.L    -11960(A5),A0
-0262: MOVE.B     (A0,D0.L),D0         ; Get letter
-0266: EXT.W      D0
-026A: MOVE.W     D0,-154(A6)          ; Store letter
-
-; Get row/column
-026E: MOVE.W     -160(A6),D1
-0272: EXT.L      D1
-0274: LSL.L      #2,D1
-0278: MOVE.B     7(A1,D1.L),D4        ; Column
-027A: EXT.W      D1
-027C: MOVE.W     D1,-152(A6)          ; Row
-
-; Track min/max
-027E: CMP.W      D0,D5                ; Min column
-0280: BGE.S      $0284
-0282: MOVE.W     -154(A6),D5
-
-0284: CMP.W      -154(A6),D4
-0288: BLE.S      $028E
-028A: MOVE.W     -154(A6),D4          ; Max column
-
-028E: CMP.W      -152(A6),D6
-0292: BGE.S      $0298
-0294: MOVE.W     -152(A6),D6          ; Min row
-
-0298: CMP.W      -152(A6),D3
-029C: BLE.S      $02A2
-029E: MOVE.W     -152(A6),D3          ; Max row
-
-; Next character
-02A2: MOVE.W     -160(A6),D0
-02A6: EXT.L      D0
-02A8: LSL.L      #2,D0
-02AC: MOVEA.L    -11960(A5),A0
-02B0: MOVE.W     (A0,D0.L),-160(A6)   ; Get next
-02B4: BNE.S      $0254                ; Loop if more
-
-; Calculate word length
-02B6: MOVE.L     D7,D0
-02B8: EXT.L      D0
-02BA: LSL.L      #2,D0
-02BE: MOVEA.L    -11960(A5),A0
-02C2: MOVE.B     (A0,D0.L),D0
-02C6: EXT.W      D0
-02C8: ADD.W      D6,D0                ; Min row
-02CC: CMPI.W     #15,D0               ; Board edge?
-02D0: BNE.S      $02D4
-02D2: ADDQ.W     #1,D6                ; Adjust
-
-; Check column
-02D0: MOVE.L     D7,D0
-02D2: EXT.L      D0
-02D4: LSL.L      #2,D0
-02D8: MOVEA.L    -11960(A5),A0
-02DC: MOVE.B     (A0,D0.L),D0
-02E0: EXT.W      D0
-02E2: ADD.W      D3,D0                ; Max row
-02E6: SUBQ.W     #1,D0
-02EA: BNE.S      $02F0
-02EC: SUBQ.W     #1,D3                ; Adjust
-
-; Format coordinates and word
-...
-
-; Return formatted string
-0594: LEA        -5774(A5),A0         ; Output buffer
-0598: MOVE.L     A0,D0
-059A: MOVEM.L    (SP)+,D3/D4/D5/D6/D7
-059E: UNLK       A6
-05A0: RTS
-```
-
-### Function 0x05A2 - Format Score with Percentage
-```asm
-05A2: LINK       A6,#0
-05A6: MOVEM.L    D6/D7/A4,-(SP)
-05AA: MOVE.W     8(A6),D6             ; D6 = score
-05AE: MOVE.L     D6,D0
-05B0: EXT.L      D0
-
-; Calculate percentage
-05B2: DIVS.W     #100,D0
-05B8: MULS.W     #100,D0
-05BC: MOVE.W     D0,D7
-05BE: SUB.W      D0,D7                ; D7 = remainder
-
-; Validate range
-05C0: TST.W      D7
-05C2: BLT.S      $05C8
-05C4: CMPI.W     #100,D7
-05C8: BLT.S      $05CC
-05CA: JSR        418(A5)              ; Error
-
-; Check thresholds
-05CC: CMPI.W     #2,D7
-05D0: BGE.S      $05E0
-05D2: CMPI.W     #1,D6
-05D6: BLE.S      $05E0
-
-; Low percentage
-05D8: LEA        -5160(A5),A4         ; "low" string
-05DC: BRA.W      $067C
-
-; Check if zero or negative
-05E0: TST.W      D6
-05E2: BGE.S      $05EA
-...
-```
-
-## Special Move Types
-
-| Code | Meaning |
-|------|---------|
-| 0x4E20 (20000) | Game end special |
-| 0x8001 | Pass |
-| 0xFFFF | Forfeit |
-| 0xFFFE | Exchange tiles |
-| 0xFFFD | Challenge |
-| 0xFFFC | End game |
-| 0xFFE0 | Timeout |
-| 0xFFDF | Overtime |
-| 0x07DA (2010) | Resign |
-| 0xFFE1-0xFFFB | Exchange specific letters |
-
-## String Table Offsets
-
-| Offset | String |
-|--------|--------|
-| A5-5160 | Percentage indicator |
-| A5-5192 | Horizontal format |
-| A5-5214 | Coordinate format |
-| A5-5228 | Position format |
-| A5-5250 | Direction format |
-| A5-5256 | "down" |
-| A5-5260 | "across" |
-| A5-5280 | Exchange format |
-| A5-5316 | "end" |
-| A5-5338 | "resign" |
-| A5-5366 | "challenge lost" |
-| A5-5430 | "challenge won" |
-| A5-5446 | "overtime" |
-| A5-5462 | "time" |
-| A5-5486 | "exchange" |
-| A5-5510 | "forfeit" |
-| A5-5516 | "pass" |
-| A5-5554 | "behind" |
-| A5-5592 | "ahead" |
-| A5-5636 | "won" |
-| A5-5648 | Horizontal string |
-| A5-5660 | Vertical format |
-| A5-5668 | "no play" |
-| A5-5674 | Format string 2 |
-| A5-5678 | Format string 1 |
-| A5-5774 | Output buffer |
-
-## Global Variables
-
-| Offset | Purpose |
-|--------|---------|
-| A5-11960 | DAWG base pointer |
-| A5-26158 | Tile table |
-
-## Speculative C Translation
-
-### Header Definitions
 ```c
-/* CODE 18 - Move Description Formatting
- * Formats move descriptions for display, handles special moves.
- */
-
-#include <MacTypes.h>
-
-/*========== Special Move Type Codes ==========*/
-#define MOVE_GAME_END_SPECIAL   0x4E20  /* 20000: Game end special */
-#define MOVE_PASS               0x8001  /* Pass turn */
-#define MOVE_FORFEIT            0xFFFF  /* Forfeit game */
-#define MOVE_EXCHANGE           0xFFFE  /* Exchange tiles */
-#define MOVE_CHALLENGE          0xFFFD  /* Challenge opponent */
-#define MOVE_GAME_END           0xFFFC  /* End of game */
-#define MOVE_TIMEOUT            0xFFE0  /* Time expired */
-#define MOVE_OVERTIME           0xFFDF  /* Overtime penalty */
-#define MOVE_RESIGN             0x07DA  /* 2010: Resign */
-
-/* Letter exchange range: 0xFFE1 to 0xFFFB (-31 to -5) */
-#define EXCHANGE_RANGE_MIN      0xFFE1
-#define EXCHANGE_RANGE_MAX      0xFFFB
-
-/*========== String Table Offsets (A5-relative) ==========*/
-/*
- * A5-5160: Percentage indicator
- * A5-5192: Horizontal format
- * A5-5214: Coordinate format
- * A5-5228: Position format
- * A5-5250: Direction format
- * A5-5256: "down"
- * A5-5260: "across"
- * A5-5280: Exchange format
- * A5-5316: "end"
- * A5-5338: "resign"
- * A5-5366: "challenge lost"
- * A5-5430: "challenge won"
- * A5-5446: "overtime"
- * A5-5462: "time"
- * A5-5486: "exchange"
- * A5-5510: "forfeit"
- * A5-5516: "pass"
- * A5-5554: "behind"
- * A5-5592: "ahead"
- * A5-5636: "won"
- * A5-5648: Horizontal string
- * A5-5660: Vertical format
- * A5-5668: "no play"
- * A5-5674: Format string 2
- * A5-5678: Format string 1
- * A5-5774: Output buffer (96 bytes)
- */
-
-/*========== Global Variables ==========*/
-extern long*  g_dawg_base_ptr;          /* A5-11960: DAWG base */
-extern char*  g_tile_table;             /* A5-26158: Tile lookup table */
-extern char   g_output_buffer[96];      /* A5-5774: Output buffer */
-```
-
-### Move Formatting
-```c
-/*
- * format_move_to_string - Format move data to human-readable string
- *
- * Creates description of move including word, position, and any
- * special notation (blanks, etc).
- *
- * @param output: Output buffer for formatted string
- * @param move_data: Move data structure
- * @param context: Additional context/direction info
- * @return: Pointer to output buffer
- */
-char* format_move_to_string(char* output, void* move_data, void* context) {
-    char* move_ptr = (char*)move_data;
-
-    /* Check if blank was played (offset 32 in move data) */
-    if (move_ptr[32] != 0) {
-        /* Format blank notation */
-        /* Compare move data for same-tile vs different-tile format */
-        if (strcmp(move_data, move_data) == 0) {    /* uncertain: actual comparison */
-            sprintf(output, g_format_string_1, /* args */);     /* A5-5678 */
-        } else {
-            sprintf(output, g_format_string_2, /* args */);     /* A5-5674 */
-        }
+char* format_move_to_string(char *output, MoveData *move, void *context) {
+    if (move->blank_flag) {  /* offset 32 */
+        if (compare(move, move, context, move) == 0)
+            sprintf(output, g_fmt_str_1 /* A5-5678 */, ...);
+        else
+            sprintf(output, g_fmt_str_2 /* A5-5674 */, ...);
         return output;
     }
-
-    /* Check if word was played */
-    if (move_ptr[0] == 0) {
-        /* No word - "no play" */
-        strcpy(output, g_no_play_string);       /* A5-5668 */
+    if (move->word[0] == 0) {
+        strcpy(output, "no play" /* A5-5668 */);
         return output;
     }
-
-    /* Word played - check direction */
-    char* context_ptr = (char*)context;
-    if (context_ptr[32] != 0) {
-        /* Horizontal play */
-        strcpy(output, g_horizontal_string);    /* A5-5648 */
+    if (((char*)context)[32]) {
+        strcpy(output, g_horiz_str /* A5-5648 */);
     } else {
-        /* Vertical play - format with coordinates */
-        short coords = get_coordinates(move_data);  /* JT[2026] */
-        sprintf(output, g_vertical_format, coords); /* A5-5660 */
+        short coords = get_coordinates(move);  /* JT[2026] */
+        sprintf(output, g_vert_fmt /* A5-5660 */, coords);
     }
-
     return output;
 }
 ```
 
-### Special Move Description
+### Function 0x0094 - Format Score Description (Special Moves)
+**Hex verification:** `4E56 FF5C 48E7 1F00` = LINK A6,#-164; MOVEM.L D3-D7,-(SP)
+
+The largest function in the module (0x510 bytes). This is a massive switch/case over move type codes:
+
+```
+Parameters: 8(A6)=score_type(word), 10(A6)=score_value, 12(A6)=outcome_flag
+Returns: D0 = pointer to description string
+```
+
+**Move type dispatch table (verified from hex):**
+
+| Hex Code | Decimal | Check Instruction | String Offset | Meaning |
+|----------|---------|-------------------|---------------|---------|
+| 0x4E20 | 20000 | `0C47 4E20` at 0x00B4 | A5-5636/-5592/-5554 | Game end (won/ahead/behind) |
+| 0x8001 | -32767 | `0C47 8001` at 0x00E2 | A5-5516 | Pass |
+| 0xFFFF | -1 | `0C47 FFFF` at 0x00F2 | A5-5510 | Forfeit |
+| 0xFFFE | -2 | `0C47 FFFE` at 0x0102 | A5-5486 | Exchange tiles |
+| 0xFFE0 | -32 | `0C47 FFE0` at 0x0112 | A5-5462 | Timeout |
+| 0xFFDF | -33 | `0C47 FFDF` at 0x0122 | A5-5446 | Overtime |
+| 0xFFFD | -3 | `0C47 FFFD` at 0x0132 | A5-5430/-5366 | Challenge (won/lost) |
+| 0x07DA | 2010 | `0C47 07DA` at 0x0152 | A5-5338 | Resign |
+| 0xFFFC | -4 | `0C47 FFFC` at 0x0162 | A5-5316 | End game |
+| 0xFFFB-0xFFE1 | -5 to -31 | Range check at 0x0172 | A5-5280 | Letter exchange |
+
+For letter exchange range: calculates letter index as (-5 - code), looks up letter in tile table (A5-26158 via `206D 99D2`), uses JT[3562] (tolower), and formats with direction indicator (A5-5260 "across" or A5-5256 "down").
+
+For regular scores (none of the special codes), the code enters a complex word-parsing loop starting at 0x0206 that reads DAWG entries from g_dawg_base (A5-11960 via `206D D55A`), extracts letter/row/column data, tracks min/max bounds, and formats with coordinates.
+
 ```c
-/*
- * format_score_description - Format score/move type description
- *
- * Handles all special move types (pass, exchange, challenge, etc.)
- * and regular score display.
- *
- * @param score_type: Move type code or score value
- * @param score_value: Additional score parameter
- * @param outcome_flag: Win/loss indicator for challenges
- * @return: Pointer to description string
- */
 char* format_score_description(short score_type, short score_value, short outcome_flag) {
-    Rect local_rect;            /* Stack frame: -144 bytes */
+    char local_buf[164];
+    if (score_type == 0) bounds_error();  /* JT[418] */
+    setup_rect(local_buf);  /* JT[2394] */
 
-    /* Validate input */
-    if (score_type == 0) {
-        bounds_check_error();           /* JT[418] */
+    if (score_type == 0x4E20) {  /* Game end */
+        if (outcome_flag) return "won";      /* A5-5636 */
+        if (score_value > 0) return "ahead"; /* A5-5592 */
+        return "behind";                      /* A5-5554 */
     }
-
-    /* Setup rectangle */
-    /* uncertain: SetRect call at JT[2394] */
-
-    /* Check for game end special (20000) */
-    if (score_type == MOVE_GAME_END_SPECIAL) {
-        if (outcome_flag != 0) {
-            return g_won_string;        /* A5-5636 */
-        }
-        if (score_value > 0) {
-            return g_ahead_string;      /* A5-5592 */
-        }
-        return g_behind_string;         /* A5-5554 */
+    if (score_type == (short)0x8001) return "pass";      /* A5-5516 */
+    if (score_type == (short)0xFFFF) return "forfeit";   /* A5-5510 */
+    if (score_type == (short)0xFFFE) return "exchange";  /* A5-5486 */
+    if (score_type == (short)0xFFE0) return "time";      /* A5-5462 */
+    if (score_type == (short)0xFFDF) return "overtime";  /* A5-5446 */
+    if (score_type == (short)0xFFFD) {
+        return outcome_flag ? "challenge won" : "challenge lost";
     }
+    if (score_type == 0x07DA) return "resign";  /* A5-5338 */
+    if (score_type == (short)0xFFFC) return "end";  /* A5-5316 */
 
-    /* Check for pass */
-    if (score_type == MOVE_PASS) {
-        return g_pass_string;           /* A5-5516 */
-    }
-
-    /* Check for forfeit */
-    if (score_type == MOVE_FORFEIT) {
-        return g_forfeit_string;        /* A5-5510 */
-    }
-
-    /* Check for exchange */
-    if (score_type == MOVE_EXCHANGE) {
-        return g_exchange_string;       /* A5-5486 */
-    }
-
-    /* Check for timeout */
-    if (score_type == MOVE_TIMEOUT) {
-        return g_time_string;           /* A5-5462 */
-    }
-
-    /* Check for overtime */
-    if (score_type == MOVE_OVERTIME) {
-        return g_overtime_string;       /* A5-5446 */
-    }
-
-    /* Check for challenge */
-    if (score_type == MOVE_CHALLENGE) {
-        if (outcome_flag != 0) {
-            return g_challenge_won_string;  /* A5-5430 */
-        }
-        return g_challenge_lost_string;     /* A5-5366 */
-    }
-
-    /* Check for resign */
-    if (score_type == MOVE_RESIGN) {
-        return g_resign_string;         /* A5-5338 */
-    }
-
-    /* Check for game end */
-    if (score_type == MOVE_GAME_END) {
-        return g_end_string;            /* A5-5316 */
-    }
-
-    /* Check for letter exchange range (0xFFFB to 0xFFE1 = -5 to -31) */
-    if (score_type >= EXCHANGE_RANGE_MIN && score_type <= EXCHANGE_RANGE_MAX) {
+    /* Letter exchange range -5..-31 */
+    if (score_type <= (short)0xFFFB && score_type >= (short)0xFFE1) {
         return format_letter_exchange(score_type, score_value);
     }
 
-    /* Regular score - format position and word */
+    /* Regular score: parse DAWG entries for word/position */
     return format_regular_move(score_type);
 }
-
-/*
- * format_letter_exchange - Format specific letter exchange
- *
- * Formats exchange of specific letter(s) with direction indicator.
- *
- * @param exchange_code: Code indicating which letter (-5 to -31)
- * @param direction: Direction indicator
- * @return: Formatted string
- */
-static char* format_letter_exchange(short exchange_code, short direction) {
-    /* Calculate letter index: -5 - code */
-    short letter_index = -5 - exchange_code;
-
-    /* Get letter from tile table */
-    char letter = g_tile_table[letter_index];   /* A5-26158 */
-    char lower_letter = tolower(letter);        /* JT[3562] */
-
-    /* Check if valid letter for direction display */
-    /* uncertain: exact validation logic */
-
-    /* Choose direction string */
-    char* dir_string;
-    if (direction > 0) {
-        dir_string = g_across_string;           /* A5-5260 */
-    } else {
-        dir_string = g_down_string;             /* A5-5256 */
-    }
-
-    /* Format output */
-    sprintf(g_output_buffer, g_exchange_format, lower_letter, dir_string);
-    /* A5-5280 format, A5-5774 output */
-
-    return g_output_buffer;
-}
 ```
 
-### Regular Move Formatting
-```c
-/*
- * format_regular_move - Format standard word placement
- *
- * Parses DAWG-encoded move and formats with coordinates.
- *
- * @param score_type: Encoded move/score type
- * @return: Formatted string in output buffer
- */
-static char* format_regular_move(short score_type) {
-    short min_row = 0, max_row = 0;
-    short min_col = 0, max_col = 0;
-    short current_entry = score_type;
-    long* dawg_base = g_dawg_base_ptr;          /* A5-11960 */
+### Function 0x05A2 - Format Score with Percentage
+**Hex verification:** `4E56 0000 48E7 0308` = LINK A6,#0; MOVEM.L D6/D7/A4,-(SP)
 
-    /* Check if entry has letter data */
-    long entry_offset = current_entry * 4;
-    char* entry_ptr = (char*)dawg_base + entry_offset;
-
-    if (*entry_ptr == 0) {
-        /* No letter - just format position */
-        short word_data = *(short*)(entry_ptr);
-        short coords = get_coordinates(entry_ptr);  /* JT[2026] */
-        sprintf(g_output_buffer, g_position_format, coords);    /* A5-5228 */
-        return g_output_buffer;
-    }
-
-    /* Parse word and calculate bounds */
-    while (current_entry != 0) {
-        entry_offset = current_entry * 4;
-        entry_ptr = (char*)dawg_base + entry_offset;
-
-        char letter = *entry_ptr;
-        short row = entry_ptr[6];       /* uncertain: exact offset */
-        short col = entry_ptr[7];       /* uncertain: exact offset */
-
-        /* Track min/max bounds */
-        if (col < min_col || min_col == 0) min_col = col;
-        if (col > max_col) max_col = col;
-        if (row < min_row || min_row == 0) min_row = row;
-        if (row > max_row) max_row = row;
-
-        /* Get next entry in word */
-        current_entry = *(short*)(entry_ptr);
-    }
-
-    /* Adjust for board edges */
-    if (/* start at edge check */) {
-        min_row++;      /* uncertain: exact adjustment */
-    }
-
-    /* Format with coordinates and word */
-    /* uncertain: exact format parameters */
-    sprintf(g_output_buffer, g_coord_format,
-            /* row/col, word, score */);
-
-    return g_output_buffer;
-}
+```
+Parameters: 8(A6) = score (word)
+Returns: D0 = formatted string pointer
 ```
 
-### Score Percentage
+Calculates percentage via DIVS/MULS pattern at 0x05B2: `81FC 0064` = DIVS #100,D0; `C1FC 0064` = MULS #100,D0. The remainder is used to determine percentage category.
+
+Threshold checks produce descriptive strings at various A5 offsets. The function handles negative scores and has multiple return paths for different percentage ranges:
+- < 2% and score > 1: returns A5-4936 ("low")
+- 0-9: A5-4930
+- 10-29: A5-4922
+- 30-49: A5-4844
+- 50-74: A5-4842
+- 75+: A5-4806
+
+Final formatting at 0x0694 uses sprintf (JT[2066]) with format strings at A5-4952 or A5-4954.
+
 ```c
-/*
- * format_score_with_percentage - Format score with win percentage
- *
- * @param score: Raw score value
- * @return: Formatted score string with percentage indicator
- */
 char* format_score_with_percentage(short score) {
-    short whole_part;
-    short remainder;
+    short whole = (score / 100) * 100;
+    short remainder = score - whole;
+    if (remainder < 0 || remainder >= 100) bounds_error();
 
-    /* Calculate percentage parts */
-    whole_part = score / 100;
-    whole_part *= 100;
-    remainder = score - whole_part;
+    if (remainder < 2 && score > 1) return g_low_str;  /* A5-4936 */
 
-    /* Validate remainder */
-    if (remainder < 0 || remainder >= 100) {
-        bounds_check_error();           /* JT[418] */
-    }
+    short abs_score = (score < 0) ? -score : score;
+    if (abs_score < 10)  return g_str_a;   /* A5-4930 */
+    if (abs_score < 30)  return g_str_b;   /* A5-4922 */
+    if (abs_score < 50)  return g_str_c;   /* A5-4844 */
 
-    /* Check thresholds for percentage indicator */
-    if (remainder < 2 && score > 1) {
-        return g_low_percent_string;    /* A5-5160: "low" indicator */
-    }
+    /* ... more thresholds ... */
 
-    /* Check for zero or negative */
-    if (score < 0) {
-        /* uncertain: special negative handling */
-    }
-
-    /* Format normal score */
-    /* uncertain: exact format */
-
-    return g_output_buffer;
+    long pct = (long)remainder * 100;
+    char *suffix = (pct == 1) ? g_singular : g_plural;
+    sprintf(g_output, g_fmt, pct, suffix, ...);
+    return g_output;
 }
 ```
 
-## Confidence: HIGH
+### Function 0x06B4 - Format Directional Comparison
+**Hex verification:** `4E56 0000 4A6E 0008` = LINK A6,#0; TST.W 8(A6)
 
-Clear move formatting patterns:
-- Special move code handling
-- Coordinate formatting
-- Direction indicators
-- Score notation
+```
+Parameters: 8(A6) = flag
+Returns: D0 = string pointer
+```
+
+Short function that calls JT[1458] and JT[82] for setup, then uses a switch-like dispatch:
+- If param < 0: calls JT[1458], then dispatches on JT[82] result via 3-way branch
+- Returns one of A5-4804, A5-4806, or A5-4842
+
+### Function 0x0720 - Validate Adjacent Positions
+**Hex verification:** `4E56 0000 48E7 0F18` = LINK A6,#0; MOVEM.L D4-D7/A3/A4,-(SP)
+
+```
+Parameters: 8(A6)=position1(word), 10(A6)=position2(word)
+Returns: D0 = 0 or 1 (validation result)
+```
+
+This is a critical function (0x1DA bytes) that validates adjacent board positions using the DAWG. It performs extensive checking through the DAWG structure at A5-11960 (`206D D55A`), checking letters at positions with `4A30 0806` (TST.B 6(A0,D0.L)) pattern.
+
+The function:
+1. Validates input positions are non-zero and within bounds (`BE6D D55E` = CMP.W A5-10914,D7)
+2. Checks if DAWG entries at given positions have letters
+3. Performs linked-list traversal through DAWG entries checking letter/row/column matches
+4. Returns 1 if positions are validly adjacent, 0 otherwise
+
+Contains nested loops at 0x080C and 0x0890 that walk DAWG entry chains comparing letter bytes at offsets 6 and 7 (row/column within 4-byte DAWG entries).
+
+```c
+short validate_adjacent(short pos1, short pos2) {
+    if (pos1 == 0 || pos2 == 0) bounds_error();
+    if (pos1 < 0 || pos1 >= g_dawg_count) bounds_error();
+
+    long *dawg = g_dawg_base;  /* A5-11960 */
+
+    /* Check if pos1 entry has letter data */
+    if (dawg[pos1] & 0xFF == 0) {
+        /* Follow next-pointer chain */
+        short next = (short)(dawg[pos1] >> 16);
+        next += g_dawg_offset;
+        if (check_letter_match(next, g_tile_table) == 0) {
+            short letter_val = dawg[pos1] & 0xFF;
+            if (letter_val == -5 + g_dawg_base[pos1])
+                return 1;
+        }
+    }
+    /* ... extensive validation logic ... */
+    return result;
+}
+```
+
+### Function 0x08FA - Format Position Description
+**Hex verification:** `4E56 FDDE 2F06` = LINK A6,#-546; MOVE.L D6,-(SP)
+
+Large stack frame (-546 bytes) for position formatting buffers. Calls the percentage formatter at 0x05A2 (via BSR), then uses sprintf (JT[2066]) with multiple format strings at A5-4916 and A5-4870.
+
+### Function 0x099E - Check Word Validity (Wrapper)
+**Hex verification:** `4E56 0000 3F2E 0008` = LINK A6,#0; MOVE.W 8(A6),-(SP)
+
+Tiny wrapper (0x18 bytes): pushes parameter, calls JT[2546], converts result to boolean via `57C0 4400 4880` (Scc/NEG/EXT pattern).
+
+### Function 0x09B6 - Score Comparison with Buffers
+**Hex verification:** `4E56 FF00 48E7 0318` = LINK A6,#-256; MOVEM.L D7/D6/A3/A4,-(SP)
+
+Parameters from 8(A6) and 0x18(A6). Compares two score records by computing difference and checking against thresholds. Uses A5-8549 and A5-8570 as comparison buffer addresses. Calls JT[2066] (sprintf) for formatted output.
+
+### Function 0x0A92 - Cross-Check Position Analysis
+**Hex verification:** `4E56 FDEA 48E7 1F38` = LINK A6,#-534; MOVEM.L D4-D7/A3/A4,-(SP)
+
+Large function performing bidirectional cross-check analysis. Parameters at 8(A6) and multiple additional params.
+
+Inner loops iterate through letter positions (0x10 and 0x20 offsets from base), calling through function pointer at 0x28(A6) via `4E90` (JSR (A0)). Tracks match counts in D5, iterates with D6 as counter, uses D4 for address manipulation.
+
+When no matches (D5==0): calls sprintf with format at A5-8576 and buffers at A5-8570/A5-8549.
+
+Otherwise processes results through two branches based on D3 (flag from 0x30(A6)):
+- If D3 positive: uses A5-8549 as primary, A5+offset buffers
+- If D3 negative: uses A5-8570 as primary
+
+Each branch calls the recursive position evaluator at 0x0BDC.
+
+### Function 0x0BDC - Process Move Candidates (Callback)
+**Hex verification:** `4E56 0000 48E7 1F38` = LINK A6,#0; MOVEM.L D4-D7/A3/A4,-(SP)
+
+Initial value `3E3C 8001` = MOVEQ #-32767 (0x8001) into D7 - this is the "worst score" sentinel.
+
+Iterates through candidate list at 0x000C(param): loop checks entries via function pointer call `4E90`, compares scores. If score beats D7, updates best-so-far. Uses A5-8549 and A5-8570 buffer offsets.
+
+When D7 != 0x8001 (found a valid candidate), calls function at 0x0B90 (PC-relative) to store result.
+
+### Function 0x0C58 - Score Threshold Categorization
+**Hex verification:** `4E56 0000 48E7 0108` = LINK A6,#0; MOVEM.L D7/A4,-(SP)
+
+```
+Parameters: 8(A6)=unused, 10(A6)=score difference (word)
+Returns: D0 = category string pointer, also calls display function
+```
+
+Threshold dispatch at verified hex offsets:
+- `0C47 07D0` (2000): A5-4742
+- `0C47 03E8` (1000): A5-4720
+- `0C47 01F4` (500): A5-4700
+- `0C47 00FA` (250): A5-4678
+
+If score < 250, checks 8(A6) flag: returns A5-4654 or A5-4628.
+
+If result pointer is non-NULL, calls display function at 0x0CBA.
+
+### Function 0x0CBA - Push to Score Display
+**Hex verification:** `4E56 0000 2F2E 0008 2F2D DEB0` = LINK; push 8(A6); push A5-8528; JSR JT[1962]
+
+Simple wrapper: pushes parameter and A5-8528 (g_display_ptr), calls JT[1962].
+
+### Function 0x0CCE - Push to Score Buffer
+**Hex verification:** `4E56 0000 2F2E 0008 4EAD 077A` = LINK; push 8(A6); JSR JT[1914]
+
+Simple wrapper: pushes parameter, calls JT[1914].
+
+### Function 0x0CDE - Handle Record from Move List
+**Hex verification:** `4E56 FF7C 48E7 0038` = LINK A6,#-132; MOVEM.L A3/A4/A5,-(SP)
+
+Accesses move list data via handle chain: A5-10312 (`4A6D D76A` = TST.W A5-10390). Gets handle from 0x00CA(param), calls JT[2826] (GetHandleSize) and JT[74] (divide by 6) to get record count.
+
+Performs CopyBits operations (A029 at 0x0D2E, 0x0D44) and EqualRect checks. Calls sprintf (JT[2066]) with buffers at A5-8549 and A5-8570, format at A5-4586.
+
+Final section performs ScrollRect (A86B at 0x0DC2) and ValidRect (A947 at 0x0DC8) operations for display update.
+
+### Function 0x0DDA - Main Board Position Evaluator
+**Hex verification:** `4E56 E58C 48E7 1F38` = LINK A6,#-6772; MOVEM.L D4-D7/A3/A4,-(SP)
+
+This is the most complex function with a massive 6,772-byte stack frame. The large frame accommodates multiple 1024-byte working buffers for cross-check computation.
+
+Process:
+1. Reads handle chain: 0x00CA offset -> deref -> deref -> copy 34 bytes (8 longs + 1 word) of move data
+2. Reads second entry via `7006 C1ED D76A` = MULS.W A5-10390 pattern (multiply by record index)
+3. Calls JT[1018] for setup, JT[754] for DAWG access
+4. Calls JT[2530] to compute cross-check data into local buffers
+5. Calls JT[426] (memset) with size 0x0400 (1024) to clear working buffers
+6. Enters triple nested evaluation loop (three calls to the same evaluator function at different offsets)
+7. Uses format strings at A5-4568, A5-4544, A5+2546 for three different analysis phases
+8. Final sprintf (JT[2066]) combines results
+9. Calls A873 (GlobalToLocal), A928 (InvalRect) for display
+10. Calls JT[3130] and JT[3098] for cleanup
+
+## Toolbox Traps
+
+| Offset | Trap | Name | Context |
+|--------|------|------|---------|
+| 0x0D2E | A029 | _CopyBits | Copy display bits |
+| 0x0D44 | A029 | _CopyBits | Copy display bits |
+| 0x0D88 | A02A | _CopyMask | Copy with mask |
+| 0x0D9E | A02A | _CopyMask | Copy with mask |
+| 0x0DC2 | A86B | _ScrollRect | Scroll display area |
+| 0x0DC8 | A947 | _ValidRect | Validate display rectangle |
+| 0x1146 | A873 | _GlobalToLocal | Coordinate conversion |
+| 0x1150 | A928 | _InvalRect | Invalidate for redraw |
+
+## Key Global Variables
+
+| Offset | Type | Purpose |
+|--------|------|---------|
+| A5-26158 | long | Tile table pointer |
+| A5-11960 | long | DAWG base pointer |
+| A5-10914 | short | DAWG entry count/limit |
+| A5-10390 | short | Record index for move list |
+| A5-8570 | char[] | Cross-check buffer 1 (A5-8549 label) |
+| A5-8549 | char[] | Cross-check buffer 2 |
+| A5-8528 | long | Display pointer |
+| A5-5774 | char[96] | Output string buffer |
+| A5-5678..-5160 | strings | Move description string table |
+| A5-4952..-4628 | strings | Score/percentage string table |
+
+## JT Call Summary
+
+| JT Offset | Count | Purpose |
+|-----------|-------|---------|
+| 74 | 1 | Integer division |
+| 82 | 1 | Unknown utility |
+| 90 | 2 | Calculation helper |
+| 418 | 4 | Bounds check / assertion |
+| 426 | 2 | memset (clear buffers) |
+| 754 | 1 | DAWG access |
+| 1018 | 1 | Setup function |
+| 1458 | 2 | Display setup |
+| 1914 | 1 | Score buffer push |
+| 1962 | 2 | Score display push |
+| 2026 | 2 | Get coordinates |
+| 2066 | 16 | sprintf (most-called) |
+| 2362 | 1 | Unknown |
+| 2394 | 1 | SetRect wrapper |
+| 2530 | 2 | Cross-check computation |
+| 2546 | 1 | Word validity check |
+| 2826 | 1 | GetHandleSize |
+| 3098 | 1 | Cleanup function |
+| 3130 | 1 | Cleanup function |
+| 3490 | 2 | strcpy |
+| 3506 | 1 | strcmp |
+| 3514 | 2 | String function |
+| 3522 | 1 | strlen |
+| 3562 | 2 | tolower |
+
+## Architecture Notes
+
+- The module's 4 JT entries (at offset 816) make 4 functions externally callable
+- Heavy use of sprintf (JT[2066]) - 16 calls - confirms formatting role
+- A5-5774 is a shared 96-byte output buffer used by most format functions
+- The DAWG base at A5-11960 is accessed via `206D D55A` throughout
+- CopyBits/CopyMask traps indicate this module directly updates the display
+- The -6772 byte stack frame in function 0x0DDA is the largest in the codebase
+
+## String Table Summary
+
+The module contains an extensive string table referenced via A5-relative addressing, spanning approximately A5-5774 to A5-4628. This includes:
+- Move type names: "pass", "forfeit", "exchange", "time", "overtime", "resign", "end"
+- Game state: "won", "ahead", "behind", "challenge won", "challenge lost"
+- Direction: "across", "down"
+- Format strings for coordinates, scores, percentages
+- Formatting templates: "no play", various sprintf format patterns
+
+## Confidence Assessment
+
+- **Function boundaries**: HIGH - all 15 LINK/UNLK pairs verified in hex
+- **Special move codes**: HIGH - all CMPI.W immediate values verified
+- **String table**: HIGH - A5-relative LEA instructions point to consistent string region
+- **DAWG access pattern**: HIGH - `206D D55A` + `E788` (LSL.L #2) is standard DAWG indexing
+- **Toolbox traps**: HIGH - trap codes verified against Inside Macintosh
+- **Cross-check evaluator**: MEDIUM - complex nested loops, exact buffer layout uncertain

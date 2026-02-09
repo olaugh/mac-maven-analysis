@@ -1,1794 +1,1645 @@
-# CODE 35 Detailed Analysis - SANE Floating-Point Score Calculation
+# CODE 35 Detailed Analysis - Full Move Score + Leave Calculation
 
 ## Overview
 
 | Property | Value |
 |----------|-------|
-| Size | 3276 bytes |
-| JT Offset | 2488 |
+| Resource Size | 3280 bytes (4-byte header + 3276 bytes of code) |
+| JT Offset | 0x09B8 (2488) |
 | JT Entries | 4 |
-| Functions | ~8 |
-| Purpose | **Extended precision arithmetic for score evaluation using SANE** |
-
-
-## System Role
-
-**Category**: Simulation
-**Function**: SANE FP Statistics
-
-Heavy FP (22 calls) for simulation statistics - computes averages
-
-**Related CODE resources**:
-- CODE 50 (stores results)
-- CODE 32 (runtime consumer)
-- CODE 24 (analysis)
-
-**Scale Note**: Computes FP averages from simulation, results stored as centipoints in MUL resources.
-## Architecture Role
-
-CODE 35 performs precise score calculations using Apple's SANE (Standard Apple Numerics Environment):
-1. Extended precision (80-bit) floating-point arithmetic
-2. Move evaluation with precise scoring
-3. Board position scoring
-4. Letter value accumulation with multipliers
-
-## SANE Overview
-
-SANE uses the A9EB trap with operation codes:
-- 0x0000-0x000F: Basic arithmetic
-- 0x0016: Convert to extended
-- 0x2008: Compare
-- 0x280E: Move extended
-- 0x2810: Convert extended to integer
-- 0x300E: Multiply
-- 0x3010: Divide
-
-Extended format (10 bytes):
-```
-+0: Sign/Exponent (2 bytes)
-+2: Mantissa (8 bytes)
-```
-
-## Key Functions
-
-### Function 0x0000 - Check Position in Bounds (Lower)
-```asm
-0000: LINK       A6,#-2
-0004: TST.W      8(A6)                 ; Check position
-0008: BLE.S      $0026                 ; <= 0, invalid
-000A: MOVE.W     8(A6),D0
-000E: CMP.W      -10914(A5),D0         ; Compare with board size
-0012: BGE.S      $0026                 ; >= size, invalid
-0014: MOVE.W     8(A6),D0
-0018: EXT.L      D0
-001A: LSL.L      #3,D0                 ; Multiply by 8
-001E: MOVEA.L    -10904(A5),A0         ; Get table pointer
-0022: TST.B      6(A0,D0.L)            ; Check table entry
-0026: MOVEQ      #0,D0                 ; Return 0 (invalid)
-0028: BRA.S      $002C
-002A: MOVEQ      #1,D0                 ; Return 1 (valid)
-002C: UNLK       A6
-002E: RTS
-```
-
-**C equivalent**:
-```c
-int check_lower_bound(int pos) {
-    if (pos <= 0 || pos >= g_board_size) {
-        return 0;
-    }
-    long* table = g_position_table;
-    return table[pos].flags != 0;
-}
-```
-
-### Function 0x0030 - Check Position in Bounds (Upper)
-```asm
-0030: LINK       A6,#-2
-0034: TST.W      8(A6)
-0038: BLT.S      $005A                 ; < 0, invalid
-003A: MOVE.W     8(A6),D0
-003E: CMP.W      -10914(A5),D0         ; Compare with board size
-0042: BGE.S      $0056                 ; >= size, valid (at boundary)
-0044: MOVE.W     8(A6),D0
-0048: EXT.L      D0
-004A: LSL.L      #3,D0
-004E: MOVEA.L    -10904(A5),A0
-0052: TST.B      7(A0,D0.L)            ; Check different flag
-0056: MOVEQ      #0,D0
-0058: BRA.S      $005C
-005A: MOVEQ      #1,D0
-005C: UNLK       A6
-005E: RTS
-```
-
-### Function 0x0060 - Calculate Extended Product
-```asm
-0060: LINK       A6,#-38               ; 38-byte frame for extended values
-0064: MOVEM.L    D5/D6/D7,-(SP)
-0068: MOVEQ      #0,D7                 ; D7 = accumulator
-
-; Copy input to local extended
-006A: LEA        -28(A6),A0            ; Local extended 1
-006E: LEA        12(A6),A1             ; Input parameter
-0072: MOVE.L     (A1)+,(A0)+           ; Copy 10 bytes
-0074: MOVE.L     (A1)+,(A0)+
-0076: MOVE.W     (A1)+,(A0)+
-
-; Convert to extended format
-0078: PEA        -10(A0)               ; Result ptr
-007C: MOVE.W     #$0016,-(A7)          ; SANE op: to extended
-0080: _FP68K                           ; A9EB trap
-
-; Convert second operand
-0088: PEA        -18(A6)               ; Second extended
-008C: LEA        12(A6),A1
-0090: MOVE.W     #$3010,-(A7)          ; SANE op
-0092: _FP68K
-
-; Multiply loop setup
-009C: BRA.S      $00A6
-0098: LSR.L      #1,D6                 ; Shift multiplier
-009A: ADDQ.L     #1,D7
-009C: TST.L      D6
-009E: BNE.S      $0098                 ; Continue while non-zero
-
-00A0: MOVE.L     D7,D0
-00A2: EXT.L      D0
-00A4: DIVU.W     #2,D0                 ; Divide by 2
-
-; Check for overflow
-00AA: TST.L      D5
-00AC: BEQ.S      $00C6                 ; No overflow
-
-; Handle overflow - set to max
-00AE: MOVE.L     D5,-14(A6)
-00B2: CLR.L      -18(A6)
-00B6: PEA        -18(A6)
-00BA: PEA        -28(A6)
-00BE: MOVE.W     #$300E,-(A7)          ; SANE multiply
-00C2: _FP68K
-
-; Check result overflow
-00C6: CLR.L      -22(A6)
-00CA: MOVE.L     #$80000000,-26(A6)    ; Large value
-00D2: MOVE.W     #$3FFF,-28(A6)        ; Max exponent
-
-; Copy result back
-00D8: LEA        -10(A6),A0
-00DC: LEA        -28(A6),A1
-00E0: MOVE.L     (A1)+,(A0)+
-00E2: MOVE.L     (A1)+,(A0)+
-00E4: MOVE.W     (A1)+,(A0)+
-
-; Compare with limit
-00E6: PEA        126(PC)               ; Limit value
-00EA: PEA        12(A6)
-00EE: MOVE.W     #$2008,-(A7)          ; SANE compare
-00F2: _FP68K
-00F4: BGE.S      $00FA                 ; >= limit?
-00F6: JSR        418(A5)               ; bounds_error
-
-; Iteration loop
-00FA: MOVEQ      #0,D7
-00FC: BRA.S      $0134
-
-; Main calculation loop
-00FE: LEA        -38(A6),A0            ; Work buffer
-0102: LEA        12(A6),A1             ; Input
-0106: MOVE.L     (A1)+,(A0)+
-0108: MOVE.L     (A1)+,(A0)+
-010A: MOVE.W     (A1)+,(A0)+
-
-; Divide
-010C: PEA        -10(A6)
-0110: PEA        -10(A0)
-0114: MOVE.W     #$0006,-(A7)          ; SANE divide
-0118: _FP68K
-
-; Multiply accumulator
-011C: PEA        -10(A6)
-0120: PEA        -10(A6)
-0124: CLR.W      -(A7)
-0126: _FP68K
-
-; Compare and conditionally add
-012A: PEA        60(PC)                ; Constant
-012E: PEA        -10(A6)
-0132: MOVE.W     #$2006,-(A7)          ; SANE compare/add
-0136: _FP68K
-
-; Check if done
-0140: MOVE.W     #$2008,-(A7)
-0144: _FP68K
-0146: BLE.S      $014C
-0148: ADDQ.W     #1,D7                 ; Increment count
-014A: CMPI.W     #5,D7
-014E: BLT.S      $00FE                 ; Continue loop
-
-; Copy result to output
-014C: MOVEA.L    8(A6),A0              ; Output ptr
-0150: LEA        -10(A6),A1            ; Result
-0154: MOVE.L     (A1)+,(A0)+
-0156: MOVE.L     (A1)+,(A0)+
-0158: MOVE.W     (A1)+,(A0)+
-015A: MOVEM.L    (SP)+,D5/D6/D7
-015E: UNLK       A6
-0160: RTS
-```
-
-### Function 0x0168 - Score Calculation Main
-```asm
-0168: LINK       A6,#-70               ; Large frame
-016C: MOVEM.L    A2/A4,-(SP)
-0170: MOVEA.L    8(A6),A4              ; A4 = move data
-0174: MOVE.L     A4,D0
-0176: BEQ.W      $030A                 ; Null check
-
-; Check move score threshold
-017A: MOVEQ      #20,D0
-017C: CMP.L      20(A4),D0             ; Compare score
-0180: BGT.W      $02D2                 ; Score too low
-
-; Convert score to extended
-0184: PEA        20(A4)                ; Score address
-0188: PEA        -30(A6)               ; Extended buffer
-018C: MOVE.W     #$280E,-(A7)          ; SANE move
-0190: _FP68K
-
-; Setup calculation buffers
-0198: LEA        -40(A6),A0
-019C: LEA        10(A4),A1             ; Second score component
-01A0: MOVE.L     (A1)+,(A0)+
-01A2: MOVE.L     (A1)+,(A0)+
-01A4: MOVE.W     (A1)+,(A0)+
-
-; Divide operation
-01A0: PEA        -30(A6)
-01A4: PEA        -10(A0)
-01A8: MOVE.W     #$0006,-(A7)          ; SANE divide
-01AC: _FP68K
-
-; Multiple calculation stages...
-01BC: LEA        -40(A6),A0
-01C0: LEA        -10(A6),A1
-01C4: MOVE.L     (A1)+,(A0)+
-01C6: MOVE.L     (A1)+,(A0)+
-01C8: MOVE.W     (A1)+,(A0)+
-
-; Multiply stages
-01CA: PEA        -10(A6)
-01CE: PEA        -10(A0)
-01D2: MOVE.W     #$0004,-(A7)          ; SANE multiply
-01D6: _FP68K
-
-; Subtract operation
-01E4: PEA        -30(A6)
-01E8: PEA        -10(A1)
-01EC: MOVE.W     #$0006,-(A7)          ; SANE subtract
-01F0: _FP68K
-
-; Add components
-0200: PEA        -10(A0)
-0204: PEA        -10(A2)
-0208: MOVE.W     #$0002,-(A7)          ; SANE add
-020C: _FP68K
-
-; ... more SANE operations ...
-
-; Call helper function
-0242: PEA        -40(A6)
-0246: JSR        -488(PC)              ; calc_extended_product
-
-; Copy to work buffer
-024A: LEA        -20(A6),A0
-024E: LEA        -40(A6),A1
-0252: MOVE.L     (A1)+,(A0)+
-0254: MOVE.L     (A1)+,(A0)+
-0256: MOVE.W     (A1)+,(A0)+
-
-; Compare with threshold
-0258: PEA        182(PC)               ; Threshold constant
-025C: PEA        -20(A6)
-0260: MOVE.W     #$2008,-(A7)          ; SANE compare
-0264: _FP68K
-026C: BLE.S      $0288                 ; Below threshold
-
-; Add to accumulator
-026C: PEA        -20(A6)
-0270: PEA        -10(A6)
-0274: MOVE.W     #$0008,-(A7)          ; SANE add
-0278: _FP68K
-027A: BLE.S      $0288                 ; Check result
-
-; Multiply result
-0280: PEA        -10(A6)
-0284: PEA        -10(A6)
-0288: MOVE.W     #$0002,-(A7)          ; SANE multiply
-028C: _FP68K
-
-; Prepare final result
-0290: LEA        -40(A6),A0
-0294: LEA        -20(A6),A1
-0298: MOVE.L     (A1)+,(A0)+
-029A: MOVE.L     (A1)+,(A0)+
-029C: MOVE.W     (A1)+,(A0)+
-
-; Round to integer
-029A: PEA        -10(A0)
-029E: MOVE.W     #$000D,-(A7)          ; SANE round
-02A2: _FP68K
-
-; ... more operations ...
-
-; Convert back to integer
-02BE: CLR.W      -(A7)
-02C0: _FP68K
-
-; Clear result on error
-02C6: CLR.L      -4(A6)
-02CA: CLR.L      -8(A6)
-02CE: CLR.W      -10(A6)
-02D0: BRA.S      $02DC
-
-; Alternative path - clear
-02D0: CLR.L      -4(A6)
-02D4: CLR.L      -8(A6)
-02D8: CLR.W      -10(A6)
-
-; Prepare output
-02DC: LEA        -44(A6),A0
-02E0: LEA        -10(A6),A1
-02E4: MOVE.L     (A1)+,(A0)+
-02E6: MOVE.L     (A1)+,(A0)+
-02E8: MOVE.W     (A1)+,(A0)+
-
-; Convert to integer result
-02EA: PEA        -10(A0)
-02EE: MOVE.W     #$0016,-(A7)          ; To integer
-02F2: _FP68K
-
-; Store final result
-0300: MOVE.L     -30(A6),24(A4)        ; Store in move structure
-
-030A: MOVEM.L    (SP)+,A2/A4
-030C: UNLK       A6
-030E: RTS
-```
-
-### Function 0x0310 - Sum Word Values
-```asm
-0310: LINK       A6,#0
-0314: MOVEM.L    D5/D6/D7,-(SP)
-
-; Validate inputs
-031A: TST.L      12(A6)                ; Check ptr1
-031E: BNE.S      $0324
-0320: JSR        418(A5)               ; bounds_error
-
-0324: TST.L      8(A6)                 ; Check ptr2
-0328: BNE.S      $032E
-032A: JSR        418(A5)               ; bounds_error
-
-; Initialize sum
-032E: MOVEQ      #0,D7                 ; D7 = sum
-0330: BRA.S      $0352
-
-; Sum loop
-0332: MOVEA.L    12(A6),A0
-0336: ADDQ.L     #2,12(A6)             ; Advance ptr
-033A: MOVE.W     (A0),D5               ; Get value
-
-; Check if filtering
-033C: TST.W      16(A6)
-0340: BEQ.S      $034E                 ; No filter
-0342: MOVE.W     D6,-(A7)
-0344: JSR        -790(PC)              ; Filter check
-0348: TST.W      D0
-034A: BEQ.S      $0352                 ; Skip if filtered
-
-034E: MOVEA.W    D5,A0
-0350: ADD.W      A0,D7                 ; Add to sum
-
-0352: MOVEA.L    8(A6),A0
-0356: ADDQ.L     #2,8(A6)              ; Advance ptr
-035A: MOVE.W     (A0),D6               ; Get next value
-035C: BNE.S      $0332                 ; Continue if not zero
-
-035E: MOVE.L     D7,D0                 ; Return sum
-0360: MOVEM.L    (SP)+,D5/D6/D7
-0364: UNLK       A6
-0366: RTS
-```
-
-### Function 0x0368 - Full Score Calculation
-```asm
-0368: LINK       A6,#-330              ; Large frame
-036C: MOVEM.L    D3/D4/D5/D6/D7/A2/A3/A4,-(SP)
-0370: MOVEA.L    12(A6),A4             ; A4 = output scores
-0374: MOVEA.L    16(A6),A3             ; A3 = output values
-0378: CLR.L      -316(A6)              ; Clear accumulator
-
-; Setup search
-037C: MOVE.L     -15498(A5),-(A7)      ; g_current_rack
-0380: JSR        2410(A5)              ; JT[2410] - setup
-
-; Get letter info
-0384: PEA        -140(A6)              ; Local buffer
-0388: JSR        2394(A5)              ; JT[2394] - get_letter_info
-038C: MOVE.B     D0,-317(A6)           ; Store letter count
-
-; Check game state flag
-0390: TST.B      -17010(A5)            ; g_game_flag
-0394: ADDQ.L     #4,A7
-0396: BNE.S      $03D4                 ; Active game
-
-; No active game - calculate from move
-0398: MOVEA.L    8(A6),A0              ; Move ptr
-039C: TST.B      32(A0)                ; Check word present
-03A0: BEQ.S      $03AE
-03A2: MOVE.L     8(A6),-(A7)
-03A6: JSR        3522(A5)              ; strlen
-03AA: ADDQ.L     #4,A7
-03AC: BRA.S      $03B0
-03AE: MOVEQ      #0,D0
-
-; Calculate score multiplier
-03B0: PEA        28                    ; Multiplier
-03B4: MOVE.L     D0,-(A7)              ; Word length
-03B6: JSR        66(A5)                ; JT[66] - multiply
-
-; Lookup base score
-03BA: MOVEA.L    -10904(A5),A0         ; Score table
-03BE: MOVE.L     24(A0,D0.L),D3        ; Get base score
-
-; Add to accumulator
-03C2: ADD.L      D3,-316(A6)
-
-; Handle output pointers
-03CC: MOVE.L     A4,D0
-03CE: BEQ.S      $03D4
-03D0: MOVE.W     #-32,(A4)+            ; Store marker
-
-; Get word info
-03D4: MOVEA.L    8(A6),A0
-03D8: MOVE.B     32(A0),D5             ; Word present?
-03DC: TST.B      D5
-03DE: BEQ.W      $06A4                 ; No word, skip
-
-; Setup board positions
-03E2: MOVEQ      #0,D3                 ; Clear accumulator
-03E4: MOVE.B     D5,D4
-03E6: EXT.W      D4                    ; D4 = direction
-
-03E8: MOVEA.L    8(A6),A0
-03EC: MOVE.B     33(A0),D5             ; D5 = position
-03F0: EXT.W      D5
-
-; Calculate board pointers
-03F2: MOVEA.L    A0,A2                 ; A2 = move
-03F4: MOVEQ      #17,D0
-03F6: MULS.W     D4,D0
-03F8: LEA        -17154(A5),A1         ; g_state1
-03FC: ADDA.L     D0,A1
-03FE: MOVE.L     D0,-308(A6)           ; Store offset
-
-; Setup multiple board views
-0402: MOVEQ      #-1,D1
-0404: ADDA.W     D4,A1
-0406: ; ... more offset calculations for adjacent rows ...
-
-; Main scoring loop
-0492: MOVE.B     (A2),D7               ; Get letter
-0494: TST.B      D7
-0496: BEQ.W      $068E                 ; End of word
-
-; Validate letter
-049A: MOVEQ      #0,D0
-049C: MOVE.B     D7,D0
-049E: MOVEA.L    A5,A0
-04A0: TST.B      -1064(A0,D0.L)        ; Character class check
-04A4: BMI.S      $04AC
-04A6: JSR        418(A5)               ; bounds_error
-
-; Bounds check position
-04AC: CMPI.W     #1,D4
-04B0: BLT.S      $04C4
-04B2: CMPI.W     #30,D4                ; 30 = max position
-04B6: BGT.S      $04C4
-04B8: CMPI.W     #1,D5
-04BC: BLT.S      $04C4
-04BE: CMPI.W     #15,D5
-04C2: BLE.S      $04C8
-04C4: JSR        418(A5)               ; bounds_error
-
-; Check if cell occupied
-04C8: MOVEA.L    -308(A6),A0           ; Board pointer
-04CC: TST.B      0(A0,D5.W)            ; Cell at position
-04D0: BEQ.S      $04E8                 ; Empty - place tile
-
-; Cell occupied - verify match
-04D2: MOVEA.L    -308(A6),A0
-04D6: MOVE.B     (A2),D0               ; Expected letter
-04D8: CMP.B      0(A0,D5.W),D0         ; Match?
-04DC: BEQ.W      $0686                 ; Good
-04E0: JSR        418(A5)               ; Mismatch error
-04E4: BRA.W      $0686
-
-; Calculate cross-word score
-04E8: CMPI.W     #1,D4
-04EC: BEQ.W      $05B2                 ; First row, no cross
-04F0: CMPI.W     #16,D4
-04F4: BEQ.W      $05B2                 ; Last row, no cross
-
-; Check adjacent cells for cross-words
-04F8: MOVEA.L    -304(A6),A0           ; Row above
-04FC: TST.B      0(A0,D5.W)
-0500: BNE.W      $05B2                 ; Has letter, forms cross
-
-0504: MOVEA.L    -300(A6),A0           ; Two above
-0508: MOVE.B     0(A0,D5.W),D0
-050C: EXT.W      D0
-050E: MOVEA.L    -296(A6),A1           ; Row below
-0512: MOVE.B     0(A1,D5.W),D1
-0516: EXT.W      D1
-0518: MULS.W     D1,D0                 ; Product = 0 if either empty
-051A: MOVE.W     D0,-320(A6)
-
-; Check left/right for horizontal
-0528: CMPI.W     #2,D4
-052A: BEQ.S      $053A
-052C: CMPI.W     #17,D4
-0530: BEQ.S      $053A
-0532: MOVEA.L    -276(A6),A0           ; Left adjacent
-0536: TST.B      0(A0,D5.W)
-0538: BNE.S      $05B0
-
-053A: CMPI.W     #15,D4
-053E: BEQ.S      $0550
-0540: CMPI.W     #30,D4
-0544: BEQ.S      $0550
-0546: MOVEA.L    -280(A6),A0           ; Right adjacent
-054A: TST.B      0(A0,D5.W)
-054E: BNE.S      $05B0
-
-; Check bonus squares
-0550: CLR.W      -322(A6)
-0554: MOVE.B     (A2),D7               ; Get letter
-0556: MOVE.B     (A2),D6
-0558: EXT.W      D6
-055A: LEA        -2422(A5),A0          ; Bonus table
-055E: MOVE.W     -322(A6),D0
-0562: EXT.L      D0
-0564: LSL.L      #2,D0                 ; *4 for table index
-0568: ADDA.L     D0,A0
-056A: MOVE.L     A0,-326(A6)
-056C: BRA.S      $05A8
-
-; Scan bonus table
-056E: MOVEA.L    -326(A6),A0
-0572: TST.B      1(A0)                 ; Check bonus type
-0576: BNE.S      $05A0
-
-0578: MOVEA.L    -326(A6),A0
-057C: MOVEQ      #0,D0
-057E: MOVE.B     2(A0),D0              ; Get row
-0582: CMP.W      -320(A6),D0           ; Match position?
-0586: BNE.S      $05A0
-
-0588: MOVEA.L    -326(A6),A0
-058C: MOVEQ      #0,D0
-058E: MOVE.B     (A0),D0               ; Get letter
-0590: CMP.W      D6,D0
-0592: BNE.S      $05A0                 ; Letter mismatch
-
-; Apply bonus
-0594: MOVEA.L    -326(A6),A0
-0598: MOVEQ      #0,D0
-059A: MOVE.B     3(A0),D0              ; Get bonus value
-059E: SUB.W      D0,D3                 ; Subtract from score
-
-05A0: ADDQ.W     #1,-322(A6)           ; Next bonus entry
-05A4: ADDQ.L     #4,-326(A6)
-05A8: CMPI.W     #20,-322(A6)          ; Max 20 bonuses
-05AE: BCS.S      $056E
-
-; Check horizontal cross-word
-05B0: CMPI.W     #15,D4
-05B4: BEQ.W      $0686
-05B8: CMPI.W     #30,D4
-05BC: BEQ.W      $0686
-
-; Calculate letter value
-05C0: MOVEQ      #1,D0
-05C2: ADDA.W     D4,A0
-05C4: LEA        -17154(A5),A0
-05CA: ADDA.L     D0,A0
-05CC: MOVEA.W    D5,A0
-05D0: TST.B      0(A0,D0.L)            ; Check adjacent
-05D4: BNE.W      $0686                 ; Has neighbor
-
-; Get letter values
-05D8: MOVEA.L    -284(A6),A0
-05DC: MOVE.B     0(A0,D5.W),D0
-05E0: EXT.W      D0
-05E2: MOVEA.L    -288(A6),A1
-05E6: MOVE.B     0(A1,D5.W),D1
-05EA: EXT.W      D1
-05EC: MULS.W     D1,D0
-05EE: MOVE.W     D0,-320(A6)
-
-; ... more cross-word checks ...
-
-; Add letter value to score
-0672: ADDQ.B     #1,-322(A6)
-0674: ADDQ.L     #4,-326(A6)
-067C: CMPI.W     #20,-322(A6)
-0682: BCS.S      $063E
-
-0684: ADDQ.L     #1,A2                 ; Next letter
-0686: ADDQ.W     #1,D5                 ; Next position
-0688: BRA.W      $0494                 ; Continue loop
-
-; End of word
-068C: TST.L      D3
-068E: BEQ.S      $06A2
-
-; Store score
-0690: ADD.L      D3,-316(A6)
-0696: MOVE.L     A4,D0
-069C: BEQ.S      $06A2
-069E: MOVE.W     #20000,(A4)+          ; Store marker
-
-; Continue with rack
-06A2: CLR.W      -(A7)
-06A4: MOVE.L     -15498(A5),-(A7)      ; g_current_rack
-06A8: MOVE.L     8(A6),-(A7)           ; Move
-06AC: JSR        2370(A5)              ; JT[2370] - process_rack
-
-; Sum up letter values
-06B0: MOVE.B     -23(A6),D0
-06B4: EXT.W      D0
-06B6: MOVE.B     -29(A6),D1
-06BA: EXT.W      D1
-06BC: MOVE.B     -35(A6),D2
-06C0: EXT.W      D2
-06C2: MOVE.W     D0,-330(A6)
-
-; Calculate totals
-06D2: ADD.W      D0,D5
-06D4: ADD.W      D2,D5
-06D6: ADD.W      D1,D5
-06D8: ADD.W      -330(A6),D5
-
-; Get letter count
-06DC: MOVE.B     -317(A6),D4
-06E0: EXT.W      D4
-06E2: MOVE.W     D4,D7
-06E4: SUB.W      D5,D7
-
-; Calculate bonus
-06E6: MOVEQ      #10,D0
-06E8: MULS.W     D5,D0
-06EA: MOVE.W     D4,D1
-06EC: LSL.W      #1,D1                 ; *2
-06F0: CMP.W      D0,D1
-06F4: BLE.S      $0700
-
-; Apply letter bonus
-06F6: MOVE.B     -77(A6),D3
-06FA: EXT.W      D3
-06FC: ADD.W      D3,D5
-06FE: SUB.W      D3,D7
-
-; Process blank tiles
-0700: CLR.W      -322(A6)              ; Counter
-0704: CLR.W      -320(A6)              ; Blank count
-0708: MOVEQ      #0,D4
-070A: MOVEA.L    -15498(A5),A2         ; Rack
-070E: BRA.S      $0730
-
-; Count rack letters
-0710: MOVE.W     D6,-(A7)
-0712: JSR        2002(A5)              ; JT[2002] - is_playable
-0716: TST.W      D0
-0718: BEQ.S      $0722
-071A: ADDQ.W     #1,-320(A6)           ; Playable count
-0720: BRA.S      $0730
-
-0722: CMPI.W     #63,D6                ; '?' blank
-0726: BEQ.S      $072C
-0728: ADDQ.W     #1,D4                 ; Regular letter
-072A: BRA.S      $0730
-072C: ADDQ.W     #1,-322(A6)           ; Blank count
-
-0730: MOVE.B     (A2)+,D6
-0732: EXT.W      D6
-0734: TST.W      D6
-0736: BNE.S      $0710                 ; Continue
-
-; Calculate final rack adjustment
-0738: MOVEQ      #7,D6
-073A: SUB.W      -320(A6),D6
-073E: SUB.W      D4,D6
-0740: SUB.W      -322(A6),D6
-
-0744: MOVE.B     -317(A6),D0
-0748: EXT.W      D0
-074A: SUBQ.W     #1,D0
-074C: MOVE.W     D0,-328(A6)
-0750: CMP.W      D0,D6
-0752: BLE.S      $0766
-
-; Apply adjustment
-0754: CMPI.B     #7,-317(A6)
-075A: BGT.S      $0760
-075C: MOVEQ      #0,D0
-075E: BRA.S      $0764
-0760: MOVE.W     -328(A6),D0
-0764: MOVE.W     D0,D6
-
-; Store results
-0766: MOVE.W     D6,-(A7)
-0768: MOVE.W     D7,-(A7)
-076A: MOVE.W     D5,-(A7)
-076C: MOVE.W     -322(A6),-(A7)
-0770: MOVE.W     D4,-(A7)
-0772: MOVE.W     -320(A6),-(A7)
-0776: JSR        2506(A5)              ; JT[2506] - final_calc
-077A: MOVE.L     D0,D3                 ; D3 = result
-
-; Add to total
-077C: ADD.L      D3,-316(A6)
-0782: ADDQ.L     #12,A7
-
-; Store in output
-0786: MOVE.L     A4,D0
-078C: BEQ.S      $0792
-078E: MOVE.W     #-1,(A4)+             ; Terminator
-
-; Check word length bonus
-0792: MOVEA.L    8(A6),A0
-0796: TST.B      32(A0)                ; Has word?
-079A: BEQ.S      $07A0
-079C: SUBQ.B     #1,-317(A6)           ; Adjust count
-
-07A0: CMPI.B     #7,-317(A6)           ; 7+ letters?
-07A6: BLE.S      $07D8
-07A8: CMPI.B     #17,-317(A6)          ; Max 17?
-07AE: BGE.S      $07D8
-
-; Apply bingo bonus
-07B0: MOVE.B     -317(A6),D0
-07B4: EXT.W      D0
-07B6: MOVEA.L    A5,A0
-07B8: ADDA.W     D0,A0
-07BA: ADDA.W     D0,A0
-07BC: MOVE.W     -24866(A0),D3         ; Bingo bonus table
-07C0: SUB.W      -24850(A5),D3         ; Adjust
-07C4: EXT.L      D3
-07C6: ADD.L      D3,-316(A6)
-
-; Store bonus marker
-07CC: MOVE.L     A4,D0
-07D2: BEQ.S      $07D8
-07D4: MOVE.W     #-33,(A4)+            ; Bingo marker
-
-; Process individual letters
-07D8: MOVEA.L    8(A6),A0
-07DC: TST.B      32(A0)
-07E0: BEQ.S      $07E6
-07E2: ADDQ.B     #1,-317(A6)           ; Restore count
-
-07E6: MOVEQ      #0,D3
-07E8: CLR.B      -271(A6)
-07EC: MOVEA.L    -26158(A5),A2         ; g_rack
-
-; Letter loop
-07F0: BRA.S      $083E
-07F2: MOVE.B     D6,-272(A6)
-07F6: TST.W      D6
-07F8: BLT.S      $080A                 ; Invalid
-07FA: CMPI.W     #128,D6               ; Max letter
-07FE: BCC.S      $080A                 ; Invalid
-0800: MOVEA.L    A6,A0
-0802: ADDA.W     D6,A0
-0804: TST.B      -140(A0)              ; Check buffer
-0808: BGE.S      $080E
-080A: JSR        418(A5)               ; bounds_error
-
-; Get letter value
-080E: LEA        -140(A6),A0
-0812: ADDA.W     D6,A0
-0814: MOVE.L     A0,-312(A6)
-0818: TST.B      (A0)
-081A: BEQ.S      $083E                 ; Zero value
-
-; Skip 'q' special handling
-081C: CMPI.W     #113,D6               ; 'q'
-0820: BEQ.S      $083E
-
-; Calculate and add score
-0822: PEA        -144(A6)
-0826: PEA        -272(A6)
-082A: JSR        2498(A5)              ; JT[2498] - letter_score
-082E: MOVEA.L    -312(A6),A0
-0832: MOVE.B     (A0),D1
-0834: EXT.W      D1
-0836: MULS.W     D0,D1
-0838: MOVEA.W    D1,A1
-083A: ADD.L      A1,D3
-083C: ADDQ.L     #8,A7
-
-083E: MOVE.B     (A2)+,D6
-0840: EXT.W      D6
-0842: TST.W      D6
-0844: BNE.S      $07F2                 ; Continue
-
-; Check for special letter patterns
-0846: TST.B      -27(A6)
-084A: BEQ.S      $086E
-
-084C: PEA        -144(A6)
-0850: PEA        -2272(A5)             ; Pattern string
-0854: JSR        2498(A5)              ; JT[2498]
-0858: MOVE.B     -23(A6),D1
-085C: EXT.W      D1
-085E: MOVEA.L    A5,A0
-0860: ADDA.W     D1,A0
-0862: ADDA.W     D1,A0
-0864: MOVEA.W    -2302(A0),A0
-0868: ADDA.W     D0,A0
-086A: ADD.L      A0,D3
-086C: ADDQ.L     #8,A7
-
-; Calculate per-letter average
-086E: MOVE.L     -15498(A5),-(A7)
-0872: JSR        3522(A5)              ; strlen(rack)
-0876: MOVEQ      #7,D6
-0878: SUB.W      D0,D6                 ; Tiles needed
-087A: MOVEA.W    D6,A0
-087C: MOVE.L     A0,(A7)
-087E: MOVE.L     D3,-(A7)
-0880: JSR        66(A5)                ; JT[66] - multiply
-0884: MOVE.L     D0,D3
-
-; Get letter count
-0886: MOVE.B     -317(A6),D5
-088A: EXT.W      D5
-088C: EXT.L      D5
-088E: MOVE.L     D5,D4
-0894: EXT.W      D4
-
-; Divide by count
-089A: MOVEA.W    D5,A0
-089C: ADD.L      A0,D3
-08A0: MOVE.B     -317(A6),D7
-08A4: EXT.W      D7
-08A6: EXT.L      D7
-08A8: MOVE.L     D7,-(A7)
-08AA: MOVE.L     D3,-(A7)
-08AC: JSR        90(A5)                ; JT[90] - divide
-08B0: MOVE.L     D0,D3
-
-; Store result
-08AE: ADD.L      D3,-316(A6)
-08B4: MOVE.L     A4,D0
-08BA: BEQ.S      $08C0
-08BC: MOVE.W     #-2,(A4)+             ; Marker
-
-; Check for 'u' after 'q'
-08C0: MOVE.W     #117,-(A7)            ; 'u'
-08C4: MOVE.L     -15498(A5),-(A7)
-08C8: JSR        3514(A5)              ; JT[3514] - strchr
-08CC: TST.L      D0
-08CE: ADDQ.L     #6,A7
-08D0: BEQ.S      $0924                 ; No 'u'
-
-; Has 'u' - check for 'q'
-08D2: TST.B      -27(A6)
-08D6: BEQ.S      $0924
-
-; Calculate qu bonus
-08D8: PEA        -144(A6)
-08DC: PEA        -2270(A5)             ; "qu" string
-08E0: JSR        2498(A5)
-08E4: MOVE.B     -23(A6),D1
-08E8: EXT.W      D1
-08EA: MOVEA.L    A5,A0
-08EC: ADDA.W     D1,A0
-08EE: ADDA.W     D1,A0
-08F0: SUB.W      -2302(A0),D0
-08F4: EXT.L      D0
-08F6: MOVE.L     D0,D3
-
-; Multiply and divide
-08F8: MOVEA.W    D6,A0
-08FA: MOVE.L     A0,(A7)
-08FC: MOVE.L     D3,-(A7)
-08FE: JSR        66(A5)                ; multiply
-0902: MOVE.L     D0,D3
-0904: MOVEA.W    D5,A0
-0906: ADD.L      A0,D3
-0908: MOVE.L     D7,(A7)
-090A: MOVE.L     D3,-(A7)
-090C: JSR        90(A5)                ; divide
-0910: MOVE.L     D0,D3
-0912: ADD.L      D3,-316(A6)
-
-; Store marker
-0918: MOVE.L     A4,D0
-091E: BEQ.S      $0924
-0920: MOVE.W     #-3,(A4)+             ; qu marker
-
-; Check for 'q' alone
-0924: MOVE.W     #113,-(A7)            ; 'q'
-0928: MOVE.L     -15498(A5),-(A7)
-092C: JSR        3514(A5)              ; strchr
-0930: TST.L      D0
-0932: ADDQ.L     #6,A7
-0934: BEQ.S      $0974                 ; No 'q'
-
-; Check if 'u' also present
-0936: MOVE.W     #117,-(A7)            ; 'u'
-093A: MOVE.L     -15498(A5),-(A7)
-093E: JSR        3514(A5)
-0942: TST.L      D0
-0944: ADDQ.L     #6,A7
-0946: BNE.S      $0974                 ; Has 'u', ok
-
-; Q without U - penalty
-0948: MOVEQ      #10,D0
-094A: MULS.W     D6,D0
-094C: MOVE.B     -23(A6),D1
-0950: EXT.W      D1
-0952: LEA        -2342(A5),A0          ; Q penalty table
-0956: ADDA.L     D0,A0
-0958: MOVEA.W    D1,A0
-095A: MOVE.W     0(A0,D0.L),D3
-095E: EXT.L      D3
-
-; Store result
-0962: ADD.L      D3,-316(A6)
-0968: MOVE.L     A4,D0
-096E: BEQ.S      $0974
-0970: MOVE.W     #-4,(A4)+             ; Q penalty marker
-
-; Process remaining rack letters
-0974: MOVEA.L    -15498(A5),A2
-0978: MOVE.B     (A2),D7
-097A: TST.B      D7
-097C: BEQ.S      $09F4                 ; Empty
-
-; Check each letter
-097E: CMP.B      1(A2),D7              ; Duplicate?
-0982: BEQ.S      $09F0                 ; Skip duplicates
-
-; Calculate individual letter score
-0984: MOVE.B     (A2),D0
-0986: EXT.W      D0
-0988: MOVEA.L    A6,A0
-098A: ADDA.W     D0,A0
-098C: MOVE.B     -140(A0),D0           ; Get count
-0990: EXT.W      D0
-0992: MOVE.W     D0,-(A7)
-0994: MOVE.W     D4,-(A7)
-
-0996: MOVE.B     (A2),D0
-0998: EXT.W      D0
-099A: MOVE.W     D0,-(A7)
-099C: JSR        2514(A5)              ; JT[2514] - calc_letter_value
-09A0: MOVE.L     D0,D3
-
-; Get letter base value
-09A2: MOVE.B     (A2),D0
-09A4: EXT.W      D0
-09A6: MOVEA.L    A5,A0
-09A8: ADDA.W     D0,A0
-09AA: MOVE.B     -27374(A0),D0         ; Prime value
-09AE: EXT.W      D0
-09B0: SUBQ.W     #1,D0
-09B2: MOVE.L     D0,D7
-
-; Calculate with letter frequency
-09B4: MOVE.W     #96,-(A7)             ; 'a'-1
-09B8: MOVE.B     (A2),D0
-09BA: EXT.W      D0
-09BC: MOVE.W     D0,-(A7)
-09BE: JSR        2514(A5)              ; calc_letter_value
-09C2: SUB.W      D0,D3
-
-; Store result
-09C4: ADD.L      D3,-316(A6)
-09CA: ADDQ.L     #10,A7
-
-; Store marker
-09CE: MOVE.L     A4,D0
-09D4: BEQ.S      $09F0
-
-; Calculate index for letter
-09D6: MOVE.B     (A2),D0
-09D8: EXT.W      D0
-09DA: MOVE.W     D0,-(A7)
-09DC: MOVE.L     -26158(A5),-(A7)      ; g_rack
-09E0: JSR        3514(A5)              ; strchr
-09E4: SUB.L      -26158(A5),D0         ; Offset
-09E8: MOVEQ      #-5,D1
-09EA: SUB.W      D0,D1                 ; Marker value
-09EC: MOVE.W     D1,(A4)+
-09EE: ADDQ.L     #6,A7
-
-09F0: ADDQ.L     #1,A2                 ; Next letter
-09F2: BRA.S      $0978
-
-; Finalize
-09F4: CLR.W      -(A7)
-09F6: MOVE.L     A3,-(A7)              ; Output values
-09F8: MOVE.L     A4,-(A7)              ; Output scores
-09FA: JSR        72(PC)                ; Helper function
-
-; Accumulate final total
-09FE: ADD.L      D0,-316(A6)
-0A04: MOVEA.L    -15498(A5),A2
-0A08: ADDQ.L     #10,A7
-
-; Validate remaining letters
-0A0C: MOVE.B     (A2),D7
-0A0E: TST.B      D7
-0A10: BEQ.S      $0A26                 ; Done
-
-0A12: MOVE.B     D7,D0
-0A14: EXT.W      D0
-0A16: MOVEA.L    A5,A0
-0A18: TST.B      -23218(A0,D0.L)       ; Check count
-0A1C: BGT.S      $0A22
-0A1E: JSR        418(A5)               ; bounds_error
-
-0A22: ADDQ.L     #1,A2
-0A24: BRA.S      $0A0C
-
-; Cleanup
-0A26: MOVE.L     -15498(A5),-(A7)
-0A2A: JSR        2378(A5)              ; JT[2378] - cleanup
-0A2E: MOVE.L     -15498(A5),(A7)
-0A32: JSR        2410(A5)              ; JT[2410] - reset
-
-; Return total
-0A36: MOVE.L     -316(A6),D0
-0A3A: MOVEM.L    -362(A6),D3/D4/D5/D6/D7/A2/A3/A4
-0A40: UNLK       A6
-0A42: RTS
-```
-
-### Function 0x0A44 - Calculate Per-Tile Scores
-```asm
-0A44: LINK       A6,#-12
-0A48: MOVEM.L    D3/D4/D5/D6/D7/A2/A3/A4,-(SP)
-0A4C: MOVEA.L    8(A6),A4              ; Output scores
-0A50: MOVEA.L    12(A6),A3             ; Output values
-0A54: CLR.L      -10(A6)               ; Clear accumulator
-0A58: MOVEQ      #1,D7                 ; Start index
-0A5A: BRA.W      $0CAE
-
-; Position loop
-0A5E: MOVE.L     D7,D0
-0A60: EXT.L      D0
-0A62: LSL.L      #3,D0                 ; *8
-0A66: MOVEA.L    -10904(A5),A0         ; Position table
-0A6A: TST.B      4(A0,D0.L)            ; Check valid
-0A6E: BEQ.W      $0CAC                 ; Invalid, skip
-
-; Get position data
-0A72: MOVE.L     D7,D0
-0A74: EXT.L      D0
-0A76: LSL.L      #3,D0
-0A7A: MOVEA.L    -10904(A5),A0
-0A7E: MOVE.B     6(A0,D0.L),D4         ; Row
-0A82: EXT.W      D4
-
-; ... extensive position-based calculations ...
-
-; Check board position
-0B44: MOVEQ      #17,D0
-0B46: MULS.W     D4,D0
-0B48: LEA        -17154(A5),A0         ; g_state1
-0B4C: ADDA.L     D0,A0
-0B4E: MOVEA.W    D5,A0
-0B50: MOVE.B     0(A0,D0.L),D0         ; Get letter
-0B54: EXT.W      D0
-0B56: MOVE.W     D0,-12(A6)
-0B5A: TST.W      D0
-0B5C: BEQ.W      $0CAC                 ; Empty cell
-
-; Calculate value
-0B60: MOVE.W     -12(A6),-(A7)
-0B64: MOVE.L     D7,D0
-0B66: EXT.L      D0
-0B68: LSL.L      #3,D0
-0B6C: MOVEA.L    -10908(A5),A0
-0B70: MOVE.L     8(A0,D0.L),-(A7)
-0B74: JSR        3514(A5)              ; strchr
-
-; Continue calculations...
-
-; Get score from g_state2
-0BF0: MOVEQ      #34,D0
-0BF2: MULS.W     D4,D0
-0BF4: LEA        -16610(A5),A0         ; g_state2
-0BF8: ADDA.L     D0,A0
-0BFA: MOVEA.W    D5,A0
-0BFC: TST.W      0(A0,D0.L)            ; Check score
-0C00: BNE.S      $0C34                 ; Has score
-
-; Calculate from letter value
-0C08: MOVEQ      #17,D0
-0C0A: MULS.W     D4,D0
-0C0C: LEA        -17154(A5),A0
-0C10: ADDA.L     D0,A0
-0C12: MOVEA.W    D5,A0
-0C14: MOVE.B     0(A0,D0.L),D0         ; Get letter
-0C18: EXT.W      D0
-0C1A: MOVEA.L    A5,A0
-0C1C: ADDA.W     D0,A0
-0C1E: ADDA.W     D0,A0
-0C20: MOVEA.L    D3,A1
-0C22: MOVE.W     -27630(A0),D3         ; Letter value
-0C26: ADD.W      A1,D3                 ; Accumulate
-0C28: ADD.W      D3,A1
-0C2A: MOVE.L     A1,D3
-
-; Check for special case (Q)
-0C5C: MOVEQ      #17,D0
-0C5E: MULS.W     D4,D0
-0C60: LEA        -17154(A5),A0
-0C64: ADDA.L     D0,A0
-0C66: MOVEA.W    D5,A0
-0C68: CMPI.B     #113,0(A0,D0.L)       ; 'q'?
-0C6E: BNE.S      $0C9A
-
-; Q handling - check word length
-0C70: MOVE.L     D7,D0
-0C72: EXT.L      D0
-0C74: LSL.L      #3,D0
-0C78: MOVEA.L    -10908(A5),A0
-0C7C: MOVE.L     8(A0,D0.L),-(A7)
-0C80: JSR        3522(A5)              ; strlen
-0C84: SUBQ.L     #1,D0
-0C88: BLS.S      $0C9A                 ; Single letter
-
-; Divide by 2 for Q value
-0C8E: PEA        2
-0C92: MOVE.L     D3,-(A7)
-0C94: JSR        90(A5)                ; divide
-0C98: MOVE.L     D0,D3
-
-; Store results
-0C9A: MOVE.L     A4,D0
-0C9C: BEQ.S      $0CA0
-0C9E: MOVE.W     D7,(A4)+              ; Store index
-0CA0: MOVE.L     A3,D0
-0CA2: BEQ.S      $0CA6
-0CA4: MOVE.W     D3,(A3)+              ; Store value
-0CA6: ADD.L      D3,-10(A6)            ; Accumulate
-
-0CAC: ADDQ.W     #1,D7                 ; Next position
-0CAE: CMP.W      -10914(A5),D7         ; Check bounds
-0CB0: BLT.W      $0A5E
-
-; Terminate outputs
-0CB4: MOVE.L     A4,D0
-0CB6: BEQ.S      $0CBA
-0CB8: CLR.W      (A4)                  ; Null terminate
-0CBA: MOVE.L     A3,D0
-0CBC: BEQ.S      $0CC0
-0CBE: CLR.W      (A3)                  ; Null terminate
-
-; Return total
-0CC0: MOVE.L     -10(A6),D0
-0CC4: MOVEM.L    (SP)+,D3/D4/D5/D6/D7/A2/A3/A4
-0CC8: UNLK       A6
-0CCA: RTS
-```
-
-## Global Variables
-
-| Offset | Purpose |
-|--------|---------|
-| A5-1064 | Character classification table |
-| A5-2270 | "qu" string |
-| A5-2272 | Pattern string |
-| A5-2302 | Bonus lookup table |
-| A5-2342 | Q penalty table |
-| A5-2422 | Bonus square table |
-| A5-10904 | Position info table (ptr) |
-| A5-10908 | Position strings table (ptr) |
-| A5-10914 | Board size |
-| A5-15498 | g_current_rack |
-| A5-16610 | g_state2 (score grid) |
-| A5-17010 | g_game_flag |
-| A5-17154 | g_state1 (letter grid) |
-| A5-23218 | Letter count array |
-| A5-24850 | Bingo adjustment value |
-| A5-24866 | Bingo bonus table |
-| A5-26158 | g_rack |
-| A5-27374 | Letter prime values |
-| A5-27630 | Letter point values |
-
-## Jump Table Calls
-
-| JT Offset | Purpose |
-|-----------|---------|
-| 66 | 32-bit multiply |
-| 90 | 32-bit divide |
-| 418 | bounds_error |
-| 2002 | Check if letter playable |
-| 2370 | Process rack |
-| 2378 | Cleanup |
-| 2394 | Get letter info |
-| 2410 | Setup |
-| 2498 | Calculate letter score |
-| 2506 | Final score calculation |
-| 2514 | Calculate letter value |
-| 3514 | strchr |
-| 3522 | strlen |
-
-## SANE Operations Used
-
-| Code | Operation |
-|------|-----------|
-| 0x0002 | Add |
-| 0x0004 | Multiply |
-| 0x0006 | Divide |
-| 0x0008 | Compare add |
-| 0x000D | Round |
-| 0x0016 | Convert to extended |
-| 0x2006 | Compare/add |
-| 0x2008 | Compare |
-| 0x280E | Move extended |
-| 0x2810 | Extended to integer |
-| 0x300E | Multiply extended |
-| 0x3010 | Divide extended |
-
-## Score Calculation Flow
-
-1. **Initialize**: Setup rack and letter counts
-2. **Word Score**: Calculate base word value
-3. **Cross-words**: Add perpendicular word values
-4. **Bonus Squares**: Apply letter/word multipliers
-5. **Bingo Bonus**: Add 50 points for 7-letter word
-6. **Q Handling**: Special scoring for Q/QU combinations
-7. **Rack Leave**: Evaluate remaining tiles
-
-## Confidence: HIGH
-
-Clear SANE floating-point patterns:
-- Extended precision arithmetic
-- Multiple accumulation passes
-- Position-based lookups
-- Letter value tables
-- Standard Scrabble scoring rules
+| Functions | 7 |
+| Purpose | **Complete move scoring: word value, cross-words, bingo, Q/QU, per-letter leave, rack leave** |
+| SANE Traps | 22 total (A9EB), all in functions 0x0060 and 0x0168 |
+
+**Note on file offsets**: The raw binary has a 4-byte header (JT offset + count), so
+code_offset = file_offset - 4. All offsets in this document are CODE offsets unless
+explicitly marked as file offsets.
+
+### Previous Misidentifications (CORRECTED)
+
+1. **NOT "File I/O"** -- The A9EB trap is _FP68K (SANE floating point), not _SFGetFile.
+2. **SANE opcode $000D is FNEG** (negate extended), NOT "round to integer" as the
+   previous analysis stated.
+3. **SANE opcode $0016 is FTINT** (truncate to integer, result stays extended), NOT
+   "convert to extended".
+4. **Global at code 0x001A is A5-10918** (hex D55A = -10918 signed), NOT A5-10904.
+   The previous analysis confused this with the FRST handle.
+5. **Function 0x0368 is PURE INTEGER** -- no SANE operations at all.
+6. **Function 0x0A44 is PURE INTEGER** -- no SANE operations at all.
 
 ---
 
-## Speculative C Translation
+## Function Table
 
-### Header File (code35.h)
+| Code Offset | Frame Size | Saved Regs | Purpose | SANE? |
+|-------------|-----------|------------|---------|-------|
+| 0x0000 | 2 | none | Check position lower bound | No |
+| 0x0030 | 2 | none | Check position upper bound | No |
+| 0x0060 | 38 | D5-D7 | Extended precision computation | **YES** (heavy) |
+| 0x0168 | 70 | A2/A4 | SANE score calculation main | **YES** (heavy) |
+| 0x0310 | 0 | D5-D7 | Sum word values with filter | No |
+| 0x0368 | 330 | D3-D7/A2-A4 | **Full move score + leave calc** | No |
+| 0x0A44 | 12 | D3-D7/A2-A4 | Per-tile position scores | No |
 
-```c
-/*
- * CODE 35 - SANE Floating-Point Score Calculation
- *
- * Extended precision arithmetic for precise score evaluation.
- * Uses Apple's SANE (Standard Apple Numerics Environment).
- */
+---
 
-#ifndef CODE35_H
-#define CODE35_H
+## SANE FP68K Reference (CORRECTED)
 
-#include <Types.h>
-#include <SANE.h>
+All 22 A9EB traps are confined to file offsets 0x0064-0x0310 (functions 0x0060 and
+0x0168).
 
-/* 80-bit extended precision type */
-typedef extended80 ExtendedScore;
+### Format Bits (14-11)
 
-/* Move structure with scoring components */
-typedef struct {
-    char        word[32];       /* Word being played */
-    char        direction;      /* 0=horizontal, 1=vertical */
-    char        row;            /* Starting row */
-    char        column;         /* Starting column */
-    char        present_flag;   /* Word present on board flag */
-    long        base_score;     /* Base word score */
-    long        bonus_score;    /* Bonus points (bingo, etc.) */
-    ExtendedScore extended_score; /* High-precision score */
-} MoveData;
+| Value | Format | Size |
+|-------|--------|------|
+| 0 | extended | 80-bit (10 bytes) |
+| 1 | double | 64-bit (8 bytes) |
+| 2 | single | 32-bit (4 bytes) |
+| 4 | int16 | 16-bit |
+| 5 | int32 | 32-bit |
+| 6 | comp | 64-bit integer |
 
-/* Check if position is within valid bounds (lower) */
-Boolean check_position_lower_bound(short position);
+### Arithmetic Operations (even opcodes, bits 4-0)
 
-/* Check if position is within valid bounds (upper) */
-Boolean check_position_upper_bound(short position);
+| Bits 4-0 | Mnemonic | Description |
+|----------|----------|-------------|
+| $00 | FADD | dst += src |
+| $02 | FSUB | dst -= src |
+| $04 | FMUL | dst *= src |
+| $06 | FDIV | dst /= src |
+| $08 | FCMP | compare dst with src (sets condition codes) |
+| $0A | FCPX | compare signaling (NaN raises exception) |
+| $0C | FREM | IEEE remainder |
+| $0E | FZ2X | convert src format to extended |
+| $10 | FX2Z | convert extended to src format |
+| $12 | FSQRT | square root |
+| $14 | FRINT | round to nearest integer (stays extended) |
+| $16 | FTINT | truncate to integer (stays extended) |
 
-/* Calculate extended precision product */
-void calculate_extended_product(ExtendedScore *result, ExtendedScore *input);
+### Non-Arithmetic Operations (odd opcodes)
 
-/* Main score calculation for a move */
-void calculate_move_score(MoveData *move);
+| Opcode | Mnemonic | Description |
+|--------|----------|-------------|
+| $000D | FNEG | negate extended value in place |
+| $000F | FABS | absolute value of extended |
+| $0001 | FSETENV | set SANE environment word |
+| $0003 | FGETENV | get SANE environment word |
 
-/* Sum word values with optional filtering */
-long sum_word_values(short *values_ptr, short *filter_ptr, Boolean use_filter);
+### Calling Convention
 
-/* Full score calculation with detailed breakdown */
-long full_score_calculation(MoveData *move, short *score_breakdown, short *value_breakdown);
+Parameters are pushed right-to-left onto the stack:
 
-/* Calculate per-tile position scores */
-long calculate_per_tile_scores(short *positions_out, short *values_out);
+**Binary operations** (FADD, FSUB, FMUL, FDIV, FCMP):
+```
+MOVE.L  src_ptr,-(SP)     ; SRC pointer (pushed first)
+MOVE.L  dst_ptr,-(SP)     ; DST pointer (pushed second)
+MOVE.W  #opcode,-(SP)     ; operation code (on top)
+_FP68K                     ; A9EB trap
+```
+At the trap: SP+0 = opcode (word), SP+2 = DST (long), SP+6 = SRC (long).
+SANE pops all 10 bytes. For FADD/FSUB/FMUL/FDIV, result is stored at DST.
+For FCMP, only condition codes are set; DST is unchanged.
 
-#endif /* CODE35_H */
+**Unary operations** (FNEG, FABS, FTINT):
+```
+MOVE.L  operand_ptr,-(SP) ; operand pointer
+MOVE.W  #opcode,-(SP)     ; operation code
+_FP68K                     ; A9EB trap
 ```
 
-### Implementation (code35.c)
+### Opcodes Used in CODE 35
+
+| Opcode | Decoded | Description | Used In |
+|--------|---------|-------------|---------|
+| $0000 | ext FADD | add two extended values | 0x0060 |
+| $0004 | ext FMUL | multiply two extended values | 0x0168 |
+| $0006 | ext FDIV | divide two extended values | 0x0060, 0x0168 |
+| $0008 | ext FCMP | compare two extended values | 0x0168 |
+| $000D | **FNEG** | negate extended in place | 0x0168 |
+| $0016 | **ext FTINT** | truncate to integer (stays extended) | 0x0060, 0x0168 |
+| $2006 | i16 FDIV | divide extended by int16 | 0x0168 |
+| $2008 | i16 FCMP | compare int16 with extended | 0x0060, 0x0168 |
+| $280E | i32 FZ2X | convert int32 to extended | 0x0168 |
+| $2810 | i32 FX2Z | convert extended to int32 | 0x0168 |
+| $300E | comp FZ2X | convert comp (64-bit int) to extended | 0x0060 |
+| $3010 | comp FX2Z | convert extended to comp (64-bit int) | 0x0060 |
+
+**KEY CORRECTIONS from previous analysis**:
+- $000D was listed as "FRINTX (round to integer)" -- it is actually **FNEG** (negate).
+- $0016 was listed as "Convert to extended" -- it is actually **FTINT** (truncate to integer, result remains in extended format).
+- $2006 was listed as "Compare/add" -- it is actually **i16 FDIV** (divide extended by int16).
+- $300E was listed as "Multiply extended" -- it is actually **comp FZ2X** (convert comp to extended).
+- $3010 was listed as "Divide extended" -- it is actually **comp FX2Z** (convert extended to comp).
+
+---
+
+## Function 0x0000 - Check Position Lower Bound
+
+**Frame**: LINK A6,#-2 (2-byte local).
+**Parameters**: 8(A6) = position (int16).
+**Returns**: D0 = 1 if valid, 0 if invalid.
+
+### Algorithm
+
+Checks that position is in range (0 < pos < g_board_size), then reads byte 6 of
+the 8-byte position record to verify the position is playable.
+
+### Key Instruction Correction
+
+At code offset 0x001A (file 0x001E):
+```
+E788            LSL.L   #3,D0               ; multiply pos by 8
+206D D55A       MOVEA.L -10918(A5),A0       ; g_position_table (NOT -10904)
+4A30 0806       TST.B   6(A0,D0.L)          ; check valid flag
+```
+The disassembler combines `E788 206D D55A 4A30 0806` into garbage instructions.
+The global is A5-10918 (hex $D55A as signed = -10918), not A5-10904 as previously stated.
+
+At code offset 0x000E (file 0x0012):
+```
+B06D D55E       CMP.W   -10914(A5),D0       ; compare with g_board_size
+```
+
+### C Decompilation
+
+```c
+/* Position record: 8 bytes per entry */
+typedef struct {
+    int32_t data;       /* bytes 0-3: opaque data */
+    int8_t  valid;      /* byte 4: valid flag */
+    int8_t  reserved;   /* byte 5 */
+    int8_t  row;        /* byte 6: row index */
+    int8_t  col;        /* byte 7: column index */
+} PositionRecord;
+
+extern int16_t         g_board_size;       /* A5-10914 */
+extern PositionRecord *g_position_table;   /* A5-10918 */
+
+/*
+ * check_lower_bound - Verify position is valid for play (lower bound variant).
+ *
+ * Returns 1 if pos is in (0, g_board_size) and its row flag is nonzero.
+ * The "row" field (byte 6) serves as a validity flag here.
+ */
+int16_t check_lower_bound(int16_t pos)
+{
+    if (pos <= 0 || pos >= g_board_size)
+        return 0;
+
+    PositionRecord *table = g_position_table;
+    if (table[(int32_t)pos].row != 0)   /* TST.B 6(A0,D0.L) */
+        return 1;
+
+    return 0;
+}
+```
+
+---
+
+## Function 0x0030 - Check Position Upper Bound
+
+**Frame**: LINK A6,#-2 (2-byte local).
+**Parameters**: 8(A6) = position (int16).
+**Returns**: D0 = 1 if valid, 0 if invalid.
+
+### Algorithm
+
+Same structure as 0x0000 but with slightly different boundary conditions. For
+negative positions, the branch logic returns 1 (valid). Uses byte 7 (column)
+of the position record instead of byte 6 (row).
+
+### C Decompilation
 
 ```c
 /*
- * CODE 35 - SANE FP Score Calculation Implementation
+ * check_upper_bound - Verify position is valid (upper bound variant).
  *
- * Speculative C translation based on disassembly analysis.
+ * Returns 1 for negative positions (unconditionally valid).
+ * For positive positions, checks byte 7 (col) of position record.
  */
-
-#include "code35.h"
-#include <SANE.h>
-#include <string.h>
-
-/* Global variables referenced via A5 offsets */
-extern short     g_board_size;              /* A5-10914 */
-extern void     *g_position_table;          /* A5-10904 */
-extern char      g_char_class_table[128];   /* A5-1064 */
-extern short     g_letter_values[128];      /* A5-27630 */
-extern short     g_letter_primes[128];      /* A5-27374 */
-extern char     *g_current_rack;            /* A5-15498 */
-extern char      g_state1[17][17];          /* A5-17154 */
-extern short     g_state2[17][17];          /* A5-16610 */
-extern Boolean   g_game_flag;               /* A5-17010 */
-extern short     g_bonus_table[20][4];      /* A5-2422 */
-extern short     g_bingo_bonus_table[10];   /* A5-24866 */
-extern short     g_bingo_adjustment;        /* A5-24850 */
-
-/*============================================================
- * Function 0x0000 - Check Position Lower Bound
- *
- * Validates that a position is within board bounds (>0, <size)
- * and checks additional validity flag in position table.
- *============================================================*/
-Boolean check_position_lower_bound(short position)
+int16_t check_upper_bound(int16_t pos)
 {
-    typedef struct {
-        long  data[2];
-        char  flags;    /* Byte 6 */
-        char  flags2;   /* Byte 7 */
-    } PositionEntry;
+    if (pos < 0)
+        return 1;
 
-    PositionEntry *table = (PositionEntry *)g_position_table;
+    if (pos >= g_board_size)
+        return 0;
 
-    /* Bounds check */
-    if (position <= 0 || position >= g_board_size) {
-        return false;
-    }
+    PositionRecord *table = g_position_table;
+    if (table[(int32_t)pos].col != 0)   /* TST.B 7(A0,D0.L) */
+        return 1;
 
-    /* Check validity flag in position table */
-    return (table[position].flags != 0);
+    return 0;
 }
+```
 
-/*============================================================
- * Function 0x0030 - Check Position Upper Bound
+---
+
+## Function 0x0060 - Extended Precision Computation (SANE)
+
+**Frame**: LINK A6,#-38 (38-byte local frame for extended temporaries).
+**Saved registers**: D5-D7.
+**Parameters**: 8(A6) = pointer to output extended (10 bytes), 12(A6) = input extended (10 bytes passed by value on stack).
+**Returns**: Result written to output pointer.
+
+This function contains heavy SANE usage. It performs a division/accumulation loop
+with comp (64-bit integer) conversions, operating entirely in 80-bit extended
+precision.
+
+### Stack Frame Layout
+
+| Offset | Size | Purpose |
+|--------|------|---------|
+| -10(A6) | 10 | Extended accumulator (result) |
+| -18(A6) | 8 | Comp (64-bit int) temporary |
+| -28(A6) | 10 | Extended working copy |
+| -38(A6) | 10 | Extended secondary buffer |
+
+### SANE Operations Used
+
+1. $300E (comp FZ2X) -- convert comp to extended
+2. $3010 (comp FX2Z) -- convert extended to comp
+3. $0006 (ext FDIV) -- divide extended by extended
+4. $0000 (ext FADD) -- add extended to extended
+5. $2008 (i16 FCMP) -- compare int16 with extended
+6. $0016 (ext FTINT) -- truncate extended to integer (stays extended)
+
+### Algorithm
+
+The function implements an iterative accumulation in extended precision:
+
+1. Copy the input extended value to a local buffer
+2. Convert through comp format (64-bit integer conversion for truncation)
+3. Enter a refinement loop (up to 5 iterations):
+   - Copy input to work buffer
+   - Divide accumulator by work buffer
+   - Add quotient to running sum
+   - Compare result against a threshold
+   - Stop early if below threshold
+4. Truncate final result to integer (FTINT) and copy to output
+
+### C Decompilation
+
+```c
+/*
+ * compute_extended - Iterative extended precision accumulation.
  *
- * Similar bounds check but uses different validity flag.
- *============================================================*/
-Boolean check_position_upper_bound(short position)
+ * Performs a series of divide-and-add steps in 80-bit precision,
+ * using comp (64-bit integer) for intermediate truncation.
+ *
+ * SANE function names follow Apple convention:
+ *   fz2x_comp  = convert comp to extended  ($300E)
+ *   fx2z_comp  = convert extended to comp  ($3010)
+ *   fdiv_ext   = divide extended           ($0006)
+ *   fadd_ext   = add extended              ($0000)
+ *   fcmp_i16   = compare int16 w/ extended ($2008)
+ *   ftint_ext  = truncate to integer       ($0016)
+ */
+void compute_extended(extended80 *output, extended80 input)
 {
-    typedef struct {
-        long  data[2];
-        char  flags;
-        char  flags2;
-    } PositionEntry;
+    extended80 accum;       /* -10(A6): accumulator */
+    int64_t    comp_temp;   /* -18(A6): comp temporary */
+    extended80 work;        /* -28(A6): working copy */
+    extended80 work2;       /* -38(A6): secondary buffer */
+    int16_t    count;       /* D7 */
 
-    PositionEntry *table = (PositionEntry *)g_position_table;
+    /* Copy input to local working buffer */
+    work = input;                           /* 10-byte copy */
 
-    if (position < 0) {
-        return true;  /* /* uncertain */ Negative returns true */
+    /* Convert through comp for integer truncation:
+     * extended -> comp -> extended effectively truncates
+     * the fractional part while preserving 64-bit integer range */
+    fx2z_comp(&work, &comp_temp);           /* SANE $3010: extended -> comp */
+    fz2x_comp(&comp_temp, &accum);          /* SANE $300E: comp -> extended */
+
+    /* Subtract truncated value from original to get fractional remainder */
+    /* (The exact sequence depends on the specific code path taken) */
+
+    /* Iterative refinement loop - up to 5 passes */
+    for (count = 0; count < 5; count++) {
+        work2 = input;                      /* fresh copy of input */
+
+        fdiv_ext(&accum, &work2);           /* SANE $0006: work2 /= accum */
+        fadd_ext(&work2, &accum);           /* SANE $0000: accum += work2 */
+
+        /* Compare against threshold constant (embedded in code as PC-relative) */
+        int16_t threshold = 0;
+        if (fcmp_i16(&threshold, &accum) > 0)  /* SANE $2008 */
+            break;                          /* below threshold, done */
     }
 
-    if (position >= g_board_size) {
-        return false;
-    }
+    /* Truncate final result to integer (stays in extended format) */
+    ftint_ext(&accum);                      /* SANE $0016 */
 
-    /* Check alternate validity flag */
-    return (table[position].flags2 != 0);
+    /* Copy result to output */
+    *output = accum;                        /* 10-byte copy */
 }
+```
 
-/*============================================================
- * Function 0x0060 - Calculate Extended Product
+---
+
+## Function 0x0168 - SANE Score Calculation Main
+
+**Frame**: LINK A6,#-70 (70-byte local frame).
+**Saved registers**: A2, A4.
+**Parameters**: 8(A6) = pointer to move/score data structure.
+**Returns**: Result stored back into the data structure.
+
+This function is the heavier SANE user, with operations including multiply, divide,
+compare, negate, and integer conversion. It processes a score data structure,
+performing multi-step floating-point arithmetic and calling function 0x0060 as a
+helper.
+
+### Stack Frame Layout
+
+| Offset | Size | Purpose |
+|--------|------|---------|
+| -10(A6) | 10 | Extended primary accumulator |
+| -20(A6) | 10 | Extended secondary buffer |
+| -30(A6) | 10 | Extended tertiary buffer |
+| -40(A6) | 10 | Extended work area / helper output |
+| -44(A6) | 4 | Int32 temporary for conversion |
+| -70(A6) | 26 | Additional temporaries |
+
+### SANE Operations Used
+
+1. $280E (i32 FZ2X) -- convert int32 to extended
+2. $0006 (ext FDIV) -- divide extended by extended
+3. $0004 (ext FMUL) -- multiply extended by extended
+4. $0008 (ext FCMP) -- compare two extended values
+5. $000D (FNEG) -- negate extended value in place
+6. $2006 (i16 FDIV) -- divide extended by int16
+7. $2008 (i16 FCMP) -- compare int16 with extended
+8. $0016 (ext FTINT) -- truncate to integer (stays extended)
+9. $2810 (i32 FX2Z) -- convert extended to int32
+
+### Algorithm
+
+1. Null-check the input pointer; return immediately if NULL
+2. Check a score threshold (value at offset 20 in the structure); if below 20, clear
+   the extended fields and return
+3. Convert the int32 score to extended via i32 FZ2X ($280E)
+4. Copy a secondary extended value from the structure (offset 10)
+5. Perform a multi-step calculation:
+   - Divide the converted score by the secondary value
+   - Multiply intermediate results
+   - Negate (FNEG $000D) a component
+   - Compare against thresholds
+6. Call compute_extended (function 0x0060) for iterative refinement
+7. Truncate the final result to integer via FTINT ($0016)
+8. Convert back to int32 via i32 FX2Z ($2810)
+9. Store the int32 result at offset 24 of the move structure
+
+### C Decompilation
+
+```c
+/*
+ * sane_score_calc - Main SANE-based score calculation.
  *
- * Performs extended precision multiplication with overflow
- * handling. Uses SANE for 80-bit arithmetic.
- *============================================================*/
-void calculate_extended_product(ExtendedScore *result, ExtendedScore *input)
-{
-    ExtendedScore local_ext1;
-    ExtendedScore local_ext2;
-    ExtendedScore work_buffer;
-    long multiplier = 0;
-    long iteration_count = 0;
-    long overflow_flag = 0;
-
-    /* Copy input to local extended */
-    memcpy(&local_ext1, input, sizeof(ExtendedScore));
-
-    /* Convert to extended format */
-    /* /* uncertain */ SANE conversion sequence */
-    x2x(&local_ext1, &local_ext1);
-
-    /* Count significant bits in multiplier */
-    while (multiplier != 0) {
-        multiplier >>= 1;
-        iteration_count++;
-    }
-
-    /* Handle overflow case */
-    if (overflow_flag) {
-        /* Set to maximum representable value */
-        local_ext2.exponent = 0x3FFF;  /* Max exponent */
-        local_ext2.mantissa[0] = 0x80000000;
-        local_ext2.mantissa[1] = 0;
-
-        /* Multiply by overflow value */
-        fmulx(&local_ext2, &local_ext1);
-    }
-
-    /* Iterative refinement loop (max 5 iterations) */
-    for (int i = 0; i < 5; i++) {
-        memcpy(&work_buffer, input, sizeof(ExtendedScore));
-
-        /* Divide step */
-        fdivx(&local_ext1, &work_buffer);
-
-        /* Multiply accumulator */
-        fmulx(&local_ext1, &local_ext1);
-
-        /* /* uncertain */ Comparison and conditional addition */
-        /* Compare with threshold constant */
-    }
-
-    /* Copy result back */
-    memcpy(result, &local_ext1, sizeof(ExtendedScore));
-}
-
-/*============================================================
- * Function 0x0168 - Score Calculation Main
+ * Takes a move data structure, performs extended precision arithmetic
+ * on its score fields, and writes the computed result back.
  *
- * Calculates detailed score for a move using SANE extended
- * precision arithmetic.
- *============================================================*/
-void calculate_move_score(MoveData *move)
-{
-    ExtendedScore score_extended;
-    ExtendedScore work_ext1, work_ext2;
+ * SANE function names:
+ *   fz2x_i32  = convert int32 to extended   ($280E)
+ *   fx2z_i32  = convert extended to int32    ($2810)
+ *   fmul_ext  = multiply extended            ($0004)
+ *   fdiv_ext  = divide extended              ($0006)
+ *   fcmp_ext  = compare extended             ($0008)
+ *   fneg_ext  = negate extended              ($000D)
+ *   fdiv_i16  = divide extended by int16     ($2006)
+ *   fcmp_i16  = compare int16 w/ extended    ($2008)
+ *   ftint_ext = truncate to integer          ($0016)
+ */
+typedef struct {
+    /* Offsets within the structure: */
+    char       data[10];      /* 0-9: opaque header */
+    extended80 ext_field;     /* 10-19: extended precision field */
+    int32_t    score;         /* 20-23: integer score */
+    int32_t    result;        /* 24-27: computed result (output) */
+} ScoreData;
 
-    if (move == NULL) {
+void sane_score_calc(ScoreData *sd)
+{
+    extended80 primary;      /* -10(A6) */
+    extended80 secondary;    /* -20(A6) */
+    extended80 tertiary;     /* -30(A6) */
+    extended80 work;         /* -40(A6) */
+    int32_t    int_result;   /* -44(A6) */
+
+    /* Null check */
+    if (sd == NULL)
         return;
+
+    /* Threshold check: if score < 20, clear and return */
+    if (sd->score < 20) {
+        /* Clear the extended accumulator */
+        memset(&primary, 0, 10);
+        goto store_result;
     }
 
-    /* Check minimum score threshold */
-    if (move->base_score < 20) {
-        /* Score too low - clear extended */
-        memset(&score_extended, 0, sizeof(ExtendedScore));
-        return;
+    /* Step 1: Convert integer score to extended */
+    fz2x_i32(&sd->score, &tertiary);       /* SANE $280E: int32 -> extended */
+
+    /* Step 2: Copy the embedded extended field */
+    secondary = sd->ext_field;              /* 10-byte copy from offset 10 */
+
+    /* Step 3: Divide score by the extended field */
+    fdiv_ext(&tertiary, &secondary);        /* SANE $0006: secondary /= tertiary */
+
+    /* Step 4: Multiply intermediate values */
+    fmul_ext(&secondary, &primary);         /* SANE $0004: primary *= secondary */
+
+    /* Step 5: Negate a component */
+    fneg_ext(&primary);                     /* SANE $000D: primary = -primary */
+    /* NOTE: Previous analysis said $000D was "round" -- it is NEGATE */
+
+    /* Step 6: Compare with threshold */
+    int16_t zero = 0;
+    if (fcmp_i16(&zero, &primary) <= 0) {   /* SANE $2008 */
+        /* Value is non-negative: additional multiply step */
+        fmul_ext(&primary, &primary);       /* SANE $0004: primary *= primary */
     }
 
-    /* Convert base score to extended */
-    /* SANE operation 0x280E: Move extended */
-    memcpy(&score_extended, &move->base_score, sizeof(long));
+    /* Step 7: Call helper for iterative refinement */
+    compute_extended(&work, primary);       /* Function 0x0060 */
 
-    /* Setup calculation buffers */
-    memcpy(&work_ext1, ((char*)move) + 10, sizeof(ExtendedScore));
+    /* Step 8: Compare refined result, accumulate */
+    if (fcmp_ext(&work, &secondary) > 0) {  /* SANE $0008 */
+        /* Divide by 2 to normalize */
+        int16_t two = 2;
+        fdiv_i16(&two, &work);              /* SANE $2006: work /= 2 */
+    }
 
-    /* Divide operation (SANE 0x0006) */
-    fdivx(&score_extended, &work_ext1);
+    /* Step 9: Truncate to integer */
+    ftint_ext(&work);                       /* SANE $0016: truncate (stays extended) */
+    /* NOTE: Previous analysis said $0016 was "convert to extended" --
+     * it is actually FTINT (truncate to integer, result stays extended) */
 
-    /* Multiply stages (SANE 0x0004) */
-    fmulx(&work_ext1, &work_ext1);
+    /* Step 10: Convert extended back to int32 */
+    fx2z_i32(&work, &int_result);           /* SANE $2810: extended -> int32 */
 
-    /* Subtract operation (SANE 0x0006) */
-    fsubx(&score_extended, &work_ext1);
-
-    /* Add components (SANE 0x0002) */
-    faddx(&work_ext1, &work_ext2);
-
-    /* Call helper for extended product */
-    calculate_extended_product(&work_ext1, &work_ext1);
-
-    /* Round to integer (SANE 0x000D) */
-    /* /* uncertain */ Final conversion back to integer score */
-
-    /* Store result in move structure */
-    move->bonus_score = (long)work_ext1.mantissa[0];  /* /* uncertain */ */
+store_result:
+    /* Store computed result back into the structure */
+    sd->result = int_result;
 }
+```
 
-/*============================================================
- * Function 0x0310 - Sum Word Values
+### Important Notes on SANE Corrections
+
+The FNEG operation ($000D) is particularly significant. The previous analysis
+identified it as "round to integer" which would produce very different behavior.
+FNEG negates the value in place, changing its sign. This is a standard step in
+algorithms that compute differences or corrections by negating one term before
+addition.
+
+The FTINT operation ($0016) truncates an extended value toward zero, leaving the
+result in extended format. It does NOT convert between formats. The truncation
+is needed before converting to int32 to ensure clean integer results.
+
+---
+
+## Function 0x0310 - Sum Word Values with Filter
+
+**Frame**: LINK A6,#0 (no locals).
+**Saved registers**: D5-D7.
+**Parameters**: 8(A6) = positions array (int16*), 12(A6) = values array (int16*), 16(A6) = use_filter flag (int16).
+**Returns**: D0 = sum of filtered values.
+
+### Algorithm
+
+Iterates through two parallel arrays (positions and values). The positions array
+drives the loop: each nonzero position entry advances to the next element. For
+each position, the corresponding value is read. If use_filter is set, calls
+check_lower_bound (function 0x0000 at PC-790) to test the position; if it fails
+the filter, the value is skipped. Otherwise the value is accumulated into the sum.
+
+The function validates both input pointers, calling bounds_error (JT[418]) if
+either is NULL.
+
+### C Decompilation
+
+```c
+/*
+ * sum_filtered_values - Sum values from parallel position/value arrays.
  *
- * Sums word values from pointer array with optional filtering.
- *============================================================*/
-long sum_word_values(short *values_ptr, short *filter_ptr, Boolean use_filter)
+ * Iterates positions array; for each nonzero position, reads the
+ * corresponding value. If use_filter is set, only includes values
+ * whose positions pass check_lower_bound.
+ */
+int32_t sum_filtered_values(int16_t *positions, int16_t *values, int16_t use_filter)
 {
-    long sum = 0;
-    short value, filter_value;
+    int32_t sum = 0;       /* D7 */
+    int16_t pos;           /* D6 */
+    int16_t val;           /* D5 */
 
     /* Validate pointers */
-    if (values_ptr == NULL || filter_ptr == NULL) {
-        /* bounds_error() */
-        return 0;
-    }
+    if (values == NULL)
+        bounds_error();     /* JT[418] - does not return */
+    if (positions == NULL)
+        bounds_error();
 
-    /* Sum loop */
-    while ((filter_value = *filter_ptr++) != 0) {
-        value = *values_ptr++;
+    /* Iterate: positions array drives the loop */
+    while ((pos = *positions++) != 0) {
+        val = *values++;
 
         if (use_filter) {
-            /* /* uncertain */ Filter check function call */
-            /* if (!filter_check(filter_value)) continue; */
+            /* Filter check: call check_lower_bound via PC-relative */
+            if (!check_lower_bound(pos))
+                continue;   /* position invalid, skip this value */
         }
 
-        sum += value;
+        sum += (int32_t)val;
     }
 
     return sum;
 }
+```
 
-/*============================================================
- * Function 0x0368 - Full Score Calculation
+---
+
+## Function 0x0368 - Full Move Score + Leave Calculation (MAIN FUNCTION)
+
+**Frame**: LINK A6,#-330 (330-byte local frame).
+**Saved registers**: D3-D7/A2-A4.
+**Parameters**:
+- 8(A6) = move data pointer (word + direction + position)
+- 12(A6) = score breakdown output array (int16*, may be NULL)
+- 16(A6) = value breakdown output array (int16*, may be NULL)
+
+**Returns**: D0 = total score in centipoints.
+
+This is the largest and most important function in CODE 35. It is **pure integer**
+(no SANE operations). It computes the complete evaluation of a Scrabble move:
+
+1. Word score from letter values with bonus square multipliers
+2. Cross-word scores for every perpendicular word formed
+3. Bingo bonus for playing 7+ tiles
+4. Leave evaluation: per-letter values and positional scoring
+5. Q/QU synergy bonus and Q-without-U penalty
+6. Individual letter leave contributions
+7. Detailed score breakdown markers for the UI
+
+### Stack Frame Layout
+
+| Offset | Size | Purpose |
+|--------|------|---------|
+| -140(A6) | 128 | Letter count buffer (indexed by ASCII, from JT[2394]) |
+| -144(A6) | 4 | Work buffer for JT[2498] calls |
+| -271(A6) | 1 | Q-present flag |
+| -272(A6) | 1 | Current letter temp |
+| -276(A6) | 4 | Board pointer: left-adjacent row |
+| -280(A6) | 4 | Board pointer: right-adjacent row |
+| -284(A6) | 4 | Board pointer: row above (for cross-word) |
+| -288(A6) | 4 | Board pointer: row below (for cross-word) |
+| -296(A6) | 4 | Board pointer: two rows below |
+| -300(A6) | 4 | Board pointer: two rows above |
+| -304(A6) | 4 | Board pointer: one row above main |
+| -308(A6) | 4 | Board base pointer (g_state1 + row*17) |
+| -312(A6) | 4 | Pointer to current letter's count in buffer |
+| -316(A6) | 4 | **Total score accumulator** (int32) |
+| -317(A6) | 1 | Letter count (from JT[2394]) |
+| -320(A6) | 2 | Cross-word product / playable count |
+| -322(A6) | 2 | Bonus table index / blank count |
+| -326(A6) | 4 | Bonus table scan pointer |
+| -328(A6) | 2 | Max tiles threshold |
+| -330(A6) | 2 | Saved intermediate value |
+
+### Register Usage
+
+| Register | Purpose |
+|----------|---------|
+| D3 | Running score component / intermediate result |
+| D4 | Direction / tile counts / letter count |
+| D5 | Column position / tiles-played count |
+| D6 | Letter value / draw count |
+| D7 | Current letter / loop variable |
+| A2 | Word pointer / rack pointer |
+| A3 | Value breakdown output (from 16(A6)) |
+| A4 | Score breakdown output (from 12(A6)) |
+
+### Move Data Structure
+
+The move is passed as a pointer at 8(A6):
+
+| Offset | Type | Field | Description |
+|--------|------|-------|-------------|
+| 0 | char[32] | word | Letters being played (C string, null-terminated) |
+| 32 | int8 | direction | Row stride: 1=across, 17=down (encodes direction as board stride) |
+| 33 | int8 | start_pos | Starting column (across) or row (down) |
+
+### Board Arrays
+
+| Global | Layout | Description |
+|--------|--------|-------------|
+| A5-17154 (g_state1) | 17x17 bytes | Letter grid. 0=empty, else ASCII letter value |
+| A5-16610 (g_state2) | 17x17 words | Pre-computed cross-word scores (int16 per cell) |
+
+Row pointer computation:
+```
+base = (A5-17154) + direction * 17
+```
+For across play (direction=1), base points to row 1. For down play (direction=17),
+base points to column 1 of the 17-wide grid. Adjacent rows are at base +/- 17.
+
+### Score Breakdown Markers
+
+When score_breakdown (A4) is non-NULL, the function writes marker codes to identify
+each score component:
+
+| Marker Value | Hex | Meaning |
+|--------------|-----|---------|
+| -32 | $FFE0 | Primary word score |
+| -33 | $FFDF | Bingo bonus |
+| -1 | $FFFF | Terminator / leave evaluation total |
+| -2 | $FFFE | Per-letter average contribution |
+| -3 | $FFFD | QU synergy bonus |
+| -4 | $FFFC | Q-without-U penalty |
+| -(5+i) | $FFFB.. | Individual letter contribution (i = rack position) |
+| 20000 | $4E20 | Cross-word score component |
+
+### Global Variables Referenced
+
+| A5 Offset | Type | Name | Description |
+|-----------|------|------|-------------|
+| -1064 | char[128] | g_char_class | Character classification; negative = valid letter |
+| -2270 | char* | g_qu_pattern | "qu" pattern string for JT[2498] |
+| -2272 | char* | g_q_pattern | "q" pattern string for JT[2498] |
+| -2302 | int16[] | g_score_lookup | Score lookup table (indexed by letter*2) |
+| -2342 | int16[10] | g_q_penalty | Q-without-U penalty table |
+| -2422 | struct[20] | g_bonus_table | Bonus square table (4 bytes each) |
+| -10914 | int16 | g_board_size | Board dimension (typically 16 for 15x15+border) |
+| -10918 | void* | g_position_table | Pointer to position validity records |
+| -15498 | char* | g_current_rack | Current player's sorted rack string |
+| -16610 | int16[17][17] | g_state2 | Pre-computed cross-word score grid |
+| -17010 | int8 | g_game_flag | Nonzero during active game |
+| -17154 | int8[17][17] | g_state1 | Board letter grid |
+| -23218 | int8[] | g_letter_counts | Letter count validation array |
+| -24850 | int16 | g_bingo_adj | Bingo base adjustment value |
+| -24866 | int16[] | g_bingo_table | Bingo bonus lookup (indexed by tiles_played - 7) |
+| -26158 | char* | g_rack | Pointer to original (unsorted) rack |
+| -27374 | int8[] | g_letter_freq | Letter frequency table |
+| -27630 | int16[] | g_letter_points | Letter point values (2 bytes per letter) |
+
+### Jump Table Calls
+
+| JT Offset | Signature | Purpose |
+|-----------|-----------|---------|
+| 66 | int32 mul32(int32 a, int32 b) | 32-bit multiply; returns D0 |
+| 90 | int32 div32(int32 a, int32 b) | 32-bit divide; returns D0 |
+| 418 | void bounds_error(void) | Fatal error, does not return |
+| 2370 | void process_rack(move*, rack, flags) | Mark tiles as played, update rack |
+| 2378 | void cleanup_rack(rack) | Restore rack after evaluation |
+| 2394 | int8 count_letters(buffer) | Fill letter-count buffer, return total |
+| 2410 | void sort_rack(rack) | Sort rack letters alphabetically |
+| 2498 | int16 calc_positional_score(buffer, pattern) | Score for letter pattern |
+| 2506 | int32 final_leave_calc(played, blanks, regular, v, c, draw) | Composite leave evaluation |
+| 2514 | int32 calc_letter_value(letter, total, count) | Per-letter leave value |
+| 3514 | char* strchr(string, char) | Standard C library strchr |
+| 3522 | int16 strlen(string) | Standard C library strlen |
+
+### C Decompilation
+
+```c
+/*
+ * full_score_calculation - Complete move evaluation.
  *
- * Complete score calculation with all components:
- * - Base word score
- * - Cross-word scores
- * - Bonus squares
- * - Bingo bonus (7+ letters)
- * - Q/QU handling
- * - Rack leave evaluation
- *============================================================*/
-long full_score_calculation(MoveData *move, short *score_breakdown, short *value_breakdown)
+ * Computes word score, cross-words, bingo, Q/QU handling, and rack leave.
+ * All values are in centipoints (1/100 of a Scrabble point).
+ *
+ * Parameters:
+ *   move           - pointer to move data (word + direction + position)
+ *   score_markers  - output array for score breakdown markers (may be NULL)
+ *   value_markers  - output array for value breakdown (may be NULL)
+ *
+ * Returns: total score in centipoints
+ */
+
+/* Bonus table entry (4 bytes) */
+typedef struct {
+    int8_t letter;     /* letter this bonus applies to */
+    int8_t type;       /* 0 = letter multiplier, nonzero = word multiplier */
+    int8_t position;   /* row/col this bonus is at */
+    int8_t value;      /* multiplier value */
+} BonusEntry;
+
+extern int8_t    g_char_class[128];        /* A5-1064 */
+extern char      g_q_pattern[];            /* A5-2272: "q\0" */
+extern char      g_qu_pattern[];           /* A5-2270: "qu\0" */
+extern int16_t   g_score_lookup[];         /* A5-2302 */
+extern int16_t   g_q_penalty[10];          /* A5-2342 */
+extern BonusEntry g_bonus_table[20];       /* A5-2422 */
+extern int16_t   g_board_size;             /* A5-10914 */
+extern void     *g_position_table;         /* A5-10918 */
+extern char     *g_current_rack;           /* A5-15498 */
+extern int16_t   g_state2[17][17];         /* A5-16610 */
+extern int8_t    g_game_flag;              /* A5-17010 */
+extern int8_t    g_state1[17][17];         /* A5-17154 */
+extern int8_t    g_letter_counts[];        /* A5-23218 */
+extern int16_t   g_bingo_adj;              /* A5-24850 */
+extern int16_t   g_bingo_table[];          /* A5-24866 */
+extern char     *g_rack;                   /* A5-26158 */
+extern int8_t    g_letter_freq[];          /* A5-27374 */
+extern int16_t   g_letter_points[];        /* A5-27630 */
+
+int32_t full_score_calculation(
+    void    *move_ptr,
+    int16_t *score_markers,   /* A4 - may be NULL */
+    int16_t *value_markers    /* A3 - may be NULL */
+)
 {
-    long total_score = 0;
-    short letter_count;
-    short row, col;
-    char direction;
-    char *word_ptr;
-    short word_multiplier = 1;
-    short letter_score;
-    short cross_word_score;
-    short tiles_placed = 0;
-    short blank_count = 0;
-    short playable_count = 0;
-    char letter_buffer[128];
+    int32_t  total_score = 0;           /* -316(A6) */
+    int8_t   letter_count;              /* -317(A6) */
+    int16_t  cross_product;             /* -320(A6) */
+    int16_t  blank_count;               /* -322(A6) */
+    int32_t  bonus_scan_ptr;            /* -326(A6) */
+    int16_t  max_tiles;                 /* -328(A6) */
+    int16_t  saved_val;                 /* -330(A6) */
+    int8_t   letter_buf[128];           /* -140(A6) */
+    int8_t   q_present;                 /* -271(A6) */
 
-    /* Initialize from rack */
-    /* JT[2410] - setup */
-    /* JT[2394] - get_letter_info */
-    letter_count = /* get_letter_info(letter_buffer) */ 7;
+    char    *word;
+    int8_t   direction;
+    int16_t  col;
+    int32_t  word_score;
+    int16_t  playable_count;
+    int16_t  regular_count;
+    int16_t  tiles_played;
+    int16_t  draw_count;
 
-    /* Check game state */
-    if (!g_game_flag) {
-        /* No active game - calculate from move only */
-        if (move->present_flag) {
-            int word_len = strlen(move->word);
-            /* JT[66] - multiply by base */
-            total_score = word_len * 28;  /* /* uncertain */ base multiplier */
+    int8_t  *board_row;                 /* base row pointer */
+    int8_t  *row_above, *row_below;     /* adjacent rows */
+    int8_t  *two_above, *two_below;     /* two rows away */
+    int8_t  *left_adj, *right_adj;      /* left/right columns */
+
+    /* ============================================================
+     * PHASE 1: Initialize rack and letter counts
+     * ============================================================ */
+
+    sort_rack(g_current_rack);                  /* JT[2410] */
+    letter_count = count_letters(letter_buf);   /* JT[2394] */
+
+    /* ============================================================
+     * PHASE 2: Handle no-active-game case (offline evaluation)
+     * ============================================================ */
+
+    if (g_game_flag == 0) {
+        /* No active game: compute score from move data alone */
+        char *move_word = (char *)move_ptr;     /* word at offset 0 */
+        int8_t has_word = *((int8_t *)move_ptr + 32);
+
+        int32_t word_len = 0;
+        if (has_word) {
+            word_len = strlen(move_word);       /* JT[3522] */
+        }
+
+        /* Look up base score from position table:
+         * index = word_len * 28 (each entry is 28 bytes?)
+         * read int32 at offset 24 of that entry */
+        int32_t index = mul32(word_len, 28);    /* JT[66] */
+        int8_t *table = (int8_t *)g_position_table;  /* A5-10918 */
+        int32_t base_score = *(int32_t *)(table + index + 24);
+        total_score += base_score;
+
+        if (score_markers != NULL) {
+            *score_markers++ = -32;             /* primary word score marker */
         }
     }
 
-    /* Get word info */
-    if (!move->present_flag) {
-        goto finalize;
-    }
+    /* ============================================================
+     * PHASE 3: Word scoring with board interaction
+     * ============================================================ */
 
-    direction = move->direction;
-    row = move->row;
+    word = (char *)move_ptr;                    /* word string at offset 0 */
+    direction = *((int8_t *)move_ptr + 32);     /* direction byte */
 
-    /* Main scoring loop through word */
-    word_ptr = move->word;
-    while (*word_ptr) {
-        char letter = *word_ptr;
+    if (direction == 0)
+        goto phase_5_leave;                     /* no word placed, skip to leave eval */
 
-        /* Validate letter */
-        if (g_char_class_table[(unsigned char)letter] >= 0) {
-            /* bounds_error(); */
+    col = (int16_t)*((int8_t *)move_ptr + 33);  /* starting position */
+    word_score = 0;
+
+    /* Compute board row pointers for cross-word checking.
+     * direction encodes the row stride (1=across, 17=down).
+     * Base pointer = g_state1 + direction * 17 */
+    board_row = &g_state1[0][0] + direction * 17;
+    row_above = board_row - 17;
+    row_below = board_row + 17;
+    two_above = board_row - 34;
+    two_below = board_row + 34;
+    /* Additional row pointers stored in frame for adjacent column checks */
+
+    /* ---- Main letter loop ---- */
+    char *wp = word;
+    while (*wp != '\0') {
+        int8_t letter = *wp;
+
+        /* Validate letter: must be in character class table */
+        if (g_char_class[(uint8_t)letter] >= 0) {
+            bounds_error();                     /* JT[418] */
         }
 
-        /* Bounds check position */
-        if (row < 1 || row > 30 || col < 1 || col > 15) {
-            /* bounds_error(); */
+        /* Bounds check the position */
+        if (direction < 1 || direction > 30 || col < 1 || col > 15) {
+            bounds_error();                     /* JT[418] */
         }
 
-        /* Check if cell occupied */
-        if (g_state1[row][col] != 0) {
-            /* Cell occupied - verify letter matches */
-            if (g_state1[row][col] != letter) {
-                /* bounds_error(); */
+        /* Check if cell is already occupied */
+        if (board_row[col] != 0) {
+            /* Cell occupied: verify the existing letter matches */
+            if (board_row[col] != letter) {
+                bounds_error();                 /* mismatch = error */
             }
-        } else {
-            /* Empty cell - placing tile */
-            tiles_placed++;
+            /* Existing tile: contributes to word score but no
+             * cross-word or bonus square processing */
+        }
+        else {
+            /* Empty cell: we are placing a tile here */
 
-            /* Calculate cross-word score */
-            if (row != 1 && row != 16) {
-                /* Check adjacent cells for cross-words */
-                if (g_state1[row-1][col] || g_state1[row+1][col]) {
-                    /* Has adjacent - forms cross word */
-                    /* /* uncertain */ Cross-word scoring logic */
+            /* ------ Cross-word scoring ------ */
+
+            /* Check perpendicular neighbors for cross-word formation.
+             * A cross-word exists if any tile is adjacent in the
+             * perpendicular direction. */
+
+            int has_cross_word = 0;
+
+            /* Check row above and below */
+            if (direction != 1 && direction != 16) {
+                if (row_above[col] != 0) {
+                    has_cross_word = 1;
+                } else {
+                    /* Check two rows away to detect if there's a word
+                     * that this tile extends */
+                    int8_t above_val = two_above[col];
+                    int8_t below_val = two_below[col];
+                    cross_product = (int16_t)above_val * (int16_t)below_val;
+                    if (cross_product != 0)
+                        has_cross_word = 1;
                 }
             }
 
-            /* Check bonus squares */
+            /* Check columns left and right */
+            if (direction != 2 && direction != 17) {
+                if (left_adj[col] != 0)
+                    has_cross_word = 1;
+            }
+            if (direction != 15 && direction != 30) {
+                if (right_adj[col] != 0)
+                    has_cross_word = 1;
+            }
+
+            if (has_cross_word) {
+                /* Score the cross-word from pre-computed g_state2 grid */
+                /* The cross-word value is read from g_state2 at the
+                 * corresponding position, multiplied by any bonus */
+            }
+
+            /* ------ Bonus square check ------ */
+
+            /* Scan the 20-entry bonus table for matching position */
+            int16_t letter_val = (int16_t)letter;
             for (int b = 0; b < 20; b++) {
-                if (g_bonus_table[b][0] == letter &&
-                    g_bonus_table[b][1] == 0 &&  /* Type 0 = letter bonus */
-                    g_bonus_table[b][2] == row) {
-                    letter_score = g_bonus_table[b][3];
-                    break;
-                }
+                BonusEntry *be = &g_bonus_table[b];
+                if (be->type != 0)
+                    continue;               /* skip word multipliers */
+                if ((int16_t)be->position != cross_product)
+                    continue;               /* position mismatch */
+                if ((int16_t)be->letter != letter_val)
+                    continue;               /* letter mismatch */
+
+                /* Apply bonus: subtract bonus value from score component */
+                word_score -= (int16_t)be->value;
+                break;
             }
         }
 
-        word_ptr++;
+        wp++;
         col++;
     }
+    /* ---- End main letter loop ---- */
 
-    /* Apply word multiplier */
-    total_score *= word_multiplier;
-
-    /* Store marker in breakdown */
-    if (score_breakdown) {
-        *score_breakdown++ = 20000;  /* Marker value */
+    /* Add word score to total */
+    if (word_score != 0) {
+        total_score += word_score;
+        if (score_markers != NULL) {
+            *score_markers++ = 20000;           /* cross-word marker */
+        }
     }
 
-    /* Process rack for leave evaluation */
-    /* JT[2370] - process_rack */
+    /* ============================================================
+     * PHASE 4: Process rack (mark played tiles)
+     * ============================================================ */
 
-    /* Count rack letters */
-    for (char *rack = g_current_rack; *rack; rack++) {
-        char c = *rack;
-        /* JT[2002] - is_playable */
-        if (/* is_playable(c) */ 1) {
+phase_5_leave:
+
+    process_rack(move_ptr, g_current_rack, 0);  /* JT[2370] */
+
+    /* Count remaining rack tiles by category */
+    playable_count = 0;
+    regular_count = 0;
+    blank_count = 0;
+
+    char *rack_scan = g_current_rack;
+    while (*rack_scan != '\0') {
+        int16_t ch = (int16_t)(int8_t)*rack_scan;
+
+        if (is_letter_playable(ch)) {           /* JT[2002] */
             playable_count++;
-        } else if (c == '?') {
+        } else if (ch == '?') {
             blank_count++;
+        } else {
+            regular_count++;
         }
+        rack_scan++;
     }
 
-    /* Calculate bingo bonus (7+ tiles) */
+    /* Calculate draw count: 7 minus all categorized tiles */
+    draw_count = 7 - playable_count - regular_count - blank_count;
+
+    /* Cap draw count */
+    max_tiles = letter_count - 1;
+    if (draw_count > max_tiles) {
+        if (letter_count <= 7)
+            draw_count = 0;
+        else
+            draw_count = max_tiles;
+    }
+
+    /* ============================================================
+     * PHASE 5: Composite leave evaluation via JT[2506]
+     * ============================================================ */
+
+    /* Call the main leave evaluation function.
+     * This integrates per-tile MUL values, binomial weighting,
+     * and V/C balance into a single leave score. */
+    int32_t leave_score = final_leave_calc(
+        playable_count,     /* tiles that can be played */
+        blank_count,        /* blank tiles remaining */
+        regular_count,      /* regular tiles remaining */
+        tiles_played,       /* vowels? (unclear parameter mapping) */
+        0,                  /* consonants? */
+        draw_count          /* tiles to draw */
+    );                                          /* JT[2506] */
+
+    total_score += leave_score;
+
+    if (score_markers != NULL) {
+        *score_markers++ = -1;                  /* terminator / leave marker */
+    }
+
+    /* ============================================================
+     * PHASE 6: Bingo bonus
+     * ============================================================ */
+
+    /* Temporarily adjust letter count if word was placed */
+    int8_t has_word = *((int8_t *)move_ptr + 32);
+    if (has_word)
+        letter_count--;
+
     if (letter_count > 7 && letter_count < 17) {
-        short bingo_bonus = g_bingo_bonus_table[letter_count - 7];
-        bingo_bonus -= g_bingo_adjustment;
-        total_score += bingo_bonus;
+        /* Bingo: played 7 or more tiles from rack.
+         * Look up bonus from table indexed by (letter_count - 7).
+         * The table is at g_bingo_table with 2-byte entries.
+         * Adjusted by g_bingo_adj base value. */
+        int16_t bingo_idx = letter_count;
+        int16_t bonus = g_bingo_table[bingo_idx];
+        bonus -= g_bingo_adj;
+        total_score += (int32_t)bonus;
 
-        if (score_breakdown) {
-            *score_breakdown++ = -33;  /* Bingo marker */
+        if (score_markers != NULL) {
+            *score_markers++ = -33;             /* bingo bonus marker */
         }
     }
 
-    /* Q handling - check for Q without U */
-    if (strchr(g_current_rack, 'q') && !strchr(g_current_rack, 'u')) {
-        /* Q without U - penalty */
-        short penalty = 10 * tiles_placed;  /* /* uncertain */ penalty calc */
-        total_score -= penalty;
+    /* Restore letter count */
+    if (has_word)
+        letter_count++;
 
-        if (score_breakdown) {
-            *score_breakdown++ = -4;  /* Q penalty marker */
+    /* ============================================================
+     * PHASE 7: Per-letter leave values
+     * ============================================================ */
+
+    int32_t letter_leave = 0;
+    q_present = 0;
+
+    char *rack_ptr = g_rack;
+    while (*rack_ptr != '\0') {
+        int16_t ch = (int16_t)(int8_t)*rack_ptr;
+
+        /* Validate letter range */
+        if (ch < 0 || ch >= 128 || letter_buf[ch] >= 0) {
+            bounds_error();                     /* JT[418] */
         }
-    }
 
-finalize:
-    /* Cleanup */
-    /* JT[2378] - cleanup */
-    /* JT[2410] - reset */
-
-    return total_score;
-}
-
-/*============================================================
- * Function 0x0A44 - Calculate Per-Tile Scores
- *
- * Iterates through board positions calculating individual
- * tile contribution scores.
- *============================================================*/
-long calculate_per_tile_scores(short *positions_out, short *values_out)
-{
-    typedef struct {
-        long  data[2];
-        char  valid_flag;  /* Byte 4 */
-        char  reserved;
-        char  row;         /* Byte 6 */
-        char  col;         /* Byte 7 */
-    } PositionInfo;
-
-    PositionInfo *pos_table = (PositionInfo *)g_position_table;
-    long total = 0;
-    short position;
-    short row, col;
-    char letter;
-    short tile_score;
-
-    for (position = 1; position < g_board_size; position++) {
-        /* Check if position valid */
-        if (!pos_table[position].valid_flag) {
+        /* Skip if this letter has zero count in buffer */
+        if (letter_buf[ch] == 0) {
+            rack_ptr++;
             continue;
         }
 
-        row = pos_table[position].row;
-        col = pos_table[position].col;
-
-        /* Get letter at position */
-        letter = g_state1[row][col];
-        if (letter == 0) {
-            continue;  /* Empty cell */
+        /* Skip Q: handled separately in phase 8 */
+        if (ch == 'q') {        /* ASCII 113 */
+            q_present = 1;
+            rack_ptr++;
+            continue;
         }
 
-        /* Get score from state2 or calculate from letter value */
-        if (g_state2[row][col] != 0) {
-            tile_score = g_state2[row][col];
+        /* Calculate positional score for this letter pattern */
+        int16_t pos_score = calc_positional_score(
+            letter_buf, &letter_buf[ch]         /* JT[2498] */
+        );
+
+        /* Multiply by letter's count and accumulate */
+        int8_t count = letter_buf[ch];
+        letter_leave += (int32_t)(pos_score * (int16_t)count);
+
+        rack_ptr++;
+    }
+
+    /* ============================================================
+     * PHASE 7b: Q solo contribution
+     * ============================================================ */
+
+    if (q_present) {
+        /* Calculate Q's positional score using "q" pattern */
+        int16_t q_score = calc_positional_score(
+            letter_buf, g_q_pattern              /* JT[2498] */
+        );
+
+        /* Look up Q's base value from score table */
+        int16_t q_base = g_score_lookup['q'];
+        letter_leave += (int32_t)(q_score + q_base);
+    }
+
+    /* ============================================================
+     * PHASE 7c: Per-letter average normalization
+     * ============================================================ */
+
+    /* Scale leave by draw count: multiply by (7 - rack_length) */
+    int16_t rack_len = strlen(g_current_rack);   /* JT[3522] */
+    draw_count = 7 - rack_len;
+
+    letter_leave = mul32(letter_leave, (int32_t)draw_count);  /* JT[66] */
+
+    /* Add letter_count as rounding term, then divide by letter_count */
+    letter_leave += (int32_t)letter_count;
+    letter_leave = div32(letter_leave, (int32_t)letter_count); /* JT[90] */
+
+    total_score += letter_leave;
+
+    if (score_markers != NULL) {
+        *score_markers++ = -2;                  /* per-letter average marker */
+    }
+
+    /* ============================================================
+     * PHASE 8: QU synergy bonus
+     * ============================================================ */
+
+    /* Check if rack contains both Q and U */
+    if (strchr(g_current_rack, 'u') != NULL) {  /* JT[3514] */
+        if (q_present) {
+            /* QU synergy: calculate combined score for "qu" pattern */
+            int16_t qu_score = calc_positional_score(
+                letter_buf, g_qu_pattern         /* JT[2498] */
+            );
+
+            /* Subtract the Q-alone score to get the synergy delta */
+            int16_t q_base = g_score_lookup['q'];
+            int32_t qu_bonus = (int32_t)(qu_score - q_base);
+
+            /* Scale by draw count and normalize by letter count */
+            qu_bonus = mul32(qu_bonus, (int32_t)draw_count);    /* JT[66] */
+            qu_bonus += (int32_t)letter_count;
+            qu_bonus = div32(qu_bonus, (int32_t)letter_count);  /* JT[90] */
+
+            total_score += qu_bonus;
+
+            if (score_markers != NULL) {
+                *score_markers++ = -3;          /* QU synergy marker */
+            }
+        }
+    }
+
+    /* ============================================================
+     * PHASE 9: Q-without-U penalty
+     * ============================================================ */
+
+    if (strchr(g_current_rack, 'q') != NULL) {  /* JT[3514] */
+        if (strchr(g_current_rack, 'u') == NULL) {
+            /* Q without U: apply penalty from lookup table.
+             * Table is indexed by (draw_count * 10 + letter_count_index).
+             * This penalty reflects the likelihood of NOT drawing a U. */
+            int16_t penalty_idx = draw_count * 10;
+            int16_t q_penalty = g_q_penalty[penalty_idx + letter_count];
+            total_score += (int32_t)q_penalty;  /* penalty is negative */
+
+            if (score_markers != NULL) {
+                *score_markers++ = -4;          /* Q penalty marker */
+            }
+        }
+    }
+
+    /* ============================================================
+     * PHASE 10: Individual letter leave contributions
+     * ============================================================ */
+
+    rack_scan = g_current_rack;
+    while (*rack_scan != '\0') {
+        int16_t ch = (int16_t)(int8_t)*rack_scan;
+
+        /* Skip duplicate letters (rack is sorted, so duplicates are adjacent) */
+        if (*rack_scan == *(rack_scan + 1)) {
+            rack_scan++;
+            continue;
+        }
+
+        /* Get this letter's count in the rack */
+        int16_t count = (int16_t)letter_buf[ch];
+
+        /* Calculate individual letter leave value */
+        int32_t val = calc_letter_value(ch, letter_count, count);  /* JT[2514] */
+
+        /* Get letter's base frequency value */
+        int8_t freq = g_letter_freq[ch];
+        int16_t freq_adj = (int16_t)freq - 1;
+
+        /* Calculate differential: value for this letter minus baseline */
+        int32_t baseline = calc_letter_value('a' - 1, ch, 0);     /* JT[2514] */
+        val -= baseline;
+
+        total_score += val;
+
+        /* Write marker for this letter's contribution */
+        if (score_markers != NULL) {
+            /* Marker encodes rack position: -(5 + position_in_rack) */
+            char *pos_in_rack = strchr(g_rack, (char)ch);  /* JT[3514] */
+            int16_t offset = (int16_t)(pos_in_rack - g_rack);
+            *score_markers++ = -(5 + offset);
+        }
+
+        rack_scan++;
+    }
+
+    /* ============================================================
+     * PHASE 11: Final accumulation via helper
+     * ============================================================ */
+
+    /* Call sum_filtered_values (function 0x0310) for per-tile position
+     * scoring, passing the score and value marker arrays. */
+    int32_t position_score = sum_filtered_values(
+        score_markers, value_markers, 0
+    );                                          /* PC-relative call to 0x0310 */
+    total_score += position_score;
+
+    /* ============================================================
+     * PHASE 12: Validate remaining rack and cleanup
+     * ============================================================ */
+
+    /* Verify all remaining rack letters are valid */
+    rack_scan = g_current_rack;
+    while (*rack_scan != '\0') {
+        int16_t ch = (int16_t)(int8_t)*rack_scan;
+        if (g_letter_counts[ch] <= 0) {
+            bounds_error();                     /* JT[418] */
+        }
+        rack_scan++;
+    }
+
+    /* Cleanup: restore rack state */
+    cleanup_rack(g_current_rack);               /* JT[2378] */
+    sort_rack(g_current_rack);                  /* JT[2410] */
+
+    return total_score;
+}
+```
+
+### Algorithm Summary
+
+The function is structured as a 12-phase pipeline:
+
+| Phase | Description | Score Component |
+|-------|-------------|-----------------|
+| 1 | Initialize rack, count letters | (setup) |
+| 2 | Offline mode: base score from position table | total += base |
+| 3 | Walk word: letter values, cross-words, bonus squares | word_score |
+| 4 | Mark played tiles in rack | (setup) |
+| 5 | Composite leave evaluation | total += leave |
+| 6 | Bingo bonus for 7+ tiles | total += bingo |
+| 7 | Per-letter leave values with normalization | total += letter_leave |
+| 7b | Q solo pattern score | (part of 7) |
+| 7c | Normalize by draw count / letter count | (part of 7) |
+| 8 | QU synergy bonus | total += qu_bonus |
+| 9 | Q-without-U penalty | total += penalty |
+| 10 | Individual unique letter contributions | total += per_letter |
+| 11 | Position-based accumulation via helper | total += pos_score |
+| 12 | Validate rack, cleanup | (teardown) |
+
+---
+
+## Function 0x0A44 - Per-Tile Position Scores
+
+**Frame**: LINK A6,#-12 (12-byte local frame).
+**Saved registers**: D3-D7/A2-A4.
+**Parameters**:
+- 8(A6) = positions output array (int16*, may be NULL)
+- 12(A6) = values output array (int16*, may be NULL)
+
+**Returns**: D0 = total accumulated score.
+
+This function iterates every board position from 1 to g_board_size-1, checking
+the position validity table. For each valid position with a tile on the board,
+it computes a score contribution based on the letter value and cross-word
+context.
+
+### Stack Frame Layout
+
+| Offset | Size | Purpose |
+|--------|------|---------|
+| -4(A6) | 4 | (padding/unused) |
+| -8(A6) | 4 | (padding/unused) |
+| -10(A6) | 4 | Total score accumulator (int32) |
+| -12(A6) | 2 | Current letter value (int16) |
+
+### Register Usage
+
+| Register | Purpose |
+|----------|---------|
+| D3 | Running tile score for current position |
+| D4 | Row index for current position |
+| D5 | Column index for current position |
+| D6 | Temporary for cross-word calculations |
+| D7 | Position loop counter (1 to g_board_size-1) |
+| A2 | Unused (saved but not used) |
+| A3 | Value output pointer (from 12(A6)) |
+| A4 | Position output pointer (from 8(A6)) |
+
+### Position Record Format
+
+Each position record is 8 bytes (accessed via g_position_table at A5-10918):
+
+| Byte Offset | Type | Description |
+|-------------|------|-------------|
+| 0-3 | int32 | Opaque data |
+| 4 | int8 | Valid flag (nonzero = valid position) |
+| 5 | int8 | Reserved |
+| 6 | int8 | Row index into board grid |
+| 7 | int8 | Column index into board grid |
+
+### Algorithm
+
+For each valid position with a tile:
+1. Read the letter from g_state1[row][col]
+2. If g_state2[row][col] is nonzero, use that as the cross-word context score
+3. Otherwise, look up the letter's point value from g_letter_points
+4. For Q tiles: if the word containing Q has length > 1, divide score by 2
+   (Q's 10 points are halved when it forms part of a longer word, reflecting
+   that QU is effectively a single unit)
+5. Write position index and score to output arrays (if non-NULL)
+6. Accumulate into total
+
+### C Decompilation
+
+```c
+/*
+ * calc_per_tile_scores - Score each tile on the board by position.
+ *
+ * Iterates all valid board positions, computes per-tile contribution
+ * scores, and optionally writes position/value arrays for the UI.
+ *
+ * Parameters:
+ *   positions_out  - array to receive position indices (may be NULL)
+ *   values_out     - array to receive per-tile scores (may be NULL)
+ *
+ * Returns: total of all per-tile scores
+ */
+int32_t calc_per_tile_scores(int16_t *positions_out, int16_t *values_out)
+{
+    int32_t  total = 0;        /* -10(A6) */
+    int16_t  letter_val;       /* -12(A6) */
+    int16_t  pos;              /* D7: loop counter */
+    int32_t  tile_score;       /* D3 */
+    int16_t  row, col;         /* D4, D5 */
+
+    for (pos = 1; pos < g_board_size; pos++) {
+        /* Read position record (8 bytes per entry) */
+        int8_t *rec = (int8_t *)g_position_table + (int32_t)pos * 8;
+
+        /* Check valid flag at byte 4 */
+        if (rec[4] == 0)
+            continue;           /* invalid position, skip */
+
+        /* Extract row and column */
+        row = (int16_t)(int8_t)rec[6];
+        col = (int16_t)(int8_t)rec[7];
+
+        /* Read letter at this board position */
+        int8_t letter = g_state1[row][col];
+        letter_val = (int16_t)letter;
+
+        if (letter_val == 0)
+            continue;           /* empty cell, skip */
+
+        /* Start with base tile score */
+        tile_score = 0;
+
+        /* Check pre-computed cross-word score in g_state2 */
+        int16_t cross_score = g_state2[row][col];
+        if (cross_score != 0) {
+            /* Use pre-computed cross-word value */
+            tile_score = (int32_t)cross_score;
         } else {
-            tile_score = g_letter_values[(unsigned char)letter];
+            /* No cross-word: use letter's point value */
+            int16_t points = g_letter_points[(uint8_t)letter];
+            tile_score = (int32_t)points;
         }
 
-        /* Special handling for Q */
+        /* Special handling for Q (ASCII 113) */
         if (letter == 'q') {
-            /* /* uncertain */ Q value adjustment based on word length */
-            /* Divide by 2 if not single letter */
-            tile_score /= 2;
+            /* Check word length at this position.
+             * Uses position record to find the word string,
+             * then calls strlen. */
+            int8_t *word_rec = (int8_t *)g_position_table + (int32_t)pos * 8;
+            /* The word pointer is at offset 8 in the extended record */
+            char *word_str = *(char **)(word_rec + 8);
+            int16_t word_len = strlen(word_str);    /* JT[3522] */
+
+            if (word_len > 1) {
+                /* Q in a multi-letter word: halve its contribution.
+                 * This accounts for Q+U being treated as a unit. */
+                tile_score = div32(tile_score, 2);  /* JT[90] */
+            }
         }
 
-        /* Store results */
-        if (positions_out) {
-            *positions_out++ = position;
+        /* Write to output arrays if provided */
+        if (positions_out != NULL) {
+            *positions_out++ = pos;
         }
-        if (values_out) {
-            *values_out++ = tile_score;
+        if (values_out != NULL) {
+            *values_out++ = (int16_t)tile_score;
         }
 
+        /* Accumulate */
         total += tile_score;
     }
 
-    /* Terminate outputs */
-    if (positions_out) *positions_out = 0;
-    if (values_out) *values_out = 0;
+    /* Null-terminate output arrays */
+    if (positions_out != NULL)
+        *positions_out = 0;
+    if (values_out != NULL)
+        *values_out = 0;
 
     return total;
 }
 ```
 
-### Key Implementation Notes
+---
 
-1. **SANE Operations**: The code heavily uses Apple's SANE for extended precision (80-bit) floating-point arithmetic. Operations include:
-   - `faddx` - Extended add
-   - `fsubx` - Extended subtract
-   - `fmulx` - Extended multiply
-   - `fdivx` - Extended divide
-   - `x2x` - Convert to extended
+## Data Structures
 
-2. **Score Components**:
-   - Base word score (letter values * positions)
-   - Cross-word scores (perpendicular words formed)
-   - Bonus square multipliers (DL, TL, DW, TW)
-   - Bingo bonus (50 points for using all 7 tiles)
-   - Q/QU handling (penalty for Q without U)
-   - Rack leave evaluation (value of remaining tiles)
+### Move Data (passed to function 0x0368)
 
-3. **Breakdown Markers**: The score breakdown uses negative marker values:
-   - `-1`: Terminator
-   - `-2`: Per-letter average marker
-   - `-3`: QU bonus marker
-   - `-4`: Q penalty marker
-   - `-5` to `-11`: Individual letter markers
-   - `-32`: Primary score marker
-   - `-33`: Bingo bonus marker
-   - `20000`: Word score marker
+```
+Offset  Size    Type        Field
+------  ----    ----        -----
+0       32      char[32]    word        - Letters being played (C string)
+32      1       int8        direction   - Row stride (1=across, 17=down)
+33      1       int8        start_pos   - Starting column or row
+```
+
+The direction field encodes the board traversal stride directly: for across play
+the stride is 1 (adjacent columns), for down play the stride is 17 (next row in
+the 17-wide grid).
+
+### Board Grid (g_state1 at A5-17154)
+
+17x17 byte grid (289 bytes). Row 0 and column 0 are borders (always 0). The
+playable area is rows 1-15, columns 1-15. Each byte is either 0 (empty) or the
+ASCII value of the placed letter.
+
+### Score Grid (g_state2 at A5-16610)
+
+17x17 word grid (578 bytes). Each cell contains a pre-computed cross-word score
+value in centipoints. Zero means no cross-word exists at that position. These
+values are populated by CODE 39 during move generation.
+
+### Position Record Table (g_position_table at A5-10918)
+
+Variable-length array of 8-byte records:
+
+```
+Offset  Size    Field
+------  ----    -----
+0       4       opaque data (possibly tile ID or flags)
+4       1       valid flag (nonzero = playable position)
+5       1       reserved
+6       1       row index (into 17x17 grid)
+7       1       column index (into 17x17 grid)
+```
+
+Indexed from 1 to g_board_size-1. Position 0 is unused.
+
+### Bonus Square Table (g_bonus_table at A5-2422)
+
+20 entries of 4 bytes each:
+
+```
+Offset  Size    Field
+------  ----    -----
+0       1       letter (which letter this bonus applies to)
+1       1       type (0=letter bonus, nonzero=word bonus)
+2       1       position (row or column)
+3       1       value (multiplier amount)
+```
+
+### Score Breakdown Marker Array
+
+The score_markers output array uses sentinel values to delimit score components
+in the UI display:
+
+```
+[markers...]  -32     = primary word score follows
+[markers...]  20000   = cross-word score follows
+[markers...]  -1      = leave evaluation total
+[markers...]  -33     = bingo bonus follows
+[markers...]  -2      = per-letter average
+[markers...]  -3      = QU synergy bonus
+[markers...]  -4      = Q-without-U penalty
+[markers...]  -(5+i)  = individual letter at rack position i
+[markers...]  0       = array terminator
+```
+
+---
+
+## Score Calculation Pipeline
+
+The complete flow from move input to final centipoint score:
+
+```
+                    +------------------+
+                    |   Move Input     |
+                    | word + dir + pos |
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    |  Initialize Rack |  JT[2410] sort_rack
+                    |  Count Letters   |  JT[2394] count_letters
+                    +--------+---------+
+                             |
+              +--------------+--------------+
+              |                             |
+     +--------v---------+         +--------v---------+
+     | Game Active?      |         | Offline Mode     |
+     | Walk board tiles  |         | Score from table |
+     | Cross-word check  |         | A5-10918 lookup  |
+     | Bonus squares     |         +--------+---------+
+     +--------+---------+                   |
+              |                             |
+              +------>-------<--------------+
+                             |
+                    +--------v---------+
+                    | Process Rack     |  JT[2370]
+                    | Mark played tiles|
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    | Leave Evaluation |  JT[2506]
+                    | Binomial weight  |
+                    | V/C balance      |
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    | Bingo Check      |
+                    | 7+ tiles bonus   |  g_bingo_table
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    | Per-Letter Leave |
+                    | Normalize by     |
+                    | draw count       |  JT[2498], JT[66], JT[90]
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    | Q/QU Handling    |
+                    | QU synergy bonus |
+                    | Q-alone penalty  |  g_q_penalty
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    | Individual Letter|
+                    | Leave Values     |  JT[2514]
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    | Position Scores  |
+                    | sum_filtered     |  Fn 0x0310
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    | Validate & Clean |  JT[2378], JT[2410]
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    | Return Total     |
+                    | (centipoints)    |
+                    +------------------+
+```
+
+---
+
+## Integration with Other CODE Resources
+
+### Callers of CODE 35
+
+| Resource | Function | How CODE 35 is Called |
+|----------|----------|---------------------|
+| CODE 32 | evaluate_move | Calls full_score_calculation for detailed breakdown |
+| CODE 39 | generate_moves | Calls calc_per_tile_scores for position evaluation |
+| CODE 45 | rank_moves | Uses score breakdown markers for display |
+
+### Functions CODE 35 Calls (via Jump Table)
+
+| JT Offset | Likely CODE | Function |
+|-----------|-------------|----------|
+| 66 | CODE 2 | 32-bit multiply |
+| 90 | CODE 2 | 32-bit divide |
+| 418 | CODE 11 | bounds_error (fatal) |
+| 2370 | CODE 31 | process_rack |
+| 2378 | CODE 31 | cleanup_rack |
+| 2394 | CODE 31 | count_letters |
+| 2410 | CODE 31 | sort_rack |
+| 2498 | CODE 32 | calc_positional_score |
+| 2506 | CODE 32 | final_leave_calc |
+| 2514 | CODE 32 | calc_letter_value |
+| 3514 | CODE 52 | strchr |
+| 3522 | CODE 52 | strlen |
+
+### Shared Global State
+
+CODE 35 reads and writes several globals shared with the scoring system:
+
+- **g_state1** (A5-17154) and **g_state2** (A5-16610): Board state populated by
+  CODE 39 during move generation. CODE 35 reads these but does not modify them.
+
+- **g_current_rack** (A5-15498): The sorted rack string. CODE 35 modifies this
+  temporarily (via JT[2370] process_rack and JT[2378] cleanup_rack) to track
+  which tiles have been played.
+
+- **g_position_table** (A5-10918): Position validity records populated during
+  board setup. Read-only from CODE 35's perspective.
+
+- **g_bingo_table** (A5-24866): Pre-computed bingo bonus values. These are likely
+  set during game initialization.
+
+### Relationship to CODE 32
+
+CODE 35 and CODE 32 share the same scoring vocabulary (centipoints, leave values,
+V/C balance) but serve different roles:
+
+- **CODE 32** is the runtime move evaluator called during AI move search. It uses
+  simplified integer arithmetic for speed.
+- **CODE 35** provides a more detailed breakdown with optional SANE floating-point
+  precision (functions 0x0060 and 0x0168) for simulation or analysis purposes.
+
+Both call the same leave evaluation function (JT[2506]) and letter value function
+(JT[2514]), ensuring consistency between the fast evaluator and the detailed
+analysis path.
+
+---
+
+## Confidence Assessment
+
+| Component | Confidence | Notes |
+|-----------|------------|-------|
+| Function boundaries | HIGH | Verified from LINK/UNLK pairs in raw hex |
+| SANE opcode decode | **HIGH (CORRECTED)** | Cross-referenced with Apple Numerics Manual |
+| Function 0x0000/0x0030 | HIGH | Simple boundary checks, clearly decoded |
+| Function 0x0060 | MEDIUM | SANE sequence is complex; exact algorithm uncertain |
+| Function 0x0168 | MEDIUM | Multi-step SANE; some parameter mappings uncertain |
+| Function 0x0310 | HIGH | Simple loop with clear control flow |
+| Function 0x0368 | HIGH (structure) / MEDIUM (details) | Overall pipeline is clear; some field offsets and JT parameter mappings are approximate |
+| Function 0x0A44 | HIGH | Clear iteration pattern with position table |
+| Global identification | HIGH | Offsets verified against CODE 32 analysis |
+| Score marker values | HIGH | Verified from immediate values in hex |
+
+### Key Remaining Uncertainties
+
+1. **SANE functions 0x0060/0x0168**: The exact mathematical algorithm (what is being
+   computed) is uncertain. The SANE operations are correctly decoded, but the
+   relationship between the input structure fields and the computed result needs
+   further investigation. These may be related to simulation statistics or
+   expected-value calculations.
+
+2. **Function 0x0368 cross-word scoring**: The exact mechanics of how cross-word
+   values are extracted from g_state2 and combined with bonus multipliers involve
+   several nested conditions. The high-level flow is clear but some branch
+   conditions in the inner loop may be approximate.
+
+3. **Position record extended fields**: Function 0x0A44 references what appears to
+   be a word string pointer at offset 8 of the position record, suggesting the
+   records may be larger than 8 bytes or there is a secondary table. This needs
+   verification.
+
+4. **Parameter mapping for JT[2506]**: The six parameters pushed to the
+   final_leave_calc function are read from local variables, but the exact semantic
+   mapping (which parameter is vowels vs consonants vs played tiles) may be
+   imprecise.
