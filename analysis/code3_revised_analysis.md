@@ -1,5 +1,7 @@
 # CODE 3 Revised Analysis: Insights from CODE 7 and CODE 11
 
+> **Superseded analysis:** The34-byte records are move records, not DAWG headers; A5-15514/-15522 are player racks, not dictionary-section buffers. The interpretations below are superseded by original runtime captures and reconstruction/rollout_search.c.
+
 ## New Understanding
 
 After analyzing CODE 7 (board/rack state) and CODE 11 (game controller), several aspects of CODE 3 become clearer:

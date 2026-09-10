@@ -1,0 +1,13 @@
+{
+  "scope": "One natural composition recurrence replay using original terminal table; cache/blank wrapper and table initialization excluded",
+  "args": [
+    0,
+    0,
+    39,
+    54,
+    7
+  ],
+  "result_bits": 4294967247,
+  "result_matches": true,
+  "capture_sha256": "a6f2a4d4003a7b6e860784351c4059a6abf4e62afa064c2d43ab06cfd81aee72"
+}

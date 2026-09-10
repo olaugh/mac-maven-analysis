@@ -1,0 +1,7 @@
+{
+  "scope": "Saved RAM snapshot, not a fresh runtime call",
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "a5": 131028224,
+  "a5_displacement": -3018,
+  "string_hex": "6165696f75"
+}

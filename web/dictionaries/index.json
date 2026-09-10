@@ -1,0 +1,42 @@
+[
+ {
+  "file": "MAVEN-1995.dawg",
+  "label": "Maven 1995 (TWL98 / OSW)",
+  "s1": "TWL98 (Maven S1, 1995)",
+  "s2": "OSW (Maven S2, 1995)",
+  "words_s1": 172236,
+  "words_s2": 210643,
+  "bytes": 1070788,
+  "sha256": "2619382321bca5b52967b3515d15b0592a8e1f641bce92f65edcf06ba10edb19"
+ },
+ {
+  "file": "NWL23-CSW24.dawg",
+  "label": "NWL2023 / CSW24",
+  "s1": "NWL23",
+  "s2": "CSW24",
+  "words_s1": 196601,
+  "words_s2": 280887,
+  "bytes": 1317444,
+  "sha256": "d0e95bc048365ef0848ac078626887361b2e7ec1c02ffa8019bfa3780c138129"
+ },
+ {
+  "file": "NWL20-CSW21.dawg",
+  "label": "NWL2020 / CSW21",
+  "s1": "NWL20",
+  "s2": "CSW21",
+  "words_s1": 191852,
+  "words_s2": 279077,
+  "bytes": 1301284,
+  "sha256": "2762c65c1c67fd4895f153e3d2dbf128a3c830f54846cb81d48aeec0f140018a"
+ },
+ {
+  "file": "TWL06-CSW24.dawg",
+  "label": "TWL06 / CSW24",
+  "s1": "TWL06",
+  "s2": "CSW24",
+  "words_s1": 178691,
+  "words_s2": 280887,
+  "bytes": 1273460,
+  "sha256": "a3b548155032f54a06b27fcfc43a60c4a905e93b13ef7674873ecbff89660841"
+ }
+]

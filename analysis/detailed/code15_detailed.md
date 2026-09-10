@@ -1,5 +1,13 @@
 # CODE 15 Detailed Analysis - DAWG Traversal Support
 
+> Correction from the current native-resource audit: the first function (resource
+> offsets 0x0004..0x00d2) loads a whole file through CODE 47+0x025c and searches
+> backward for an 'a' byte in its final four-byte records. Its failure blocks
+> perform real nonlocal error transfers, not “set up default” returns. See
+> `reconstruction/index_file.c` and `reconstruction/error_context.c`. The trace
+> addresses and function names below are historical claims and have not been
+> reconciled with current byte-identity checks. Offsets below omit the header.
+
 ## Overview
 
 | Property | Value |

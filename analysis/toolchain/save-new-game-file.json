@@ -1,0 +1,39 @@
+{
+  "bytes": 86,
+  "sha256": "7d03ba811655e75659311defa63db51a43abac2a6949a611bf73e5c16aebcc00",
+  "matches_all_captured_writes": true,
+  "records": [
+    {
+      "file_offset": 0,
+      "tag": 1,
+      "length": 22,
+      "payload_sha256": "beb25358d731e34a0dcad04f25fc87ac7937fecd3056628ccd25a3d66fa2d5af",
+      "prefix_hex": "000000000000616365656b6f71006f72696161746500"
+    },
+    {
+      "file_offset": 26,
+      "tag": 4,
+      "length": 0,
+      "payload_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prefix_hex": ""
+    },
+    {
+      "file_offset": 30,
+      "tag": 2,
+      "length": 52,
+      "payload_sha256": "a0f4139586caaa2be8a01afd36f0a3c6dbb6b7c0336ec8e0a970a75516103bf6",
+      "prefix_hex": "616f727461650000000000000000000000000578fffffef3ffffffff00000008"
+    }
+  ],
+  "tag1_live_word": [
+    {
+      "offset": 594,
+      "word_hex": "0001"
+    },
+    {
+      "offset": 654,
+      "word_hex": "0001"
+    }
+  ],
+  "scope": "Naturally saved new game; raw record layout verified, payload meanings not inferred"
+}

@@ -1,0 +1,32 @@
+{
+  "code1_base": 129172560,
+  "a5": 131028224,
+  "below_a5": 28654,
+  "initialization_end_pc": 129172728,
+  "getresource_handler": 867646,
+  "prior_resource_calls": {
+    "itl2": 9,
+    "MBDF": 4,
+    "sfnt": 4,
+    "STR#": 10,
+    "STR ": 8,
+    "PACK": 16,
+    "CODE": 2,
+    "VERS": 1,
+    "MAVN": 1,
+    "FOND": 9,
+    "NFNT": 1,
+    "ZERO": 1
+  },
+  "code1_exact_match": true,
+  "lowmem_0908": "07cee512",
+  "comparison": "entire below-A5 region",
+  "compared_bytes": 28654,
+  "mismatches": 0,
+  "actual_sha256": "850b830d650480735e25f83d219f9c5f9297b1d433f46ce6b69344cd8598f675",
+  "reconstruction_sha256": "850b830d650480735e25f83d219f9c5f9297b1d433f46ce6b69344cd8598f675",
+  "before_sha256": "6b5301204ff87760e33524f51733eb346cdd5606963aee32d313a4f146709a57",
+  "before_distinct_byte_values": 189,
+  "changed_byte_count": 10315,
+  "drel_entries": 189
+}

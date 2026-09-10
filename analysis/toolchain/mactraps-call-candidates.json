@@ -1,0 +1,1595 @@
+{
+  "scope": "Aligned JSR/JMP opcode candidates only; no instruction-boundary or reachability proof. Names come from full library interval comparisons; aliases remain unresolved.",
+  "targets": [
+    {
+      "a5_slot": 2818,
+      "names": [
+        "GetPtrSize"
+      ],
+      "target_resource_offset": 420,
+      "candidates": 2
+    },
+    {
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "candidates": 38
+    },
+    {
+      "a5_slot": 2834,
+      "names": [
+        "PBGetVInfo"
+      ],
+      "target_resource_offset": 448,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2842,
+      "names": [
+        "FSOpen",
+        "OpenDF"
+      ],
+      "target_resource_offset": 466,
+      "candidates": 5
+    },
+    {
+      "a5_slot": 2850,
+      "names": [
+        "FSClose"
+      ],
+      "target_resource_offset": 530,
+      "candidates": 8
+    },
+    {
+      "a5_slot": 2858,
+      "names": [
+        "FSRead"
+      ],
+      "target_resource_offset": 556,
+      "candidates": 7
+    },
+    {
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "candidates": 9
+    },
+    {
+      "a5_slot": 2874,
+      "names": [
+        "GetFInfo"
+      ],
+      "target_resource_offset": 628,
+      "candidates": 2
+    },
+    {
+      "a5_slot": 2882,
+      "names": [
+        "GetVol"
+      ],
+      "target_resource_offset": 682,
+      "candidates": 2
+    },
+    {
+      "a5_slot": 2890,
+      "names": [
+        "FlushVol"
+      ],
+      "target_resource_offset": 716,
+      "candidates": 2
+    },
+    {
+      "a5_slot": 2898,
+      "names": [
+        "Create"
+      ],
+      "target_resource_offset": 748,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2906,
+      "names": [
+        "SetFInfo"
+      ],
+      "target_resource_offset": 810,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2914,
+      "names": [
+        "GetEOF"
+      ],
+      "target_resource_offset": 868,
+      "candidates": 2
+    },
+    {
+      "a5_slot": 2922,
+      "names": [
+        "SetEOF"
+      ],
+      "target_resource_offset": 902,
+      "candidates": 4
+    },
+    {
+      "a5_slot": 2930,
+      "names": [
+        "PBGetWDInfo"
+      ],
+      "target_resource_offset": 934,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2938,
+      "names": [
+        "PBGetCatInfo"
+      ],
+      "target_resource_offset": 956,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2946,
+      "names": [
+        "PBHGetFInfo"
+      ],
+      "target_resource_offset": 978,
+      "candidates": 2
+    },
+    {
+      "a5_slot": 2954,
+      "names": [
+        "CountAppFiles"
+      ],
+      "target_resource_offset": 996,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2962,
+      "names": [
+        "GetAppFiles"
+      ],
+      "target_resource_offset": 1032,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2970,
+      "names": [
+        "ClrAppFiles"
+      ],
+      "target_resource_offset": 1102,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2978,
+      "names": [
+        "HandToHand"
+      ],
+      "target_resource_offset": 1158,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2986,
+      "names": [
+        "DialogPaste",
+        "DlgPaste"
+      ],
+      "target_resource_offset": 1180,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 2994,
+      "names": [
+        "DlgDelete",
+        "DialogDelete"
+      ],
+      "target_resource_offset": 1200,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 3002,
+      "names": [
+        "DlgCopy",
+        "DialogCopy"
+      ],
+      "target_resource_offset": 1194,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 3010,
+      "names": [
+        "DlgCut",
+        "DialogCut"
+      ],
+      "target_resource_offset": 1188,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 3018,
+      "names": [
+        "TEFromScrap"
+      ],
+      "target_resource_offset": 1230,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 3026,
+      "names": [
+        "TEToScrap"
+      ],
+      "target_resource_offset": 1316,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 3034,
+      "names": [
+        "SetWordBreak"
+      ],
+      "target_resource_offset": 1354,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 3042,
+      "names": [
+        "SysEnvirons"
+      ],
+      "target_resource_offset": 58,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 3050,
+      "names": [
+        "PtoCstr"
+      ],
+      "target_resource_offset": 32,
+      "candidates": 1
+    },
+    {
+      "a5_slot": 3058,
+      "names": [
+        "CtoPstr"
+      ],
+      "target_resource_offset": 4,
+      "candidates": 1
+    }
+  ],
+  "candidates": [
+    {
+      "code_resource": 11,
+      "resource_offset": 3268,
+      "operation": "JSR",
+      "a5_slot": 2954,
+      "names": [
+        "CountAppFiles"
+      ],
+      "target_resource_offset": 996,
+      "context_start": 3256,
+      "context_hex": "4ead030a486efffe486efffc4ead0b8a3d7c0001fffa60363f2efffa",
+      "code_sha256": "fce9e1233c58aa6d899ec186bc937634f1bb50141e60c81f4eb8ff2890f8c967"
+    },
+    {
+      "code_resource": 11,
+      "resource_offset": 3288,
+      "operation": "JSR",
+      "a5_slot": 2962,
+      "names": [
+        "GetAppFiles"
+      ],
+      "target_resource_offset": 1032,
+      "context_start": 3276,
+      "context_hex": "fffa60363f2efffa486efef24ead0b920cae58474d45fef46614486e",
+      "code_sha256": "fce9e1233c58aa6d899ec186bc937634f1bb50141e60c81f4eb8ff2890f8c967"
+    },
+    {
+      "code_resource": 11,
+      "resource_offset": 3326,
+      "operation": "JSR",
+      "a5_slot": 2970,
+      "names": [
+        "ClrAppFiles"
+      ],
+      "target_resource_offset": 1102,
+      "context_start": 3314,
+      "context_hex": "0c6e0001fffe5c8f3f2efffa4ead0b9a526efffa302efffab06efffc",
+      "code_sha256": "fce9e1233c58aa6d899ec186bc937634f1bb50141e60c81f4eb8ff2890f8c967"
+    },
+    {
+      "code_resource": 14,
+      "resource_offset": 958,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 946,
+      "context_hex": "fffc42a7206ddeb82f2800ca4ead0b0a2d5ffffc487800062f2efffc",
+      "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+    },
+    {
+      "code_resource": 14,
+      "resource_offset": 1116,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 1104,
+      "context_hex": "030842a7206ddeb82f2800ca4ead0b0a2d5ffff6487800062f2efff6",
+      "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+    },
+    {
+      "code_resource": 14,
+      "resource_offset": 1300,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 1288,
+      "context_hex": "2f0742a7206ddeb82f2800ca4ead0b0a2d5ffffc487800062f2efffc",
+      "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+    },
+    {
+      "code_resource": 14,
+      "resource_offset": 1488,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 1476,
+      "context_hex": "d8ab00182a0442a72f2c00ca4ead0b0a2d5fff58487800062f2eff58",
+      "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+    },
+    {
+      "code_resource": 14,
+      "resource_offset": 2012,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 2000,
+      "context_hex": "6200014c246b00ca42a72f0a4ead0b0a2d5fffc4487800062f2effc4",
+      "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+    },
+    {
+      "code_resource": 14,
+      "resource_offset": 2390,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 2378,
+      "context_hex": "2d6c0014fffc42a72f2c00ca4ead0b0a2d5ffff4487800062f2efff4",
+      "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+    },
+    {
+      "code_resource": 14,
+      "resource_offset": 2460,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 2448,
+      "context_hex": "6e044ead01a242a72f2c00ca4ead0b0a2d5ffff42f07487800064ead",
+      "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+    },
+    {
+      "code_resource": 14,
+      "resource_offset": 2606,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 2594,
+      "context_hex": "010842a7206e00082f2800ca4ead0b0a2d5ffffc487800062f2efffc",
+      "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+    },
+    {
+      "code_resource": 14,
+      "resource_offset": 2754,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 2742,
+      "context_hex": "661242a7206ddeb82f2800ca4ead0b0a4a9f66047000600270014e75",
+      "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 2796,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 2784,
+      "context_hex": "4a9466044ead01a242a72f0c4ead0b0a2d5ffffc4878001c2f2efffc",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 3032,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 3020,
+      "context_hex": "2b54d55a2f0ca99242a72f0c4ead0b0a201fe6883b40d55e426dd5f8",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 3308,
+      "operation": "JSR",
+      "a5_slot": 3042,
+      "names": [
+        "SysEnvirons"
+      ],
+      "target_resource_offset": 58,
+      "context_start": 3296,
+      "context_hex": "a97b42673f3c0001486df2604ead0be2a8504ead062242a73f3c0001",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 3390,
+      "operation": "JSR",
+      "a5_slot": 2882,
+      "names": [
+        "GetVol"
+      ],
+      "target_resource_offset": 682,
+      "context_start": 3378,
+      "context_hex": "31c00144425742a7486df2704ead0b421ebc0001a9932e1f4e754e56",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 3430,
+      "operation": "JSR",
+      "a5_slot": 2842,
+      "names": [
+        "FSOpen",
+        "OpenDF"
+      ],
+      "target_resource_offset": 466,
+      "context_start": 3418,
+      "context_hex": "2f2e00083f2e000c486effda4ead0b1a4a5f67047001607c42673f2e",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 3452,
+      "operation": "JSR",
+      "a5_slot": 2914,
+      "names": [
+        "GetEOF"
+      ],
+      "target_resource_offset": 868,
+      "context_start": 3440,
+      "context_hex": "607c42673f2effda486effd64ead0b624a5f67047001606642673f2e",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 3478,
+      "operation": "JSR",
+      "a5_slot": 2858,
+      "names": [
+        "FSRead"
+      ],
+      "target_resource_offset": 556,
+      "context_start": 3466,
+      "context_hex": "3f2effda486effdc486effe04ead0b2a3e1f4a47670a0c47ffd96704",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 3512,
+      "operation": "JSR",
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "context_start": 3500,
+      "context_hex": "3f2effda486effdc486effe04ead0b324a5f67047001602a42673f2e",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 3534,
+      "operation": "JSR",
+      "a5_slot": 2922,
+      "names": [
+        "SetEOF"
+      ],
+      "target_resource_offset": 902,
+      "context_start": 3522,
+      "context_hex": "602a42673f2effda2f2effd64ead0b6a4a5f67047001601442673f2e",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 15,
+      "resource_offset": 3552,
+      "operation": "JSR",
+      "a5_slot": 2850,
+      "names": [
+        "FSClose"
+      ],
+      "target_resource_offset": 530,
+      "context_start": 3540,
+      "context_hex": "67047001601442673f2effda4ead0b224a5f67047001600270002e1f",
+      "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+    },
+    {
+      "code_resource": 16,
+      "resource_offset": 1386,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 1374,
+      "context_hex": "a9a0285f200c671242a72f0c4ead0b0a201fe688206e00082080200c",
+      "code_sha256": "7bf6f6d00cd33ebbf666a5edc5f6b3ffa3f18dfb41e3a5ff97aab030667811fc"
+    },
+    {
+      "code_resource": 17,
+      "resource_offset": 68,
+      "operation": "JSR",
+      "a5_slot": 2842,
+      "names": [
+        "FSOpen",
+        "OpenDF"
+      ],
+      "target_resource_offset": 466,
+      "context_start": 56,
+      "context_hex": "486c000a3f2c0006486effee4ead0b1a4a5f67044ead01a2286e0008",
+      "code_sha256": "b0b965a2455da0b9a1e03abcd74c9b68f869969aa56f1fe9d8f32a6c937f0d55"
+    },
+    {
+      "code_resource": 17,
+      "resource_offset": 102,
+      "operation": "JSR",
+      "a5_slot": 2858,
+      "names": [
+        "FSRead"
+      ],
+      "target_resource_offset": 556,
+      "context_start": 90,
+      "context_hex": "3f2effee486ed8da486ed8de4ead0b2a486ed8de306ed8dc2f082f14",
+      "code_sha256": "b0b965a2455da0b9a1e03abcd74c9b68f869969aa56f1fe9d8f32a6c937f0d55"
+    },
+    {
+      "code_resource": 17,
+      "resource_offset": 138,
+      "operation": "JSR",
+      "a5_slot": 2850,
+      "names": [
+        "FSClose"
+      ],
+      "target_resource_offset": 530,
+      "context_start": 126,
+      "context_hex": "2710d8da67d442673f2effee4ead0b224a5f67044ead01a22f2e0008",
+      "code_sha256": "b0b965a2455da0b9a1e03abcd74c9b68f869969aa56f1fe9d8f32a6c937f0d55"
+    },
+    {
+      "code_resource": 17,
+      "resource_offset": 2426,
+      "operation": "JSR",
+      "a5_slot": 3034,
+      "names": [
+        "SetWordBreak"
+      ],
+      "target_resource_offset": 1354,
+      "context_start": 2414,
+      "context_hex": "295f00a0486d06022f2c00a04ead0bda1f3c00012f2c00a0a8132f0c",
+      "code_sha256": "b0b965a2455da0b9a1e03abcd74c9b68f869969aa56f1fe9d8f32a6c937f0d55"
+    },
+    {
+      "code_resource": 18,
+      "resource_offset": 3324,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 3312,
+      "context_hex": "00e242a7206e00082f2800ca4ead0b0a2d5fff7c487800062f2eff7c",
+      "code_sha256": "d3fab480cdb62c3597983f78bcb5a90658ca67080e6b891d43e0c96432e83367"
+    },
+    {
+      "code_resource": 21,
+      "resource_offset": 3026,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 3014,
+      "context_hex": "efe2204ca0292f1442a72f0c4ead0b0a206dde80486800624267a9ce",
+      "code_sha256": "5ad75a96392a6817548b38cb24acd9eed4b2715961210163ac874dd35103d54f"
+    },
+    {
+      "code_resource": 21,
+      "resource_offset": 3122,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 3110,
+      "context_hex": "206e0008286800ca42a72f0c4ead0b0a2d5ffff4487800062f2efff4",
+      "code_sha256": "5ad75a96392a6817548b38cb24acd9eed4b2715961210163ac874dd35103d54f"
+    },
+    {
+      "code_resource": 21,
+      "resource_offset": 3152,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 3140,
+      "context_hex": "004a3047b088641a42a72f0c4ead0b0a2d5ffff4487800062f2efff4",
+      "code_sha256": "5ad75a96392a6817548b38cb24acd9eed4b2715961210163ac874dd35103d54f"
+    },
+    {
+      "code_resource": 21,
+      "resource_offset": 3660,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 3648,
+      "context_hex": "760042a7206ddec22f2800ca4ead0b0a2d5ffe62487800062f2efe62",
+      "code_sha256": "5ad75a96392a6817548b38cb24acd9eed4b2715961210163ac874dd35103d54f"
+    },
+    {
+      "code_resource": 21,
+      "resource_offset": 5302,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 5290,
+      "context_hex": "2f0742a7206ddec22f2800ca4ead0b0a2d5ffffa487800062f2efffa",
+      "code_sha256": "5ad75a96392a6817548b38cb24acd9eed4b2715961210163ac874dd35103d54f"
+    },
+    {
+      "code_resource": 21,
+      "resource_offset": 6530,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 6518,
+      "context_hex": "fffc42a7206ddec22f2800ca4ead0b0a2d5ffffc487800062f2efffc",
+      "code_sha256": "5ad75a96392a6817548b38cb24acd9eed4b2715961210163ac874dd35103d54f"
+    },
+    {
+      "code_resource": 21,
+      "resource_offset": 8796,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 8784,
+      "context_hex": "de5442a7206ddec22f2800ca4ead0b0a2d5fff9a487800062f2eff9a",
+      "code_sha256": "5ad75a96392a6817548b38cb24acd9eed4b2715961210163ac874dd35103d54f"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 418,
+      "operation": "JSR",
+      "a5_slot": 2874,
+      "names": [
+        "GetFInfo"
+      ],
+      "target_resource_offset": 628,
+      "context_start": 406,
+      "context_hex": "01a242672f073f06486effe64ead0b3a2d7c58474d45ffe642572f07",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 440,
+      "operation": "JSR",
+      "a5_slot": 2906,
+      "names": [
+        "SetFInfo"
+      ],
+      "target_resource_offset": 810,
+      "context_start": 428,
+      "context_hex": "ffe642572f073f06486effe64ead0b5a42573f2efffe42a74ead0b6a",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 452,
+      "operation": "JSR",
+      "a5_slot": 2922,
+      "names": [
+        "SetEOF"
+      ],
+      "target_resource_offset": 902,
+      "context_start": 440,
+      "context_hex": "4ead0b5a42573f2efffe42a74ead0b6a7a0099cc548f42a7206ddec2",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 472,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 460,
+      "context_hex": "548f42a7206ddec22f2800ca4ead0b0a2d5fffe2487800062f2effe2",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 544,
+      "operation": "JSR",
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "context_start": 532,
+      "context_hex": "3f2efffe486efff6486efffc4ead0b3242a72f0b4ead0b0a201f3d40",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 552,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 540,
+      "context_hex": "486efffc4ead0b3242a72f0b4ead0b0a201f3d40fffa72022d41fff6",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 582,
+      "operation": "JSR",
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "context_start": 570,
+      "context_hex": "3f2efffe486efff6486efffa4ead0b322f0b4ead05ea24400c6e0001",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 632,
+      "operation": "JSR",
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "context_start": 620,
+      "context_hex": "42673f2efffe486efff62f0a4ead0b32204ba02a0c6e0001fffc548f",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 668,
+      "operation": "JSR",
+      "a5_slot": 2850,
+      "names": [
+        "FSClose"
+      ],
+      "target_resource_offset": 530,
+      "context_start": 656,
+      "context_hex": "5c8c6000ff3a42673f2efffe4ead0b224a5f67044ead01a2426742a7",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 686,
+      "operation": "JSR",
+      "a5_slot": 2890,
+      "names": [
+        "FlushVol"
+      ],
+      "target_resource_offset": 716,
+      "context_start": 674,
+      "context_hex": "67044ead01a2426742a73f064ead0b4a206ddec2426800d22f074ead",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 756,
+      "operation": "JSR",
+      "a5_slot": 2842,
+      "names": [
+        "FSOpen",
+        "OpenDF"
+      ],
+      "target_resource_offset": 466,
+      "context_start": 744,
+      "context_hex": "42672f073f2e0008486efffe4ead0b1a4a5f67044ead01a242a7206d",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 778,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 766,
+      "context_hex": "01a242a7206ddec22f2800ca4ead0b0a2d5fffe2487800062f2effe2",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 824,
+      "operation": "JSR",
+      "a5_slot": 2858,
+      "names": [
+        "FSRead"
+      ],
+      "target_resource_offset": 556,
+      "context_start": 812,
+      "context_hex": "3f2efffe486efff6486efffc4ead0b2a0c5fffd9670000d070022d40",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 856,
+      "operation": "JSR",
+      "a5_slot": 2858,
+      "names": [
+        "FSRead"
+      ],
+      "target_resource_offset": 556,
+      "context_start": 844,
+      "context_hex": "3f2efffe486efff6486efffa4ead0b2abc45548f6e34206ddec27001",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 1004,
+      "operation": "JSR",
+      "a5_slot": 2858,
+      "names": [
+        "FSRead"
+      ],
+      "target_resource_offset": 556,
+      "context_start": 992,
+      "context_hex": "42573f2efffe486efff62f0a4ead0b2a204ca02a588f52455c8b6000",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 22,
+      "resource_offset": 1108,
+      "operation": "JSR",
+      "a5_slot": 2850,
+      "names": [
+        "FSClose"
+      ],
+      "target_resource_offset": 530,
+      "context_start": 1096,
+      "context_hex": "a9284ead048a42573f2efffe4ead0b224a5f67044ead01a2206ddec2",
+      "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+    },
+    {
+      "code_resource": 3,
+      "resource_offset": 4124,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 4112,
+      "context_hex": "008842a7206ddeb82f2800ca4ead0b0a2d5ffdfc487800062f2efdfc",
+      "code_sha256": "45264938d606efd4a84aad6e98c4836385e2a8c06807a11139fcd3717886f2cc"
+    },
+    {
+      "code_resource": 3,
+      "resource_offset": 4318,
+      "operation": "JSR",
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "context_start": 4306,
+      "context_hex": "3f2e000c486eff7c486eff804ead0b324a5f4fef001467044ead01a2",
+      "code_sha256": "45264938d606efd4a84aad6e98c4836385e2a8c06807a11139fcd3717886f2cc"
+    },
+    {
+      "code_resource": 3,
+      "resource_offset": 4386,
+      "operation": "JSR",
+      "a5_slot": 2850,
+      "names": [
+        "FSClose"
+      ],
+      "target_resource_offset": 530,
+      "context_start": 4374,
+      "context_hex": "4e754e56000042673f2e00084ead0b224e5e4e75",
+      "code_sha256": "45264938d606efd4a84aad6e98c4836385e2a8c06807a11139fcd3717886f2cc"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 32,
+      "operation": "JSR",
+      "a5_slot": 2858,
+      "names": [
+        "FSRead"
+      ],
+      "target_resource_offset": 556,
+      "context_start": 20,
+      "context_hex": "3f2e0008486efffa486effff4ead0b2a4a5f67061d7c00ffffff102e",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 80,
+      "operation": "JSR",
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "context_start": 68,
+      "context_hex": "3f2e0008486efffc486dfb6e4ead0b32301f4e5e4e754e56ff862f07",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 122,
+      "operation": "JSR",
+      "a5_slot": 2946,
+      "names": [
+        "PBHGetFInfo"
+      ],
+      "target_resource_offset": 978,
+      "context_start": 110,
+      "context_hex": "0008ff984257486eff8642274ead0b823e1f206e000c20aeffd23007",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 178,
+      "operation": "JSR",
+      "a5_slot": 2946,
+      "names": [
+        "PBHGetFInfo"
+      ],
+      "target_resource_offset": 978,
+      "context_start": 166,
+      "context_hex": "0008ff984257486eff8642274ead0b823e1f202effcad0aeffc0206e",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 250,
+      "operation": "JSR",
+      "a5_slot": 2834,
+      "names": [
+        "PBGetVInfo"
+      ],
+      "target_resource_offset": 448,
+      "context_start": 238,
+      "context_hex": "feca508f4267486efeae42274ead0b123e1f66222f2e0008486efefe",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 320,
+      "operation": "JSR",
+      "a5_slot": 2842,
+      "names": [
+        "FSOpen",
+        "OpenDF"
+      ],
+      "target_resource_offset": 466,
+      "context_start": 308,
+      "context_hex": "2f2e00083f2e000c2f2e000e4ead0b1a3e1f67043007601a4a6e0012",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 348,
+      "operation": "JSR",
+      "a5_slot": 2922,
+      "names": [
+        "SetEOF"
+      ],
+      "target_resource_offset": 902,
+      "context_start": 336,
+      "context_hex": "67124267206e000e3f1042a74ead0b6a301f600270002e1f4e5e4e75",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 410,
+      "operation": "JSR",
+      "a5_slot": 2874,
+      "names": [
+        "GetFInfo"
+      ],
+      "target_resource_offset": 628,
+      "context_start": 398,
+      "context_hex": "4267487809104267486efff04ead0b3a42572f2e00083f2e000c2f2e",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 432,
+      "operation": "JSR",
+      "a5_slot": 2898,
+      "names": [
+        "Create"
+      ],
+      "target_resource_offset": 748,
+      "context_start": 420,
+      "context_hex": "3f2e000c2f2efff42f2e00144ead0b523e1f661a3f2e00122f2e000e",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 528,
+      "operation": "JSR",
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "context_start": 516,
+      "context_hex": "3f2efffe486e00122f2e000e4ead0b323e1f661242673f2efffe2f2e",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 546,
+      "operation": "JSR",
+      "a5_slot": 2922,
+      "names": [
+        "SetEOF"
+      ],
+      "target_resource_offset": 902,
+      "context_start": 534,
+      "context_hex": "661242673f2efffe2f2e00124ead0b6a3e1f670e42673f2efffe4ead",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 560,
+      "operation": "JSR",
+      "a5_slot": 2850,
+      "names": [
+        "FSClose"
+      ],
+      "target_resource_offset": 530,
+      "context_start": 548,
+      "context_hex": "0b6a3e1f670e42673f2efffe4ead0b22548f601c42673f2efffe4ead",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 574,
+      "operation": "JSR",
+      "a5_slot": 2850,
+      "names": [
+        "FSClose"
+      ],
+      "target_resource_offset": 530,
+      "context_start": 562,
+      "context_hex": "0b22548f601c42673f2efffe4ead0b223e1f660e426742a73f2e000c",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 590,
+      "operation": "JSR",
+      "a5_slot": 2890,
+      "names": [
+        "FlushVol"
+      ],
+      "target_resource_offset": 716,
+      "context_start": 578,
+      "context_hex": "3e1f660e426742a73f2e000c4ead0b4a3e1f30072e1f4e5e4e754e56",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 630,
+      "operation": "JSR",
+      "a5_slot": 2842,
+      "names": [
+        "FSOpen",
+        "OpenDF"
+      ],
+      "target_resource_offset": 466,
+      "context_start": 618,
+      "context_hex": "2f2e00083f2e000c486efffe4ead0b1a4a5f67047000606442673f2e",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 650,
+      "operation": "JSR",
+      "a5_slot": 2914,
+      "names": [
+        "GetEOF"
+      ],
+      "target_resource_offset": 868,
+      "context_start": 638,
+      "context_hex": "7000606442673f2efffe2f0b4ead0b624a5f6704700060507001d093",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 688,
+      "operation": "JSR",
+      "a5_slot": 2858,
+      "names": [
+        "FSRead"
+      ],
+      "target_resource_offset": 556,
+      "context_start": 676,
+      "context_hex": "604042673f2efffe2f0b2f0c4ead0b2a4a5f662842a72f0c4ead0b02",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 700,
+      "operation": "JSR",
+      "a5_slot": 2818,
+      "names": [
+        "GetPtrSize"
+      ],
+      "target_resource_offset": 420,
+      "context_start": 688,
+      "context_hex": "4ead0b2a4a5f662842a72f0c4ead0b027001d093b09f661842673f2e",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 718,
+      "operation": "JSR",
+      "a5_slot": 2850,
+      "names": [
+        "FSClose"
+      ],
+      "target_resource_offset": 530,
+      "context_start": 706,
+      "context_hex": "d093b09f661842673f2efffe4ead0b224a5f660a204cd1d34210200c",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 47,
+      "resource_offset": 888,
+      "operation": "JSR",
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "context_start": 876,
+      "context_hex": "3f2e000c486efffc2f2e00084ead0b323e1f4a47548f670470ff6002",
+      "code_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f"
+    },
+    {
+      "code_resource": 48,
+      "resource_offset": 40,
+      "operation": "JSR",
+      "a5_slot": 3010,
+      "names": [
+        "DlgCut",
+        "DialogCut"
+      ],
+      "target_resource_offset": 1188,
+      "context_start": 28,
+      "context_hex": "4e5e4e754e5600002f2e00084ead0bc23b7c0001f2764e5e4e754e56",
+      "code_sha256": "8ce271461c763ad6897d218faadb9f8332622acb5bac017804382eaf2a73dc79"
+    },
+    {
+      "code_resource": 48,
+      "resource_offset": 62,
+      "operation": "JSR",
+      "a5_slot": 3002,
+      "names": [
+        "DlgCopy",
+        "DialogCopy"
+      ],
+      "target_resource_offset": 1194,
+      "context_start": 50,
+      "context_hex": "4e5e4e754e5600002f2e00084ead0bba3b7c0001f2764e5e4e754e56",
+      "code_sha256": "8ce271461c763ad6897d218faadb9f8332622acb5bac017804382eaf2a73dc79"
+    },
+    {
+      "code_resource": 48,
+      "resource_offset": 84,
+      "operation": "JSR",
+      "a5_slot": 2986,
+      "names": [
+        "DialogPaste",
+        "DlgPaste"
+      ],
+      "target_resource_offset": 1180,
+      "context_start": 72,
+      "context_hex": "4e5e4e754e5600002f2e00084ead0baa4e5e4e754e5600002f2e0008",
+      "code_sha256": "8ce271461c763ad6897d218faadb9f8332622acb5bac017804382eaf2a73dc79"
+    },
+    {
+      "code_resource": 48,
+      "resource_offset": 100,
+      "operation": "JSR",
+      "a5_slot": 2994,
+      "names": [
+        "DlgDelete",
+        "DialogDelete"
+      ],
+      "target_resource_offset": 1200,
+      "context_start": 88,
+      "context_hex": "4e5e4e754e5600002f2e00084ead0bb24e5e4e754e560000206e0008",
+      "code_sha256": "8ce271461c763ad6897d218faadb9f8332622acb5bac017804382eaf2a73dc79"
+    },
+    {
+      "code_resource": 48,
+      "resource_offset": 476,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 464,
+      "context_hex": "216efffa003e42a72f2efffa4ead0b0a201f206c00a020503140003c",
+      "code_sha256": "8ce271461c763ad6897d218faadb9f8332622acb5bac017804382eaf2a73dc79"
+    },
+    {
+      "code_resource": 48,
+      "resource_offset": 628,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 616,
+      "context_hex": "6606422e8300602242a72f0c4ead0b0a43ee8300201f2054a02e42a7",
+      "code_sha256": "8ce271461c763ad6897d218faadb9f8332622acb5bac017804382eaf2a73dc79"
+    },
+    {
+      "code_resource": 48,
+      "resource_offset": 646,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 634,
+      "context_hex": "8300201f2054a02e42a72f0c4ead0b0a204ed1df42288300486e8300",
+      "code_sha256": "8ce271461c763ad6897d218faadb9f8332622acb5bac017804382eaf2a73dc79"
+    },
+    {
+      "code_resource": 49,
+      "resource_offset": 126,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 114,
+      "context_hex": "200c66047000603a42a72f0c4ead0b0a7008b09f67044ead01a22054",
+      "code_sha256": "4dfbfc81a1fbc7ad80a73ad06da60abf39de24dfffcaac2c7fb05b7163eb92e2"
+    },
+    {
+      "code_resource": 49,
+      "resource_offset": 210,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 198,
+      "context_hex": "ff3e2840200c675c42a72f0c4ead0b0a2d5ffffc4878000e206efffc",
+      "code_sha256": "4dfbfc81a1fbc7ad80a73ad06da60abf39de24dfffcaac2c7fb05b7163eb92e2"
+    },
+    {
+      "code_resource": 49,
+      "resource_offset": 382,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 370,
+      "context_hex": "0220508f660000a242a72f0c4ead0b0a2d5ffff44878000e206efff4",
+      "code_sha256": "4dfbfc81a1fbc7ad80a73ad06da60abf39de24dfffcaac2c7fb05b7163eb92e2"
+    },
+    {
+      "code_resource": 50,
+      "resource_offset": 164,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 152,
+      "context_hex": "4a5f67044ead01a242a72f0b4ead0b0a2e1fe68f487800082f0b4ead",
+      "code_sha256": "25a14733f6791791bb2422502525a7cedceb788640178505a9b51ae3d49877e3"
+    },
+    {
+      "code_resource": 50,
+      "resource_offset": 186,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 174,
+      "context_hex": "00082f0b4ead05ca42972f0b4ead0b0a200748c0e7885080b09f588f",
+      "code_sha256": "25a14733f6791791bb2422502525a7cedceb788640178505a9b51ae3d49877e3"
+    },
+    {
+      "code_resource": 7,
+      "resource_offset": 1532,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 1520,
+      "context_hex": "013842a7206ddec22f2800ca4ead0b0a2d5ffffc487800062f2efffc",
+      "code_sha256": "56c5a0801c2b3d3bd87acfdffcb566b2a200bf21ef330ae9fdd5102015fd461f"
+    },
+    {
+      "code_resource": 7,
+      "resource_offset": 1638,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 1626,
+      "context_hex": "2f0742a7206ddec22f2800ca4ead0b0a2d5fff66487800062f2eff66",
+      "code_sha256": "56c5a0801c2b3d3bd87acfdffcb566b2a200bf21ef330ae9fdd5102015fd461f"
+    },
+    {
+      "code_resource": 7,
+      "resource_offset": 2112,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 2100,
+      "context_hex": "00ce4e903c00508f42a72f0c4ead0b0a2d5ffffc487800062f2efffc",
+      "code_sha256": "56c5a0801c2b3d3bd87acfdffcb566b2a200bf21ef330ae9fdd5102015fd461f"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 22,
+      "operation": "JSR",
+      "a5_slot": 2866,
+      "names": [
+        "FSWrite"
+      ],
+      "target_resource_offset": 560,
+      "context_start": 10,
+      "context_hex": "3f2e0008486e000a2f2e000e4ead0b324e5e4e754e56fffc43eefffc",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 258,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 246,
+      "context_hex": "4e754e56fffc42a72f2e000c4ead0b0a2f2e000c4eba01222e802f2e",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 456,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 444,
+      "context_hex": "200c6724204ca02942a72f0c4ead0b0a201f2254206e0008a02e204c",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 500,
+      "operation": "JSR",
+      "a5_slot": 2826,
+      "names": [
+        "GetHandleSize"
+      ],
+      "target_resource_offset": 434,
+      "context_start": 488,
+      "context_hex": "4e754e56000042a72f2e00084ead0b0a202e000cd09f206e0008a024",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 1882,
+      "operation": "JSR",
+      "a5_slot": 2818,
+      "names": [
+        "GetPtrSize"
+      ],
+      "target_resource_offset": 420,
+      "context_start": 1870,
+      "context_hex": "3c2e00081e34600042a72f0c4ead0b023046b1df6608422e000e6000",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 2354,
+      "operation": "JSR",
+      "a5_slot": 2882,
+      "names": [
+        "GetVol"
+      ],
+      "target_resource_offset": 682,
+      "context_start": 2342,
+      "context_hex": "286e000c4267486eff002f0c4ead0b424878006c486efe924ead01aa",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 2388,
+      "operation": "JSR",
+      "a5_slot": 2938,
+      "names": [
+        "PBGetCatInfo"
+      ],
+      "target_resource_offset": 956,
+      "context_start": 2376,
+      "context_hex": "3d54fea84257486efe9242274ead0b7a206e001020aefec270342e80",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 2444,
+      "operation": "JSR",
+      "a5_slot": 2930,
+      "names": [
+        "PBGetWDInfo"
+      ],
+      "target_resource_offset": 934,
+      "context_start": 2432,
+      "context_hex": "3d54fe744257486efe5e42274ead0b723e1f4a474fef001467044ead",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 2832,
+      "operation": "JSR",
+      "a5_slot": 2978,
+      "names": [
+        "HandToHand"
+      ],
+      "target_resource_offset": 1158,
+      "context_start": 2820,
+      "context_hex": "01a22d4cfffc4267486efffc4ead0ba23c1f4a4667044ead01a2204c",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 3184,
+      "operation": "JSR",
+      "a5_slot": 3018,
+      "names": [
+        "TEFromScrap"
+      ],
+      "target_resource_offset": 1230,
+      "context_start": 3172,
+      "context_hex": "302df274b0680008671442674ead0bca42a7a9f9205f3b680008f274",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 3222,
+      "operation": "JSR",
+      "a5_slot": 3026,
+      "names": [
+        "TEToScrap"
+      ],
+      "target_resource_offset": 1316,
+      "context_start": 3210,
+      "context_hex": "42a7a9fc201f3b40f27442674ead0bd2426df276548f4e754e56fdfc",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 3620,
+      "operation": "JSR",
+      "a5_slot": 3050,
+      "names": [
+        "PtoCstr"
+      ],
+      "target_resource_offset": 32,
+      "context_start": 3608,
+      "context_hex": "42142f2efffc2f0ca9902f0c4ead0bea286effee4e5e4e754e56fffc",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    },
+    {
+      "code_resource": 9,
+      "resource_offset": 3890,
+      "operation": "JSR",
+      "a5_slot": 3058,
+      "names": [
+        "CtoPstr"
+      ],
+      "target_resource_offset": 4,
+      "context_start": 3878,
+      "context_hex": "486efefe4ead0da2486efefe4ead0bf23eae000c3f2e000ea893486e",
+      "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+    }
+  ]
+}

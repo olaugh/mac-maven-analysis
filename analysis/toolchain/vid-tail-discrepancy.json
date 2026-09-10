@@ -1,0 +1,34 @@
+{
+  "game": 11,
+  "turn": 20,
+  "cgp": "7T6V/2RINGWOrM4A/2E4P6U/2F4E6n/2L4E6T/1HE2J1SUQ4E/1OX2O2L5R/1B3TREZ2WARY/4MU2IT3E1/1C1LIN1BEY3I1/1O1ER2O1E3F1/1N1AT2N5I1/1DAPHNID2GANE1/1O5UAKARIS1/5SOCIATES2 DVGD/IOLA 361/470 0",
+  "differences": [
+    {
+      "slot": 0,
+      "offset": 4,
+      "original": 0,
+      "reconstruction": 110
+    },
+    {
+      "slot": 1,
+      "offset": 4,
+      "original": 0,
+      "reconstruction": 110
+    },
+    {
+      "slot": 2,
+      "offset": 4,
+      "original": 0,
+      "reconstruction": 110
+    },
+    {
+      "slot": 3,
+      "offset": 4,
+      "original": 0,
+      "reconstruction": 110
+    }
+  ],
+  "semantic_move_lists_match": true,
+  "raw_record_match": false,
+  "status": "Unresolved trailing string storage; not a valuation or move discrepancy."
+}

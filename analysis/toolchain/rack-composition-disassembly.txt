@@ -1,0 +1,124 @@
+0db0: link.w     a6, #$fef0
+0db4: movem.l    d3-d7/a2-a4, -(a7)
+0db8: move.w     $10(a6), d6
+0dbc: moveq      #$0, d7
+0dbe: move.l     d6, d0
+0dc0: ext.l      d0
+0dc2: lsl.l      #$2, d0
+0dc4: lea.l      -$2a94(a5), a4
+0dc8: add.l      a4, d0
+0dca: movea.l    d0, a4
+0dcc: pea.l      $1c.w
+0dd0: move.l     d7, -(a7)
+0dd2: jsr        $42(a5)
+0dd6: movea.l    d0, a3
+0dd8: move.l     d7, d0
+0dda: lsl.l      #$5, d0
+0ddc: lea.l      -$100(a6), a2
+0de0: add.l      a2, d0
+0de2: movea.l    d0, a2
+0de4: bra.b      $e00
+0de6: move.l     (a4), d0
+0de8: movea.w    d6, a0
+0dea: suba.l     d7, a0
+0dec: move.l     a0, d1
+0dee: lsl.l      #$2, d1
+0df0: move.l     $18(a3, d0.l), (a2, d1.l)
+0df6: addq.l     #$1, d7
+0df8: lea.l      $1c(a3), a3
+0dfc: lea.l      $20(a2), a2
+0e00: movea.w    d6, a0
+0e02: cmpa.l     d7, a0
+0e04: bge.b      $de6
+0e06: move.l     d6, d7
+0e08: subq.w     #$1, d7
+0e0a: ext.l      d7
+0e0c: move.w     $a(a6), d6
+0e10: add.w      $8(a6), d6
+0e14: bra.w      $ed0
+0e18: move.w     $a(a6), d3
+0e1c: ext.l      d3
+0e1e: movea.w    $8(a6), a0
+0e22: move.l     d7, d0
+0e24: sub.l      a0, d0
+0e26: move.l     d0, -$104(a6)
+0e2a: movea.w    $c(a6), a0
+0e2e: suba.l     d7, a0
+0e30: move.l     a0, -$108(a6)
+0e34: move.l     d3, d1
+0e36: lsl.l      #$5, d1
+0e38: lea.l      -$100(a6), a4
+0e3c: add.l      a4, d1
+0e3e: movea.l    d1, a4
+0e40: bra.w      $ec6
+0e44: movea.w    $e(a6), a0
+0e48: suba.l     d3, a0
+0e4a: adda.w     $a(a6), a0
+0e4e: move.l     a0, d4
+0e50: tst.l      d4
+0e52: bge.b      $e56
+0e54: moveq      #$0, d4
+0e56: move.l     d3, d5
+0e58: add.l      -$108(a6), d5
+0e5c: movea.w    $8(a6), a0
+0e60: add.l      a0, d5
+0e62: tst.l      d5
+0e64: bge.b      $e68
+0e66: moveq      #$0, d5
+0e68: move.l     d4, d0
+0e6a: add.l      d5, d0
+0e6c: bne.b      $e72
+0e6e: moveq      #$1, d4
+0e70: moveq      #$1, d5
+0e72: move.l     d7, d0
+0e74: sub.l      d3, d0
+0e76: lsl.l      #$2, d0
+0e78: movea.l    d0, a3
+0e7a: move.l     d7, d0
+0e7c: sub.l      d3, d0
+0e7e: move.l     d0, -$110(a6)
+0e82: move.l     d4, d1
+0e84: add.l      d5, d1
+0e86: move.l     d1, -(a7)
+0e88: move.l     d4, -(a7)
+0e8a: move.l     d3, d1
+0e8c: addq.l     #$1, d1
+0e8e: lsl.l      #$5, d1
+0e90: lea.l      -$100(a6), a0
+0e94: add.l      a0, d1
+0e96: move.l     (a3, d1.l), -(a7)
+0e9a: jsr        $42(a5)
+0e9e: move.l     d5, -(a7)
+0ea0: move.l     -$110(a6), d1
+0ea4: lsl.l      #$2, d1
+0ea6: move.l     $4(a4, d1.l), -(a7)
+0eaa: move.l     d0, d1
+0eac: jsr        $42(a5)
+0eb0: exg.l      d0, d1
+0eb2: add.l      d1, d0
+0eb4: move.l     d0, -(a7)
+0eb6: jsr        $5a(a5)
+0eba: movea.l    a4, a0
+0ebc: adda.l     a3, a0
+0ebe: move.l     d0, (a0)
+0ec0: addq.l     #$1, d3
+0ec2: lea.l      $20(a4), a4
+0ec6: cmp.l      -$104(a6), d3
+0eca: ble.w      $e44
+0ece: subq.l     #$1, d7
+0ed0: movea.w    d6, a0
+0ed2: cmpa.l     d7, a0
+0ed4: ble.w      $e18
+0ed8: move.w     $a(a6), d0
+0edc: ext.l      d0
+0ede: lsl.l      #$5, d0
+0ee0: add.l      a6, d0
+0ee2: movea.l    d0, a0
+0ee4: move.w     $8(a6), d0
+0ee8: ext.l      d0
+0eea: lsl.l      #$2, d0
+0eec: adda.l     d0, a0
+0eee: move.l     -$100(a0), d0
+0ef2: movem.l    (a7)+, d3-d7/a2-a4
+0ef6: unlk       a6
+0ef8: rts        

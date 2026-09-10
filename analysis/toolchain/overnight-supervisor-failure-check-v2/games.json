@@ -1,0 +1,30 @@
+{
+  "scope": "Magpie picks human moves; original Maven Kibitz plays the other side.\nEvery normal original search is compared byte-for-byte with the owned C engine.\nPositions are imported through original files. Host owns seeded bag/deals, not\noriginal UI move-entry, refill, simulation, or history lifecycle.\n",
+  "ui_delay_scale": 0.25,
+  "key_delay_seconds": 0.04,
+  "seed": 9102070,
+  "requested_games": 1,
+  "completed_games": 0,
+  "positions": 0,
+  "ranked_records": 0,
+  "issues": [],
+  "games": [],
+  "started": 1789006863.134485,
+  "max_seconds": 360,
+  "magpie_leaves": "CSW21.klv2",
+  "magpie_only_selects_human_moves": true,
+  "original_executable_compared": true,
+  "files": {
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/bin/magpie": "298b70c362f5b79e0429fae21bc6a931ebc25cd2338b5d82f1df0050091fc2f4",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.kwg": "caabddb67f27a265fa9df4487d07fd93f4010650fbf0f684647b6ac4e0eb333e",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.wmp": "0049dcb9c3dc0913518d7a6f4333e89da37063ce89acd9a9560aee7fd6371c93",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.klv2": "d33c30e637d53ee6250fac943a01c3c9a18f93c638499ff5e13fa358c2ca03bb",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/.build/magpie-match.dylib": "445784e1dda27f1f2e8164a56994f1369c7abef067fdc577a36bf06754b2ff4c",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py": "7c48010ab8714654bdb29a58d1c6e2bf7a8502bc302c52b5e332f7dcfdd72d5e",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/original_match_search.py": "f3d49af49379dfe6bc6c82d47d6e0aa41b8686de833b479d484dbdaf768f4510",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/mac_ui.py": "6e9a1c61835473d9de8d20e56fb2d61f12dca9dc31d3f6a01de11fead4fa9f1c"
+  },
+  "failure": "Original Maven has warm query/control state. Restart the original application before creating a fresh match engine, or replay the complete preceding sequence in both engines.",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py\", line 37, in main\n    report['fresh_state_guard']=original.require_fresh_workspace(bytes(initial_workspace))\n                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/original_match_search.py\", line 23, in require_fresh_workspace\n    if actual!=expected:raise RuntimeError('Original Maven has warm query/control state. Restart the original application before creating a fresh match engine, or replay the complete preceding sequence in both engines.')\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Original Maven has warm query/control state. Restart the original application before creating a fresh match engine, or replay the complete preceding sequence in both engines.\n",
+  "elapsed_seconds": 0.09584522247314453
+}

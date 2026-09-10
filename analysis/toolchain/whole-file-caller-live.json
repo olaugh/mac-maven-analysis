@@ -1,0 +1,75 @@
+{
+  "scope": "Natural startup whole-file call; breakpoints and reads only",
+  "a5": 131028224,
+  "code47_base": 129236192,
+  "code47_sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f",
+  "complete_loaded_code_matches": true,
+  "name": "maven2.1",
+  "volume": 0,
+  "calls": [
+    {
+      "operation": "FSOpen",
+      "offset": 634,
+      "length": 129184334,
+      "error": 0
+    },
+    {
+      "operation": "GetEOF",
+      "offset": 654,
+      "length": 1070788,
+      "error": 0
+    },
+    {
+      "operation": "NewPtrClear",
+      "offset": 668,
+      "length": 1070788,
+      "allocation_pointer": 129525312
+    },
+    {
+      "operation": "FSRead",
+      "offset": 692,
+      "length": 1070788,
+      "error": 0
+    },
+    {
+      "operation": "GetPtrSize",
+      "offset": 704,
+      "length": 1070788,
+      "size": 1070789
+    },
+    {
+      "operation": "FSClose",
+      "offset": 722,
+      "length": 1070788,
+      "error": 0
+    }
+  ],
+  "length": 1070788,
+  "return_pointer": 129525312,
+  "trailing_byte": 0,
+  "data_sha256": "2619382321bca5b52967b3515d15b0592a8e1f641bce92f65edcf06ba10edb19",
+  "source_sha256": "2619382321bca5b52967b3515d15b0592a8e1f641bce92f65edcf06ba10edb19",
+  "data_matches": true,
+  "caller_pc": 129238264,
+  "caller": {
+    "code_resource": 2,
+    "resource_offset": 264,
+    "base": 129238000,
+    "sha256": "6dce1edba6e48c415c07b4d2750c2abf6f96ba8fc11edbdd8be5b151854d8898",
+    "complete_loaded_code_matches": true
+  },
+  "dictionary_setup": {
+    "roots": [
+      122166,
+      145476
+    ],
+    "tables": [
+      129525324,
+      130014092
+    ],
+    "root_records_hex": [
+      "00a94861",
+      "00b7cc61"
+    ]
+  }
+}

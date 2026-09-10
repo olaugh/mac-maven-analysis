@@ -1,0 +1,57 @@
+{
+  "scope": "Normalized ASCII input through query preparation and enumeration; comparison against previously captured original append calls. No new VM run; Bingos excluded.",
+  "cases": [
+    {
+      "case": "cat",
+      "arguments": [
+        "--rack",
+        "cat"
+      ],
+      "word_count": 4,
+      "ordered_output_matches": true,
+      "capture_sha256": "296f75ce6a4daa5a6c7ffe9cd71b353ba3946d22aba06b614da72b8d5fb72737"
+    },
+    {
+      "case": "blank",
+      "arguments": [
+        "--rack",
+        "ca?"
+      ],
+      "word_count": 50,
+      "ordered_output_matches": true,
+      "capture_sha256": "e6e7a91d6645ac2a850cce1c3357a193d77b77a5bdb77fa0363b46d664936243"
+    },
+    {
+      "case": "filtered",
+      "arguments": [
+        "--rack",
+        "ca?",
+        "--prefix",
+        "c?",
+        "--suffix",
+        "t"
+      ],
+      "word_count": 10,
+      "ordered_output_matches": true,
+      "capture_sha256": "ee82aece7d2596da9d4c61277ba6d0842ab27dd949df8659002ba281fc23e7c9"
+    },
+    {
+      "case": "required",
+      "arguments": [
+        "--rack",
+        "ca?",
+        "--on-board",
+        "t"
+      ],
+      "word_count": 85,
+      "ordered_output_matches": true,
+      "capture_sha256": "06ada6cd893490875e289908a4f8c7e551cf01b2618153e65d513532e8abcd2c"
+    }
+  ],
+  "sources": {
+    "reconstruction/query_prepare.c": "7e61cc09980f3df247b4816bb6cfce4af19fd58674342676071e022bc3f5a29c",
+    "reconstruction/word_enumerator.c": "dbccf9a4365c56704e7e7885ef41bee3193e02adb3fe085edfa99c1952ea1285",
+    "reconstruction/dictionary_lookup.c": "23e0dcf4dcd3021de21158cfc39df64ad513321053883e45c376afd9fabf7c33",
+    "scripts/word_enumerator_probe.c": "918d77dd5aa0d7fbd5c55f55b03bd434d1199d33399a774b1090318d194e1b7a"
+  }
+}

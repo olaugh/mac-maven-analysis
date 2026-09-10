@@ -1,5 +1,7 @@
 # CODE 36 Detailed Analysis - Move Evaluation and Caching Coordinator
 
+> **Superseded analysis:** CODE36 implements late-game search over baseline/local opponent pools. The generic coordinator names and call roles below are historical hypotheses; the current descriptive source and resource-relative offsets are in reconstruction/late_search.c and analysis/toolchain/code36-corrected.asm.
+
 ## Overview
 
 | Property | Value |

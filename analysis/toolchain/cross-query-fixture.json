@@ -1,0 +1,10 @@
+{
+  "scope": "Constructed legal HE opening position with a blank rack to exercise crossing queries; loaded through normal Open, no guest memory injection",
+  "file": "maven-cross-query-0909",
+  "sha256": "4aa23222230de60973cee76c32ffcc323c9e50902f51aead4426b1731ee45388",
+  "board_word": "HE",
+  "row": 8,
+  "column": 8,
+  "own": "?abcdef",
+  "other": "ghijklm"
+}

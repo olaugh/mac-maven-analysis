@@ -1,0 +1,98 @@
+[
+  {
+    "disk": "disk01.img",
+    "path": "aliases",
+    "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk01.img",
+    "path": "Application VISE 2.1 DEMO/Application VISE 2.1 DEMO",
+    "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "resource_sha256": "758c6d3aa6c864ead477313086e315c4a972dafefda060eae79488f733273de6"
+  },
+  {
+    "disk": "disk01.img",
+    "path": "Application VISE 2.1 DEMO/Application VISE 2.1 DEMO Docs",
+    "data_sha256": "f97ee1ef76922623e1e3330e478cab0e79942c88151af4aaedd2f0edbfe35ea9",
+    "resource_sha256": "c1e1c85674ea3b11f6863ea8b4033eb3be0f705fe0f61a01f059dfec4b623c55"
+  },
+  {
+    "disk": "disk01.img",
+    "path": "Compressed Essential Dev. Set.1",
+    "data_sha256": "7887a402c9c3feef8b73b9045610cd238b8c54837806ae15901881e10976b2c7",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk01.img",
+    "path": "Install Script",
+    "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "resource_sha256": "36992d30ff3d8ecb11563e9dbcca9356e5d0f2731a00ca7f5ba3596217622308"
+  },
+  {
+    "disk": "disk01.img",
+    "path": "Launch me to install",
+    "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "resource_sha256": "f67fb2b34432ddcad745825d2b8589500a3e8fd806310d2514a2d9a144f5b682"
+  },
+  {
+    "disk": "disk01.img",
+    "path": "projects",
+    "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk01.img",
+    "path": "READ ME",
+    "data_sha256": "954f2e392684e9e6d4728b3c19e77a0f0e305e5bcae3af34bbb7811795626f84",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk02.img",
+    "path": "Compressed Demos",
+    "data_sha256": "5078601ee8f53c9a71c794b0b242309f5491b68deb742cacfb24f0fe1909067e",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk02.img",
+    "path": "Compressed Essential Dev. Set.2",
+    "data_sha256": "b39b952d9275bb028e7ba8cbed481b9f16a52ebd9992b6953b31e8a04787f4ad",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk02.img",
+    "path": "Compressed Libs & Headers",
+    "data_sha256": "d86203c73415e5360fa46451b2f3ff5cf3e3261a1d046dcc3e346c8a6a4a1b0e",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk03.img",
+    "path": "Compressed Online Doc.1",
+    "data_sha256": "8400ba668f007fa521bffc1251dc8acd49ecfdeefb2f80439a921cb4c7cac53b",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk03.img",
+    "path": "Compressed Utilities",
+    "data_sha256": "07457460ca900bd63ef55b470df88cf3744cef103513bb1a2d3268b70a23fa4b",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk04.img",
+    "path": "Compressed Online Doc.2",
+    "data_sha256": "8d7ea563259117860b165e3c5f6b62fb1419fa85b3b246999baeba21e2a5e9ed",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk04.img",
+    "path": "Compressed TCL 1.1.3",
+    "data_sha256": "61f9e07ca6e1f9aeab9ae121643fb95d4be8b66e3d08c2a590024cfaa2044b44",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "disk": "disk04.img",
+    "path": "Compressed TCL Demos",
+    "data_sha256": "8d7a9ae71e6d7aa7e0c1c3c248a9c67ad8f5f3e8a76973bbc38fc93cb3a2ca81",
+    "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

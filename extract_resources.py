@@ -13,6 +13,14 @@ def parse_rdump(filepath):
     with open(filepath, 'r') as f:
         content = f.read()
 
+    # DeRez emits ASCII previews in block comments. Those previews may contain
+    # braces or text resembling hex literals; neither belongs to the resource.
+    # Preserve quoted strings (including names) while removing comments before
+    # looking for a resource's closing brace.
+    content = re.sub(r'"(?:\\.|[^"\\])*"|/\*.*?\*/',
+                     lambda m: '' if m.group().startswith('/*') else m.group(),
+                     content, flags=re.DOTALL)
+
     # Pattern to match resource definitions
     # data 'TYPE' (ID, attributes...) { ... };
     pattern = r"data\s+'([^']+)'\s*\(([^)]+)\)\s*\{([^}]+)\}"

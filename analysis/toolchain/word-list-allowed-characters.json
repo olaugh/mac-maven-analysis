@@ -1,0 +1,17 @@
+{
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "a5": 131028224,
+  "strings": [
+    {
+      "pointer_a5_offset": -24070,
+      "address": 131020176,
+      "allowed_ascii": "?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    },
+    {
+      "pointer_a5_offset": -24074,
+      "address": 131020164,
+      "allowed_ascii": "0123456789"
+    }
+  ],
+  "scope": "Saved runtime strings and static CODE 12/48/9 call chain; no direct live filter trace"
+}

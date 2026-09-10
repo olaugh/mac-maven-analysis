@@ -1,0 +1,44 @@
+#character-encoding UTF-8
+#title Fixture: full game
+#description Hand-assembled fixture covering every GCG event type.
+#lexicon NWL2023
+#player1 Alice Alice Anderson
+#player2 Bob Bob Brown
+>Alice: AELRRSU -RU +0 0
+#note Alice opens with an exchange of RU.
+>Bob: ACKLNNW 8H CLANK +32 32
+>Alice: AEILORS 9G AEROLIS +71 71
+#note Phony! AEROLIS* is not a word.
+>Alice: AEILORS -- -71 0
+#note Bob challenges and the play comes off.
+>Bob: AEFFNWW - +0 32
+>Alice: AEILORS K4 ALIE.ORS +82 82
+>Bob: AEFFNWW L1 FAWN +32 64
+>Alice: ACINOPT 11D CAPTION. +74 156
+>Bob: ?EFINOW M2 WON +30 94
+>Bob: ?EFI (challenge) +5 99
+#note Alice challenged WON; five-point penalty goes to Bob.
+>Alice: DELMORT H10 M.LTED +30 186
+>Bob: ?EEFINN 15A bEFINNE. +86 185
+>Alice: EMORRTU 14B MOTU +29 215
+>Bob: EGHIOSU 13H .OUGHIES +76 261
+>Alice: BBEERRV O7 REVERB. +45 260
+>Bob: EHIJPRZ N10 ZE +64 325
+>Alice: ABDGGIU 13A BUD +31 291
+>Bob: HIJPRRT J7 R.J +21 346
+>Alice: AAGGITY N1 GAT +26 317
+>Bob: DHIOPRT 14H .DH +31 377
+>Alice: AADEGIY M6 GAY +23 340
+>Bob: IOOPRTT 1H PROO. +30 407
+>Alice: ADEEIIQ 2E QADI +20 360
+>Bob: ?AEIOTT F5 ThIOTE.A +61 468
+>Alice: EEIRSVX J1 .X +25 385
+>Bob: AEIISUY 3G EASY +31 499
+>Alice: EEILRSV L12 S.IV +28 413
+>Bob: IIU E2 .I +11 510
+>Alice: EELR D3 LEER +10 423
+#note Alice goes out.
+>Alice: (IU) +4 427
+>Bob: IU (time) -10 500
+#note Bob went one minute over.
+#rack2 IU

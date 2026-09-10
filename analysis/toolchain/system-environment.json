@@ -1,0 +1,28 @@
+{
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "a5": 131028224,
+  "record_a5_offset": -3488,
+  "record_hex": "000100210800000501010005003c8093",
+  "fields": {
+    "environsVersion": 1,
+    "machineType": 33,
+    "systemVersion": 2048,
+    "processor": 5,
+    "hasFPU": 1,
+    "hasColorQD": 1,
+    "keyBoardType": 5,
+    "atDrvrVersNum": 60,
+    "sysVRefNum": -32621
+  },
+  "requested_version": 1,
+  "call_site": {
+    "code": 15,
+    "offset": 3308,
+    "a5_slot": 3042
+  },
+  "wrapper": {
+    "code": 34,
+    "offset": 58
+  },
+  "scope": "Saved SysEnvRec decoded using recovered OSUtils.h; static wrapper call; no new live SysEnvirons trace"
+}

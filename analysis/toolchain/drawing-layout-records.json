@@ -1,0 +1,25 @@
+{
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "a5": 131028224,
+  "selected_pointer": 131020952,
+  "selection_code_resource": 15,
+  "selection_range": [
+    1268,
+    1304
+  ],
+  "records": [
+    {
+      "layout": "large",
+      "a5_offset": -7272,
+      "bytes_hex": "0405001c001a01b40070001a001200130013003601e100560201003a01b8005201d8003a024c0052027d027e01b800010026027f01de01b600d3027b014b009201b40128027c000201b40030027d003a020a0052024300d401300129002601fd0156005a01b4007c027d",
+      "word_at_10": 26
+    },
+    {
+      "layout": "small",
+      "a5_offset": -7166,
+      "bytes_hex": "0404001c001a0134007000120012000f000f0036016100560181003a013800520158003a01cc005201fd01fe01300001002601ff0156013600d301fb014b00920134012801fc00020134003001fd003a018a005201c300d401300129002601fd0156005a0134007c01fd",
+      "word_at_10": 18
+    }
+  ],
+  "scope": "Saved 106-byte adjacent layout records and static selection branch; full field layout and new live capture pending"
+}

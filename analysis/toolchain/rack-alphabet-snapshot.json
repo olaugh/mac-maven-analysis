@@ -1,0 +1,8 @@
+{
+  "scope": "Existing RAM snapshot, not a fresh live capture",
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "a5": 131028224,
+  "pointer_global_offset": -26158,
+  "alphabet_pointer": 131019862,
+  "alphabet": "?abcdefghijklmnopqrstuvwxyz"
+}

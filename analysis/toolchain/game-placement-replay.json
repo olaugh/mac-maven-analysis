@@ -1,0 +1,17 @@
+{
+  "scope": "Placement and undo/rack-finalization replay using captured move and live letter-value table; zero initial board from tag-1 semantics. Synthetic premium table; special score not checked. No claim for full restore, final racks/counts, scoring prelude or boundary cleanup.",
+  "board_bytes_matching": 544,
+  "value_words_matching": 544,
+  "undo_bytes_matching": 33,
+  "placement_residual_rack": "i",
+  "natural_final_racks": [
+    "aceekoq",
+    "ilibdps"
+  ],
+  "natural_final_totals": [
+    0,
+    1400
+  ],
+  "save_capture_sha256": "e321f46eb1c4c5cef1cd54cd124fc8a535ad2b67a37f7ba211926de8e00b6ff3",
+  "restore_capture_sha256": "a23800b0b0e154b57e0833aee0d2c32980d9ab003946b615614707a7a682daab"
+}

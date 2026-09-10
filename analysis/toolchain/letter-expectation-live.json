@@ -1,0 +1,397 @@
+{
+  "scope": "Natural original letter expectation calls; executed resource range matches source or exact previously captured FP-rewrite fingerprint; ROM/register identity; no memory injection. Rewrite semantics and alternate SANE precision environments are not independently proven.",
+  "code32_sha256": "e391e1b0751d7d0e085004232d90befeb0cd3704803dbd862a4ab28b574a7d13",
+  "loaded_range_sha256": "918bf2217c98c3dd639c1cdf2cd679ffaef3292c9c0bfcdaec44a932dfda8dcc",
+  "loaded_range": "4e56ffce48e71f383a2e00083c2e000a0c4600076c067000600002200c45003f66047000600470a0d0453a004aadf670660000d048781f904ead06822b40f6704a80588f66044ead01a27801387c000a6016204cd1edf67042a8000642a800024250524449ec000a0c4400086de4780099cc601c204cd1edf67042a80006217c80000000000230bc3fff524449ec00500c4400656dde7801387c0050605e760170ffd044c1fc0050d0adf6702640700ac1c32440603a70ffd043c1fc000a204bd1ca43eeffd222d822d832d8487308004869fff64eb80b6c204cd1edf670d1ca43e9fff620d920d930d9524345ea000a0c4300086dc0524449ec00500c4400656d9c42aefff242aeffee426effec42aeffe842aeffe4426effe278f9d8460c4400066c0430046002700636009c6e000c78007050c1ee000cd0adf67028407050c1c6d0adf6702640204d200548c0e588d1c02468d58c204d200548c0e588d1c02068d58c2d680018ffdc7e0acfc46000008230039044c1fc000a41eeffd243f4780020d920d930d9487308004868fff64eb9408ead3043eefff641e8fff622d822d832d8486efff6486effe24eb80b6c7001d044c1fc001c2032081890aeffdc41eeffd243eefff620d920d930d92d40ffce486effce4868fff64eb9408eae2a4868fff6486effec4eb80b6c5244700ade80b86e000c6e06b6446c00ff76486effe2486effec4eb9408eaea2dc6e000c41eeffce43eeffec20d920d930d94868fff64eb9408eb8b84868fff6486effd84eb9408eb712202effd84cdf1cf84e5e4e75",
+  "range": [
+    5130,
+    5708
+  ],
+  "identity": "previous_fp_rewrite_fingerprint",
+  "calls": [
+    {
+      "letter": 97,
+      "total": 77,
+      "letter_count": 6,
+      "scores": [
+        4294967230,
+        220,
+        4294966931,
+        4294965949,
+        4294965673,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294967285
+    },
+    {
+      "letter": 97,
+      "total": 96,
+      "letter_count": 8,
+      "scores": [
+        4294967230,
+        220,
+        4294966931,
+        4294965949,
+        4294965673,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294967262
+    },
+    {
+      "letter": 101,
+      "total": 77,
+      "letter_count": 9,
+      "scores": [
+        4294967077,
+        299,
+        4294967250,
+        4294966355,
+        4294965561,
+        4294964632,
+        0,
+        0
+      ],
+      "result_bits": 188
+    },
+    {
+      "letter": 101,
+      "total": 96,
+      "letter_count": 11,
+      "scores": [
+        4294967077,
+        299,
+        4294967250,
+        4294966355,
+        4294965561,
+        4294964632,
+        0,
+        0
+      ],
+      "result_bits": 195
+    },
+    {
+      "letter": 105,
+      "total": 77,
+      "letter_count": 5,
+      "scores": [
+        82,
+        150,
+        4294966539,
+        4294965229,
+        4294964464,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294966993
+    },
+    {
+      "letter": 105,
+      "total": 96,
+      "letter_count": 8,
+      "scores": [
+        82,
+        150,
+        4294966539,
+        4294965229,
+        4294964464,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294966882
+    },
+    {
+      "letter": 97,
+      "total": 77,
+      "letter_count": 6,
+      "scores": [
+        4294967230,
+        220,
+        4294966931,
+        4294965949,
+        4294965673,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294967285
+    },
+    {
+      "letter": 97,
+      "total": 96,
+      "letter_count": 8,
+      "scores": [
+        4294967230,
+        220,
+        4294966931,
+        4294965949,
+        4294965673,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294967262
+    },
+    {
+      "letter": 101,
+      "total": 77,
+      "letter_count": 9,
+      "scores": [
+        4294967077,
+        299,
+        4294967250,
+        4294966355,
+        4294965561,
+        4294964632,
+        0,
+        0
+      ],
+      "result_bits": 188
+    },
+    {
+      "letter": 101,
+      "total": 96,
+      "letter_count": 11,
+      "scores": [
+        4294967077,
+        299,
+        4294967250,
+        4294966355,
+        4294965561,
+        4294964632,
+        0,
+        0
+      ],
+      "result_bits": 195
+    },
+    {
+      "letter": 105,
+      "total": 77,
+      "letter_count": 5,
+      "scores": [
+        82,
+        150,
+        4294966539,
+        4294965229,
+        4294964464,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294966993
+    },
+    {
+      "letter": 105,
+      "total": 96,
+      "letter_count": 8,
+      "scores": [
+        82,
+        150,
+        4294966539,
+        4294965229,
+        4294964464,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294966882
+    },
+    {
+      "letter": 97,
+      "total": 77,
+      "letter_count": 6,
+      "scores": [
+        4294967230,
+        220,
+        4294966931,
+        4294965949,
+        4294965673,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294967285
+    },
+    {
+      "letter": 97,
+      "total": 96,
+      "letter_count": 8,
+      "scores": [
+        4294967230,
+        220,
+        4294966931,
+        4294965949,
+        4294965673,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294967262
+    },
+    {
+      "letter": 101,
+      "total": 77,
+      "letter_count": 9,
+      "scores": [
+        4294967077,
+        299,
+        4294967250,
+        4294966355,
+        4294965561,
+        4294964632,
+        0,
+        0
+      ],
+      "result_bits": 188
+    },
+    {
+      "letter": 101,
+      "total": 96,
+      "letter_count": 11,
+      "scores": [
+        4294967077,
+        299,
+        4294967250,
+        4294966355,
+        4294965561,
+        4294964632,
+        0,
+        0
+      ],
+      "result_bits": 195
+    },
+    {
+      "letter": 116,
+      "total": 77,
+      "letter_count": 3,
+      "scores": [
+        4294967259,
+        148,
+        4294966895,
+        4294965983,
+        0,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 51
+    },
+    {
+      "letter": 116,
+      "total": 96,
+      "letter_count": 5,
+      "scores": [
+        4294967259,
+        148,
+        4294966895,
+        4294965983,
+        0,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4
+    },
+    {
+      "letter": 97,
+      "total": 77,
+      "letter_count": 6,
+      "scores": [
+        4294967230,
+        220,
+        4294966931,
+        4294965949,
+        4294965673,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294967285
+    },
+    {
+      "letter": 97,
+      "total": 96,
+      "letter_count": 8,
+      "scores": [
+        4294967230,
+        220,
+        4294966931,
+        4294965949,
+        4294965673,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4294967262
+    },
+    {
+      "letter": 101,
+      "total": 77,
+      "letter_count": 9,
+      "scores": [
+        4294967077,
+        299,
+        4294967250,
+        4294966355,
+        4294965561,
+        4294964632,
+        0,
+        0
+      ],
+      "result_bits": 188
+    },
+    {
+      "letter": 101,
+      "total": 96,
+      "letter_count": 11,
+      "scores": [
+        4294967077,
+        299,
+        4294967250,
+        4294966355,
+        4294965561,
+        4294964632,
+        0,
+        0
+      ],
+      "result_bits": 195
+    },
+    {
+      "letter": 116,
+      "total": 77,
+      "letter_count": 3,
+      "scores": [
+        4294967259,
+        148,
+        4294966895,
+        4294965983,
+        0,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 51
+    },
+    {
+      "letter": 116,
+      "total": 96,
+      "letter_count": 5,
+      "scores": [
+        4294967259,
+        148,
+        4294966895,
+        4294965983,
+        0,
+        0,
+        0,
+        0
+      ],
+      "result_bits": 4
+    }
+  ]
+}

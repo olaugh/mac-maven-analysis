@@ -1,0 +1,8 @@
+{
+  "scope": "Constructed rack repartition chosen by exploratory recovered wasm; unchanged board and total tile multiset. Original search must be captured separately.",
+  "own": "beknqrs",
+  "other": "ceeiotu",
+  "source_sha256": "ccd4de64fa6777de3e037d1276e9d956fc314402f227e180efda67cf7792979c",
+  "sha256": "0bbb5ed9bc2664778d6119b59deeb96d55ee9879395a3b402c1da13c6909026b",
+  "synthetic_position": true
+}

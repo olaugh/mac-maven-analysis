@@ -1,0 +1,69 @@
+{
+  "source": "https://winworldpc.com/product/think-c/6x",
+  "download": "https://winworldpc.com/download/06d07567-e535-11e7-a562-fa163e9022f0",
+  "archive_sha256": "a4d15c6ff110ece5adc43337f7cc3eea7d4b5af1a85baa0deec7396d26829c7f",
+  "status": "Installed, preserved, compiled and linked comparison probe; probe executed and checked under GDB",
+  "disks": [
+    {
+      "path": "disks/Symantec THINK C 6.0.1 for Macintosh (3.5-800k)/disk01.img",
+      "bytes": 819200,
+      "sha256": "1a5f4c40326686bcd4d09b030cca3b4d209150c813ac1befb829ad5077edc911",
+      "root_entries": [
+        "aliases",
+        "Application VISE 2.1 DEMO",
+        "Compressed Essential Dev. Set.1",
+        "Install Script",
+        "Launch me to install",
+        "projects",
+        "READ ME"
+      ]
+    },
+    {
+      "path": "disks/Symantec THINK C 6.0.1 for Macintosh (3.5-800k)/disk02.img",
+      "bytes": 819200,
+      "sha256": "f2042ee4debe107e02b81452b288a56f4e82e129142f928abc5cfc71d37528ef",
+      "root_entries": [
+        "Compressed Demos",
+        "Compressed Essential Dev. Set.2",
+        "Compressed Libs & Headers"
+      ]
+    },
+    {
+      "path": "disks/Symantec THINK C 6.0.1 for Macintosh (3.5-800k)/disk03.img",
+      "bytes": 819200,
+      "sha256": "64a0affde7092469f3712284e1f66cc34d76a3aa254bcfd3c7a7be4650e6362e",
+      "root_entries": [
+        "Compressed Online Doc.1",
+        "Compressed Utilities"
+      ]
+    },
+    {
+      "path": "disks/Symantec THINK C 6.0.1 for Macintosh (3.5-800k)/disk04.img",
+      "bytes": 819200,
+      "sha256": "60e07af351a8fa4ddba4fe5592decbcf8ce8b361e08dab3bb9c33cfa85af2203",
+      "root_entries": [
+        "Compressed Online Doc.2",
+        "Compressed TCL 1.1.3",
+        "Compressed TCL Demos"
+      ]
+    }
+  ],
+  "installer_staging": {
+    "merged_folder_result": "Installer launched, but required named volume disk 1",
+    "volume_names": [
+      "disk 1",
+      "disk 2",
+      "disk 3",
+      "disk 4"
+    ],
+    "launch_environment": "MAVEN_THINK6_INSTALLER=1",
+    "source_mounts": "Partitioned SCSI disk images under snapshot mode; original forks/types/creators verified",
+    "destination": "Installed on disposable system-disk snapshot, then Development copied through Finder to shared disk and preserved under toolchains/think-c-6/installed",
+    "failed_configurations": [
+      "Merged folder could not satisfy volume-name requests",
+      "Multiple read-only 9P installer volumes caused boot error",
+      "Raw HFS CD volumes were not recognized"
+    ],
+    "working_configuration": "Original HFS contents repacked behind partition-map/driver prefix from known-working Mac OS disk; five partitions; HFS starts at block 704"
+  }
+}

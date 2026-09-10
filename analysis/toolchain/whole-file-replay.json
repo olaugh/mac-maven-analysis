@@ -1,0 +1,18 @@
+{
+  "scope": "Native C replay of captured natural success using filesystem/allocator adapters; no guest pointer or error-path equivalence claim",
+  "matches": true,
+  "reconstructed": {
+    "length": 1070788,
+    "allocation": 1070789,
+    "calls": "oearsc",
+    "trailing_byte": 0,
+    "index": 0
+  },
+  "data_sha256": "2619382321bca5b52967b3515d15b0592a8e1f641bce92f65edcf06ba10edb19",
+  "index_caller_host_checked": false,
+  "index_caller_live_verified": false,
+  "capture_sha256": "17c2d4b0d2b3a0fe3438cefb3d3d9ead25013d563cc98de520dcc5baf9f143f7",
+  "index_source_sha256": null,
+  "probe_sha256": "e5c8e5f2e01bd42b6a19c7d0bde3e55dd44a62bbf5228c653baf1ef248d2956e",
+  "reconstruction_sha256": "d1545eea66620d7e7a0c01aa5a6cb6ec050f39c7e4ed4050bae90eddcece4bc4"
+}

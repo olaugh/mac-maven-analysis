@@ -1,0 +1,61 @@
+{
+  "scope": "Magpie picks human moves; original Maven Kibitz plays the other side.\nEvery normal original search is compared byte-for-byte with the owned C engine.\nPositions are imported through original files. Host owns seeded bag/deals, not\noriginal UI move-entry, refill, simulation, or history lifecycle.\n",
+  "seed": 9102026,
+  "requested_games": 20,
+  "completed_games": 1,
+  "positions": 42,
+  "ranked_records": 412,
+  "issues": [
+    {
+      "game": 1,
+      "turn": 16,
+      "cgp": "3BATTUE5C/5WASTREL2U/1GRYFON3VIVER/10OM2A/1FIASCHI2LA1AT/6E2MUN1J1/6N2IT2W1/6bOOZED1A1/5QAID4N1/6N8/E2KEGELERS4/PEPO2S8/O14/X14/Y14 BIUONIE/?ETIHAI 285/396 0",
+      "differences": [
+        {
+          "byte": 95,
+          "original": 158,
+          "reconstruction": 155
+        },
+        {
+          "byte": 197,
+          "original": 55,
+          "reconstruction": 52
+        }
+      ],
+      "original_count": 10,
+      "reconstructed_count": 10
+    }
+  ],
+  "games": [
+    {
+      "game": 0,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        528,
+        378
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R"
+        ]
+      ],
+      "bag": 0
+    }
+  ],
+  "started": 1789001656.6162539,
+  "max_seconds": 3600,
+  "magpie_leaves": "CSW21.klv2",
+  "magpie_only_selects_human_moves": true,
+  "original_executable_compared": true,
+  "files": {
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/bin/magpie": "298b70c362f5b79e0429fae21bc6a931ebc25cd2338b5d82f1df0050091fc2f4",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.kwg": "caabddb67f27a265fa9df4487d07fd93f4010650fbf0f684647b6ac4e0eb333e",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.wmp": "0049dcb9c3dc0913518d7a6f4333e89da37063ce89acd9a9560aee7fd6371c93",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.klv2": "d33c30e637d53ee6250fac943a01c3c9a18f93c638499ff5e13fa358c2ca03bb",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/.build/magpie-match.dylib": "d2ef413a21caa948444267ce1350944a4fb0cc22ffd4acf981aa3a0278af977e"
+  },
+  "elapsed_seconds": 73.90595626831055,
+  "failure": "('Original/reconstruction disagreement', {'game': 1, 'turn': 16, 'cgp': '3BATTUE5C/5WASTREL2U/1GRYFON3VIVER/10OM2A/1FIASCHI2LA1AT/6E2MUN1J1/6N2IT2W1/6bOOZED1A1/5QAID4N1/6N8/E2KEGELERS4/PEPO2S8/O14/X14/Y14 BIUONIE/?ETIHAI 285/396 0', 'differences': [{'byte': 95, 'original': 158, 'reconstruction': 155}, {'byte': 197, 'original': 55, 'reconstruction': 52}], 'original_count': 10, 'reconstructed_count': 10})",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py\", line 58, in main\n    issue=dict(game=game,turn=turn,cgp=position_cgp,differences=diff,original_count=capture['count'],reconstructed_count=ranking.count);report['issues'].append(issue);log.write(json.dumps(record)+'\\n');log.flush();save();raise AssertionError(('Original/reconstruction disagreement',issue))\n                                                                                                                                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('Original/reconstruction disagreement', {'game': 1, 'turn': 16, 'cgp': '3BATTUE5C/5WASTREL2U/1GRYFON3VIVER/10OM2A/1FIASCHI2LA1AT/6E2MUN1J1/6N2IT2W1/6bOOZED1A1/5QAID4N1/6N8/E2KEGELERS4/PEPO2S8/O14/X14/Y14 BIUONIE/?ETIHAI 285/396 0', 'differences': [{'byte': 95, 'original': 158, 'reconstruction': 155}, {'byte': 197, 'original': 55, 'reconstruction': 52}], 'original_count': 10, 'reconstructed_count': 10})\n"
+}

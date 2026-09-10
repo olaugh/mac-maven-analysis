@@ -1,0 +1,118 @@
+{
+  "scope": "Natural Save UI action; original code identity and FSWrite inputs/results observed",
+  "a5": 131028224,
+  "code22_base": 130680064,
+  "code22_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d",
+  "complete_loaded_code_matches": true,
+  "name": "maven-re-0905",
+  "volume": -3,
+  "writes": [
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0001"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0016"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 22,
+      "bytes_hex": "000000000000616365656b6f71006f72696161746500"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0004"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0000"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 0,
+      "bytes_hex": ""
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "616f727461650000000000000000000000000578fffffef3ffffffff00000008080700006f72696161746500616365656b6f7100"
+    }
+  ],
+  "results": [
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 672,
+      "error": 0
+    }
+  ],
+  "return_value": 1,
+  "tag1_mutations": [
+    {
+      "offset": 594,
+      "word_hex": "0001"
+    },
+    {
+      "offset": 654,
+      "word_hex": "0001"
+    }
+  ]
+}

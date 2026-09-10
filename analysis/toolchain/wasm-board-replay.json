@@ -1,0 +1,24 @@
+{
+  "scope": "Freestanding wasm scorer, non-evaluation application, and undo in Node; original captured inputs; no UI/refill/history/AI ranking. Same split-capture limits as native application replay.",
+  "imports": [],
+  "wasm_sha256": "dc8189d2b018e934c11e3e1085e7a50efd1e10fba6e739f8e03e41aa6c2f5a07",
+  "node": "v26.0.0",
+  "score": 1400,
+  "scorer_outputs_match": true,
+  "application_board_value_undo_match": true,
+  "undo_full_state_match": true,
+  "captures": [
+    {
+      "name": "move-score-live",
+      "sha256": "8c8b3bf6589e1620393ea260f5adb04a74d24723729998aecb4dc6dc9e8e7fa6"
+    },
+    {
+      "name": "game-restore-live",
+      "sha256": "a23800b0b0e154b57e0833aee0d2c32980d9ab003946b615614707a7a682daab"
+    },
+    {
+      "name": "move-undo-live",
+      "sha256": "533e4118a6c969beac7806315da827aa3fa03d5e0ac11f2d0bd67329e5b9a5d1"
+    }
+  ]
+}

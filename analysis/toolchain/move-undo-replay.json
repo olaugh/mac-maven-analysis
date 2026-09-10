@@ -1,0 +1,9 @@
+{
+  "scope": "One natural undo helper replay; full board/value/rack/workspace and counter match. Count table unchanged in original. Does not establish UI Undo/history orchestration.",
+  "board_bytes_matching": 544,
+  "value_words_matching": 544,
+  "rack": "nitedaa",
+  "row_zero_count": 0,
+  "counts_unchanged": true,
+  "capture_sha256": "533e4118a6c969beac7806315da827aa3fa03d5e0ac11f2d0bd67329e5b9a5d1"
+}

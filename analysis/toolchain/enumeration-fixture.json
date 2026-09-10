@@ -1,0 +1,38 @@
+{
+  "scope": "Construct an eight-unseen-tile test save with a dictionary-generated five-tile placement.\nThe resulting position has eight possible seven-tile multisets or fewer. The\nsource save is preserved; this is not a claim of a naturally played game.\n",
+  "source_sha256": "249ccaf79560d0df5cf6f4c5cff6da0b883162f380dff9f94a451ec53cd8f461",
+  "sha256": "e2b8f1e909590a470bf2851406a94c015b4cbf3bb91ee3436cda36465599058d",
+  "word": "antiar",
+  "row": 7,
+  "column": 10,
+  "changed": [
+    [
+      7,
+      10,
+      "a"
+    ],
+    [
+      7,
+      11,
+      "n"
+    ],
+    [
+      7,
+      13,
+      "i"
+    ],
+    [
+      7,
+      14,
+      "a"
+    ],
+    [
+      7,
+      15,
+      "r"
+    ]
+  ],
+  "unseen": "eeeekoqt",
+  "rack1": "eeeekoq",
+  "synthetic_position": true
+}

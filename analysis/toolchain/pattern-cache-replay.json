@@ -1,0 +1,11 @@
+{
+  "scope": "Native C lazy cache construction compared with original runtime output from captured records/string inputs; successful input domain only",
+  "input_records": 2263,
+  "entries_matching": 125,
+  "fields": [
+    "borrowed string offset",
+    "accumulator",
+    "table index"
+  ],
+  "capture_sha256": "5de1abb8230636549543af2c2047f4c4c6dac4dddb2c7b9d54649fd7742031ac"
+}

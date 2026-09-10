@@ -1,0 +1,44 @@
+{
+  "scope": "Construct separate late-search test saves for held Q and blank boundaries.",
+  "synthetic_position": true,
+  "source_sha256": "980c8ca85ac8102f388c7ff602a89cb47227429a142487802cd4a4078a08151b",
+  "variants": [
+    {
+      "name": "maven-search-heldq",
+      "sha256": "87837b18e98b0e8d26c9c0eb73c2995086d5b10a2228aa2aae449bfb5927370f",
+      "rack": "bcinqru",
+      "make_board_q_7_7_real": false,
+      "rack_replacement": [
+        "s",
+        "q"
+      ]
+    },
+    {
+      "name": "maven-search-heldq-nou",
+      "sha256": "ee65314506c13a62e0656098dc39a4a406e06598f21ae0ceccf19c6be9d5b25c",
+      "rack": "bcinqrs",
+      "make_board_q_7_7_real": false,
+      "rack_replacement": [
+        "u",
+        "q"
+      ]
+    },
+    {
+      "name": "maven-search-ownblank",
+      "sha256": "cecf9cf498eb370aae5cbf3704b7f8becb6111df302751275814e1d3375205ac",
+      "rack": "?bcinru",
+      "make_board_q_7_7_real": true,
+      "rack_replacement": [
+        "s",
+        "?"
+      ]
+    },
+    {
+      "name": "maven-search-poolblank",
+      "sha256": "d4b683aa1a85eeefa7c079aa874cb0911b833fd9e2769421ec7de6a341d6a4d4",
+      "rack": "bcinrsu",
+      "make_board_q_7_7_real": true,
+      "rack_replacement": null
+    }
+  ]
+}

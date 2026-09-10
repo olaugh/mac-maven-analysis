@@ -1,0 +1,46 @@
+{
+  "scope": "Search for a constructed legal one-Q no-move endgame; preserve all tile counts.\n\nConsumes six non-Q rack tiles in one dictionary-generated placement. The\nremaining Q is assigned to player0, with seven tiles for player1 and no bag.\nThe no-move claim is exploratory until checked in the original executable.\n",
+  "source_sha256": "ccd4de64fa6777de3e037d1276e9d956fc314402f227e180efda67cf7792979c",
+  "placements_considered": 586,
+  "candidates": 1081,
+  "found": true,
+  "synthetic_position": true,
+  "word": "bedecks",
+  "row": 25,
+  "column": 9,
+  "changed": [
+    [
+      9,
+      10,
+      "b"
+    ],
+    [
+      10,
+      10,
+      "e"
+    ],
+    [
+      12,
+      10,
+      "e"
+    ],
+    [
+      13,
+      10,
+      "c"
+    ],
+    [
+      14,
+      10,
+      "k"
+    ],
+    [
+      15,
+      10,
+      "s"
+    ]
+  ],
+  "own": "q",
+  "other": "einortu",
+  "sha256": "5ea97f9904ab35912594e778caa204de3fa92ded62fcf64dc5bf38a7d8089747"
+}

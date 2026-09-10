@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Maven</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23fff3d0'/%3E%3Ctext x='2' y='13' font-size='13' font-family='sans-serif' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E">
+<style>
+  html, body { margin: 0; height: 100%; background: #4d4d7a; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; cursor: default; display: block; }
+  #keyboard { position: fixed; left: -1000px; top: 0; width: 1px; height: 1px; opacity: 0; }
+</style>
+</head>
+<body>
+<canvas id="screen" width="640" height="480"></canvas>
+<input id="keyboard" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" aria-hidden="true">
+<script type="module" src="app.js"></script>
+</body>
+</html>

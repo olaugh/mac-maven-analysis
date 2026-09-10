@@ -1,0 +1,16 @@
+{
+  "scope": "Build local MAGPIE move-choice data from Maven's recovered word enumerator.\nThe test-only callback resets the Word List UI's 1000-result counter, allowing\ncomplete enumeration without changing reconstructed source. Reject padded\nnon-word records rather than silently turning them into new playable words.\n",
+  "words": 246691,
+  "rejected_records": [
+    "ANTICHOICERS  ",
+    "ANTIPRURITICS  ",
+    "NONINTOXICANTS "
+  ],
+  "leaves": "CSW21: modern move choice only, not Maven valuation",
+  "files": {
+    "NWLMAVEN.txt": "e19cdad5cb91c9509c8e09912330404f9023e0a87db1611954d51c373ccbe5af",
+    "NWLMAVEN.kwg": "caabddb67f27a265fa9df4487d07fd93f4010650fbf0f684647b6ac4e0eb333e",
+    "NWLMAVEN.klv2": "d33c30e637d53ee6250fac943a01c3c9a18f93c638499ff5e13fa358c2ca03bb",
+    "NWLMAVEN.wmp": "0049dcb9c3dc0913518d7a6f4333e89da37063ce89acd9a9560aee7fd6371c93"
+  }
+}

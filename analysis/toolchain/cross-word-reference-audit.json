@@ -1,0 +1,12 @@
+{
+  "scope": "Linear disassembly and CODE0 entry audit for one internal helper; not full control-flow, relocation or computed-pointer reachability proof",
+  "target_code_resource": 32,
+  "target_offset": 1698,
+  "linear_decoded_through": 6468,
+  "resource_length": 6468,
+  "textual_target_references": [],
+  "exported_jump_table_indices": [],
+  "code32_sha256": "e391e1b0751d7d0e085004232d90befeb0cd3704803dbd862a4ab28b574a7d13",
+  "capstone_version": "5.0.7",
+  "method": "Linear M68K020 big-endian decoding from resource offset4; exact $6a2 operand match; CODE0 record resource offset+4 comparison"
+}

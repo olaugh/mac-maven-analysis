@@ -1,0 +1,31 @@
+{
+  "scope": "Original Mac Maven versus reconstruction; Magpie selects human moves only. Batch stopped on preserved disagreements.",
+  "completed_games": 11,
+  "positions": 277,
+  "exact_positions": 277,
+  "exact_ranked_records": 2722,
+  "raw_tail_only_positions": 0,
+  "scoring_disagreement_positions": 0,
+  "poofier": {
+    "cgp": "7O7/7R7/7S7/7E7/3ZiNGIEST4/7L7/7L7/3VAWTE7/15/15/15/15/15/15/15 AEPOOIF/ETQEVDC 77/148 0",
+    "original_score": 14,
+    "reconstruction_score": 28,
+    "original_callbacks": 690,
+    "first_different_callback_zero_based": 183,
+    "repeat_original_ranking_identical": true,
+    "fresh_native_replay_reproduced": true,
+    "resolved": true,
+    "cause": "Fresh native engine versus warm original process; no scorer production change required.",
+    "fresh_original_and_native": 28,
+    "continuous_original_and_native": 14
+  },
+  "regression_commands_passed": 230,
+  "regression_scope": "Includes cold POOFIER native/wasm, VID native/wasm, and full continuous sequence replay.",
+  "source_changes_since_regression": [],
+  "correction": "Earlier POOFIER scoring-bug diagnosis superseded: both engines match when their preceding search lifetimes match. VID scratch clear fixed separately.",
+  "additional_fresh_guard_game": {
+    "complete": true,
+    "positions": 22,
+    "ranked_records": 220
+  }
+}

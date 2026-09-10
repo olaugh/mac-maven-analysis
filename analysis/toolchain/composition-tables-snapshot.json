@@ -1,0 +1,91 @@
+{
+  "scope": "Terminal composition scores from saved RAM; not fresh live table initialization trace",
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "a5": 131028224,
+  "tables": [
+    {
+      "total": 0,
+      "pointer": 130612960,
+      "terminal_scores": [
+        0
+      ]
+    },
+    {
+      "total": 1,
+      "pointer": 130612720,
+      "terminal_scores": [
+        0,
+        0
+      ]
+    },
+    {
+      "total": 2,
+      "pointer": 130612480,
+      "terminal_scores": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "total": 3,
+      "pointer": 130612240,
+      "terminal_scores": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "total": 4,
+      "pointer": 130612000,
+      "terminal_scores": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "total": 5,
+      "pointer": 130614064,
+      "terminal_scores": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "total": 6,
+      "pointer": 130632432,
+      "terminal_scores": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "total": 7,
+      "pointer": 130645504,
+      "terminal_scores": [
+        -757,
+        -1016,
+        -713,
+        23,
+        368,
+        11,
+        -605,
+        -1238
+      ]
+    }
+  ]
+}

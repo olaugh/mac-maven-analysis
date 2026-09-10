@@ -1,0 +1,140 @@
+{
+  "scope": "Consistency check of nonzero live cache cells against total7 recurrence minus empty baseline. Total/draw input was not captured and is absent from cache key; not direct natural call validation.",
+  "all_match": true,
+  "entries": [
+    {
+      "vowels": 1,
+      "consonants": 0,
+      "original": 8,
+      "predicted": 8,
+      "matches": true
+    },
+    {
+      "vowels": 2,
+      "consonants": 0,
+      "original": 4294967187,
+      "predicted": 4294967187,
+      "matches": true
+    },
+    {
+      "vowels": 3,
+      "consonants": 0,
+      "original": 4294966960,
+      "predicted": 4294966960,
+      "matches": true
+    },
+    {
+      "vowels": 0,
+      "consonants": 1,
+      "original": 4294967280,
+      "predicted": 4294967280,
+      "matches": true
+    },
+    {
+      "vowels": 1,
+      "consonants": 1,
+      "original": 80,
+      "predicted": 80,
+      "matches": true
+    },
+    {
+      "vowels": 2,
+      "consonants": 1,
+      "original": 45,
+      "predicted": 45,
+      "matches": true
+    },
+    {
+      "vowels": 3,
+      "consonants": 1,
+      "original": 4294967151,
+      "predicted": 4294967151,
+      "matches": true
+    },
+    {
+      "vowels": 0,
+      "consonants": 2,
+      "original": 4294967202,
+      "predicted": 4294967202,
+      "matches": true
+    },
+    {
+      "vowels": 1,
+      "consonants": 2,
+      "original": 100,
+      "predicted": 100,
+      "matches": true
+    },
+    {
+      "vowels": 2,
+      "consonants": 2,
+      "original": 170,
+      "predicted": 170,
+      "matches": true
+    },
+    {
+      "vowels": 3,
+      "consonants": 2,
+      "original": 70,
+      "predicted": 70,
+      "matches": true
+    },
+    {
+      "vowels": 0,
+      "consonants": 3,
+      "original": 4294967059,
+      "predicted": 4294967059,
+      "matches": true
+    },
+    {
+      "vowels": 1,
+      "consonants": 3,
+      "original": 44,
+      "predicted": 44,
+      "matches": true
+    },
+    {
+      "vowels": 2,
+      "consonants": 3,
+      "original": 236,
+      "predicted": 236,
+      "matches": true
+    },
+    {
+      "vowels": 3,
+      "consonants": 3,
+      "original": 275,
+      "predicted": 275,
+      "matches": true
+    },
+    {
+      "vowels": 0,
+      "consonants": 4,
+      "original": 4294966861,
+      "predicted": 4294966861,
+      "matches": true
+    },
+    {
+      "vowels": 1,
+      "consonants": 4,
+      "original": 4294967202,
+      "predicted": 4294967202,
+      "matches": true
+    },
+    {
+      "vowels": 2,
+      "consonants": 4,
+      "original": 206,
+      "predicted": 206,
+      "matches": true
+    },
+    {
+      "vowels": 3,
+      "consonants": 4,
+      "original": 417,
+      "predicted": 417,
+      "matches": true
+    }
+  ],
+  "capture_sha256": "b8434fa3e622d47d022b69cab2cf74c8bda783153ba2af26b9d259ced6f9ddf6"
+}

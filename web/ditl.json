@@ -1,0 +1,1343 @@
+{
+"1000": [
+{
+"kind": "button",
+"rect": [
+64,
+88,
+124,
+108
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+65,
+8,
+185,
+80
+],
+"text": "Maven software is passing ^0 tiles.  It is your turn now.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "2",
+"disabled": true
+}
+],
+"1001": [
+{
+"kind": "button",
+"rect": [
+64,
+88,
+124,
+108
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+64,
+8,
+192,
+80
+],
+"text": "You must place a tile on the center square.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "0",
+"disabled": true
+}
+],
+"1002": [
+{
+"kind": "button",
+"rect": [
+64,
+107,
+124,
+127
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+64,
+8,
+196,
+97
+],
+"text": "Those tiles do not contact the tiles already played.\r\rIt is still your turn.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "0",
+"disabled": true
+}
+],
+"1003": [
+{
+"kind": "button",
+"rect": [
+64,
+107,
+124,
+127
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+64,
+8,
+195,
+95
+],
+"text": "Those tiles are not adjacent to one another.\r\rIt is still your turn.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "0",
+"disabled": true
+}
+],
+"1004": [
+{
+"kind": "button",
+"rect": [
+64,
+98,
+124,
+118
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+64,
+8,
+193,
+84
+],
+"text": "Those tiles are not in the same line.\r\rIt is still your turn.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "0",
+"disabled": true
+}
+],
+"1005": [
+{
+"kind": "button",
+"rect": [
+64,
+88,
+124,
+108
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+64,
+8,
+176,
+80
+],
+"text": "There is already a tile on that square.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "0",
+"disabled": true
+}
+],
+"1006": [
+{
+"kind": "static",
+"rect": [
+64,
+8,
+176,
+80
+],
+"text": "It is Maven software's turn to move.",
+"disabled": true
+},
+{
+"kind": "button",
+"rect": [
+64,
+96,
+124,
+116
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "0",
+"disabled": true
+}
+],
+"1007": [
+{
+"kind": "button",
+"rect": [
+64,
+144,
+124,
+164
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+64,
+8,
+232,
+128
+],
+"text": "Tiles cannot be both played and exchanged within a single turn.\r\rTo retrieve exchanged tiles, click on the gray outlines left in the rack.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "0",
+"disabled": true
+}
+],
+"1008": [
+{
+"kind": "button",
+"rect": [
+90,
+160,
+216,
+180
+],
+"text": "Don't Pass Turn",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+90,
+130,
+216,
+150
+],
+"text": "Yes!! Pass Turn",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+90,
+10,
+219,
+106
+],
+"text": "You hit the Play button without making a move.\r\rDo you want to pass your turn?",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+24,
+8,
+56,
+40
+],
+"text": "1",
+"disabled": true
+}
+],
+"1009": [
+{
+"kind": "button",
+"rect": [
+90,
+60,
+242,
+84
+],
+"text": "That's what I want.",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+90,
+100,
+242,
+124
+],
+"text": "Oops!  Cancel.",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+90,
+10,
+239,
+41
+],
+"text": "Too many ^0 tiles.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "2",
+"disabled": true
+}
+],
+"1010": [
+{
+"kind": "static",
+"rect": [
+60,
+10,
+233,
+71
+],
+"text": "What is the Blank?\r\rType the letter you want.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+10,
+10,
+42,
+42
+],
+"text": "1",
+"disabled": true
+}
+],
+"1014": [
+{
+"kind": "button",
+"rect": [
+114,
+116,
+192,
+140
+],
+"text": "All Words",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+93,
+10,
+189,
+22
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+93,
+30,
+189,
+42
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+93,
+50,
+189,
+62
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+93,
+70,
+189,
+82
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+5,
+8,
+77,
+24
+],
+"text": "Your Rack:",
+"disabled": true
+},
+{
+"kind": "static",
+"rect": [
+5,
+28,
+77,
+44
+],
+"text": "On Board:",
+"disabled": true
+},
+{
+"kind": "static",
+"rect": [
+5,
+48,
+77,
+64
+],
+"text": "Prefix:",
+"disabled": true
+},
+{
+"kind": "static",
+"rect": [
+5,
+68,
+77,
+84
+],
+"text": "Suffix:",
+"disabled": true
+},
+{
+"kind": "button",
+"rect": [
+5,
+116,
+83,
+140
+],
+"text": "Bingos",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+93,
+90,
+117,
+102
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+5,
+88,
+84,
+104
+],
+"text": "Length Min:",
+"disabled": true
+},
+{
+"kind": "edit",
+"rect": [
+165,
+90,
+189,
+102
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+126,
+88,
+160,
+104
+],
+"text": "Max:",
+"disabled": true
+},
+{
+"kind": "control",
+"rect": [
+204,
+153,
+220,
+293
+],
+"text": "\u00c8\u00c4",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+8,
+156,
+202,
+288
+],
+"text": "",
+"disabled": false
+}
+],
+"1015": [
+{
+"kind": "button",
+"rect": [
+210,
+102,
+274,
+126
+],
+"text": "Simulate",
+"disabled": false
+},
+{
+"kind": "checkbox",
+"rect": [
+20,
+70,
+199,
+88
+],
+"text": "Record The Simulation",
+"disabled": false
+},
+{
+"kind": "checkbox",
+"rect": [
+20,
+30,
+205,
+48
+],
+"text": "Use End Analyzer",
+"disabled": false
+},
+{
+"kind": "checkbox",
+"rect": [
+20,
+50,
+197,
+68
+],
+"text": "Use Late Analyzer",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+103,
+10,
+136,
+26
+],
+"text": "1",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+210,
+71,
+274,
+95
+],
+"text": "Reset",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+140,
+10,
+276,
+26
+],
+"text": "move for each side.",
+"disabled": true
+},
+{
+"kind": "checkbox",
+"rect": [
+20,
+110,
+200,
+128
+],
+"text": "Enumerate All Racks",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+20,
+10,
+99,
+26
+],
+"text": "Look ahead ",
+"disabled": true
+},
+{
+"kind": "checkbox",
+"rect": [
+20,
+90,
+200,
+108
+],
+"text": "Display The Simulation",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+210,
+40,
+274,
+64
+],
+"text": "Cancel",
+"disabled": false
+}
+],
+"1017": [
+{
+"kind": "button",
+"rect": [
+192,
+80,
+252,
+100
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+112,
+80,
+176,
+96
+],
+"text": "",
+"disabled": true
+},
+{
+"kind": "static",
+"rect": [
+16,
+16,
+265,
+67
+],
+"text": "If you have an official tournament rating, enter it below.  Otherwise, click the OK button",
+"disabled": true
+},
+{
+"kind": "static",
+"rect": [
+16,
+80,
+104,
+96
+],
+"text": "Your Rating:",
+"disabled": true
+}
+],
+"1018": [
+{
+"kind": "button",
+"rect": [
+20,
+80,
+80,
+100
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+20,
+40,
+250,
+57
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+20,
+10,
+159,
+30
+],
+"text": "What is Your Name?",
+"disabled": true
+}
+],
+"1019": [
+{
+"kind": "button",
+"rect": [
+70,
+80,
+214,
+104
+],
+"text": "Oops!  Cancel.",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+70,
+120,
+214,
+144
+],
+"text": "That's what I want.",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+70,
+160,
+214,
+184
+],
+"text": "Pass My Turn",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+70,
+10,
+214,
+74
+],
+"text": "^0 is not acceptable.  Is that what you want?",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+20,
+10,
+52,
+42
+],
+"text": "2",
+"disabled": true
+}
+],
+"1020": [
+{
+"kind": "button",
+"rect": [
+200,
+8,
+269,
+28
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+200,
+40,
+269,
+60
+],
+"text": "Cancel",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+16,
+8,
+191,
+70
+],
+"text": "^0",
+"disabled": true
+}
+],
+"1021": [
+{
+"kind": "button",
+"rect": [
+72,
+96,
+141,
+116
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+72,
+8,
+192,
+88
+],
+"text": "^0",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+24,
+8,
+56,
+40
+],
+"text": "0",
+"disabled": true
+}
+],
+"1022": [
+{
+"kind": "button",
+"rect": [
+10,
+90,
+68,
+110
+],
+"text": "OK",
+"disabled": false
+},
+{
+"kind": "edit",
+"rect": [
+10,
+50,
+230,
+70
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+10,
+10,
+234,
+34
+],
+"text": "How should the rack be ordered?",
+"disabled": true
+},
+{
+"kind": "button",
+"rect": [
+170,
+90,
+230,
+110
+],
+"text": "Cancel",
+"disabled": false
+}
+],
+"1023": [
+{
+"kind": "button",
+"rect": [
+70,
+80,
+214,
+104
+],
+"text": "Oops!  Cancel.",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+70,
+120,
+214,
+144
+],
+"text": "That's what I want.",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+70,
+10,
+214,
+74
+],
+"text": "^0 is not acceptable.  Is that what you want?",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+20,
+10,
+52,
+42
+],
+"text": "2",
+"disabled": true
+}
+],
+"1024": [
+{
+"kind": "static",
+"rect": [
+20,
+20,
+312,
+37
+],
+"text": "^0 Version 2.0",
+"disabled": true
+},
+{
+"kind": "static",
+"rect": [
+20,
+40,
+312,
+61
+],
+"text": "",
+"disabled": true
+},
+{
+"kind": "static",
+"rect": [
+20,
+114,
+297,
+252
+],
+"text": "\u00a9Copyright 1995 All Rights Reserved.\r\rSheppard Company, Inc.\r60 Thoreau Street #187\rConcord, MA 01742-9116\rPhone (508) 287-0055\rFax (508) 287-4583\rE-Mail SheppardCo@AOL.com",
+"disabled": true
+},
+{
+"kind": "user",
+"rect": [
+20,
+70,
+325,
+91
+],
+"text": "",
+"disabled": true
+}
+],
+"1025": [
+{
+"kind": "button",
+"rect": [
+90,
+96,
+216,
+116
+],
+"text": "Save",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+90,
+128,
+216,
+148
+],
+"text": "Discard",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+90,
+10,
+218,
+88
+],
+"text": "Do you want to save this file before starting a new game?",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+24,
+8,
+56,
+40
+],
+"text": "1",
+"disabled": true
+},
+{
+"kind": "button",
+"rect": [
+90,
+160,
+216,
+180
+],
+"text": "Cancel",
+"disabled": false
+}
+],
+"1026": [
+{
+"kind": "button",
+"rect": [
+90,
+96,
+216,
+116
+],
+"text": "Save",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+90,
+128,
+216,
+148
+],
+"text": "Discard",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+90,
+10,
+218,
+88
+],
+"text": "Do you want to save this file before opening another file?",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+24,
+8,
+56,
+40
+],
+"text": "1",
+"disabled": true
+},
+{
+"kind": "button",
+"rect": [
+90,
+160,
+216,
+180
+],
+"text": "Cancel",
+"disabled": false
+}
+],
+"1027": [
+{
+"kind": "button",
+"rect": [
+90,
+96,
+216,
+116
+],
+"text": "Save",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+90,
+128,
+216,
+148
+],
+"text": "Discard",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+90,
+10,
+218,
+88
+],
+"text": "Do you want to save this file before quitting?",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+24,
+8,
+56,
+40
+],
+"text": "1",
+"disabled": true
+},
+{
+"kind": "button",
+"rect": [
+90,
+160,
+216,
+180
+],
+"text": "Cancel",
+"disabled": false
+}
+],
+"1028": [
+{
+"kind": "button",
+"rect": [
+312,
+58,
+344,
+82
+],
+"text": "OK",
+"disabled": true
+},
+{
+"kind": "button",
+"rect": [
+460,
+58,
+509,
+82
+],
+"text": "Reset",
+"disabled": true
+},
+{
+"kind": "edit",
+"rect": [
+308,
+114,
+504,
+138
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+390,
+58,
+456,
+83
+],
+"text": "Cancel",
+"disabled": true
+}
+],
+"1029": [
+{
+"kind": "button",
+"rect": [
+440,
+58,
+472,
+82
+],
+"text": "OK",
+"disabled": true
+},
+{
+"kind": "button",
+"rect": [
+588,
+58,
+637,
+82
+],
+"text": "Reset",
+"disabled": true
+},
+{
+"kind": "edit",
+"rect": [
+436,
+114,
+632,
+138
+],
+"text": "",
+"disabled": false
+},
+{
+"kind": "button",
+"rect": [
+512,
+58,
+588,
+83
+],
+"text": "Cancel",
+"disabled": true
+}
+],
+"1030": [
+{
+"kind": "button",
+"rect": [
+68,
+80,
+212,
+104
+],
+"text": "Cancel.",
+"disabled": false
+},
+{
+"kind": "static",
+"rect": [
+68,
+8,
+212,
+72
+],
+"text": "\"^0\" is an isolated letter. This cannot be part of a legal board.",
+"disabled": true
+},
+{
+"kind": "icon",
+"rect": [
+16,
+8,
+48,
+40
+],
+"text": "0",
+"disabled": true
+}
+]
+}

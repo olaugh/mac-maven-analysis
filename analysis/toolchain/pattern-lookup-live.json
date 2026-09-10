@@ -1,0 +1,954 @@
+{
+  "scope": "64 original lookups during normal first-game engine execution; exact CODE32 construction/lookup range; no debugger memory injection",
+  "code32_sha256": "e391e1b0751d7d0e085004232d90befeb0cd3704803dbd862a4ab28b574a7d13",
+  "entries": [
+    {
+      "letters": "?",
+      "accumulator": 0,
+      "table_index": 1
+    },
+    {
+      "letters": "??",
+      "accumulator": 0,
+      "table_index": 2
+    },
+    {
+      "letters": "a",
+      "accumulator": 0,
+      "table_index": 3
+    },
+    {
+      "letters": "aa",
+      "accumulator": 0,
+      "table_index": 4
+    },
+    {
+      "letters": "aaa",
+      "accumulator": 0,
+      "table_index": 5
+    },
+    {
+      "letters": "aaaa",
+      "accumulator": 0,
+      "table_index": 6
+    },
+    {
+      "letters": "aaaaa",
+      "accumulator": 0,
+      "table_index": 7
+    },
+    {
+      "letters": "adiq",
+      "accumulator": 0,
+      "table_index": 8
+    },
+    {
+      "letters": "adq",
+      "accumulator": 0,
+      "table_index": 9
+    },
+    {
+      "letters": "aeg",
+      "accumulator": 0,
+      "table_index": 10
+    },
+    {
+      "letters": "aeit",
+      "accumulator": 0,
+      "table_index": 230
+    },
+    {
+      "letters": "aiq",
+      "accumulator": 0,
+      "table_index": 11
+    },
+    {
+      "letters": "amn",
+      "accumulator": 0,
+      "table_index": 102
+    },
+    {
+      "letters": "aq",
+      "accumulator": 0,
+      "table_index": 12
+    },
+    {
+      "letters": "aqt",
+      "accumulator": 0,
+      "table_index": 13
+    },
+    {
+      "letters": "ary",
+      "accumulator": 0,
+      "table_index": 108
+    },
+    {
+      "letters": "b",
+      "accumulator": 0,
+      "table_index": 14
+    },
+    {
+      "letters": "bb",
+      "accumulator": 0,
+      "table_index": 15
+    },
+    {
+      "letters": "bel",
+      "accumulator": 0,
+      "table_index": 106
+    },
+    {
+      "letters": "boy",
+      "accumulator": 0,
+      "table_index": 104
+    },
+    {
+      "letters": "c",
+      "accumulator": 0,
+      "table_index": 16
+    },
+    {
+      "letters": "cc",
+      "accumulator": 0,
+      "table_index": 17
+    },
+    {
+      "letters": "ch",
+      "accumulator": 0,
+      "table_index": 18
+    },
+    {
+      "letters": "ck",
+      "accumulator": 0,
+      "table_index": 19
+    },
+    {
+      "letters": "d",
+      "accumulator": 0,
+      "table_index": 20
+    },
+    {
+      "letters": "dd",
+      "accumulator": 0,
+      "table_index": 21
+    },
+    {
+      "letters": "ddd",
+      "accumulator": 0,
+      "table_index": 22
+    },
+    {
+      "letters": "dddd",
+      "accumulator": 0,
+      "table_index": 23
+    },
+    {
+      "letters": "de",
+      "accumulator": 0,
+      "table_index": 227
+    },
+    {
+      "letters": "dei",
+      "accumulator": 0,
+      "table_index": 228
+    },
+    {
+      "letters": "dio",
+      "accumulator": 0,
+      "table_index": 225
+    },
+    {
+      "letters": "diq",
+      "accumulator": 0,
+      "table_index": 24
+    },
+    {
+      "letters": "e",
+      "accumulator": 0,
+      "table_index": 25
+    },
+    {
+      "letters": "ee",
+      "accumulator": 0,
+      "table_index": 26
+    },
+    {
+      "letters": "eee",
+      "accumulator": 0,
+      "table_index": 27
+    },
+    {
+      "letters": "eeee",
+      "accumulator": 0,
+      "table_index": 28
+    },
+    {
+      "letters": "eeeee",
+      "accumulator": 0,
+      "table_index": 29
+    },
+    {
+      "letters": "eeeeee",
+      "accumulator": 0,
+      "table_index": 30
+    },
+    {
+      "letters": "eikl",
+      "accumulator": 0,
+      "table_index": 105
+    },
+    {
+      "letters": "eir",
+      "accumulator": 0,
+      "table_index": 226
+    },
+    {
+      "letters": "eist",
+      "accumulator": 0,
+      "table_index": 233
+    },
+    {
+      "letters": "eiv",
+      "accumulator": 0,
+      "table_index": 100
+    },
+    {
+      "letters": "eiz",
+      "accumulator": 0,
+      "table_index": 101
+    },
+    {
+      "letters": "elss",
+      "accumulator": 0,
+      "table_index": 110
+    },
+    {
+      "letters": "emn",
+      "accumulator": 0,
+      "table_index": 103
+    },
+    {
+      "letters": "enss",
+      "accumulator": 0,
+      "table_index": 111
+    },
+    {
+      "letters": "er",
+      "accumulator": 0,
+      "table_index": 231
+    },
+    {
+      "letters": "ery",
+      "accumulator": 0,
+      "table_index": 107
+    },
+    {
+      "letters": "est",
+      "accumulator": 0,
+      "table_index": 232
+    },
+    {
+      "letters": "f",
+      "accumulator": 0,
+      "table_index": 31
+    },
+    {
+      "letters": "ff",
+      "accumulator": 0,
+      "table_index": 32
+    },
+    {
+      "letters": "fiy",
+      "accumulator": 0,
+      "table_index": 109
+    },
+    {
+      "letters": "flu",
+      "accumulator": 0,
+      "table_index": 92
+    },
+    {
+      "letters": "g",
+      "accumulator": 0,
+      "table_index": 33
+    },
+    {
+      "letters": "gg",
+      "accumulator": 0,
+      "table_index": 34
+    },
+    {
+      "letters": "ggg",
+      "accumulator": 0,
+      "table_index": 35
+    },
+    {
+      "letters": "gin",
+      "accumulator": 0,
+      "table_index": 91
+    },
+    {
+      "letters": "h",
+      "accumulator": 0,
+      "table_index": 36
+    },
+    {
+      "letters": "hh",
+      "accumulator": 0,
+      "table_index": 37
+    },
+    {
+      "letters": "his",
+      "accumulator": 0,
+      "table_index": 229
+    },
+    {
+      "letters": "ht",
+      "accumulator": 0,
+      "table_index": 38
+    },
+    {
+      "letters": "hw",
+      "accumulator": 0,
+      "table_index": 39
+    },
+    {
+      "letters": "i",
+      "accumulator": 0,
+      "table_index": 40
+    },
+    {
+      "letters": "ii",
+      "accumulator": 0,
+      "table_index": 41
+    },
+    {
+      "letters": "iii",
+      "accumulator": 0,
+      "table_index": 42
+    },
+    {
+      "letters": "iiii",
+      "accumulator": 0,
+      "table_index": 43
+    },
+    {
+      "letters": "iiiii",
+      "accumulator": 0,
+      "table_index": 44
+    },
+    {
+      "letters": "ily",
+      "accumulator": 0,
+      "table_index": 93
+    },
+    {
+      "letters": "imu",
+      "accumulator": 0,
+      "table_index": 112
+    },
+    {
+      "letters": "ino",
+      "accumulator": 0,
+      "table_index": 94
+    },
+    {
+      "letters": "inot",
+      "accumulator": 0,
+      "table_index": 95
+    },
+    {
+      "letters": "ity",
+      "accumulator": 0,
+      "table_index": 96
+    },
+    {
+      "letters": "iu",
+      "accumulator": 0,
+      "table_index": 221
+    },
+    {
+      "letters": "iy",
+      "accumulator": 0,
+      "table_index": 223
+    },
+    {
+      "letters": "j",
+      "accumulator": 0,
+      "table_index": 45
+    },
+    {
+      "letters": "k",
+      "accumulator": 0,
+      "table_index": 46
+    },
+    {
+      "letters": "l",
+      "accumulator": 0,
+      "table_index": 47
+    },
+    {
+      "letters": "ll",
+      "accumulator": 0,
+      "table_index": 48
+    },
+    {
+      "letters": "lll",
+      "accumulator": 0,
+      "table_index": 49
+    },
+    {
+      "letters": "llll",
+      "accumulator": 0,
+      "table_index": 50
+    },
+    {
+      "letters": "ly",
+      "accumulator": 0,
+      "table_index": 97
+    },
+    {
+      "letters": "m",
+      "accumulator": 0,
+      "table_index": 51
+    },
+    {
+      "letters": "mm",
+      "accumulator": 0,
+      "table_index": 52
+    },
+    {
+      "letters": "n",
+      "accumulator": 0,
+      "table_index": 53
+    },
+    {
+      "letters": "nn",
+      "accumulator": 0,
+      "table_index": 54
+    },
+    {
+      "letters": "nnn",
+      "accumulator": 0,
+      "table_index": 55
+    },
+    {
+      "letters": "nnnn",
+      "accumulator": 0,
+      "table_index": 56
+    },
+    {
+      "letters": "o",
+      "accumulator": 0,
+      "table_index": 57
+    },
+    {
+      "letters": "oo",
+      "accumulator": 0,
+      "table_index": 58
+    },
+    {
+      "letters": "ooo",
+      "accumulator": 0,
+      "table_index": 59
+    },
+    {
+      "letters": "oooo",
+      "accumulator": 0,
+      "table_index": 60
+    },
+    {
+      "letters": "ooooo",
+      "accumulator": 0,
+      "table_index": 61
+    },
+    {
+      "letters": "ory",
+      "accumulator": 0,
+      "table_index": 224
+    },
+    {
+      "letters": "osu",
+      "accumulator": 0,
+      "table_index": 98
+    },
+    {
+      "letters": "otu",
+      "accumulator": 0,
+      "table_index": 99
+    },
+    {
+      "letters": "p",
+      "accumulator": 0,
+      "table_index": 62
+    },
+    {
+      "letters": "pp",
+      "accumulator": 0,
+      "table_index": 63
+    },
+    {
+      "letters": "q",
+      "accumulator": 0,
+      "table_index": 64
+    },
+    {
+      "letters": "qt",
+      "accumulator": 0,
+      "table_index": 65
+    },
+    {
+      "letters": "qu",
+      "accumulator": 0,
+      "table_index": 66
+    },
+    {
+      "letters": "r",
+      "accumulator": 0,
+      "table_index": 67
+    },
+    {
+      "letters": "rr",
+      "accumulator": 0,
+      "table_index": 68
+    },
+    {
+      "letters": "rrr",
+      "accumulator": 0,
+      "table_index": 69
+    },
+    {
+      "letters": "rrrr",
+      "accumulator": 0,
+      "table_index": 70
+    },
+    {
+      "letters": "s",
+      "accumulator": 0,
+      "table_index": 71
+    },
+    {
+      "letters": "ss",
+      "accumulator": 0,
+      "table_index": 72
+    },
+    {
+      "letters": "sss",
+      "accumulator": 0,
+      "table_index": 73
+    },
+    {
+      "letters": "ssss",
+      "accumulator": 0,
+      "table_index": 74
+    },
+    {
+      "letters": "t",
+      "accumulator": 0,
+      "table_index": 75
+    },
+    {
+      "letters": "tt",
+      "accumulator": 0,
+      "table_index": 76
+    },
+    {
+      "letters": "ttt",
+      "accumulator": 0,
+      "table_index": 77
+    },
+    {
+      "letters": "tttt",
+      "accumulator": 0,
+      "table_index": 78
+    },
+    {
+      "letters": "u",
+      "accumulator": 0,
+      "table_index": 79
+    },
+    {
+      "letters": "uu",
+      "accumulator": 0,
+      "table_index": 80
+    },
+    {
+      "letters": "uuu",
+      "accumulator": 0,
+      "table_index": 81
+    },
+    {
+      "letters": "uuuu",
+      "accumulator": 0,
+      "table_index": 82
+    },
+    {
+      "letters": "uw",
+      "accumulator": 0,
+      "table_index": 222
+    },
+    {
+      "letters": "v",
+      "accumulator": 0,
+      "table_index": 83
+    },
+    {
+      "letters": "vv",
+      "accumulator": 0,
+      "table_index": 84
+    },
+    {
+      "letters": "w",
+      "accumulator": 0,
+      "table_index": 85
+    },
+    {
+      "letters": "ww",
+      "accumulator": 0,
+      "table_index": 86
+    },
+    {
+      "letters": "x",
+      "accumulator": 0,
+      "table_index": 87
+    },
+    {
+      "letters": "y",
+      "accumulator": 0,
+      "table_index": 88
+    },
+    {
+      "letters": "yy",
+      "accumulator": 0,
+      "table_index": 89
+    },
+    {
+      "letters": "z",
+      "accumulator": 0,
+      "table_index": 90
+    }
+  ],
+  "score_records": "401ceb28bb349d8483bec00fe4823e918615bd9600000064fffffc92402781b19024dcc82e00401ade114201375def79000145e300000ae74021d526d08d20000000401584148a0000000000000013510000036b4025dd990a4e56557d4fc014e6e7864308a801ca0000ea94ffffffc24024ac4e7aa6a3000000c016db9dbfc00000000000005d95fffffda840208a76a3f400000000c012b5fc000000000000000005cafffffe0a401bb5aa641000000000c00de4dc00000000000000000040ffffff624013ba7c800000000000c0099a800000000000000000000100000000401edf500d6000000000c011b34d800000000000000001dbfffffd774020aa2b3e72800000004011d376c0000000000000000697000001004023d5197a78a00000004011cbc0800000000000000039030000001c4021f61ce0ad400000004012ac40200000000000000011620000009e4023f84a796f84000000c014a57d76000000000000004696ffffff6a4020a7d20b01400000004011d6cf600000000000000005ed0000012240268e771d9b60900000c014ba02431d47ae1356000144efffffffdc401ffe0fc04b00000000c012d7a9800000000000000004e8fffffd414025beaf2b28b8f380004015d82c382ce0f5c5040000d2160000008340218843e46820000000c014840244000000000000000964fffffc7d4023bc742ce9600000004011a6b18000000000000000341d000000194021c1b7369800000000c012e9d0e0000000000000000e16fffffef740269f84e1e1054ef10040158fce7bc137c7ad26000164ce00000033402383d09b8830000000c015bebb700000000000000025b9fffffd79401dcfbf5aa400000000c010b03800000000000000000108fffffded40159434e80000000000c005fc0000000000000000000002000000004020b800231d00000000c00dd688000000000000000006dcfffffff14026b622d8abb2dd4d4ec0158531256435e96a9100017b26ffffffd44025b2077a64ec200000c0178e1ca7c8000000000000c112fffffe884021b8931f1860000000c013f122e8000000000000000e26fffffddf401cd1e8de6400000000c00faa7780000000000000000096fffffe7b401798821e8000000000c00bcc880000000000000000000900000000000000000000000000000000000000000000000000000000000000004025e4eb6c5e540c0000c014fdf70210f5c28a2400010db6ffffffc44020b581cc8580000000c012952d200000000000000006f0fffffea84025e9601158f4f88000c017879c6825e433321f0000fe99fffffef04022ab2c2e2000000000c015a165a8000000000000001896fffffcb8401cbd9a6d6c00000000c00f9f748000000000000000008afffffe77402685812320a59e00004017adeffe1deb851e480001304f00000124401fe80ee1a480000000c012b63610000000000000000437fffffd4d40248e8539363c000000c014a7b04c000000000000005025ffffff7b40228e62d61420000000c0128aa4e00000000000000015b1ffffff9a40269212a6f47763a190c017b3941cf272f55e2e00012dabfffffed040258a75f984d8000000c017fbc3660000000000000090b0fffffc8640208d20e105c0000000c013abb088000000000000000553fffffbf94019face7da000000000c00dd63e00000000000000000021fffffdfd000000000000000000000000000000000000000000000000000000004025960fc99ca62000004014b8123e3a3d70a6380000b92f0000003f4025aeeb96fcbe8000004016ad5a63487ae147ad0000d28d000000d24025e2294db12b300000c014c96e46b7999999790000f565ffffffcc40238dabaf7058000000c015e6521e0000000000000026e3fffffd0a401cf01d1b0000000000c00ff66b00000000000000000087fffffd374020a884e3a640000000c012f095500000000000000004bcfffffd28402699ed0826a34b80004016fee701bf770a39b5000155f5000000be4020a396f5e200000000c0138191a0000000000000000668fffffd794025f9667dfecb749f46c014dda56c59d08890f100010709ffffffcb4024905f75bbfc000000c016efd48c000000000000004d91fffffce9401ed27b3ea400000000c0128bd0e00000000000000001f0fffffbea401abc8a7d8000000000c00de84400000000000000000013000000004026a945885b61db4c70c017db91046ed03a8e6b000166d3fffffec74024843ef7abac000000c016d2bd5400000000000000493ffffffd20401f9f49d6a800000000c01286e9e0000000000000000335fffffdb5401aecc3bc6000000000400ab6e00000000000000000002400000000400caf900000000000004005d4000000000000000000000100000000402692a5979a7aa980004015be542939800000d1000144f70000004a4020c8fbb06900000000c0138e66c000000000000000070efffffd7b402699449bd1ea3c0000c018fac9d15dd47ae149000129fffffffca34022efa2dc8bc0000000c013c14c50000000000000002239ffffff4c40249380b23cac0000004017979aa78000000000000048b60000042b4026a5a6a72e5a62bfb44014dd86203fa10fc03c00015a7c000000284024a17cbc4ca6000000c016fab9758000000000000057bdfffffd25401ef7e422b400000000c012a8b7e000000000000000024bfffffbca4019ca395de000000000c00cf13c0000000000000000001bffffff324026bd31fdebbd19b7884019917687ada25de5560001770f0000031a4023e14d349db0000000c012ca5010000000000000003ff1ffffffce401cf38b60a000000000c00feb4600000000000000000092fffffd974017cd44c08000000000c00ba6880000000000000000000200000000402693a80b411c0d1aa4c014c3eaecda5dd3dc7600013751ffffffd84024a6a40cbe54000000c016e34828000000000000005addfffffd80401eafe8cd0f00000000c011d5e1a00000000000000001a8fffffc6d401a9d6517d000000000c00dabb200000000000000000014fffffe074026b41aac4383a57600c018c9f27a18f490a34f00017d66fffffde240238924fac608000000c016aeeb4f000000000000002602fffffb66401d8ecd6ea600000000c010ca86c00000000000000000d4fffffcc34012f2e22000000000004009adc00000000000000000000200000000402694847c0088cb0000c017f78047dd1c28f753000152affffffe8a4020e29a42a4c0000000c01493928c000000000000000804fffffb664025bfea05035e080000c01681b1473a51eb83960000e01affffff6c40208f6355c040000000c0139bfea8000000000000000523fffffc354025a3974a29a96000004017e25b7afbfffffff80000cb110000023a4025b57816b40d3000004015c2e19d8451eb80bd0000d6bd00000074401fc4e01d9400000000c012c244e00000000000000003a4fffffcfd402590d5fad881c000004017b299c62c5c28f4c20000b2350000020140249f27c571f400000040169c522b000000000000004b21000002144020a0bb6e3880000000401086bd0000000000000000064b0000005540208781179240000000400e9913000000000000000004a20000000040249fc14af3a00000004014a767800000000000000050ba0000008440219b04810be0000000400edd21000000000000000009e5000000164020965a031d40000000c010e8e84000000000000000059fffffff5b4023a2bc644790000000c011b3e340000000000000002fb1ffffffe24023838f5853b8000000c0108affc0000000000000002562fffffff24022e69bbd7380000000401284b58000000000000000212000000040402386b00ff5c00000004013c7cdd00000000000000025b0000000a94021fbe511b6e0000000c00ee6a100000000000000001285fffffff44022cbe91e30500000004012b05ff0000000000000001bc2000000654022bcb8ca48f0000000c012df68500000000000000019a9ffffff75401ecd77357a00000000c00febed000000000000000001deffffff7e401e9fdfb0e200000000400f80ac000000000000000001370000002d4021e2b2b66560000000400eff5500000000000000000fa9000000104021bfb6746f40000000c012cfde00000000000000000e40ffffff174021d69f72f6a0000000c010825fc0000000000000000fb2ffffffdf401efb78d719000000004010c57740000000000000000276000000da401f8b0985208000000040119a8fe000000000000000024c000001a8402095b92a7d00000000401290e1a00000000000000004b40000019a40219fa9704320000000c0119180e0000000000000000b8affffff9c401feac2675139228bf6c011ffc46a0756efacfc0000029cfffffd72401fd2178fe216c08460c010c451cc5ed39c150000000767ffffff96401fb8f86aecbcb3a778c011887037fd1dc62e92000004daffffff20401d94dc19fad097b426c00fb60c295fad40a57f0000014fffffff53401fbd357b69a7a77f9cc011909490484c09594800000402fffffee0401dc4bdb85b2f684bdac00fd5c94cf224779ccf00000137ffffff224020e1232aff43a4bf94c012b026c6911dbf7f8400000bceffffff12401c8ad33c1c00000000c00fb6008000000000000000003afffffb20401dbb24eee29c0bcf14c00fa0348a553158251e000000dbffffff3d401fafb536d9a2eee2e4c011b1ff45182bc130df00000292fffffe49401f836f3851ee26b17ec010f1694ab3fc814f8200000313ffffff1a401fa888a1b9a920e71fc010fa2f56920e71f4c40000042bffffff10401d94f2aaa46c1fcd1ec00f8025445f675aa230000000e5ffffff7b401ecf16b474083be20fc010c5dd40ef883be20f000001a1fffffea6401d95511f6755555555c00fc2c1a49249249249000000e7fffffee740209de7837fc9295513c0128f4f8bacf1e01b1400000499fffffe64401ddf1ec33600000000c00eb69700000000000000000069ffffffdd401dcb610d69cc67319cc00feb9021bc86f21bc800000072fffffd3b4020a65c1d81b7d71f55c011f77a945ac94c686a000004a9fffffeaf402091f555c6c8d2bd62c010add0a2bbc0f0d870000005beffffff87402198bf30c79360f419c011d0f1a60b20fb2c2f00000dc8ffffff87401e988a8f7e77ce3844c0109f6a7d4e169c86f80000023dffffff3b4020a0043dc555c91e14c011f7968052c7bf7ae700000626fffffebe401e9d7f090ec9292bdbc010c03489292bdac50d000002d2fffffef04020c071e2d45aaf1302c011b7dc846b0daaf1300000071affffff31401e877dc3387d302b08c00fe6d265f5bb0c784c0000019effffff55401ee33b752b9e5eb167c0118ca454224e3ebcae00000286fffffea1401fa3d4a6dcfad7baa6c011ac834be7dc0231d1000001b0fffffd76401f8eb914794d08e2a9c010b5f6bb8eab5656d800000297ffffff4f401f8652e589e49bbc78c010c8e0a8be30ed0cc000000263ffffff1d401d8932b89c69349a4dc00ea443381c0e07038100000091ffffffc7401eed83041ca6c9b26cc010e1712d9364d9364e000001dafffffe9d401da789ebabc6113926c00f8aaa51070bbe3d100000009cffffff27402087a5c627134e6214c011cfccdf2df2df2df300000362fffffe82401aa6fbba8000000000c00dcb7c00000000000000000023fffffe7d401d837074e91e88385ec00fa0354548ceadcc5500000071fffffe48401fc4997ddd9e1cde52c011c3a43d18b87e178f0000029ffffffe22401ead6cb34df43ad9bfc010ad3da5d1f544b77a0000016cfffffeab401e8fe2da8c4744dd3ec0109bbfe8d39eef2aa200000180fffffedf401c8190315800000000c00ec0c60000000000000000004efffffeaa401e8496935f2dc593e5c010984fdada822f61c100000161fffffeca401ce1fa3dfc00000000c00ee5390000000000000000007effffff20401febd144e8ec5701acc011c079df32c0f9dd6c0000038afffffeaf4019bd82c4e000000000c00ae5d00000000000000000000c00000000401baa422d2800000000c00dae4e00000000000000000022ffffff91401fe2c6dfd9582625e0c011dce75fd00ae640090000018cfffffc5f401ed71ea5f5da50cdd0c010f9ea0a0e21b2d1cc00000178fffffdf4401e95632e0e2517e2c6c00fee8700d7d0ca53bc00000143ffffff20401ca89dcebc00000000c00ee3e100000000000000000059fffffe94401e93077d9404114978c01090431f03d034e0bb0000012bfffffeb6401d9abdcf100f83e0f9c00dc4c583e0f83e0f840000008a00000000401fe9ef5b8aed3cdf7bc011f4c2ae2d078140360000032afffffe014019be01136000000000c00d87e20000000000000000001300000000401a9a27ae8000000000c00bd6900000000000000000002000000000401fa8dcca5c8e779863c011b63a3ae6ec6f540c00000225fffffddf401eac8a5e5a019d79f1c010bb8e976b682d39560000019cfffffeaf401ecd3a9eae0bd8839fc010adfd699feaf0dd1f000001d9ffffff03401ce9d833d690be1c16c00ee1f508a42f870568000000a1ffffff5a401ee5b73b6a0103721ec010a374e8a3c66f7b090000022effffff43401cf7267678fac687d7c00ecc42c687d6343eb2000000a1ffffff82401fc254c68b6cbadec2c011d576bc75d0e76453000002c4fffffe074018fcb0f74000000000400a95100000000000000000000900000000401b8544312800000000c00da67600000000000000000026ffffff7e401fef05df8ef0dc04d8c011ded7ed72c87f1c0000000326fffffe38401ebe9eaf899bf6462ac011820bdf85bb39503d0000018bfffffde9401eaceee9c2281d74dcc010e125563072b9a73e000001e1fffffe8f401d8a6937bfaaaaaaaac00f9d95c000000000000000007bfffffe7f401ee90bf41eb9f12a09c010fe7043d52419b724000001ccfffffe4f401d844778a46810a681c00efa0778b7278b727800000089ffffff1d40208886bc6d3726bdb7c0128e582db0f92db0f900000396fffffdec4018d0f5c90000000000c00bce600000000000000000000900000000401ba5ef8d2800000000c00dc26e00000000000000000030ffffff77401faecaf67831d7b3a5c0118c013e09c1a4cc76000001f0fffffe57401ee7ff10317a290928c010e767ca05ae8f4f3b000001e8fffffe99401ec62c1360ffd4a09dc00fc9b8738c1d24165d0000028effffffbb401d8a32d6ffb9079a9dc00f9921d4e930288df0000000c0ffffff17401f83969734124c4ca5c010fff3ad665d8fcb86000001a9fffffe31401cff369b24cb9e9de1c00ed0909de103b052a000000098ffffff77402086f1b2201033456ec01289f477a200b64c3200000386fffffdf5401aef5604b000000000c00cfd2c00000000000000000028fffffff2401bf1612f9800000000c00ec7230000000000000000004efffffe8a402092e44e6ee20b7b3bc011c5e34d21e20b7b3b00000490fffffefa4020966868dcf20dded5c011d073e73c9b971130000005f8fffffee94021b68d0e8840324a22c0129bf0214dd19cb8af00001015ffffff65401f8bc2ada8d9810aeec00e9c40b141a5bec50600000426ffffffdb4020c8b6c6d3c3317a9fc011acf98e4d72044d7200000873ffffff5d401ee7a0f3826d035bb5c00f9b18bb8b3cb4d3d400000489ffffffbc4020e29b6cc8ea05848dc01289940298c4a9d0d000000730fffffece401de5a22075b4449ca4c0108061ae9ab34c0e3e00000195ffffff27401f928b4c4f8e7748ecc010ff9c0d7cdb99140a0000030bffffff0a401f9ab1420ccfab0550c011a414f60a9f560a9f000002a7fffffe7a401fbd741749686bca1bc010f07990b061fd8cdc00000316ffffff2d401fa189d248bf309b8cc011af7cabbf309b8b58000003d7fffffe93401da02f0a7ffab8be05c00f9d650e83f5717c0a000000ecffffff45401f8adc196810b4749ec010b44cda99a47ed46000000381ffffff33401df956deac174d59a6c00ee719abda752874820000018dffffffde402092b055908106e8a9c011ea7866cec44f6b9e00000472fffffeb1401b856dbdf800000000c00ea5fd0000000000000000001efffffc66401d8704e3e431188c46c00f8bc95cee773b9dcf00000075fffffeb7401fcddbf88ff393d7fec011e6dcba6d0f4b4f2e0000024ffffffd69401fbb9cc45d1d99a6c0c011a4ace3d414cdb98000000458fffffed1401fc11e236d1386822cc01183a48822b63cbeea00000560ffffff3d401dabe24b51de17bc30c00ff5b269f5d3eba7d8000000cafffffe49401ff88af4443bc886efc0118cf2f16dd245b74900000564ffffff2f401da0b869e984cdb446c00fffd9828b05160a2c000002d2ffffff4b4020d0b67f3e9b66ad56c012b1e1742a7cb0b8ba000006c8fffffe5d401c93474f5c00000000c00db7c60000000000000000005900000000401dbad217e4b42d0b42c00ffb23d6b5ad6b5ad60000008bfffffd754024e2a43dd717800000c015ab4574c00000000000007f61ffffff54402295c46e8590000000c014d0620c0000000000000017b5fffffdce4023b27fd2e708000000c015d4e09a00000000000000334afffffded401fe67aeade80000000c011d5a06000000000000000043dfffffebd40228553a0c5d0000000c01290bbf000000000000000133dffffff884024c19bd827830000004014d7e48f000000000000005f5a0000009040259e3fdd4b47800000c0138426ee00000000000000a797ffffffe740249df7be30480000004014ed07a00000000000000050b5000000bb402187bbdb2d80000000c011f2f04000000000000000097dffffff344023aee84e234800000040159786de0000000000000029dd000001cf4026970785946d68000040168b716e400000000000013007000000754024fa27717e060000004016bf3d55000000000000007d2d000001874023b9869f2ed80000004013b6f8e8000000000000002d3800000081",
+  "calls": [
+    {
+      "letters": "?",
+      "score": 2791,
+      "entry_index": 0
+    },
+    {
+      "letters": "a",
+      "score": -62,
+      "entry_index": 2
+    },
+    {
+      "letters": "b",
+      "score": -36,
+      "entry_index": 16
+    },
+    {
+      "letters": "c",
+      "score": 131,
+      "entry_index": 20
+    },
+    {
+      "letters": "d",
+      "score": 51,
+      "entry_index": 24
+    },
+    {
+      "letters": "e",
+      "score": -44,
+      "entry_index": 32
+    },
+    {
+      "letters": "f",
+      "score": -60,
+      "entry_index": 49
+    },
+    {
+      "letters": "g",
+      "score": -272,
+      "entry_index": 53
+    },
+    {
+      "letters": "h",
+      "score": 292,
+      "entry_index": 57
+    },
+    {
+      "letters": "i",
+      "score": -304,
+      "entry_index": 62
+    },
+    {
+      "letters": "j",
+      "score": 63,
+      "entry_index": 74
+    },
+    {
+      "letters": "k",
+      "score": 210,
+      "entry_index": 75
+    },
+    {
+      "letters": "l",
+      "score": -52,
+      "entry_index": 76
+    },
+    {
+      "letters": "m",
+      "score": 190,
+      "entry_index": 81
+    },
+    {
+      "letters": "n",
+      "score": -53,
+      "entry_index": 83
+    },
+    {
+      "letters": "o",
+      "score": -313,
+      "entry_index": 87
+    },
+    {
+      "letters": "p",
+      "score": 74,
+      "entry_index": 95
+    },
+    {
+      "letters": "q",
+      "score": -861,
+      "entry_index": 97
+    },
+    {
+      "letters": "r",
+      "score": 40,
+      "entry_index": 100
+    },
+    {
+      "letters": "s",
+      "score": 794,
+      "entry_index": 104
+    },
+    {
+      "letters": "t",
+      "score": -40,
+      "entry_index": 108
+    },
+    {
+      "letters": "u",
+      "score": -542,
+      "entry_index": 112
+    },
+    {
+      "letters": "v",
+      "score": -374,
+      "entry_index": 117
+    },
+    {
+      "letters": "w",
+      "score": -148,
+      "entry_index": 119
+    },
+    {
+      "letters": "x",
+      "score": 570,
+      "entry_index": 121
+    },
+    {
+      "letters": "y",
+      "score": 116,
+      "entry_index": 122
+    },
+    {
+      "letters": "z",
+      "score": 513,
+      "entry_index": 124
+    },
+    {
+      "letters": "qu",
+      "score": 1067,
+      "entry_index": 99
+    },
+    {
+      "letters": "deenqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "eenqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "denqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "enqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "dnqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "nqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "deeqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "eeqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "deqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "eqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "dqtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "qtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "deentx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "eentx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "dentx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "entx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "dntx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "ntx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "deetx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "eetx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "detx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "etx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "dtx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "tx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "deenqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "eenqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "denqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "enqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "dnqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "nqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "deeqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "eeqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "deqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "eqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "dqx",
+      "score": 0,
+      "entry_index": null
+    },
+    {
+      "letters": "qx",
+      "score": 0,
+      "entry_index": null
+    }
+  ]
+}

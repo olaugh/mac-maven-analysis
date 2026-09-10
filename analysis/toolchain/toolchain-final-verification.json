@@ -1,0 +1,17 @@
+{
+  "scope": "Preserved artifacts reverified, not a new compiler execution. THINK-family startup match does not uniquely identify original release or optimization settings.",
+  "maven_code1_sha256": "224d4f2ac2f62ef032a6bd1633cc5e9d2f282bb365bf4f303dc2079e4c838641",
+  "think6_code1_sha256": "4371b23d9d980392e73b1354cb1d73cc59c3d8afd2638be9aa944bb872b04986",
+  "think6_startup_body_matching_bytes": 566,
+  "think6_differing_offsets": [
+    6,
+    7
+  ],
+  "think5_shared_runtime_matching_bytes": 506,
+  "probe_main_matching_between_versions_bytes": 58,
+  "think6_probe_rdump_sha256": "492a348410b447b5b140e88751b6cf0f3de97b6167b3aa837f4f1f6baec97590",
+  "think6_probe_source_cr_sha256": "7413aebea8ccbef618599515dba0e7ca453905ed6499ece85e1196d9c6deb0e3",
+  "canonical_source_lf_sha256": "2544ecd84ed99ae17f3998914736e9e6d737d819400d77ae309a83f8036057f7",
+  "source_copies_differ_only_in_line_endings": true,
+  "prior_runtime_execution": "Verified under QEMU/GDB"
+}

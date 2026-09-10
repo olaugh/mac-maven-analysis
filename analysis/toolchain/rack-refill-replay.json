@@ -1,0 +1,10 @@
+{
+  "scope": "Natural captured invocation replay; bag, private generator and refill C verified for this trace. Observed clock/Toolbox inputs; debugger affects timing. Small-bag uninitialized branch not thereby verified.",
+  "bag_bytes_matching": 86,
+  "events_consumed": 16,
+  "rack": "idigngx",
+  "full_board_matches": true,
+  "bag_workspace_matches": true,
+  "private_seed_matches": true,
+  "capture_sha256": "d4c5e6472537aaa0deaaa36afa1691466ad4e5d6037a57d710e86886867b873b"
+}

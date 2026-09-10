@@ -1,0 +1,26 @@
+{
+  "scope": "One natural composition call; exact CODE32[0xdb0,0xefa) and ROM/register identity; no game-data injection; tables supplied by original runtime",
+  "a5": 131028224,
+  "code32_sha256": "e391e1b0751d7d0e085004232d90befeb0cd3704803dbd862a4ab28b574a7d13",
+  "verified_range_sha256": "835a55eb7e5c84563372e05530a534a5ec1d19d60e9ad4fb0bd309126a98545f",
+  "args": [
+    5,
+    2,
+    39,
+    54,
+    7
+  ],
+  "table_address": 130645504,
+  "raw_table": "401cbc409c708d300000c0108aec0af0de573b3c0000009afffffd0b4020bdc73900d9f50000c014820a6e9a53a2a14b00000831fffffc084022f9ff385c49884000c015f1f0d2f8c8572d2a00002b66fffffd374024bf6e5eff334060004012b454806d068fafe2000079be000000174025ba20e8e54998f0004017a1e3bc1574eab9f50000e0ee000001704024dfc75b3af2d8b8004011d74c349e8f89f25a000095cd0000000b4023a1cdc3e0d5872000c0168d24bb72a19c12f500003bb6fffffda34020e94bdd8347ea0000c014b3eec45542443ec40000094cfffffb2a",
+  "terminal_scores": [
+    4294966539,
+    4294966280,
+    4294966583,
+    23,
+    368,
+    11,
+    4294966691,
+    4294966058
+  ],
+  "result_bits": 4294966583
+}

@@ -1,0 +1,94 @@
+CODE 11, resource offsets include 4-byte header
+SHA256 fce9e1233c58aa6d899ec186bc937634f1bb50141e60c81f4eb8ff2890f8c967
+
+0c7e  4e56fee6             link.w     a6, #$fee6
+0c82  0c6d0008a386         cmpi.w     #$8, -$5c7a(a5)
+0c88  6406                 bcc.b      $c90
+0c8a  4a6da386             tst.w      -$5c7a(a5)
+0c8e  6c04                 bge.b      $c94
+0c90  4eba04d6             jsr        $1168(pc)
+0c94  302da386             move.w     -$5c7a(a5), d0
+0c98  526da386             addq.w     #$1, -$5c7a(a5)
+0c9c  c1fc002c             muls.w     #$2c, d0
+0ca0  41eda226             lea.l      -$5dda(a5), a0
+0ca4  d088                 add.l      a0, d0
+0ca6  2040                 movea.l    d0, a0
+0ca8  7000                 moveq      #$0, d0
+0caa  43fa0006             lea.l      $cb2(pc), a1
+0cae  48d0def8             movem.l    d3-d7/a1-a4/a6-a7, (a0)
+0cb2  4a40                 tst.w      d0
+0cb4  66000084             bne.w      $d3a
+0cb8  4ead030a             jsr        $30a(a5)
+0cbc  486efffe             pea.l      -$2(a6)
+0cc0  486efffc             pea.l      -$4(a6)
+0cc4  4ead0b8a             jsr        $b8a(a5)
+0cc8  3d7c0001fffa         move.w     #$1, -$6(a6)
+0cce  6036                 bra.b      $d06
+0cd0  3f2efffa             move.w     -$6(a6), -(a7)
+0cd4  486efef2             pea.l      -$10e(a6)
+0cd8  4ead0b92             jsr        $b92(a5)
+0cdc  0cae58474d45fef4     cmpi.l     #$58474d45, -$10c(a6)
+0ce4  6614                 bne.b      $cfa
+0ce6  486efefa             pea.l      -$106(a6)
+0cea  3f2efef2             move.w     -$10e(a6), -(a7)
+0cee  4ead05aa             jsr        $5aa(a5)
+0cf2  0c6e0001fffe         cmpi.w     #$1, -$2(a6)
+0cf8  5c8f                 addq.l     #$6, a7
+0cfa  3f2efffa             move.w     -$6(a6), -(a7)
+0cfe  4ead0b9a             jsr        $b9a(a5)
+0d02  526efffa             addq.w     #$1, -$6(a6)
+0d06  302efffa             move.w     -$6(a6), d0
+0d0a  b06efffc             cmp.w      -$4(a6), d0
+0d0e  6fc0                 ble.b      $cd0
+0d10  0c6e0001fffe         cmpi.w     #$1, -$2(a6)
+0d16  671c                 beq.b      $d34
+0d18  4eba03d4             jsr        $10ee(pc)
+0d1c  2f2dde78             move.l     -$2188(a5), -(a7)
+0d20  a9aa                 dc.w       $a9aa
+0d22  4267                 clr.w      -(a7)
+0d24  a9af                 dc.w       $a9af
+0d26  4a5f                 tst.w      (a7)+
+0d28  6704                 beq.b      $d2e
+0d2a  4eba043c             jsr        $1168(pc)
+0d2e  4267                 clr.w      -(a7)
+0d30  a994                 dc.w       $a994
+0d32  a999                 dc.w       $a999
+0d34  536da386             subq.w     #$1, -$5c7a(a5)
+0d38  600a                 bra.b      $d44
+0d3a  2f2da222             move.l     -$5dde(a5), -(a7)
+0d3e  4ead0c7a             jsr        $c7a(a5)
+0d42  588f                 addq.l     #$4, a7
+0d44  4ead0662             jsr        $662(a5)
+0d48  4e5e                 unlk       a6
+0d4a  4e75                 rts        
+0d4c  486d0ac2             pea.l      $ac2(a5)
+0d50  a9f1                 dc.w       $a9f1
+0d52  486d0a92             pea.l      $a92(a5)
+0d56  a9f1                 dc.w       $a9f1
+0d58  486d0aa2             pea.l      $aa2(a5)
+0d5c  a9f1                 dc.w       $a9f1
+0d5e  486d0822             pea.l      $822(a5)
+0d62  a9f1                 dc.w       $a9f1
+0d64  486d0862             pea.l      $862(a5)
+0d68  a9f1                 dc.w       $a9f1
+0d6a  486d08b2             pea.l      $8b2(a5)
+0d6e  a9f1                 dc.w       $a9f1
+0d70  486d0aea             pea.l      $aea(a5)
+0d74  a9f1                 dc.w       $a9f1
+0d76  486d0a7a             pea.l      $a7a(a5)
+0d7a  a9f1                 dc.w       $a9f1
+0d7c  486d0a1a             pea.l      $a1a(a5)
+0d80  a9f1                 dc.w       $a9f1
+0d82  486d0d72             pea.l      $d72(a5)
+0d86  a9f1                 dc.w       $a9f1
+0d88  486d0a3a             pea.l      $a3a(a5)
+0d8c  a9f1                 dc.w       $a9f1
+0d8e  486d0a52             pea.l      $a52(a5)
+0d92  a9f1                 dc.w       $a9f1
+0d94  486d0912             pea.l      $912(a5)
+0d98  a9f1                 dc.w       $a9f1
+0d9a  486d0842             pea.l      $842(a5)
+0d9e  a9f1                 dc.w       $a9f1
+0da0  486d098a             pea.l      $98a(a5)
+0da4  a9f1                 dc.w       $a9f1
+0da6  4e75                 rts        

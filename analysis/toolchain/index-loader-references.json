@@ -1,0 +1,15 @@
+{
+  "code15_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10",
+  "target_resource_offset": 4,
+  "jump_table_entries": [],
+  "candidate_local_word_displacements_to_target": [],
+  "scope": "No CODE 0 entry or 16-bit PC-relative reference to this target found; indirect/dynamic reachability is not excluded",
+  "exported_startup": {
+    "a5_slot": 778,
+    "resource_offset": 1234,
+    "file_check_call_offset": 1316,
+    "file_check_entry_offset": 3404,
+    "filename_source": "CurApName, low-memory address 0x910",
+    "volume_reference_global": -3472
+  }
+}

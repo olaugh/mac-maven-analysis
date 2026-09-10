@@ -1,0 +1,16 @@
+{
+  "scope": "Constructed saved-game test fixture, not naturally played game",
+  "name": "maven-two-blank-same",
+  "source_sha256": "7d03ba811655e75659311defa63db51a43abac2a6949a611bf73e5c16aebcc00",
+  "fixture_sha256": "168edbd9a5cec2eaad2ea46eace7b5cb662db31bbc0433700ddc9b4691ff58c9",
+  "rack": "ori??te",
+  "stored_score": 1000,
+  "changed_offsets": [
+    21,
+    22,
+    52,
+    53,
+    73,
+    74
+  ]
+}

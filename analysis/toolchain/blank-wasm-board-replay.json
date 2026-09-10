@@ -1,0 +1,20 @@
+{
+  "scope": "Freestanding wasm scorer, non-evaluation application, and undo in Node; original captured inputs; no UI/refill/history/AI ranking. Application evidence follows selected score capture: direct if application_state exists, otherwise split restore capture.",
+  "imports": [],
+  "wasm_sha256": "dc8189d2b018e934c11e3e1085e7a50efd1e10fba6e739f8e03e41aa6c2f5a07",
+  "node": "v26.0.0",
+  "score": 1200,
+  "scorer_outputs_match": true,
+  "application_board_value_undo_match": true,
+  "undo_full_state_match": true,
+  "captures": [
+    {
+      "name": "blank-move-score-live",
+      "sha256": "6006f882a11ef7d3b1b6e15bc9541299b91f5cfa2cfe7d2341d8a259dcd3f78e"
+    },
+    {
+      "name": "move-undo-live",
+      "sha256": "533e4118a6c969beac7806315da827aa3fa03d5e0ac11f2d0bd67329e5b9a5d1"
+    }
+  ]
+}

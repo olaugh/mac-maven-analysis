@@ -1,0 +1,1245 @@
+{
+  "scope": "Ranges identify work, not verified or complete byte coverage. Resources include data and metadata.",
+  "resource_count": 53,
+  "resource_bytes": 119012,
+  "source_associated_range_bytes": 40752,
+  "full_application_rebuild": false,
+  "full_game_validation": false,
+  "inline_error_context": "Separate shared reconstruction; site-by-site runtime validation pending",
+  "resources": [
+    {
+      "code_resource": 0,
+      "resource_bytes": 3568,
+      "sha256": "1985c6dc6ba5f112c77a4e7fc3fed52efa0b10c18d6d3ca12684f469b5c909f2",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 1,
+      "resource_bytes": 578,
+      "sha256": "224d4f2ac2f62ef032a6bd1633cc5e9d2f282bb365bf4f303dc2079e4c838641",
+      "source_associated_ranges": [
+        {
+          "start": 72,
+          "end_exclusive": 170,
+          "source": "global_initializer.c",
+          "original_runtime_evidence": "startup-repeat-live.json",
+          "scope": "Pure global operation; Toolbox resource acquisition external"
+        },
+        {
+          "start": 238,
+          "end_exclusive": 292,
+          "source": "runtime_arithmetic.c",
+          "original_runtime_evidence": "multiply-live-calls.json",
+          "scope": "Natural inputs only; guest ABI external"
+        }
+      ]
+    },
+    {
+      "code_resource": 2,
+      "resource_bytes": 754,
+      "sha256": "6dce1edba6e48c415c07b4d2750c2abf6f96ba8fc11edbdd8be5b151854d8898",
+      "source_associated_ranges": [
+        {
+          "start": 244,
+          "end_exclusive": 312,
+          "source": "dictionary_setup.c",
+          "original_runtime_evidence": "whole-file-caller-live.json",
+          "scope": "Natural dictionary load success with full CODE 2 identity; load-error transfer host-tested only"
+        },
+        {
+          "start": 312,
+          "end_exclusive": 394,
+          "source": "dictionary_tables.c",
+          "original_runtime_evidence": "whole-file-caller-live.json",
+          "scope": "Natural roots/tables match C replay; staged data also exercised in wasm; diagnostic paths host-tested only"
+        }
+      ]
+    },
+    {
+      "code_resource": 3,
+      "resource_bytes": 4394,
+      "sha256": "45264938d606efd4a84aad6e98c4836385e2a8c06807a11139fcd3717886f2cc",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 340,
+          "source": "candidate_ranking.c",
+          "original_runtime_evidence": "candidate-sampled-live.json",
+          "scope": "Sampled average/sort only; display omitted; original eligibility supplied"
+        },
+        {
+          "start": 418,
+          "end_exclusive": 478,
+          "source": "candidate_ranking.c",
+          "original_runtime_evidence": null,
+          "scope": "Strict best-move replacement; exercised as search composition"
+        },
+        {
+          "start": 478,
+          "end_exclusive": 506,
+          "source": "search_dispatch.c",
+          "original_runtime_evidence": "rollout-exhaustive-live-01.json",
+          "scope": "Selected-rack count setup; all three modes accepted in full captured simulation batches"
+        },
+        {
+          "start": 506,
+          "end_exclusive": 578,
+          "source": "search_policy.c",
+          "original_runtime_evidence": "rollout-exhaustive-live-01.json",
+          "scope": "Mixed byte/word selection policy; all three paths accepted in simulation; host boundary tests"
+        },
+        {
+          "start": 578,
+          "end_exclusive": 616,
+          "source": "search_dispatch.c",
+          "original_runtime_evidence": "rollout-exhaustive-live-01.json",
+          "scope": "Engine invocation and first-record selection; native/wasm heuristic,late and endgame simulation accepted"
+        },
+        {
+          "start": 3214,
+          "end_exclusive": 3276,
+          "source": "simulation_restore.c",
+          "original_runtime_evidence": "simulation-cancel-live.json",
+          "scope": "Position snapshot saved in original session frame; subsequent restoration accepted; native snapshot constructed from captured saved state"
+        },
+        {
+          "start": 3462,
+          "end_exclusive": 3524,
+          "source": "simulation_restore.c",
+          "original_runtime_evidence": "simulation-cancel-live.json",
+          "scope": "Original Escape restores altered board,values,rack strings and selection; cache rebuild captured separately"
+        },
+        {
+          "start": 1642,
+          "end_exclusive": 1650,
+          "source": "simulation_restore.c",
+          "original_runtime_evidence": null,
+          "scope": "Signed first-entry weight limit comparison; static boundary checks, normal original limit exit not yet captured"
+        },
+        {
+          "start": 4210,
+          "end_exclusive": 4236,
+          "source": "simulation_search.c",
+          "original_runtime_evidence": "rollout-batch-live.json",
+          "scope": "Raw candidate copy and static-rank accumulator seed matches two original first-batch configurations"
+        },
+        {
+          "start": 3332,
+          "end_exclusive": 3396,
+          "source": "simulation_search.c",
+          "original_runtime_evidence": "opponent-samples-live.json",
+          "scope": "Finite exhaustive scheduling and final publication only; infinite sampling, longjmp and post-session cache rebuild excluded"
+        },
+        {
+          "start": 710,
+          "end_exclusive": 1642,
+          "source": "rollout_search.c",
+          "original_runtime_evidence": "rollout-batch-refills-live.json",
+          "scope": "Two standalone batches and five continuous exhaustive batches;450 state checkpoints and150 computed refills; external random/clock events supplied"
+        }
+      ]
+    },
+    {
+      "code_resource": 4,
+      "resource_bytes": 112,
+      "sha256": "e97370b5dc622c73d883d493e55bfb845ae973f80b2f6d283fe97c04d009bea5",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 48,
+          "source": "rack_refill.c",
+          "original_runtime_evidence": "rack-refill-live.json",
+          "scope": "All private-random returns and final seed match C in one natural refill; full loaded CODE4 identity checked"
+        }
+      ]
+    },
+    {
+      "code_resource": 5,
+      "resource_bytes": 208,
+      "sha256": "52a51d722c512432ff7c6894c7e39ae3f7e2cf8ceaeb82c58203b0b4e2de4c84",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 6,
+      "resource_bytes": 1030,
+      "sha256": "4ab8b6ed67bcd2b40579d0f6b811bcc8b3b1212270e3195ab2f80ed235becdca",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 7,
+      "resource_bytes": 2876,
+      "sha256": "56c5a0801c2b3d3bd87acfdffcb566b2a200bf21ef330ae9fdd5102015fd461f",
+      "source_associated_ranges": [
+        {
+          "start": 112,
+          "end_exclusive": 202,
+          "source": "history_initial.c",
+          "original_runtime_evidence": null,
+          "scope": "Static tag-1 history restore branch; captured save payload host-tested; original restore globals not yet traced"
+        },
+        {
+          "start": 632,
+          "end_exclusive": 742,
+          "source": "history_move.c",
+          "original_runtime_evidence": null,
+          "scope": "Static tag-2 restore orchestration; recursive previous state, score/racks and helper order tested; move application external and natural restore pending"
+        }
+      ]
+    },
+    {
+      "code_resource": 8,
+      "resource_bytes": 2330,
+      "sha256": "2d883db377ac058e779437710ceb3eeaa1b26e3abd9a1f21ea619d7b164ae98a",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 9,
+      "resource_bytes": 3944,
+      "sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415",
+      "source_associated_ranges": [
+        {
+          "start": 3234,
+          "end_exclusive": 3348,
+          "source": "text_filter.c",
+          "original_runtime_evidence": "word-list-allowed-characters.json",
+          "scope": "ASCII-only static filter; saved allow-list strings; direct live filter trace pending"
+        },
+        {
+          "start": 3166,
+          "end_exclusive": 3234,
+          "source": "clipboard_sync.c",
+          "original_runtime_evidence": null,
+          "scope": "Static scrap synchronization; import/export Toolbox wrappers external; natural trace pending"
+        },
+        {
+          "start": 1132,
+          "end_exclusive": 1264,
+          "source": "text_key.c",
+          "original_runtime_evidence": null,
+          "scope": "Static insertion dispatch; navigation, quote memory access and Toolbox effects external"
+        },
+        {
+          "start": 1264,
+          "end_exclusive": 1858,
+          "source": "arrow_navigation.c",
+          "original_runtime_evidence": null,
+          "scope": "Static modifier and selection dispatch; callbacks retain dynamic selection; natural trace pending"
+        },
+        {
+          "start": 1022,
+          "end_exclusive": 1132,
+          "source": "word_navigation.c",
+          "original_runtime_evidence": null,
+          "scope": "Static word-edge loop; lock and predicate memory access external; natural traces pending"
+        }
+      ]
+    },
+    {
+      "code_resource": 10,
+      "resource_bytes": 142,
+      "sha256": "aa85f99e780325d07288aacd1ca53da197290a7f0d6df6a904de6298ae7fa15d",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 11,
+      "resource_bytes": 4482,
+      "sha256": "fce9e1233c58aa6d899ec186bc937634f1bb50141e60c81f4eb8ff2890f8c967",
+      "source_associated_ranges": [
+        {
+          "start": 3404,
+          "end_exclusive": 3496,
+          "source": "segment_management.c",
+          "original_runtime_evidence": "segment-unloads-live.json",
+          "scope": "Arguments/order verified; Toolbox effects external"
+        }
+      ]
+    },
+    {
+      "code_resource": 12,
+      "resource_bytes": 2726,
+      "sha256": "7fa76bffb79ccaef927a1baee70ad369f9b783f6b89d5008e62485f9f0786d29",
+      "source_associated_ranges": [
+        {
+          "start": 910,
+          "end_exclusive": 1640,
+          "source": "word_enumerator.c",
+          "original_runtime_evidence": "word-enumerator-live-summary.json",
+          "scope": "Four natural enumerations: 149 emissions and final workspaces match; setup/UI storage/error paths external"
+        },
+        {
+          "start": 1670,
+          "end_exclusive": 1782,
+          "source": "dialog_text_filter.c",
+          "original_runtime_evidence": "word-list-allowed-characters.json",
+          "scope": "Static event-then-six-fields orchestration; dispatch and Toolbox adapters external"
+        },
+        {
+          "start": 2094,
+          "end_exclusive": 2196,
+          "source": "word_length_controls.c",
+          "original_runtime_evidence": "length-controls-live-summary.json",
+          "scope": "Three natural caller outcomes and six decimal calls match; field extraction external; additional parser paths pending"
+        }
+      ]
+    },
+    {
+      "code_resource": 13,
+      "resource_bytes": 516,
+      "sha256": "a44b1c008accd3a79ec7900c0c71356d167e76d7b726d999a37cd724b7e55a82",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 14,
+      "resource_bytes": 2770,
+      "sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 15,
+      "resource_bytes": 3572,
+      "sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 210,
+          "source": "index_file.c",
+          "original_runtime_evidence": null,
+          "scope": "Static only; no direct caller identified"
+        },
+        {
+          "start": 408,
+          "end_exclusive": 456,
+          "source": "dictionary_lookup.c",
+          "original_runtime_evidence": null,
+          "scope": "Counted wrapper; original call trace pending"
+        },
+        {
+          "start": 456,
+          "end_exclusive": 574,
+          "source": "dictionary_lookup.c",
+          "original_runtime_evidence": "dictionary-live-calls.json",
+          "scope": "Ten natural section-0 calls match; section 1/exhaustive validation pending; unreachable +0x232 not assigned behavior"
+        },
+        {
+          "start": 574,
+          "end_exclusive": 630,
+          "source": "dictionary_lookup.c",
+          "original_runtime_evidence": null,
+          "scope": "Terminated wrapper; original call trace pending"
+        },
+        {
+          "start": 3404,
+          "end_exclusive": 3572,
+          "source": "file_access_check.c",
+          "original_runtime_evidence": "file-check-live.json",
+          "scope": "Success path verified; error paths pending"
+        }
+      ]
+    },
+    {
+      "code_resource": 16,
+      "resource_bytes": 1898,
+      "sha256": "7bf6f6d00cd33ebbf666a5edc5f6b3ffa3f18dfb41e3a5ff97aab030667811fc",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 332,
+          "source": "move_statistics.c",
+          "original_runtime_evidence": null,
+          "scope": "Static22-long accumulation and selective signed normalization; host rounding/field/alias tests; not move ranking"
+        }
+      ]
+    },
+    {
+      "code_resource": 17,
+      "resource_bytes": 2622,
+      "sha256": "b0b965a2455da0b9a1e03abcd74c9b68f869969aa56f1fe9d8f32a6c937f0d55",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 18,
+      "resource_bytes": 4464,
+      "sha256": "d3fab480cdb62c3597983f78bcb5a90658ca67080e6b891d43e0c96432e83367",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 19,
+      "resource_bytes": 386,
+      "sha256": "cce31a7121fd749f4fe7b9d21044b0e3faf1a7790e6d6bd3c2a7b903149132d8",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 20,
+      "resource_bytes": 3402,
+      "sha256": "c7c34b03744764d10559d4f57eec601c406b21a6d983a310e6bcbbe64ed53086",
+      "source_associated_ranges": [
+        {
+          "start": 2030,
+          "end_exclusive": 2094,
+          "source": "drawing_text_size.c",
+          "original_runtime_evidence": "inline-switch-candidates.json",
+          "scope": "Static TextSize selection; source structure and natural calls pending; table excluded"
+        }
+      ]
+    },
+    {
+      "code_resource": 21,
+      "resource_bytes": 13722,
+      "sha256": "5ad75a96392a6817548b38cb24acd9eed4b2715961210163ac874dd35103d54f",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 22,
+      "resource_bytes": 2060,
+      "sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d",
+      "source_associated_ranges": [
+        {
+          "start": 512,
+          "end_exclusive": 654,
+          "source": "save_record.c",
+          "original_runtime_evidence": "save-new-game-live.json",
+          "scope": "Natural three-record save inputs/results and tag-1 restoration; C replay matches all writes; error/large-size paths host-tested only"
+        }
+      ]
+    },
+    {
+      "code_resource": 23,
+      "resource_bytes": 612,
+      "sha256": "2a0583f5fee14f3f5a91da3c2094d64b7ab13d39459d17c376f0077b10622f10",
+      "source_associated_ranges": [
+        {
+          "start": 446,
+          "end_exclusive": 510,
+          "source": "character_normalization.c",
+          "original_runtime_evidence": "character-table-fingerprint.json",
+          "scope": "Static wrapper with saved runtime table; natural calls pending"
+        },
+        {
+          "start": 378,
+          "end_exclusive": 446,
+          "source": "pascal_string.c",
+          "original_runtime_evidence": null,
+          "scope": "Static historical Pascal mismatch; final character skipped and signed length retained; live confirmation pending"
+        }
+      ]
+    },
+    {
+      "code_resource": 24,
+      "resource_bytes": 6790,
+      "sha256": "1be4406f19278e542cb993571130224e625f58d690dc1f689f2884373b2a152f",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 25,
+      "resource_bytes": 204,
+      "sha256": "081cc46b35d0bc554932d260d7fc3d6e1a0355df6fef7c2387aa8caf3642c5da",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 27,
+      "resource_bytes": 666,
+      "sha256": "d5734dbb3df92e53ae7b5a992385e4c8294dbd37b768f06a5a81cf0219257ca3",
+      "source_associated_ranges": [
+        {
+          "start": 38,
+          "end_exclusive": 332,
+          "source": "reply_bounds.c",
+          "original_runtime_evidence": "reply-bounds-live.json",
+          "scope": "Three original candidate bounds calls and full endgame integration"
+        },
+        {
+          "start": 468,
+          "end_exclusive": 666,
+          "source": "endgame_move_cache.c",
+          "original_runtime_evidence": "endgame-generation-live.json",
+          "scope": "Original reply summaries and linked traversal"
+        }
+      ]
+    },
+    {
+      "code_resource": 28,
+      "resource_bytes": 668,
+      "sha256": "1ce1ccb0d21a9d613304253b86c935658dd930380d0c3c0a60319816ff32a00e",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 234,
+          "source": "candidate_ranking.c",
+          "original_runtime_evidence": "candidate-top10-filter-live.json",
+          "scope": "Top-ten insertion/eligibility and natural complete searches"
+        },
+        {
+          "start": 282,
+          "end_exclusive": 668,
+          "source": "heuristic_search.c",
+          "original_runtime_evidence": "heuristic-search-live.json",
+          "scope": "Three complete original searches; native and wasm"
+        }
+      ]
+    },
+    {
+      "code_resource": 29,
+      "resource_bytes": 690,
+      "sha256": "8b91641887dc395d32de34f891a28d4e5678aef19add28fe04164d05f967c293",
+      "source_associated_ranges": [
+        {
+          "start": 44,
+          "end_exclusive": 690,
+          "source": "endgame_leaf.c",
+          "original_runtime_evidence": "endgame-leaf-live.json.gz",
+          "scope": "Reply/continuation tightening and full endgame fixture"
+        }
+      ]
+    },
+    {
+      "code_resource": 30,
+      "resource_bytes": 3496,
+      "sha256": "53206b55b9efc03be55e46cf16efac6c985cc5348eac181ea9a6939cac5710a5",
+      "source_associated_ranges": [
+        {
+          "start": 334,
+          "end_exclusive": 844,
+          "source": "endgame_search.c",
+          "original_runtime_evidence": "endgame-search-live.json.gz",
+          "scope": "Normal main solver setup/iteration; one six-iteration complete native/wasm fixture"
+        },
+        {
+          "start": 844,
+          "end_exclusive": 1038,
+          "source": "endgame_tree.c",
+          "original_runtime_evidence": "endgame-search-live.json.gz",
+          "scope": "All six original frontier choices"
+        },
+        {
+          "start": 1114,
+          "end_exclusive": 1220,
+          "source": "endgame_tree.c",
+          "original_runtime_evidence": "endgame-search-live.json.gz",
+          "scope": "Normal continuation checks; broader budget/reserve paths pending"
+        },
+        {
+          "start": 1838,
+          "end_exclusive": 1956,
+          "source": "endgame_tree.c",
+          "original_runtime_evidence": "endgame-tree-live.json.gz",
+          "scope": "Hash lookup primitives and full solver"
+        },
+        {
+          "start": 1956,
+          "end_exclusive": 2034,
+          "source": "endgame_tree.c",
+          "original_runtime_evidence": "endgame-tree-live.json.gz",
+          "scope": "Pass insertion primitive; original broader pass coverage pending"
+        },
+        {
+          "start": 2044,
+          "end_exclusive": 2238,
+          "source": "endgame_tree.c",
+          "original_runtime_evidence": "endgame-search-live.json.gz",
+          "scope": "Position reuse computational path; hash words supplied"
+        },
+        {
+          "start": 3106,
+          "end_exclusive": 3430,
+          "source": "endgame_tree.c",
+          "original_runtime_evidence": "endgame-search-live.json.gz",
+          "scope": "Compact node creation and move expansion"
+        }
+      ]
+    },
+    {
+      "code_resource": 31,
+      "resource_bytes": 2514,
+      "sha256": "ef092dd52005548e8346bced7e3cb288c804bf34bbfa85eb171032e21ecbb541",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 120,
+          "source": "board_state.c",
+          "original_runtime_evidence": null,
+          "scope": "Static count-new-tiles and left-neighbor word-start scan; valid-sentinel host tests; natural calls pending"
+        },
+        {
+          "start": 120,
+          "end_exclusive": 296,
+          "source": "board_state.c",
+          "original_runtime_evidence": null,
+          "scope": "Static cross-orientation coordinates, occupied-byte scan and end predicates; boundary tests, natural game-end trace pending"
+        },
+        {
+          "start": 436,
+          "end_exclusive": 614,
+          "source": "evaluation_features.c",
+          "original_runtime_evidence": "evaluation-features-live.json",
+          "scope": "All22 features match C for a natural evaluated candidate using post-collector counts; record collection external"
+        },
+        {
+          "start": 1332,
+          "end_exclusive": 1594,
+          "source": "evaluation_features.c",
+          "original_runtime_evidence": "evaluation-features-live.json",
+          "scope": "Natural candidate feature-vector replay matches all22 longs with seven collected records; unexercised rare/bingo/stage cases host-only"
+        },
+        {
+          "start": 388,
+          "end_exclusive": 422,
+          "source": "apply_move.c",
+          "original_runtime_evidence": "apply-move-replay.json",
+          "scope": "Non-evaluation orchestration only; split natural score and restored-state captures, not direct call-boundary trace"
+        },
+        {
+          "start": 614,
+          "end_exclusive": 752,
+          "source": "apply_move.c",
+          "original_runtime_evidence": "apply-move-replay.json",
+          "scope": "Non-evaluation row-zero/score prelude; normal move combined replay matches, row-zero/callback host-tested"
+        },
+        {
+          "start": 752,
+          "end_exclusive": 1110,
+          "source": "place_letters.c",
+          "original_runtime_evidence": "game-restore-live.json",
+          "scope": "Placement-only C replay matches full board/value arrays and undo prefix for naturally reopened AORTAE game; premium special score and surrounding score/refill/cleanup remain unvalidated"
+        },
+        {
+          "start": 1110,
+          "end_exclusive": 1270,
+          "source": "move_finalize.c",
+          "original_runtime_evidence": null,
+          "scope": "Static paired recorded-value clearing; host sentinel tests in both orientations; natural recorded coordinates pending"
+        },
+        {
+          "start": 1270,
+          "end_exclusive": 1322,
+          "source": "move_finalize.c",
+          "original_runtime_evidence": "game-restore-live.json",
+          "scope": "C replay matches complete natural undo workspace for AORTAE; residual rack i precedes still-unreconstructed refill"
+        },
+        {
+          "start": 1602,
+          "end_exclusive": 1822,
+          "source": "undo_move.c",
+          "original_runtime_evidence": "move-undo-live.json",
+          "scope": "Natural engine undo full board/value/rack/workspace/counter match C; count table unchanged; row-zero path host-tested only"
+        },
+        {
+          "start": 1822,
+          "end_exclusive": 1884,
+          "source": "rack_counts.c",
+          "original_runtime_evidence": null,
+          "scope": "Static rack materialization in alphabet order with signed-byte count behavior; natural call trace pending"
+        },
+        {
+          "start": 1884,
+          "end_exclusive": 2016,
+          "source": "remaining_tiles.c",
+          "original_runtime_evidence": null,
+          "scope": "Static one-rack unseen counts, linear primary scan and negative-byte clamp; host tests only"
+        },
+        {
+          "start": 2036,
+          "end_exclusive": 2228,
+          "source": "rack_refill.c",
+          "original_runtime_evidence": "rack-refill-live.json",
+          "scope": "Natural refill C replay matches 16 events, rack, board and bag workspace using observed clock/Toolbox inputs; small-bag stack-ticks branch not runtime verified"
+        },
+        {
+          "start": 2238,
+          "end_exclusive": 2450,
+          "source": "remaining_tiles.c",
+          "original_runtime_evidence": "rack-refill-live.json",
+          "scope": "All 86 emitted bag bytes match natural capture using original distribution/board/values/racks/alphabet; blank and wrap branches host-tested only"
+        },
+        {
+          "start": 2450,
+          "end_exclusive": 2514,
+          "source": "rack_counts.c",
+          "original_runtime_evidence": "rack-alphabet-snapshot.json",
+          "scope": "Static alphabet-scoped byte counts; alphabet verified in old snapshot, not live call capture"
+        }
+      ]
+    },
+    {
+      "code_resource": 32,
+      "resource_bytes": 6468,
+      "sha256": "e391e1b0751d7d0e085004232d90befeb0cd3704803dbd862a4ab28b574a7d13",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 50,
+          "source": "score_move.c",
+          "original_runtime_evidence": "move-score-live.json",
+          "scope": "Natural nonzero-row scoring capture; row-zero early-return host-tested only"
+        },
+        {
+          "start": 50,
+          "end_exclusive": 850,
+          "source": "score_accumulate.c",
+          "original_runtime_evidence": "move-score-live.json",
+          "scope": "Natural AORTAE score1400, six new tiles and remaining rack i match complete scorer replay; blank branches also verified through constructed saves; cross/bingo branches host-tested only"
+        },
+        {
+          "start": 850,
+          "end_exclusive": 1616,
+          "source": "score_move.c",
+          "original_runtime_evidence": "move-score-live.json",
+          "scope": "Natural no-new-blank path score/rack/coordinates match C; one/two blank selection also verified through three constructed saved-game fixtures; cross-word and other contexts pending"
+        },
+        {
+          "start": 1616,
+          "end_exclusive": 1698,
+          "source": "rack_masks.c",
+          "original_runtime_evidence": null,
+          "scope": "Static mask-to-rack conversion; host tests preserve signed32 intersection and diagnostic continuation"
+        },
+        {
+          "start": 1698,
+          "end_exclusive": 1984,
+          "source": "cross_word_possible.c",
+          "original_runtime_evidence": null,
+          "scope": "Static crossing-word search; host tests verify query order, early return, temporary paired-cell writes and cleanup"
+        },
+        {
+          "start": 1984,
+          "end_exclusive": 2084,
+          "source": "rack_masks.c",
+          "original_runtime_evidence": null,
+          "scope": "Static diagnostic wrapper and descending signed-word binary search; host tests only"
+        },
+        {
+          "start": 3072,
+          "end_exclusive": 3504,
+          "source": "rack_balance.c",
+          "original_runtime_evidence": null,
+          "scope": "Static cached baseline difference and one/two blank composition policies; CODE32+0xdb0 computation external; host tests only"
+        },
+        {
+          "start": 3504,
+          "end_exclusive": 3834,
+          "source": "rack_composition.c",
+          "original_runtime_evidence": "rack-composition-baseline-live.json",
+          "scope": "Two natural calls match C: terminal case -713 and full baseline recurrence -49; exact executed range verified; original table initialization external"
+        },
+        {
+          "start": 5130,
+          "end_exclusive": 5708,
+          "source": "letter_expectation.c",
+          "original_runtime_evidence": "letter-expectation-live.json",
+          "scope": "Exact-integer mathematical port matches24 original SANE results in native and wasm; executed range matches prior FP-rewrite fingerprint; valid precision/domain limitations documented"
+        },
+        {
+          "start": 5708,
+          "end_exclusive": 5824,
+          "source": "adjusted_pattern_lookup.c",
+          "original_runtime_evidence": null,
+          "scope": "Static single-letter current-pool minus96-tile baseline wrapper; underlying lookup and expectation separately runtime-verified; composite host tests preserve word wrap and pointer semantics"
+        },
+        {
+          "start": 5824,
+          "end_exclusive": 6258,
+          "source": "pattern_cache.c",
+          "original_runtime_evidence": "pattern-cache-live.json",
+          "scope": "Original construction from2263 records matches all125 entries; host tests cover diagnostics and reuse"
+        },
+        {
+          "start": 6258,
+          "end_exclusive": 6372,
+          "source": "pattern_lookup.c",
+          "original_runtime_evidence": "pattern-lookup-live.json",
+          "scope": "64 original lookups match scores and mutable-entry identity;28 hits and36 misses"
+        },
+        {
+          "start": 6372,
+          "end_exclusive": 6468,
+          "source": "mask_supersets.c",
+          "original_runtime_evidence": null,
+          "scope": "Static recursive OR-mask updates with generation deduplication; host membership/wrap/duplicate-mask tests"
+        },
+        {
+          "start": 2084,
+          "end_exclusive": 2236,
+          "source": "rack_masks.c",
+          "original_runtime_evidence": "late-search-q16-live.json.gz",
+          "scope": "Original full-pool and own-rack occurrences integrated"
+        },
+        {
+          "start": 2236,
+          "end_exclusive": 3072,
+          "source": "leave_table.c",
+          "original_runtime_evidence": "late-leave-table-live.json",
+          "scope": "Preparation plus alternate late leave table; all words/stamps/cache match"
+        },
+        {
+          "start": 3834,
+          "end_exclusive": 4444,
+          "source": "leave_table.c",
+          "original_runtime_evidence": "leave-table-live.json",
+          "scope": "Complete heuristic leaves; final all128 entries and cache state"
+        },
+        {
+          "start": 4444,
+          "end_exclusive": 4868,
+          "source": "rack_masks.c",
+          "original_runtime_evidence": "endgame-generation-live.json",
+          "scope": "Canonical masks/points and search residual-mask conversion"
+        },
+        {
+          "start": 4868,
+          "end_exclusive": 5130,
+          "source": "exchange_candidates.c",
+          "original_runtime_evidence": "exchange-generator-live.json",
+          "scope": "96 original exchange records; complete late search also computes lookups"
+        }
+      ]
+    },
+    {
+      "code_resource": 34,
+      "resource_bytes": 1392,
+      "sha256": "891d3d98ce59b26f24c5d7396e7703896ff332d203a0a7ac7d58a33ba58ae01a",
+      "source_associated_ranges": [
+        {
+          "start": 32,
+          "end_exclusive": 58,
+          "source": "pascal_string.c",
+          "original_runtime_evidence": null,
+          "scope": "Static in-place Pascal-to-C conversion; all byte lengths tested; natural calls pending"
+        },
+        {
+          "start": 1230,
+          "end_exclusive": 1354,
+          "source": "scrap_transfer.c",
+          "original_runtime_evidence": null,
+          "scope": "Static TEXT import/export wrappers; Memory/Scrap Manager effects external; natural calls pending"
+        }
+      ]
+    },
+    {
+      "code_resource": 35,
+      "resource_bytes": 3280,
+      "sha256": "5fd0ca8448ff7782ae249e4771989efa7fbf00334b1ca9b1c28e3a0745549090",
+      "source_associated_ranges": [
+        {
+          "start": 984,
+          "end_exclusive": 1702,
+          "source": "premium_exposure.c",
+          "original_runtime_evidence": "premium-exposure-live.json",
+          "scope": "Two original pre-application penalties0 and-20 match C with actual20-record table"
+        },
+        {
+          "start": 2632,
+          "end_exclusive": 3280,
+          "source": "pattern_match.c",
+          "original_runtime_evidence": "pattern-match-traced-live.json",
+          "scope": "Original total, contributing rack record and all128 restored counts match; board/blank/Q branches host-tested only"
+        },
+        {
+          "start": 4,
+          "end_exclusive": 52,
+          "source": "evaluation_features.c",
+          "original_runtime_evidence": null,
+          "scope": "Static record flag-set predicate excludes ID0; not complement of flag-clear; host tests"
+        },
+        {
+          "start": 52,
+          "end_exclusive": 100,
+          "source": "evaluation_features.c",
+          "original_runtime_evidence": "evaluation-features-live.json",
+          "scope": "Predicate range verified despite FP rewrites elsewhere in CODE35; natural seven-record feature sum matches C"
+        },
+        {
+          "start": 876,
+          "end_exclusive": 984,
+          "source": "move_evaluation.c",
+          "original_runtime_evidence": "move-evaluation-live.json",
+          "scope": "Collector orchestration prelude;16 complete natural calls"
+        },
+        {
+          "start": 1702,
+          "end_exclusive": 2632,
+          "source": "move_evaluation.c",
+          "original_runtime_evidence": "move-evaluation-live.json",
+          "scope": "Collector post-premium body;16 complete natural calls"
+        }
+      ]
+    },
+    {
+      "code_resource": 36,
+      "resource_bytes": 9106,
+      "sha256": "4d83b00b3db272ab9ef932f3b2ada2aa65edf4bd9d0cb8419c7503029e31402e",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 2334,
+          "source": "late_pool_select.c",
+          "original_runtime_evidence": "late-pool-live.json.gz",
+          "scope": "Initial/merge/local reply collection; complete16-tile search integration"
+        },
+        {
+          "start": 2334,
+          "end_exclusive": 4410,
+          "source": "late_reply_value.c",
+          "original_runtime_evidence": "late-search-q16-live.json.gz",
+          "scope": "Full valuation including small/large unseen-Q paths; blank coverage still extending"
+        },
+        {
+          "start": 4410,
+          "end_exclusive": 4922,
+          "source": "late_ranking.c",
+          "original_runtime_evidence": "late-ranking-live.json.gz",
+          "scope": "16 original calls plus complete late searches"
+        },
+        {
+          "start": 4922,
+          "end_exclusive": 5328,
+          "source": "late_pool_select.c",
+          "original_runtime_evidence": "late-pool-live.json.gz",
+          "scope": "Remaining leave and reply matching/promotion"
+        },
+        {
+          "start": 5328,
+          "end_exclusive": 5698,
+          "source": "late_preparation.c",
+          "original_runtime_evidence": "late-preparation-live.json.gz",
+          "scope": "90 original board-pattern application checkpoints plus complete search"
+        },
+        {
+          "start": 5698,
+          "end_exclusive": 6160,
+          "source": "late_setup.c",
+          "original_runtime_evidence": "late-search-q16-live.json.gz",
+          "scope": "Used tiles, constraint masks/weights/lists; full search"
+        },
+        {
+          "start": 6160,
+          "end_exclusive": 6210,
+          "source": "late_search.c",
+          "original_runtime_evidence": "late-search-q16-live.json.gz",
+          "scope": "Entry rack/unseen preparation; force0 CPU calibration external"
+        },
+        {
+          "start": 6210,
+          "end_exclusive": 6298,
+          "source": "late_search_budget.c",
+          "original_runtime_evidence": null,
+          "scope": "Static CPU-calibrated workload gate; not a memory fallback; original decision and integration pending"
+        },
+        {
+          "start": 6298,
+          "end_exclusive": 9106,
+          "source": "late_search.c",
+          "original_runtime_evidence": "late-search-q16-live.json.gz",
+          "scope": "Computational normal search including exchanges/Q, 30 checkpoints"
+        }
+      ]
+    },
+    {
+      "code_resource": 37,
+      "resource_bytes": 5348,
+      "sha256": "016b412ea3d95858c2a987aab05e751a1bdc90ac4be1294fe680e27fc3036839",
+      "source_associated_ranges": [
+        {
+          "start": 590,
+          "end_exclusive": 876,
+          "source": "opening_placements.c",
+          "original_runtime_evidence": "opening-scored-generator-live.json",
+          "scope": "Opening dictionary placements with blank"
+        },
+        {
+          "start": 876,
+          "end_exclusive": 1242,
+          "source": "cross_check_letters.c",
+          "original_runtime_evidence": "board-generator-live.json",
+          "scope": "Prefix and cross checks integrated with original generator streams"
+        },
+        {
+          "start": 1242,
+          "end_exclusive": 1892,
+          "source": "local_replies.c",
+          "original_runtime_evidence": "late-local-live.json.gz",
+          "scope": "Original local influence masks and apply/enumerate/undo"
+        },
+        {
+          "start": 1974,
+          "end_exclusive": 3654,
+          "source": "board_placements.c",
+          "original_runtime_evidence": "board-generator-live.json",
+          "scope": "Occupied-board traversal; source algorithm omits prefix-score optimization"
+        },
+        {
+          "start": 3654,
+          "end_exclusive": 4950,
+          "source": "board_moves.c",
+          "original_runtime_evidence": "late-search-q16-live.json.gz",
+          "scope": "Computational evaluator replaced with shared equivalent scorer; transient optimized scratch not represented"
+        },
+        {
+          "start": 4950,
+          "end_exclusive": 5348,
+          "source": "board_placements.c",
+          "original_runtime_evidence": "board-generator-live.json",
+          "scope": "Recursive left/right dictionary traversal"
+        }
+      ]
+    },
+    {
+      "code_resource": 38,
+      "resource_bytes": 378,
+      "sha256": "9607ff49096880322114da3374bd5c1b79c8f59d2df716a7fbc48abb73be01a2",
+      "source_associated_ranges": [
+        {
+          "start": 18,
+          "end_exclusive": 34,
+          "source": "random_opponent.c",
+          "original_runtime_evidence": "opponent-random-draw-02-live.json",
+          "scope": "Natural rack clears/bag/refill matches native; connected draw to complete batch and ranking matches native/wasm with continuous private RNG"
+        },
+        {
+          "start": 70,
+          "end_exclusive": 378,
+          "source": "opponent_samples.c",
+          "original_runtime_evidence": "opponent-samples-live.json",
+          "scope": "One full original eight-unseen enumeration: five ordered racks and multiplicities; also composed in native/wasm full finite simulation"
+        }
+      ]
+    },
+    {
+      "code_resource": 39,
+      "resource_bytes": 1788,
+      "sha256": "f60c7d115df2dae85159c6dfd60848eba8f2cdbec51ee4f8f5ce9ac657dfd7ee",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 400,
+          "source": "endgame_rack_bounds.c",
+          "original_runtime_evidence": "local-score-corrections-live.json",
+          "scope": "Original local score corrections"
+        },
+        {
+          "start": 460,
+          "end_exclusive": 1298,
+          "source": "endgame_rack_bounds.c",
+          "original_runtime_evidence": "endgame-table-full-preparation-live.json",
+          "scope": "Full original depth tables"
+        },
+        {
+          "start": 1306,
+          "end_exclusive": 1788,
+          "source": "endgame_rack_bounds.c",
+          "original_runtime_evidence": "endgame-rack-bounds-live.json",
+          "scope": "Original one/two-rack bounds lookups"
+        }
+      ]
+    },
+    {
+      "code_resource": 40,
+      "resource_bytes": 628,
+      "sha256": "8d7f15ff50bf49b9624cf82118cfdcda50a662070b4c833554041df1b2bf9eee",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 156,
+          "source": "endgame_move_cache.c",
+          "original_runtime_evidence": "endgame-generation-live.json",
+          "scope": "Original generated move cache updates"
+        },
+        {
+          "start": 156,
+          "end_exclusive": 276,
+          "source": "endgame_generation.c",
+          "original_runtime_evidence": "endgame-generation-live.json",
+          "scope": "Two-rack preparation orchestration"
+        }
+      ]
+    },
+    {
+      "code_resource": 41,
+      "resource_bytes": 664,
+      "sha256": "6cb9327c957fe9c18156df5ed8962abc756e92f42d5d5b1e3cdc3a4e7fca0b08",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 42,
+      "resource_bytes": 738,
+      "sha256": "761ac613178a778a443dfe212a6b6149180ce0a13af3ac66ea6bafdadd1ecdbd",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 738,
+          "source": "pool_weights.c",
+          "original_runtime_evidence": "late-pool-live.json.gz",
+          "scope": "61 natural weight calls and independent physical-subset oracle"
+        }
+      ]
+    },
+    {
+      "code_resource": 43,
+      "resource_bytes": 1490,
+      "sha256": "5cf16ab6dc1189cfc7d06c4271586653d6b052057e7b3c577359d6f42b091a6d",
+      "source_associated_ranges": [
+        {
+          "start": 186,
+          "end_exclusive": 788,
+          "source": "endgame_rack_bounds.c",
+          "original_runtime_evidence": "endgame-table-full-preparation-live.json",
+          "scope": "Original missing-letter/blank score propagation"
+        },
+        {
+          "start": 788,
+          "end_exclusive": 1490,
+          "source": "reply_bounds.c",
+          "original_runtime_evidence": "endgame-generation-live.json",
+          "scope": "Original conflict matrix; complete endgame and late searches"
+        }
+      ]
+    },
+    {
+      "code_resource": 44,
+      "resource_bytes": 428,
+      "sha256": "83b81b7fc2821762f457c36dad8f3294796217bc0ec687fabcffbfd3fb14d749",
+      "source_associated_ranges": [
+        {
+          "start": 132,
+          "end_exclusive": 428,
+          "source": "candidate_ranking.c",
+          "original_runtime_evidence": "candidate-top10-eligibility-live.json",
+          "scope": "Word deduplication, removal and orientation eligibility"
+        }
+      ]
+    },
+    {
+      "code_resource": 45,
+      "resource_bytes": 1126,
+      "sha256": "32abe0cb4bca1d86495682cdd48b391d7f517dba1fffdab80d060c1d02620602",
+      "source_associated_ranges": [
+        {
+          "start": 4,
+          "end_exclusive": 1066,
+          "source": "endgame_leaf.c",
+          "original_runtime_evidence": "endgame-leaf-live.json.gz",
+          "scope": "Original leaf generation, bound tags and tightening; complete solver"
+        },
+        {
+          "start": 1066,
+          "end_exclusive": 1126,
+          "source": "endgame_generation.c",
+          "original_runtime_evidence": "endgame-generation-live.json",
+          "scope": "Shared generator preparation"
+        }
+      ]
+    },
+    {
+      "code_resource": 46,
+      "resource_bytes": 2908,
+      "sha256": "12108d6c3466d0138a70168536d24bd90b3151c47784beda5f3203184e16cb15",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 47,
+      "resource_bytes": 912,
+      "sha256": "61a6e2b1041bd8869d752c7dda017b5704a7d9abec52557ae961465089ad3c6f",
+      "source_associated_ranges": [
+        {
+          "start": 90,
+          "end_exclusive": 208,
+          "source": "file_metadata.c",
+          "original_runtime_evidence": null,
+          "scope": "Static timestamp and physical fork-size helpers; original big-endian parameter block preserved; Toolbox adapter and natural captures pending"
+        },
+        {
+          "start": 208,
+          "end_exclusive": 300,
+          "source": "volume_lookup.c",
+          "original_runtime_evidence": null,
+          "scope": "Static synchronous volume enumeration using original mismatch helper; live parameter blocks pending"
+        },
+        {
+          "start": 300,
+          "end_exclusive": 474,
+          "source": "file_open.c",
+          "original_runtime_evidence": null,
+          "scope": "Static open/truncate/create/retry; original error precedence and explicit scratch Finder bytes; natural save capture pending"
+        },
+        {
+          "start": 604,
+          "end_exclusive": 750,
+          "source": "whole_file.c",
+          "original_runtime_evidence": "whole-file-live.json",
+          "scope": "Natural startup success: loaded CODE 47 identity, all six operation results, full data hash and trailing NUL; error paths host-tested only"
+        }
+      ]
+    },
+    {
+      "code_resource": 48,
+      "resource_bytes": 1096,
+      "sha256": "8ce271461c763ad6897d218faadb9f8332622acb5bac017804382eaf2a73dc79",
+      "source_associated_ranges": [
+        {
+          "start": 312,
+          "end_exclusive": 386,
+          "source": "dialog_text_filter.c",
+          "original_runtime_evidence": null,
+          "scope": "Static filter wrapper; real reconstructed filter, Toolbox read/beep/rewrite adapters; natural trace pending"
+        },
+        {
+          "start": 886,
+          "end_exclusive": 1094,
+          "source": "dialog_key_event.c",
+          "original_runtime_evidence": null,
+          "scope": "Static Return/Enter/Tab dispatch; external Toolbox actions and text-key helper; natural trace pending"
+        }
+      ]
+    },
+    {
+      "code_resource": 49,
+      "resource_bytes": 550,
+      "sha256": "4dfbfc81a1fbc7ad80a73ad06da60abf39de24dfffcaac2c7fb05b7163eb92e2",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 50,
+      "resource_bytes": 1178,
+      "sha256": "25a14733f6791791bb2422502525a7cedceb788640178505a9b51ae3d49877e3",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 51,
+      "resource_bytes": 240,
+      "sha256": "bdc82b9ce66bf69a79373e32a49ba4287b0c77c6a2cbfc918d93b3019b3cbaa7",
+      "source_associated_ranges": []
+    },
+    {
+      "code_resource": 52,
+      "resource_bytes": 942,
+      "sha256": "bbd0934d256721e2ceaf389ca3b668a3b13b8a3ed152b1d822613b9b6ca099c1",
+      "source_associated_ranges": [
+        {
+          "start": 350,
+          "end_exclusive": 390,
+          "source": "character_normalization.c",
+          "original_runtime_evidence": "character-table-fingerprint.json",
+          "scope": "Static 16-bit conversion; complete saved table matches THINK 5/6 sources; natural calls pending"
+        }
+      ]
+    },
+    {
+      "code_resource": 53,
+      "resource_bytes": 110,
+      "sha256": "ee61c7e319423e0b9909d059aedc9e668059d5287c27a2fc128bde69d9d59854",
+      "source_associated_ranges": [
+        {
+          "start": 54,
+          "end_exclusive": 110,
+          "source": "endgame_tree.c",
+          "original_runtime_evidence": "endgame-search-live.json.gz",
+          "scope": "Hash arithmetic with original initialized random table"
+        }
+      ]
+    },
+    {
+      "code_resource": 54,
+      "resource_bytes": 46,
+      "sha256": "cf3fd9293c593139313ab0aeabdcbdb21d8feff3d8beddacbc3a928aee0e5711",
+      "source_associated_ranges": []
+    }
+  ]
+}

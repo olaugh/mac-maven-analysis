@@ -1,0 +1,3182 @@
+{
+  "scope": "Build portable modules and rerun preserved original-runtime comparisons.\n\nNo emulator is launched and no original media is modified. Each constituent\nreport retains its own scope; success is not full-application verification.",
+  "started_utc": "2026-09-09T22:16:13.311295+00:00",
+  "completed_utc": "2026-09-09T22:19:14.442153+00:00",
+  "commands_passed": 175,
+  "dictionary_sha256": "2619382321bca5b52967b3515d15b0592a8e1f641bce92f65edcf06ba10edb19",
+  "results": [
+    {
+      "command": [
+        "make",
+        "check"
+      ],
+      "seconds": 22.245,
+      "report": {
+        "stdout_tail": "ild/dictionary_setup.o .build/dictionary_tables.o .build/drawing_text_size.o .build/endgame_generation.o .build/endgame_leaf.o .build/endgame_move_cache.o .build/endgame_rack_bounds.o .build/endgame_search.o .build/endgame_tree.o .build/error_context.o .build/evaluation_features.o .build/exchange_candidates.o .build/file_access_check.o .build/file_metadata.o .build/file_open.o .build/global_initializer.o .build/heuristic_search.o .build/history_initial.o .build/history_move.o .build/index_file.o .build/late_pool_select.o .build/late_preparation.o .build/late_ranking.o .build/late_reply_value.o .build/late_search.o .build/late_search_budget.o .build/late_setup.o .build/leave_table.o .build/letter_expectation.o .build/local_replies.o .build/mask_supersets.o .build/move_evaluation.o .build/move_finalize.o .build/move_statistics.o .build/opening_moves.o .build/opening_placements.o .build/opponent_samples.o .build/pascal_string.o .build/pattern_cache.o .build/pattern_lookup.o .build/pattern_match.o .build/place_letters.o .build/pool_weights.o .build/premium_exposure.o .build/query_prepare.o .build/rack_balance.o .build/rack_composition.o .build/rack_counts.o .build/rack_masks.o .build/rack_refill.o .build/random_opponent.o .build/remaining_tiles.o .build/reply_bounds.o .build/rollout_search.o .build/runtime_arithmetic.o .build/save_record.o .build/score_accumulate.o .build/score_move.o .build/scrap_transfer.o .build/search_dispatch.o .build/search_policy.o .build/segment_management.o .build/simulation_restore.o .build/simulation_search.o .build/simulation_session.o .build/smart_quotes.o .build/text_filter.o .build/text_key.o .build/undo_move.o .build/volume_lookup.o .build/whole_file.o .build/word_boundary.o .build/word_enumerator.o .build/word_length_controls.o .build/word_navigation.o\ncc -Ireconstruction -O2 -g -std=c99 -Wall -Wextra -Werror scripts/word_enumerator_probe.c .build/libmaven-reconstruction.a -o .build/word-enumerator\npython3 -m unittest discover -s tests\n",
+        "stderr_tail": "..............................................................................\n----------------------------------------------------------------------\nRan 78 tests in 21.784s\n\nOK\n"
+      }
+    },
+    {
+      "command": [
+        "sh",
+        "scripts/build_wasm_query.sh"
+      ],
+      "seconds": 0.337,
+      "report": {
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "sh",
+        "scripts/build_wasm_board.sh"
+      ],
+      "seconds": 0.226,
+      "report": {
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "sh",
+        "scripts/build_wasm_rack_math.sh"
+      ],
+      "seconds": 0.106,
+      "report": {
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "sh",
+        "scripts/build_wasm_engine.sh"
+      ],
+      "seconds": 0.652,
+      "report": {
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "sh",
+        "scripts/build_wasm_endgame.sh"
+      ],
+      "seconds": 0.628,
+      "report": {
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "sh",
+        "scripts/build_wasm_late.sh"
+      ],
+      "seconds": 0.873,
+      "report": {
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "sh",
+        "scripts/build_wasm_simulation.sh"
+      ],
+      "seconds": 1.408,
+      "report": {
+        "stdout_tail": "",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_score.py",
+        "--capture",
+        "analysis/toolchain/move-score-live.json"
+      ],
+      "seconds": 0.345,
+      "report": {
+        "scope": "Complete scorer C replay from one natural invocation and actual tables; only branches exercised by captured move are runtime-verified",
+        "score_bits": 1400,
+        "new_tiles": 6,
+        "remaining_rack": "i",
+        "recorded_coordinates_match": true,
+        "capture_sha256": "8c8b3bf6589e1620393ea260f5adb04a74d24723729998aecb4dc6dc9e8e7fa6"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_apply_move.py"
+      ],
+      "seconds": 0.376,
+      "report": {
+        "scope": "Integrated non-evaluation C move replay. Natural scoring inputs and separate post-restore board/value/undo capture for the same AORTAE move. Final refill/history/player totals excluded; no claim of single-call boundary trace.",
+        "board_bytes_matching": 544,
+        "value_words_matching": 544,
+        "undo_bytes_matching": 33,
+        "residual_rack": "i",
+        "new_tiles": 6,
+        "row_zero_count": 0,
+        "score_capture_sha256": "8c8b3bf6589e1620393ea260f5adb04a74d24723729998aecb4dc6dc9e8e7fa6",
+        "restore_capture_sha256": "a23800b0b0e154b57e0833aee0d2c32980d9ab003946b615614707a7a682daab",
+        "counts_match": null
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_board.mjs",
+        "move-score-live"
+      ],
+      "seconds": 0.198,
+      "report": {
+        "scope": "Freestanding wasm scorer, non-evaluation application, and undo in Node; original captured inputs; no UI/refill/history/AI ranking. Application evidence follows selected score capture: direct if application_state exists, otherwise split restore capture.",
+        "imports": [],
+        "wasm_sha256": "95fc93780d6d4b280458c365690bef6f1349d49e89d0ab2ca3ada8d2909a7d40",
+        "node": "v26.0.0",
+        "score": 1400,
+        "scorer_outputs_match": true,
+        "application_board_value_undo_match": true,
+        "undo_full_state_match": true,
+        "captures": [
+          {
+            "name": "move-score-live",
+            "sha256": "8c8b3bf6589e1620393ea260f5adb04a74d24723729998aecb4dc6dc9e8e7fa6"
+          },
+          {
+            "name": "game-restore-live",
+            "sha256": "a23800b0b0e154b57e0833aee0d2c32980d9ab003946b615614707a7a682daab"
+          },
+          {
+            "name": "move-undo-live",
+            "sha256": "533e4118a6c969beac7806315da827aa3fa03d5e0ac11f2d0bd67329e5b9a5d1"
+          }
+        ]
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_score.py",
+        "--capture",
+        "analysis/toolchain/blank-move-score-live.json"
+      ],
+      "seconds": 0.316,
+      "report": {
+        "scope": "Complete scorer C replay from one natural invocation and actual tables; only branches exercised by captured move are runtime-verified",
+        "score_bits": 1200,
+        "new_tiles": 6,
+        "remaining_rack": "i",
+        "recorded_coordinates_match": true,
+        "capture_sha256": "6006f882a11ef7d3b1b6e15bc9541299b91f5cfa2cfe7d2341d8a259dcd3f78e"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_apply_move.py",
+        "--capture",
+        "analysis/toolchain/blank-move-score-live.json"
+      ],
+      "seconds": 0.362,
+      "report": {
+        "scope": "Direct original application boundary capture from a constructed save fixture.",
+        "board_bytes_matching": 544,
+        "value_words_matching": 544,
+        "undo_bytes_matching": 33,
+        "residual_rack": "i",
+        "new_tiles": 6,
+        "row_zero_count": 0,
+        "score_capture_sha256": "6006f882a11ef7d3b1b6e15bc9541299b91f5cfa2cfe7d2341d8a259dcd3f78e",
+        "restore_capture_sha256": null,
+        "counts_match": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_board.mjs",
+        "blank-move-score-live"
+      ],
+      "seconds": 0.051,
+      "report": {
+        "scope": "Freestanding wasm scorer, non-evaluation application, and undo in Node; original captured inputs; no UI/refill/history/AI ranking. Application evidence follows selected score capture: direct if application_state exists, otherwise split restore capture.",
+        "imports": [],
+        "wasm_sha256": "95fc93780d6d4b280458c365690bef6f1349d49e89d0ab2ca3ada8d2909a7d40",
+        "node": "v26.0.0",
+        "score": 1200,
+        "scorer_outputs_match": true,
+        "application_board_value_undo_match": true,
+        "undo_full_state_match": true,
+        "captures": [
+          {
+            "name": "blank-move-score-live",
+            "sha256": "6006f882a11ef7d3b1b6e15bc9541299b91f5cfa2cfe7d2341d8a259dcd3f78e"
+          },
+          {
+            "name": "move-undo-live",
+            "sha256": "533e4118a6c969beac7806315da827aa3fa03d5e0ac11f2d0bd67329e5b9a5d1"
+          }
+        ]
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_score.py",
+        "--capture",
+        "analysis/toolchain/two-blank-same-live.json"
+      ],
+      "seconds": 0.321,
+      "report": {
+        "scope": "Complete scorer C replay from one natural invocation and actual tables; only branches exercised by captured move are runtime-verified",
+        "score_bits": 1000,
+        "new_tiles": 6,
+        "remaining_rack": "i",
+        "recorded_coordinates_match": true,
+        "capture_sha256": "fdd5348176fa1fde619568503f238e7834b44d8739d784cd72ecd66def8285fd"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_apply_move.py",
+        "--capture",
+        "analysis/toolchain/two-blank-same-live.json"
+      ],
+      "seconds": 0.394,
+      "report": {
+        "scope": "Direct original application boundary capture from a constructed save fixture.",
+        "board_bytes_matching": 544,
+        "value_words_matching": 544,
+        "undo_bytes_matching": 33,
+        "residual_rack": "i",
+        "new_tiles": 6,
+        "row_zero_count": 0,
+        "score_capture_sha256": "fdd5348176fa1fde619568503f238e7834b44d8739d784cd72ecd66def8285fd",
+        "restore_capture_sha256": null,
+        "counts_match": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_board.mjs",
+        "two-blank-same-live"
+      ],
+      "seconds": 0.066,
+      "report": {
+        "scope": "Freestanding wasm scorer, non-evaluation application, and undo in Node; original captured inputs; no UI/refill/history/AI ranking. Application evidence follows selected score capture: direct if application_state exists, otherwise split restore capture.",
+        "imports": [],
+        "wasm_sha256": "95fc93780d6d4b280458c365690bef6f1349d49e89d0ab2ca3ada8d2909a7d40",
+        "node": "v26.0.0",
+        "score": 1000,
+        "scorer_outputs_match": true,
+        "application_board_value_undo_match": true,
+        "undo_full_state_match": true,
+        "captures": [
+          {
+            "name": "two-blank-same-live",
+            "sha256": "fdd5348176fa1fde619568503f238e7834b44d8739d784cd72ecd66def8285fd"
+          },
+          {
+            "name": "move-undo-live",
+            "sha256": "533e4118a6c969beac7806315da827aa3fa03d5e0ac11f2d0bd67329e5b9a5d1"
+          }
+        ]
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_score.py",
+        "--capture",
+        "analysis/toolchain/two-blank-different-live.json"
+      ],
+      "seconds": 0.314,
+      "report": {
+        "scope": "Complete scorer C replay from one natural invocation and actual tables; only branches exercised by captured move are runtime-verified",
+        "score_bits": 1000,
+        "new_tiles": 6,
+        "remaining_rack": "i",
+        "recorded_coordinates_match": true,
+        "capture_sha256": "2fcead7e613b5975a8e1ede13c1c49a0143a8b2a15c8674cc06ea83625bb7ab1"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_apply_move.py",
+        "--capture",
+        "analysis/toolchain/two-blank-different-live.json"
+      ],
+      "seconds": 0.364,
+      "report": {
+        "scope": "Direct original application boundary capture from a constructed save fixture.",
+        "board_bytes_matching": 544,
+        "value_words_matching": 544,
+        "undo_bytes_matching": 33,
+        "residual_rack": "i",
+        "new_tiles": 6,
+        "row_zero_count": 0,
+        "score_capture_sha256": "2fcead7e613b5975a8e1ede13c1c49a0143a8b2a15c8674cc06ea83625bb7ab1",
+        "restore_capture_sha256": null,
+        "counts_match": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_board.mjs",
+        "two-blank-different-live"
+      ],
+      "seconds": 0.064,
+      "report": {
+        "scope": "Freestanding wasm scorer, non-evaluation application, and undo in Node; original captured inputs; no UI/refill/history/AI ranking. Application evidence follows selected score capture: direct if application_state exists, otherwise split restore capture.",
+        "imports": [],
+        "wasm_sha256": "95fc93780d6d4b280458c365690bef6f1349d49e89d0ab2ca3ada8d2909a7d40",
+        "node": "v26.0.0",
+        "score": 1000,
+        "scorer_outputs_match": true,
+        "application_board_value_undo_match": true,
+        "undo_full_state_match": true,
+        "captures": [
+          {
+            "name": "two-blank-different-live",
+            "sha256": "2fcead7e613b5975a8e1ede13c1c49a0143a8b2a15c8674cc06ea83625bb7ab1"
+          },
+          {
+            "name": "move-undo-live",
+            "sha256": "533e4118a6c969beac7806315da827aa3fa03d5e0ac11f2d0bd67329e5b9a5d1"
+          }
+        ]
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_undo.py",
+        "--capture",
+        "analysis/toolchain/move-undo-live.json"
+      ],
+      "seconds": 0.329,
+      "report": {
+        "scope": "One natural undo helper replay; full board/value/rack/workspace and counter match. Count table unchanged in original. Does not establish UI Undo/history orchestration.",
+        "board_bytes_matching": 544,
+        "value_words_matching": 544,
+        "rack": "nitedaa",
+        "row_zero_count": 0,
+        "counts_unchanged": true,
+        "capture_sha256": "533e4118a6c969beac7806315da827aa3fa03d5e0ac11f2d0bd67329e5b9a5d1"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rack_refill.py",
+        "--capture",
+        "analysis/toolchain/rack-refill-live.json"
+      ],
+      "seconds": 0.322,
+      "report": {
+        "scope": "Natural captured invocation replay; bag, private generator and refill C verified for this trace. Observed clock/Toolbox inputs; debugger affects timing. Small-bag uninitialized branch not thereby verified.",
+        "random_opponent_iteration": false,
+        "bag_bytes_matching": 86,
+        "events_consumed": 16,
+        "rack": "idigngx",
+        "full_board_matches": true,
+        "bag_workspace_matches": true,
+        "private_seed_matches": true,
+        "capture_sha256": "d4c5e6472537aaa0deaaa36afa1691466ad4e5d6037a57d710e86886867b873b"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rack_composition.py",
+        "--capture",
+        "analysis/toolchain/rack-composition-live.json"
+      ],
+      "seconds": 0.289,
+      "report": {
+        "scope": "One natural composition recurrence replay using original terminal table; cache/blank wrapper and table initialization excluded",
+        "args": [
+          5,
+          2,
+          39,
+          54,
+          7
+        ],
+        "result_bits": 4294966583,
+        "result_matches": true,
+        "capture_sha256": "f621f03630f4360076a80ec53186ac1731f6714ee5e298b2e5fc135485969c5d"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rack_composition.py",
+        "--capture",
+        "analysis/toolchain/rack-composition-baseline-live.json"
+      ],
+      "seconds": 0.302,
+      "report": {
+        "scope": "One natural composition recurrence replay using original terminal table; cache/blank wrapper and table initialization excluded",
+        "args": [
+          0,
+          0,
+          39,
+          54,
+          7
+        ],
+        "result_bits": 4294967247,
+        "result_matches": true,
+        "capture_sha256": "a6f2a4d4003a7b6e860784351c4059a6abf4e62afa064c2d43ab06cfd81aee72"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_pattern_match.py",
+        "--capture",
+        "analysis/toolchain/pattern-match-live.json"
+      ],
+      "seconds": 0.353,
+      "report": {
+        "scope": "Native C pattern matcher compared with original total and all128 count bytes; record outputs compared only if observed in capture",
+        "mode": 0,
+        "result_bits": 4294966435,
+        "counts_match": true,
+        "observed_records": null,
+        "capture_sha256": "b71c0594a766e440248551c84c348883c2fec6e0eb58bec10aec0cff0e99a9b8"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_pattern_match.py",
+        "--capture",
+        "analysis/toolchain/pattern-match-traced-live.json"
+      ],
+      "seconds": 0.351,
+      "report": {
+        "scope": "Native C pattern matcher compared with original total and all128 count bytes; record outputs compared only if observed in capture",
+        "mode": 0,
+        "result_bits": 4294966435,
+        "counts_match": true,
+        "observed_records": 1,
+        "capture_sha256": "10cd2670d41df3088483acf01bb7977bd5486db212dc4e53a73c0b55230f85aa"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_pattern_match.py",
+        "--capture",
+        "analysis/toolchain/pattern-match-second-position-live.json"
+      ],
+      "seconds": 0.404,
+      "report": {
+        "scope": "Native C pattern matcher compared with original total and all128 count bytes; record outputs compared only if observed in capture",
+        "mode": 0,
+        "result_bits": 4294966992,
+        "counts_match": true,
+        "observed_records": 1,
+        "capture_sha256": "af6729f8eba431f090c95e32760de78c70440cb39dc03a8fd077370ecd73fd2b"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_pattern_match.py",
+        "--capture",
+        "analysis/toolchain/pattern-match-multiple-rack-live.json"
+      ],
+      "seconds": 0.389,
+      "report": {
+        "scope": "Native C pattern matcher compared with original total and all128 count bytes; record outputs compared only if observed in capture",
+        "mode": 0,
+        "result_bits": 4294966680,
+        "counts_match": true,
+        "observed_records": 3,
+        "capture_sha256": "22609aab74333256539238675baa67b692d25ca71927151cd29e52c3746ee391"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_pattern_match.py",
+        "--capture",
+        "analysis/toolchain/pattern-match-third-position-live.json"
+      ],
+      "seconds": 0.345,
+      "report": {
+        "scope": "Native C pattern matcher compared with original total and all128 count bytes; record outputs compared only if observed in capture",
+        "mode": 0,
+        "result_bits": 4294967150,
+        "counts_match": true,
+        "observed_records": 3,
+        "capture_sha256": "59d0d019dc287d8619fdf4d11b5c00288ed3252a0483b3953fb4cceb2af09002"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_pattern_cache.py"
+      ],
+      "seconds": 0.358,
+      "report": {
+        "scope": "Native C lazy cache construction compared with original runtime output from captured records/string inputs; successful input domain only",
+        "input_records": 2263,
+        "entries_matching": 125,
+        "fields": [
+          "borrowed string offset",
+          "accumulator",
+          "table index"
+        ],
+        "capture_sha256": "5de1abb8230636549543af2c2047f4c4c6dac4dddb2c7b9d54649fd7742031ac"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_pattern_lookup.py"
+      ],
+      "seconds": 0.376,
+      "report": {
+        "scope": "Natural original pattern lookup replay; all scores and mutable-entry identities compared",
+        "calls_matching": 64,
+        "hits": 28,
+        "capture_sha256": "03819cbd9fe194637315816cf0e1caa79e39b80849f6172b4673a1308d3b43f7"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_premium_exposure.py"
+      ],
+      "seconds": 0.49,
+      "report": {
+        "scope": "Original adjacent-premium subrange outputs compared with C using original board and20-record penalty table; only observed branches runtime-verified",
+        "calls_matching": 2,
+        "nonzero": 1,
+        "capture_sha256": "4202455a0f970512f2fe61d359f60316274992b88ea0cf0b6053c56a3f29b118"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_letter_expectation.py"
+      ],
+      "seconds": 0.32,
+      "report": {
+        "scope": "Exact integer expectation compared with natural SANE-based original calls; successful observed precision environment only",
+        "calls_matching": 24,
+        "source_identity": "previous_fp_rewrite_fingerprint",
+        "capture_sha256": "b55913ef3085577506f16f7abd25bafd6ca30a3b9b60bac582c3c4ac3fcc57c3"
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_query.mjs",
+        "/Users/john/sources/jan14-aviary/media/maven/session/share/maven2.1"
+      ],
+      "seconds": 0.064,
+      "report": {
+        "scope": "Freestanding wasm table setup, preparation and enumeration in Node; staged fingerprinted data, no original filesystem/UI/error runtime",
+        "wasm_sha256": "758900d65d030558a7e93c9b218a661131ebdfe29efdd81af552a7cb1bf63a7a",
+        "node": "v26.0.0",
+        "runs": [
+          {
+            "label": "cat",
+            "words": 4,
+            "ordered_words_match": true,
+            "capture_sha256": "296f75ce6a4daa5a6c7ffe9cd71b353ba3946d22aba06b614da72b8d5fb72737"
+          },
+          {
+            "label": "blank",
+            "words": 50,
+            "ordered_words_match": true,
+            "capture_sha256": "e6e7a91d6645ac2a850cce1c3357a193d77b77a5bdb77fa0363b46d664936243"
+          },
+          {
+            "label": "filtered",
+            "words": 10,
+            "ordered_words_match": true,
+            "capture_sha256": "ee82aece7d2596da9d4c61277ba6d0842ab27dd949df8659002ba281fc23e7c9"
+          },
+          {
+            "label": "required",
+            "words": 85,
+            "ordered_words_match": true,
+            "capture_sha256": "06ada6cd893490875e289908a4f8c7e551cf01b2618153e65d513532e8abcd2c"
+          }
+        ],
+        "total_words": 149
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_rack_math.mjs"
+      ],
+      "seconds": 0.051,
+      "report": {
+        "scope": "Freestanding wasm exact-integer letter expectation and original integer rack composition, compared with captured original outputs; no UI or full ranking",
+        "imports": [],
+        "wasm_sha256": "825105dd5f304302854e01bb009102f96b96003a9c61f042db557d160ebcb60b",
+        "node": "v26.0.0",
+        "expectation_calls_matching": 24,
+        "composition_calls_matching": 2,
+        "captures": [
+          {
+            "name": "letter-expectation-live",
+            "sha256": "b55913ef3085577506f16f7abd25bafd6ca30a3b9b60bac582c3c4ac3fcc57c3"
+          },
+          {
+            "name": "rack-composition-live",
+            "sha256": "f621f03630f4360076a80ec53186ac1731f6714ee5e298b2e5fc135485969c5d"
+          },
+          {
+            "name": "rack-composition-baseline-live",
+            "sha256": "a6f2a4d4003a7b6e860784351c4059a6abf4e62afa064c2d43ab06cfd81aee72"
+          }
+        ]
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_opponent_samples.py"
+      ],
+      "seconds": 0.277,
+      "report": {
+        "scope": "Compare every original exhaustive opponent rack and its multiplicity/order.",
+        "samples": 5,
+        "total_weight": 8,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_simulation_setup.py"
+      ],
+      "seconds": 4.476,
+      "report": {
+        "scope": "Compare candidate seeding against two original first-batch configurations.\n\nLookahead overflow cases are static instruction-semantic checks, not live traces.\n",
+        "captures": [
+          {
+            "capture": "rollout-batch-live",
+            "candidates": 10
+          },
+          {
+            "capture": "rollout-exhaustive-live-01",
+            "candidates": 10
+          }
+        ],
+        "static_word_cases": 8,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_simulation_restore.py"
+      ],
+      "seconds": 0.265,
+      "report": {
+        "scope": "Compare position restoration with captured original exit states.\n\nOrdinary Escape and controlled sample-limit captures retain separate evidence\nlabels. Native exception unwinding and additional signed boundaries are host tests.\n",
+        "exit_vehicle": "ordinary Escape",
+        "original_restored_fields": [
+          "board",
+          "values",
+          "rack0",
+          "rack1",
+          "selected_side"
+        ],
+        "original_depth_after": 2,
+        "host_limit_cases": 14,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_simulation_restore.mjs"
+      ],
+      "seconds": 0.055,
+      "report": {
+        "scope": "Pure position restoration compiled to wasm, matching original exit buffers; browser exit routing and post-session cache integration are outside this check",
+        "capture": "simulation-cancel-live",
+        "exit_vehicle": "ordinary Escape",
+        "fields": [
+          "board",
+          "values",
+          "rack0",
+          "rack1"
+        ],
+        "selected_side": 0,
+        "imports": [],
+        "wasm_sha256": "2f3bd5bb2b22e860982f15459072c3ff4517d61fb4551a117eb671f18c7187f5",
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_leave_table.py",
+        "--capture",
+        "analysis/toolchain/simulation-exit-leaves-live.json"
+      ],
+      "seconds": 0.609,
+      "report": {
+        "scope": "Full CODE32 heuristic leave-table preparation including all128 words, canonical masks, occurrence masks, cache stamps and balance state",
+        "canonical_masks": 128,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rack_refill.py",
+        "--capture",
+        "analysis/toolchain/opponent-random-draw-02-live.json"
+      ],
+      "seconds": 0.221,
+      "report": {
+        "scope": "Natural captured invocation replay; bag, private generator and refill C verified for this trace. Observed clock/Toolbox inputs; debugger affects timing. Small-bag uninitialized branch not thereby verified.",
+        "random_opponent_iteration": true,
+        "bag_bytes_matching": 16,
+        "events_consumed": 18,
+        "rack": "onyiaev",
+        "full_board_matches": true,
+        "bag_workspace_matches": true,
+        "private_seed_matches": true,
+        "capture_sha256": "66a216b648f44fd21e8b6ed354c656c65d99be295dd20cbe2208fef218e8f5bd"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_candidate_ranking.py",
+        "--capture",
+        "analysis/toolchain/candidate-top10-filter-live.json"
+      ],
+      "seconds": 0.189,
+      "report": {
+        "scope": "Portable ranking replay; eligibility callback supplied from original trace",
+        "mode": "top10",
+        "calls": 64,
+        "inserted": 37,
+        "cutoff_skips": 27,
+        "eligibility_rejections": 0,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_candidate_ranking.py",
+        "--capture",
+        "analysis/toolchain/candidate-top10-eligibility-live.json"
+      ],
+      "seconds": 0.197,
+      "report": {
+        "scope": "Portable ranking and eligibility replay",
+        "mode": "top10",
+        "calls": 128,
+        "inserted": 31,
+        "cutoff_skips": 37,
+        "eligibility_rejections": 60,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_candidate_ranking.py",
+        "--capture",
+        "analysis/toolchain/candidate-sampled-live.json"
+      ],
+      "seconds": 0.175,
+      "report": {
+        "scope": "Portable ranking replay; eligibility callback supplied from original trace",
+        "mode": "sampled",
+        "calls": 1,
+        "inserted": 0,
+        "cutoff_skips": 0,
+        "eligibility_rejections": 0,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_candidate_ranking.py",
+        "--capture",
+        "analysis/toolchain/candidate-exhaustive-ranking-live.json"
+      ],
+      "seconds": 0.184,
+      "report": {
+        "scope": "Portable ranking replay; eligibility callback supplied from original trace",
+        "mode": "sampled",
+        "calls": 1,
+        "inserted": 0,
+        "cutoff_skips": 0,
+        "eligibility_rejections": 0,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_candidate_ranking.py",
+        "--capture",
+        "analysis/toolchain/candidate-endgame-ranking-live.json"
+      ],
+      "seconds": 0.311,
+      "report": {
+        "scope": "Portable ranking replay; eligibility callback supplied from original trace",
+        "mode": "sampled",
+        "calls": 1,
+        "inserted": 0,
+        "cutoff_skips": 0,
+        "eligibility_rejections": 0,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_candidate_ranking.py",
+        "--capture",
+        "analysis/toolchain/candidate-late-ranking-live.json"
+      ],
+      "seconds": 0.254,
+      "report": {
+        "scope": "Portable ranking replay; eligibility callback supplied from original trace",
+        "mode": "sampled",
+        "calls": 1,
+        "inserted": 0,
+        "cutoff_skips": 0,
+        "eligibility_rejections": 0,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_opening_generator.py",
+        "--capture",
+        "analysis/toolchain/opening-generator-live.json"
+      ],
+      "seconds": 0.291,
+      "report": {
+        "scope": "Opening placement stream before evaluation/exclusion; full order, word, coordinates, adjustment and remaining counts",
+        "placements": 275,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_opening_generator.py",
+        "--capture",
+        "analysis/toolchain/opening-scored-generator-live.json"
+      ],
+      "seconds": 0.222,
+      "report": {
+        "scope": "Opening placement stream before evaluation/exclusion; full order, word, coordinates, adjustment and remaining counts",
+        "placements": 7394,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_opening_moves.py",
+        "--capture",
+        "analysis/toolchain/opening-scored-generator-live.json"
+      ],
+      "seconds": 0.432,
+      "report": {
+        "scope": "Complete placement traversal, scoring, section deduplication, move metadata and preliminary top ten; original leave table and initial exchange seed supplied; final collector reranking excluded",
+        "placements": 7394,
+        "scored_moves": 4381,
+        "ranked": 10,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_opening_moves.py",
+        "--capture",
+        "analysis/toolchain/board-generator-live.json"
+      ],
+      "seconds": 0.492,
+      "report": {
+        "scope": "Complete placement traversal, scoring, section deduplication, move metadata and preliminary top ten; original leave table and initial exchange seed supplied; final collector reranking excluded",
+        "placements": 377,
+        "scored_moves": 222,
+        "ranked": 10,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_board_placements.py"
+      ],
+      "seconds": 0.369,
+      "report": {
+        "scope": "Complete occupied-board placement stream before section deduplication/scoring/ranking",
+        "placements": 377,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_leave_table.py"
+      ],
+      "seconds": 0.688,
+      "report": {
+        "scope": "Full CODE32 heuristic leave-table preparation including all128 words, canonical masks, occurrence masks, cache stamps and balance state",
+        "canonical_masks": 96,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_exchange_candidates.py"
+      ],
+      "seconds": 0.354,
+      "report": {
+        "scope": "Complete exchange stream and top-ten state including final count truncation; original adjusted-letter values and leave table supplied",
+        "exchanges": 96,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live.json"
+      ],
+      "seconds": 1.04,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 4,
+        "result_bits": 4294967132,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-02.json"
+      ],
+      "seconds": 1.059,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 4,
+        "result_bits": 4294967110,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-03.json"
+      ],
+      "seconds": 1.316,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 4,
+        "result_bits": 4294967132,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-04.json"
+      ],
+      "seconds": 1.099,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 4,
+        "result_bits": 4294967110,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-05.json"
+      ],
+      "seconds": 0.943,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 3,
+        "result_bits": 4294967143,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-06.json"
+      ],
+      "seconds": 1.099,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 4,
+        "result_bits": 4294967139,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-07.json"
+      ],
+      "seconds": 1.036,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 4,
+        "result_bits": 4294967132,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-08.json"
+      ],
+      "seconds": 1.032,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 8,
+        "result_bits": 2339,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-09.json"
+      ],
+      "seconds": 1.401,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 8,
+        "result_bits": 2319,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-10.json"
+      ],
+      "seconds": 0.933,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 9,
+        "result_bits": 2342,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-11.json"
+      ],
+      "seconds": 1.079,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 7,
+        "result_bits": 2350,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-12.json"
+      ],
+      "seconds": 1.571,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 8,
+        "result_bits": 2348,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-13.json"
+      ],
+      "seconds": 0.923,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 9,
+        "result_bits": 2176,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-14.json"
+      ],
+      "seconds": 0.94,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 9,
+        "result_bits": 2185,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-15.json"
+      ],
+      "seconds": 0.94,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 10,
+        "result_bits": 2179,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_move_evaluation.py",
+        "--capture",
+        "analysis/toolchain/move-evaluation-live-16.json"
+      ],
+      "seconds": 0.911,
+      "report": {
+        "scope": "Complete collector replay: total, every emitted ID/weight, board/value/rack/count/undo/scorer and balance-cache state; prepared cache and decoded score tables supplied",
+        "contributions": 8,
+        "result_bits": 2187,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_heuristic_search.py",
+        "--capture",
+        "analysis/toolchain/heuristic-search-live.json"
+      ],
+      "seconds": 1.619,
+      "report": {
+        "scope": "Complete heuristic search: leave construction, exchange/pass, placement, scoring, candidate insertion and full collector reranking; every callback and final list/state",
+        "candidates": 328,
+        "ranked": 10,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_engine.mjs",
+        "heuristic-search-live"
+      ],
+      "seconds": 0.174,
+      "report": {
+        "scope": "Complete recovered CODE28 heuristic search compiled to freestanding wasm; all original candidate phases, ranked moves and mutable state match; excludes multi-ply/endgame search and UI",
+        "capture": "heuristic-search-live",
+        "candidates": 328,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "b03caa43660ffd2ddb9398a7a22bf1fa905db2c535ffaa03e2a11da4fad522f9",
+        "milliseconds": 1.28,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_heuristic_search.py",
+        "--capture",
+        "analysis/toolchain/heuristic-search-live-02.json"
+      ],
+      "seconds": 1.601,
+      "report": {
+        "scope": "Complete heuristic search: leave construction, exchange/pass, placement, scoring, candidate insertion and full collector reranking; every callback and final list/state",
+        "candidates": 613,
+        "ranked": 10,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_engine.mjs",
+        "heuristic-search-live-02"
+      ],
+      "seconds": 0.059,
+      "report": {
+        "scope": "Complete recovered CODE28 heuristic search compiled to freestanding wasm; all original candidate phases, ranked moves and mutable state match; excludes multi-ply/endgame search and UI",
+        "capture": "heuristic-search-live-02",
+        "candidates": 613,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "b03caa43660ffd2ddb9398a7a22bf1fa905db2c535ffaa03e2a11da4fad522f9",
+        "milliseconds": 1.49,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_heuristic_search.py",
+        "--capture",
+        "analysis/toolchain/heuristic-search-live-03.json"
+      ],
+      "seconds": 1.772,
+      "report": {
+        "scope": "Complete heuristic search: leave construction, exchange/pass, placement, scoring, candidate insertion and full collector reranking; every callback and final list/state",
+        "candidates": 588,
+        "ranked": 10,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_engine.mjs",
+        "heuristic-search-live-03"
+      ],
+      "seconds": 0.061,
+      "report": {
+        "scope": "Complete recovered CODE28 heuristic search compiled to freestanding wasm; all original candidate phases, ranked moves and mutable state match; excludes multi-ply/endgame search and UI",
+        "capture": "heuristic-search-live-03",
+        "candidates": 588,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "b03caa43660ffd2ddb9398a7a22bf1fa905db2c535ffaa03e2a11da4fad522f9",
+        "milliseconds": 1.48,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rollout.py",
+        "--capture",
+        "analysis/toolchain/rollout-batch-live.json"
+      ],
+      "seconds": 3.274,
+      "report": {
+        "scope": "Complete CODE3 rollout computation with recovered enabled reply searches, application and weighted totals; original external-input boundaries documented separately",
+        "computed_opponent_draw": false,
+        "reconstructed_refills": 0,
+        "external_inputs": "Recorded refill outcomes",
+        "endgame_calls": 0,
+        "late_calls": 0,
+        "exhaustive": false,
+        "complete_session": false,
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "reply_plies": 2,
+        "events": 90,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rollout.py",
+        "--capture",
+        "analysis/toolchain/rollout-batch-refills-live.json"
+      ],
+      "seconds": 3.768,
+      "report": {
+        "scope": "Complete CODE3 rollout computation with recovered enabled reply searches, application and weighted totals; original external-input boundaries documented separately",
+        "computed_opponent_draw": false,
+        "reconstructed_refills": 30,
+        "external_inputs": "Toolbox random and clock ticks; private seed supplied once at batch entry",
+        "endgame_calls": 0,
+        "late_calls": 0,
+        "exhaustive": false,
+        "complete_session": false,
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "reply_plies": 2,
+        "events": 90,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rollout.py",
+        "--captures",
+        "analysis/toolchain/rollout-exhaustive-live-01.json",
+        "analysis/toolchain/rollout-exhaustive-live-02.json",
+        "analysis/toolchain/rollout-exhaustive-live-03.json",
+        "analysis/toolchain/rollout-exhaustive-live-04.json",
+        "analysis/toolchain/rollout-exhaustive-live-05.json",
+        "--exhaustive",
+        "analysis/toolchain/opponent-samples-live.json",
+        "--ranking-capture",
+        "analysis/toolchain/candidate-exhaustive-ranking-02-live.json"
+      ],
+      "seconds": 3.671,
+      "report": {
+        "scope": "Complete CODE3 rollout computation with recovered enabled reply searches, application and weighted totals; original external-input boundaries documented separately",
+        "computed_opponent_draw": false,
+        "reconstructed_refills": 150,
+        "external_inputs": "Toolbox random and clock ticks; private seed supplied once at batch entry",
+        "endgame_calls": 0,
+        "late_calls": 0,
+        "exhaustive": true,
+        "complete_session": false,
+        "interrupted": false,
+        "batches": 5,
+        "candidates": 10,
+        "reply_plies": 2,
+        "events": 450,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_simulation.mjs"
+      ],
+      "seconds": 0.099,
+      "report": {
+        "computed_opponent_draw": false,
+        "exhaustive": true,
+        "complete_session": false,
+        "final_ranking_compared": true,
+        "endgame_calls": 0,
+        "scope": "Complete rollout computation and sampled ranking; observed external RNG/clock inputs",
+        "interrupted": false,
+        "batches": 5,
+        "candidates": 10,
+        "events": 450,
+        "refills": 150,
+        "external_events": 100,
+        "imports": [],
+        "wasm_sha256": "2f3bd5bb2b22e860982f15459072c3ff4517d61fb4551a117eb671f18c7187f5",
+        "milliseconds": 30.27,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rollout.py",
+        "--captures",
+        "analysis/toolchain/session-exhaustive-live-01.json",
+        "analysis/toolchain/session-exhaustive-live-02.json",
+        "analysis/toolchain/session-exhaustive-live-03.json",
+        "analysis/toolchain/session-exhaustive-live-04.json",
+        "analysis/toolchain/session-exhaustive-live-05.json",
+        "--exhaustive",
+        "analysis/toolchain/opponent-samples-live.json",
+        "--session"
+      ],
+      "seconds": 3.692,
+      "report": {
+        "scope": "Complete CODE3 rollout computation with recovered enabled reply searches, application and weighted totals; original external-input boundaries documented separately",
+        "computed_opponent_draw": false,
+        "reconstructed_refills": 150,
+        "external_inputs": "Toolbox random and clock ticks; private seed supplied once at batch entry",
+        "endgame_calls": 0,
+        "late_calls": 0,
+        "exhaustive": true,
+        "complete_session": true,
+        "interrupted": false,
+        "batches": 5,
+        "candidates": 10,
+        "reply_plies": 2,
+        "events": 450,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_simulation.mjs",
+        "session-exhaustive-live-01",
+        "session-exhaustive-live-02",
+        "session-exhaustive-live-03",
+        "session-exhaustive-live-04",
+        "session-exhaustive-live-05",
+        "--session"
+      ],
+      "seconds": 0.102,
+      "report": {
+        "computed_opponent_draw": false,
+        "exhaustive": true,
+        "complete_session": true,
+        "final_ranking_compared": false,
+        "endgame_calls": 0,
+        "scope": "Session draw/batches, partial or complete candidate totals, and three original cleanup boundaries; observed external RNG/clock inputs",
+        "interrupted": false,
+        "batches": 5,
+        "candidates": 10,
+        "events": 450,
+        "refills": 150,
+        "external_events": 100,
+        "imports": [],
+        "wasm_sha256": "2f3bd5bb2b22e860982f15459072c3ff4517d61fb4551a117eb671f18c7187f5",
+        "milliseconds": 30.16,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rollout.py",
+        "--capture",
+        "analysis/toolchain/session-random-limit-live.json",
+        "--opponent-draw",
+        "analysis/toolchain/session-random-draw-live.json",
+        "--session"
+      ],
+      "seconds": 3.821,
+      "report": {
+        "scope": "Complete CODE3 rollout computation with recovered enabled reply searches, application and weighted totals; original external-input boundaries documented separately",
+        "computed_opponent_draw": true,
+        "reconstructed_refills": 30,
+        "external_inputs": "Toolbox random and clock ticks; private seed supplied once before opponent draw",
+        "endgame_calls": 0,
+        "late_calls": 0,
+        "exhaustive": false,
+        "complete_session": true,
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "reply_plies": 2,
+        "events": 90,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_simulation.mjs",
+        "session-random-limit-live",
+        "--opponent-draw",
+        "session-random-draw-live",
+        "--session"
+      ],
+      "seconds": 0.069,
+      "report": {
+        "computed_opponent_draw": true,
+        "exhaustive": false,
+        "complete_session": true,
+        "final_ranking_compared": false,
+        "endgame_calls": 0,
+        "scope": "Session draw/batches, partial or complete candidate totals, and three original cleanup boundaries; observed external RNG/clock inputs",
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "events": 90,
+        "refills": 31,
+        "external_events": 34,
+        "imports": [],
+        "wasm_sha256": "2f3bd5bb2b22e860982f15459072c3ff4517d61fb4551a117eb671f18c7187f5",
+        "milliseconds": 7.89,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rollout.py",
+        "--capture",
+        "analysis/toolchain/session-reply-cancel-live.json",
+        "--opponent-draw",
+        "analysis/toolchain/session-cancel-draw-live-02.json",
+        "--session"
+      ],
+      "seconds": 3.317,
+      "report": {
+        "scope": "Complete CODE3 rollout computation with recovered enabled reply searches, application and weighted totals; original external-input boundaries documented separately",
+        "computed_opponent_draw": true,
+        "reconstructed_refills": 3,
+        "external_inputs": "Toolbox random and clock ticks; private seed supplied once before opponent draw",
+        "endgame_calls": 0,
+        "late_calls": 0,
+        "exhaustive": false,
+        "complete_session": true,
+        "interrupted": true,
+        "batches": 1,
+        "candidates": 10,
+        "reply_plies": 2,
+        "events": 8,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_simulation.mjs",
+        "session-reply-cancel-live",
+        "--opponent-draw",
+        "session-cancel-draw-live-02",
+        "--session"
+      ],
+      "seconds": 0.061,
+      "report": {
+        "computed_opponent_draw": true,
+        "exhaustive": false,
+        "complete_session": true,
+        "final_ranking_compared": false,
+        "endgame_calls": 0,
+        "scope": "Session draw/batches, partial or complete candidate totals, and three original cleanup boundaries; observed external RNG/clock inputs",
+        "interrupted": true,
+        "batches": 1,
+        "candidates": 10,
+        "events": 8,
+        "refills": 4,
+        "external_events": 16,
+        "imports": [],
+        "wasm_sha256": "2f3bd5bb2b22e860982f15459072c3ff4517d61fb4551a117eb671f18c7187f5",
+        "milliseconds": 2.08,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rollout.py",
+        "--capture",
+        "analysis/toolchain/rollout-endgame-live.json",
+        "--ranking-capture",
+        "analysis/toolchain/candidate-endgame-ranking-live.json"
+      ],
+      "seconds": 4.244,
+      "report": {
+        "scope": "Complete CODE3 rollout computation with recovered enabled reply searches, application and weighted totals; original external-input boundaries documented separately",
+        "computed_opponent_draw": false,
+        "reconstructed_refills": 30,
+        "external_inputs": "Toolbox random and clock ticks; private seed supplied once at batch entry",
+        "endgame_calls": 20,
+        "late_calls": 0,
+        "exhaustive": false,
+        "complete_session": false,
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "reply_plies": 2,
+        "events": 90,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_simulation.mjs",
+        "rollout-endgame-live"
+      ],
+      "seconds": 0.386,
+      "report": {
+        "computed_opponent_draw": false,
+        "exhaustive": false,
+        "complete_session": false,
+        "final_ranking_compared": true,
+        "endgame_calls": 20,
+        "scope": "Complete rollout computation and sampled ranking; observed external RNG/clock inputs",
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "events": 90,
+        "refills": 30,
+        "external_events": 20,
+        "imports": [],
+        "wasm_sha256": "2f3bd5bb2b22e860982f15459072c3ff4517d61fb4551a117eb671f18c7187f5",
+        "milliseconds": 322.13,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rollout.py",
+        "--capture",
+        "analysis/toolchain/rollout-late-live.json",
+        "--ranking-capture",
+        "analysis/toolchain/candidate-late-ranking-live.json"
+      ],
+      "seconds": 3.494,
+      "report": {
+        "scope": "Complete CODE3 rollout computation with recovered enabled reply searches, application and weighted totals; original external-input boundaries documented separately",
+        "computed_opponent_draw": false,
+        "reconstructed_refills": 30,
+        "external_inputs": "Toolbox random and clock ticks; private seed supplied once at batch entry",
+        "endgame_calls": 0,
+        "late_calls": 19,
+        "exhaustive": false,
+        "complete_session": false,
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "reply_plies": 2,
+        "events": 90,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_simulation.mjs",
+        "rollout-late-live"
+      ],
+      "seconds": 0.14,
+      "report": {
+        "computed_opponent_draw": false,
+        "exhaustive": false,
+        "complete_session": false,
+        "final_ranking_compared": true,
+        "endgame_calls": 0,
+        "scope": "Complete rollout computation and sampled ranking; observed external RNG/clock inputs",
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "events": 90,
+        "refills": 30,
+        "external_events": 248,
+        "imports": [],
+        "wasm_sha256": "2f3bd5bb2b22e860982f15459072c3ff4517d61fb4551a117eb671f18c7187f5",
+        "milliseconds": 79.46,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_rollout.py",
+        "--capture",
+        "analysis/toolchain/rollout-random-late-live.json",
+        "--opponent-draw",
+        "analysis/toolchain/opponent-random-draw-02-live.json",
+        "--ranking-capture",
+        "analysis/toolchain/candidate-random-late-ranking-live.json"
+      ],
+      "seconds": 3.193,
+      "report": {
+        "scope": "Complete CODE3 rollout computation with recovered enabled reply searches, application and weighted totals; original external-input boundaries documented separately",
+        "computed_opponent_draw": true,
+        "reconstructed_refills": 30,
+        "external_inputs": "Toolbox random and clock ticks; private seed supplied once before opponent draw",
+        "endgame_calls": 0,
+        "late_calls": 19,
+        "exhaustive": false,
+        "complete_session": false,
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "reply_plies": 2,
+        "events": 90,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_simulation.mjs",
+        "rollout-random-late-live",
+        "--opponent-draw",
+        "opponent-random-draw-02-live",
+        "--ranking",
+        "candidate-random-late-ranking-live"
+      ],
+      "seconds": 0.14,
+      "report": {
+        "computed_opponent_draw": true,
+        "exhaustive": false,
+        "complete_session": false,
+        "final_ranking_compared": true,
+        "endgame_calls": 0,
+        "scope": "Complete rollout computation and sampled ranking; observed external RNG/clock inputs",
+        "interrupted": false,
+        "batches": 1,
+        "candidates": 10,
+        "events": 90,
+        "refills": 31,
+        "external_events": 268,
+        "imports": [],
+        "wasm_sha256": "2f3bd5bb2b22e860982f15459072c3ff4517d61fb4551a117eb671f18c7187f5",
+        "milliseconds": 78.08,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_tree.py",
+        "--capture",
+        "analysis/toolchain/endgame-tree-live.json.gz"
+      ],
+      "seconds": 2.979,
+      "report": {
+        "scope": "Replay complete original tree operations; compare every node and free-list link.",
+        "calls": 128,
+        "kinds": {
+          "reset": 1,
+          "select": 1,
+          "add_move": 51,
+          "expand_move": 75
+        },
+        "capacity": 8192,
+        "all_nodes_and_results_match": true,
+        "solver_completed": false
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_tree.py",
+        "--capture",
+        "analysis/toolchain/endgame-tree-bounds-live.json.gz"
+      ],
+      "seconds": 1.704,
+      "report": {
+        "scope": "Replay complete original tree operations; compare every node and free-list link.",
+        "calls": 64,
+        "kinds": {
+          "bounds": 2,
+          "select": 4,
+          "allocate": 29,
+          "prepend": 29
+        },
+        "capacity": 8192,
+        "all_nodes_and_results_match": true,
+        "solver_completed": false
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_reply_bounds.py",
+        "--capture",
+        "analysis/toolchain/reply-bounds-live.json"
+      ],
+      "seconds": 0.469,
+      "report": {
+        "scope": "Replay CODE27 bounds and CODE43 conflict tests; CODE39 arithmetic is reconstructed when prepared tables are captured; older traces supply mask values.",
+        "calls": 16,
+        "observed_mask_calls": 0,
+        "reconstructed_mask_calls": 0,
+        "all_bounds_conflicts_flags_and_reply_order_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_reply_bounds.py",
+        "--capture",
+        "analysis/toolchain/reply-bounds-live-02.json"
+      ],
+      "seconds": 0.417,
+      "report": {
+        "scope": "Replay CODE27 bounds and CODE43 conflict tests; CODE39 arithmetic is reconstructed when prepared tables are captured; older traces supply mask values.",
+        "calls": 128,
+        "observed_mask_calls": 0,
+        "reconstructed_mask_calls": 0,
+        "all_bounds_conflicts_flags_and_reply_order_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_reply_bounds.py",
+        "--capture",
+        "analysis/toolchain/reply-bounds-live-03.json"
+      ],
+      "seconds": 0.391,
+      "report": {
+        "scope": "Replay CODE27 bounds and CODE43 conflict tests; CODE39 arithmetic is reconstructed when prepared tables are captured; older traces supply mask values.",
+        "calls": 32,
+        "observed_mask_calls": 54,
+        "reconstructed_mask_calls": 54,
+        "all_bounds_conflicts_flags_and_reply_order_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_rack_bounds.py",
+        "--capture",
+        "analysis/toolchain/endgame-rack-bounds-live.json"
+      ],
+      "seconds": 0.336,
+      "report": {
+        "scope": "Replay original CODE39 mask arithmetic from its prepared nine-word table rows.",
+        "calls": 32,
+        "kinds": {
+          "paired": 32
+        },
+        "all_results_and_corrections_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_table_preparation.py",
+        "--capture",
+        "analysis/toolchain/endgame-table-preparation-live.json"
+      ],
+      "seconds": 0.324,
+      "report": {
+        "scope": "Replay original CODE39 depth-table construction; Includes CODE43 preprocessing when its entry inputs are captured.",
+        "calls": 4,
+        "convergence_depths": [
+          6,
+          4,
+          6,
+          4
+        ],
+        "all_table_words_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_table_preparation.py",
+        "--capture",
+        "analysis/toolchain/endgame-table-full-preparation-live.json"
+      ],
+      "seconds": 0.314,
+      "report": {
+        "scope": "Replay original CODE39 depth-table construction; Includes CODE43 preprocessing when its entry inputs are captured.",
+        "calls": 2,
+        "convergence_depths": [
+          5,
+          4
+        ],
+        "all_table_words_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_generation.py",
+        "--capture",
+        "analysis/toolchain/endgame-generation-live.json"
+      ],
+      "seconds": 1.274,
+      "report": {
+        "scope": "Replay the complete original CODE40 two-rack generation and table pipeline.",
+        "candidates": 1941,
+        "own_count": 10,
+        "reply_summaries": 87,
+        "all_records_tables_maps_and_state_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_local_replies.py",
+        "--capture",
+        "analysis/toolchain/local-replies-03-live.json"
+      ],
+      "seconds": 0.987,
+      "report": {
+        "scope": "Replay original CODE37 local-reply masks, apply/enumerate/undo and raw callbacks.",
+        "calls": 8,
+        "candidates": 203,
+        "all_masks_records_and_state_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_local_replies.py",
+        "--capture",
+        "analysis/toolchain/local-replies-04-live.json"
+      ],
+      "seconds": 1.496,
+      "report": {
+        "scope": "Replay original CODE37 local-reply masks, apply/enumerate/undo and raw callbacks.",
+        "calls": 12,
+        "candidates": 213,
+        "all_masks_records_and_state_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_local_score_corrections.py",
+        "--capture",
+        "analysis/toolchain/local-score-corrections-live.json"
+      ],
+      "seconds": 0.951,
+      "report": {
+        "scope": "Replay original CODE39+4 correction recurrence including selected-mask writes.",
+        "calls": 16,
+        "all_corrections_and_masks_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_leaf.py",
+        "--capture",
+        "analysis/toolchain/endgame-leaf-live.json.gz"
+      ],
+      "seconds": 1.756,
+      "report": {
+        "scope": "Replay full CODE45 leaf expansion against every node and generation workspace.",
+        "calls": 2,
+        "checkpoints": 10,
+        "all_nodes_and_documented_workspace_fields_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_leaf.py",
+        "--capture",
+        "analysis/toolchain/endgame-leaf-403-fresh-live.json.gz"
+      ],
+      "seconds": 1.766,
+      "report": {
+        "scope": "Replay full CODE45 leaf expansion against every node and generation workspace.",
+        "calls": 1,
+        "checkpoints": 5,
+        "all_nodes_and_documented_workspace_fields_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-multiple-collection-search-live.json.gz"
+      ],
+      "seconds": 4.348,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 549,
+        "clock_reads": 549,
+        "prefix_only": false,
+        "ranked_moves": 1,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-gc-seven-search-live.json.gz"
+      ],
+      "seconds": 2.303,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 120,
+        "clock_reads": 120,
+        "prefix_only": false,
+        "ranked_moves": 3,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-blank-seven-search-live.json.gz"
+      ],
+      "seconds": 1.699,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 1,
+        "clock_reads": 1,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-no-move-search-live.json.gz"
+      ],
+      "seconds": 1.698,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 0,
+        "clock_reads": 0,
+        "prefix_only": false,
+        "ranked_moves": 1,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-deep-seven-search-live.json.gz"
+      ],
+      "seconds": 3.069,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 251,
+        "clock_reads": 251,
+        "prefix_only": false,
+        "ranked_moves": 3,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-seven-search-live.json.gz"
+      ],
+      "seconds": 1.492,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 1,
+        "clock_reads": 1,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-search-live.json.gz"
+      ],
+      "seconds": 1.792,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 6,
+        "clock_reads": 6,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-live.json.gz"
+      ],
+      "seconds": 1.579,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 2,
+        "clock_reads": 2,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-02-live.json.gz"
+      ],
+      "seconds": 1.945,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 10,
+        "clock_reads": 10,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-03-live.json.gz"
+      ],
+      "seconds": 1.616,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 2,
+        "clock_reads": 2,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-04-live.json.gz"
+      ],
+      "seconds": 1.599,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 8,
+        "clock_reads": 8,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-05-live.json.gz"
+      ],
+      "seconds": 1.679,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 6,
+        "clock_reads": 6,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-06-live.json.gz"
+      ],
+      "seconds": 1.796,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 8,
+        "clock_reads": 8,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-07-live.json.gz"
+      ],
+      "seconds": 1.613,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 6,
+        "clock_reads": 6,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-08-live.json.gz"
+      ],
+      "seconds": 1.697,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 4,
+        "clock_reads": 4,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-09-live.json.gz"
+      ],
+      "seconds": 1.959,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 7,
+        "clock_reads": 7,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-10-live.json.gz"
+      ],
+      "seconds": 1.559,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 4,
+        "clock_reads": 4,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_search.py",
+        "--capture",
+        "analysis/toolchain/endgame-simulation-search-11-live.json.gz"
+      ],
+      "seconds": 1.732,
+      "report": {
+        "scope": "Replay complete original CODE30 search, all iterations and final rankings.",
+        "iterations": 32,
+        "clock_reads": 32,
+        "prefix_only": false,
+        "ranked_moves": 10,
+        "all_recorded_nodes_and_workspaces_match": true,
+        "final_rankings_match": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-multiple-collection-search-live"
+      ],
+      "seconds": 0.815,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-multiple-collection-search-live",
+        "iterations": 549,
+        "ranked": 1,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 319.59,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-gc-seven-search-live"
+      ],
+      "seconds": 0.278,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-gc-seven-search-live",
+        "iterations": 120,
+        "ranked": 3,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 151.76,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-blank-seven-search-live"
+      ],
+      "seconds": 0.077,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-blank-seven-search-live",
+        "iterations": 1,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 18.28,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-no-move-search-live"
+      ],
+      "seconds": 0.06,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-no-move-search-live",
+        "iterations": 0,
+        "ranked": 1,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 0.31,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-deep-seven-search-live"
+      ],
+      "seconds": 0.428,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-deep-seven-search-live",
+        "iterations": 251,
+        "ranked": 3,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 237.34,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-seven-search-live"
+      ],
+      "seconds": 0.064,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-seven-search-live",
+        "iterations": 1,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 5.65,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-search-live"
+      ],
+      "seconds": 0.077,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-search-live",
+        "iterations": 6,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 14.39,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-live"
+      ],
+      "seconds": 0.071,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-live",
+        "iterations": 2,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 11.6,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-02-live"
+      ],
+      "seconds": 0.078,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-02-live",
+        "iterations": 10,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 15.91,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-03-live"
+      ],
+      "seconds": 0.073,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-03-live",
+        "iterations": 2,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 13.2,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-04-live"
+      ],
+      "seconds": 0.073,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-04-live",
+        "iterations": 8,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 11.84,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-05-live"
+      ],
+      "seconds": 0.08,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-05-live",
+        "iterations": 6,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 18.59,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-06-live"
+      ],
+      "seconds": 0.077,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-06-live",
+        "iterations": 8,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 14.64,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-07-live"
+      ],
+      "seconds": 0.084,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-07-live",
+        "iterations": 6,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 20.53,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-08-live"
+      ],
+      "seconds": 0.068,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-08-live",
+        "iterations": 4,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 8.2,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-09-live"
+      ],
+      "seconds": 0.082,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-09-live",
+        "iterations": 7,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 20.07,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-10-live"
+      ],
+      "seconds": 0.067,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-10-live",
+        "iterations": 4,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 7.06,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_endgame.mjs",
+        "endgame-simulation-search-11-live"
+      ],
+      "seconds": 0.121,
+      "report": {
+        "scope": "Complete CODE30/45/29 endgame search compiled to freestanding wasm; captured clock/hash inputs, all nodes, final rankings and documented state match",
+        "capture": "endgame-simulation-search-11-live",
+        "iterations": 32,
+        "ranked": 10,
+        "imports": [],
+        "wasm_sha256": "f984b5d0b99c0861b42e39fd830d301933638eff8bdbcb8f62afcfea6be6295e",
+        "milliseconds": 48.84,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_collection.py",
+        "--capture",
+        "analysis/toolchain/endgame-multiple-collection-search-live.json.gz"
+      ],
+      "seconds": 0.717,
+      "report": {
+        "scope": "Compare original pool-exhaustion pruning, marking and sweep at every node.",
+        "collections": 3,
+        "nodes_per_stage": 8192,
+        "results": [
+          {
+            "reachable_nodes": 868,
+            "reclaimed_nodes": 7324,
+            "free_head": 8031,
+            "current": 3562
+          },
+          {
+            "reachable_nodes": 667,
+            "reclaimed_nodes": 7525,
+            "free_head": 8191,
+            "current": 232
+          },
+          {
+            "reachable_nodes": 2,
+            "reclaimed_nodes": 8190,
+            "free_head": 8191,
+            "current": 524
+          }
+        ],
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_budget.py",
+        "--capture",
+        "analysis/toolchain/late-budget-live.json"
+      ],
+      "seconds": 0.258,
+      "report": {
+        "scope": "Compare the late-search workload gate using original table and calibration inputs.",
+        "calibration": 4923651,
+        "estimate": 0,
+        "heuristic_fallback": false,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_budget.py",
+        "--capture",
+        "analysis/toolchain/late-budget-controlled-live.json"
+      ],
+      "seconds": 0.258,
+      "report": {
+        "scope": "Compare the late-search workload gate using original table and calibration inputs.",
+        "calibration": 1,
+        "estimate": 1488544,
+        "heuristic_fallback": true,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_late_budget.mjs"
+      ],
+      "seconds": 0.052,
+      "report": {
+        "scope": "Original CPU budget decisions in freestanding wasm; native selector routing has separate tests",
+        "results": [
+          {
+            "capture": "late-budget-live",
+            "estimate": 0,
+            "fallback": false,
+            "controlled_input": false
+          },
+          {
+            "capture": "late-budget-controlled-live",
+            "estimate": 1488544,
+            "fallback": true,
+            "controlled_input": true
+          }
+        ],
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_pool_board.py"
+      ],
+      "seconds": 0.81,
+      "report": {
+        "scope": "Replay CODE37's full13-tile-pool candidate stream before CODE36 selection.",
+        "candidates": 2815,
+        "full_records_used_counts_scores_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_pool_weights.py"
+      ],
+      "seconds": 0.261,
+      "report": {
+        "scope": "Replay natural CODE42 mask-weight calls with exact scratch-count side effects.",
+        "calls": 61,
+        "all_weights_and_scratch_state_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_reply_value.py"
+      ],
+      "seconds": 0.277,
+      "report": {
+        "scope": "Replay CODE36+91e reply values on the captured path without an unseen Q.",
+        "reply_values": 127,
+        "outer_rankings": 16,
+        "all_values_move_bytes_and_state_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_ranking.py"
+      ],
+      "seconds": 0.337,
+      "report": {
+        "scope": "Replay complete CODE36+113a rankings, including weighted reply allocation.",
+        "rankings": 16,
+        "reply_values": 127,
+        "all_moves_rankings_weights_cache_and_conflicts_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_pool_select.py"
+      ],
+      "seconds": 0.269,
+      "report": {
+        "stdout_tail": "{\"scope\": \"Replay every CODE36+6de pool-selection callback through its retained90 records.\", \"callbacks\": 2815, \"retained\": 90, \"rejected_over_seven\": 0, \"all_defined_fields_and_cache_match\": true}\n{\"scope\": \"CODE36 second pool pass\", \"callbacks\": 2292, \"all66_byte_records_match\": true}\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_local.py"
+      ],
+      "seconds": 0.258,
+      "report": {
+        "scope": "Replay original CODE36+18c local pool refinement from complete CODE37 streams.",
+        "calls": 2,
+        "callbacks": 606,
+        "all_records_and_column_cache_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_local_pool_generation.py"
+      ],
+      "seconds": 0.89,
+      "report": {
+        "scope": "Replay original CODE37 local-pool masks, apply/enumerate/undo and raw callbacks.",
+        "calls": 2,
+        "candidates": 606,
+        "all_masks_records_and_state_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_preparation.py"
+      ],
+      "seconds": 0.931,
+      "report": {
+        "scope": "Replay complete CODE36+14d0 preparation with native pattern scoring and apply/undo.",
+        "replies": 90,
+        "pattern_calls": 90,
+        "all_records_pattern_values_and_application_state_match": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_setup.py"
+      ],
+      "seconds": 0.733,
+      "report": {
+        "scope": "Replay late-search priorities, merge anchors, and physical-rack constraints.",
+        "constraints": 61,
+        "reply_lists": 90,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_leave_table.py",
+        "--capture",
+        "analysis/toolchain/late-leave-table-live.json"
+      ],
+      "seconds": 0.655,
+      "report": {
+        "scope": "Full CODE32 late-search leave-table preparation including all128 words, canonical masks, occurrence masks, cache stamps and balance state",
+        "canonical_masks": 128,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_endgame_collection.py",
+        "--capture",
+        "analysis/toolchain/endgame-gc-seven-search-live.json.gz"
+      ],
+      "seconds": 0.366,
+      "report": {
+        "scope": "Compare original pool-exhaustion pruning, marking and sweep at every node.",
+        "collections": 1,
+        "nodes_per_stage": 8192,
+        "results": [
+          {
+            "reachable_nodes": 1135,
+            "reclaimed_nodes": 7057,
+            "free_head": 8150,
+            "current": 7983
+          }
+        ],
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_simulation_restore.py",
+        "--capture",
+        "analysis/toolchain/simulation-limit-controlled-live.json"
+      ],
+      "seconds": 0.343,
+      "report": {
+        "scope": "Compare position restoration with captured original exit states.\n\nOrdinary Escape and controlled sample-limit captures retain separate evidence\nlabels. Native exception unwinding and additional signed boundaries are host tests.\n",
+        "exit_vehicle": "controlled lowered sample limit",
+        "original_restored_fields": [
+          "board",
+          "values",
+          "rack0",
+          "rack1",
+          "selected_side"
+        ],
+        "original_depth_after": 2,
+        "host_limit_cases": 14,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_simulation_restore.mjs",
+        "simulation-limit-controlled-live"
+      ],
+      "seconds": 0.054,
+      "report": {
+        "scope": "Pure position restoration compiled to wasm, matching original exit buffers; browser exit routing and post-session cache integration are outside this check",
+        "capture": "simulation-limit-controlled-live",
+        "exit_vehicle": "controlled lowered sample limit",
+        "fields": [
+          "board",
+          "values",
+          "rack0",
+          "rack1"
+        ],
+        "selected_side": 0,
+        "imports": [],
+        "wasm_sha256": "2f3bd5bb2b22e860982f15459072c3ff4517d61fb4551a117eb671f18c7187f5",
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_search.py",
+        "--capture",
+        "analysis/toolchain/late-search-live.json.gz"
+      ],
+      "seconds": 2.176,
+      "report": {
+        "stdout_tail": "Stage 0 pool_ready\nStage 1 pool_selected\nStage 2 merge_ready\nStage 3 pool_merged\nStage 4 pool_prepared\nStage 5 constraints_ready\nStage 6 leaves_ready\nStage 7 pass_ranked\nStage 8 own_ranked\nStage 9 local_begin\nStage 10 local_finished\nStage 11 local_begin\nStage 12 local_finished\nStage 13 local_begin\nStage 14 local_finished\nStage 15 local_begin\nStage 16 local_finished\nStage 17 local_begin\nStage 18 local_finished\nStage 19 local_begin\nStage 20 local_finished\nStage 21 local_begin\nStage 22 local_finished\nStage 23 local_begin\nStage 24 local_finished\nStage 25 local_begin\nStage 26 local_finished\nStage 27 local_begin\nStage 28 local_finished\nStage 29 complete\n1 rubric\n2 burin\n3 courb\n4 scrub\n5 curb\n6 burn\n7 burr\n8 buna\n9 crumb\n10 burr\n{\"scope\": \"Replay a complete original late-game search with all stages computed natively.\", \"checkpoints\": 30, \"final_moves\": 10, \"all_matched\": true}\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_late.mjs",
+        "late-search-live"
+      ],
+      "seconds": 0.079,
+      "report": {
+        "scope": "Complete CODE36 late search in freestanding wasm; ten ranked moves, both reply pools, constraints and leaves match original",
+        "capture": "late-search-live",
+        "imports": [],
+        "checkpoints": 30,
+        "ranked": 10,
+        "wasm_sha256": "ac1631d47f07ad46aaf65240899433c95ad4b4c51bcda3f36db09bef3f48936c",
+        "milliseconds": 13.38,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_search.py",
+        "--capture",
+        "analysis/toolchain/late-search-unseenq-live.json.gz"
+      ],
+      "seconds": 2.131,
+      "report": {
+        "stdout_tail": "Stage 0 pool_ready\nStage 1 pool_selected\nStage 2 merge_ready\nStage 3 pool_merged\nStage 4 pool_prepared\nStage 5 constraints_ready\nStage 6 leaves_ready\nStage 7 pass_ranked\nStage 8 own_ranked\nStage 9 local_begin\nStage 10 local_finished\nStage 11 local_begin\nStage 12 local_finished\nStage 13 local_begin\nStage 14 local_finished\nStage 15 local_begin\nStage 16 local_finished\nStage 17 local_begin\nStage 18 local_finished\nStage 19 local_begin\nStage 20 local_finished\nStage 21 local_begin\nStage 22 local_finished\nStage 23 local_begin\nStage 24 local_finished\nStage 25 local_begin\nStage 26 local_finished\nStage 27 local_begin\nStage 28 local_finished\nStage 29 complete\n1 boric\n2 rubric\n3 robin\n4 corni\n5 cribs\n6 bis\n7 nibs\n8 brins\n9 nibs\n10 bins\n{\"scope\": \"Replay a complete original late-game search with all stages computed natively.\", \"checkpoints\": 30, \"final_moves\": 10, \"all_matched\": true}\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_late.mjs",
+        "late-search-unseenq-live"
+      ],
+      "seconds": 0.079,
+      "report": {
+        "scope": "Complete CODE36 late search in freestanding wasm; ten ranked moves, both reply pools, constraints and leaves match original",
+        "capture": "late-search-unseenq-live",
+        "imports": [],
+        "checkpoints": 30,
+        "ranked": 10,
+        "wasm_sha256": "ac1631d47f07ad46aaf65240899433c95ad4b4c51bcda3f36db09bef3f48936c",
+        "milliseconds": 14.25,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_search.py",
+        "--capture",
+        "analysis/toolchain/late-search-q16-live.json.gz"
+      ],
+      "seconds": 2.784,
+      "report": {
+        "stdout_tail": "Stage 0 pool_ready\nStage 1 pool_selected\nStage 2 merge_ready\nStage 3 pool_merged\nStage 4 pool_prepared\nStage 5 constraints_ready\nStage 6 leaves_ready\nStage 7 pass_ranked\nStage 8 own_ranked\nStage 9 local_begin\nStage 10 local_finished\nStage 11 local_begin\nStage 12 local_finished\nStage 13 local_begin\nStage 14 local_finished\nStage 15 local_begin\nStage 16 local_finished\nStage 17 local_begin\nStage 18 local_finished\nStage 19 local_begin\nStage 20 local_finished\nStage 21 local_begin\nStage 22 local_finished\nStage 23 local_begin\nStage 24 local_finished\nStage 25 local_begin\nStage 26 local_finished\nStage 27 local_begin\nStage 28 local_finished\nStage 29 complete\n1 nibs\n2 nubs\n3 nib\n4 nub\n5 bland\n6 sic\n7 rubric\n8 sib\n9 sir\n10 sin\n{\"scope\": \"Replay a complete original late-game search with all stages computed natively.\", \"checkpoints\": 30, \"final_moves\": 10, \"all_matched\": true}\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_late.mjs",
+        "late-search-q16-live"
+      ],
+      "seconds": 0.083,
+      "report": {
+        "scope": "Complete CODE36 late search in freestanding wasm; ten ranked moves, both reply pools, constraints and leaves match original",
+        "capture": "late-search-q16-live",
+        "imports": [],
+        "checkpoints": 30,
+        "ranked": 10,
+        "wasm_sha256": "ac1631d47f07ad46aaf65240899433c95ad4b4c51bcda3f36db09bef3f48936c",
+        "milliseconds": 15.83,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_search.py",
+        "--capture",
+        "analysis/toolchain/late-search-heldq-live.json.gz"
+      ],
+      "seconds": 2.655,
+      "report": {
+        "stdout_tail": "Stage 0 pool_ready\nStage 1 pool_selected\nStage 2 merge_ready\nStage 3 pool_merged\nStage 4 pool_prepared\nStage 5 constraints_ready\nStage 6 leaves_ready\nStage 7 pass_ranked\nStage 8 own_ranked\nStage 9 local_begin\nStage 10 local_finished\nStage 11 local_begin\nStage 12 local_finished\nStage 13 local_begin\nStage 14 local_finished\nStage 15 local_begin\nStage 16 local_finished\nStage 17 local_begin\nStage 18 local_finished\nStage 19 local_begin\nStage 20 local_finished\nStage 21 local_begin\nStage 22 local_finished\nStage 23 local_begin\nStage 24 local_finished\nStage 25 local_begin\nStage 26 local_finished\nStage 27 local_begin\nStage 28 local_finished\nStage 29 complete\n1 quim\n2 qi\n3 qi\n4 quai\n5 requin\n6 qua\n7 qi\n8 qi\n9 binq\n10 nib\n{\"scope\": \"Replay a complete original late-game search with all stages computed natively.\", \"checkpoints\": 30, \"final_moves\": 10, \"all_matched\": true}\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_late.mjs",
+        "late-search-heldq-live"
+      ],
+      "seconds": 0.082,
+      "report": {
+        "scope": "Complete CODE36 late search in freestanding wasm; ten ranked moves, both reply pools, constraints and leaves match original",
+        "capture": "late-search-heldq-live",
+        "imports": [],
+        "checkpoints": 30,
+        "ranked": 10,
+        "wasm_sha256": "ac1631d47f07ad46aaf65240899433c95ad4b4c51bcda3f36db09bef3f48936c",
+        "milliseconds": 18.29,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_search.py",
+        "--capture",
+        "analysis/toolchain/late-search-heldq-nou-live.json.gz"
+      ],
+      "seconds": 2.635,
+      "report": {
+        "stdout_tail": "Stage 0 pool_ready\nStage 1 pool_selected\nStage 2 merge_ready\nStage 3 pool_merged\nStage 4 pool_prepared\nStage 5 constraints_ready\nStage 6 leaves_ready\nStage 7 pass_ranked\nStage 8 own_ranked\nStage 9 local_begin\nStage 10 local_finished\nStage 11 local_begin\nStage 12 local_finished\nStage 13 local_begin\nStage 14 local_finished\nStage 15 local_begin\nStage 16 local_finished\nStage 17 local_begin\nStage 18 local_finished\nStage 19 local_begin\nStage 20 local_finished\nStage 21 local_begin\nStage 22 local_finished\nStage 23 local_begin\nStage 24 local_finished\nStage 25 local_begin\nStage 26 local_finished\nStage 27 local_begin\nStage 28 local_finished\nStage 29 complete\n1 qis\n2 qi\n3 qi\n4 qi\n5 qis\n6 qis\n7 qi\n8 qis\n9 binq\n10 nibs\n{\"scope\": \"Replay a complete original late-game search with all stages computed natively.\", \"checkpoints\": 30, \"final_moves\": 10, \"all_matched\": true}\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_late.mjs",
+        "late-search-heldq-nou-live"
+      ],
+      "seconds": 0.079,
+      "report": {
+        "scope": "Complete CODE36 late search in freestanding wasm; ten ranked moves, both reply pools, constraints and leaves match original",
+        "capture": "late-search-heldq-nou-live",
+        "imports": [],
+        "checkpoints": 30,
+        "ranked": 10,
+        "wasm_sha256": "ac1631d47f07ad46aaf65240899433c95ad4b4c51bcda3f36db09bef3f48936c",
+        "milliseconds": 14.67,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_search.py",
+        "--capture",
+        "analysis/toolchain/late-search-ownblank-live.json.gz"
+      ],
+      "seconds": 2.348,
+      "report": {
+        "stdout_tail": "Stage 0 pool_ready\nStage 1 pool_selected\nStage 2 merge_ready\nStage 3 pool_merged\nStage 4 pool_prepared\nStage 5 constraints_ready\nStage 6 leaves_ready\nStage 7 pass_ranked\nStage 8 own_ranked\nStage 9 local_begin\nStage 10 local_finished\nStage 11 local_begin\nStage 12 local_finished\nStage 13 local_begin\nStage 14 local_finished\nStage 15 local_begin\nStage 16 local_finished\nStage 17 local_begin\nStage 18 local_finished\nStage 19 local_begin\nStage 20 local_finished\nStage 21 local_begin\nStage 22 local_finished\nStage 23 local_begin\nStage 24 local_finished\nStage 25 local_begin\nStage 26 local_finished\nStage 27 local_begin\nStage 28 local_finished\nStage 29 complete\n1 rubric\n2 courb\n3 boric\n4 burin\n5 incubi\n6 crumb\n7 nub\n8 nib\n9 nur\n10 burden\n{\"scope\": \"Replay a complete original late-game search with all stages computed natively.\", \"checkpoints\": 30, \"final_moves\": 10, \"all_matched\": true}\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_late.mjs",
+        "late-search-ownblank-live"
+      ],
+      "seconds": 0.1,
+      "report": {
+        "scope": "Complete CODE36 late search in freestanding wasm; ten ranked moves, both reply pools, constraints and leaves match original",
+        "capture": "late-search-ownblank-live",
+        "imports": [],
+        "checkpoints": 30,
+        "ranked": 10,
+        "wasm_sha256": "ac1631d47f07ad46aaf65240899433c95ad4b4c51bcda3f36db09bef3f48936c",
+        "milliseconds": 32.7,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_search.py",
+        "--capture",
+        "analysis/toolchain/late-search-poolblank-live.json.gz"
+      ],
+      "seconds": 2.478,
+      "report": {
+        "stdout_tail": "Stage 0 pool_ready\nStage 1 pool_selected\nStage 2 merge_ready\nStage 3 pool_merged\nStage 4 pool_prepared\nStage 5 constraints_ready\nStage 6 leaves_ready\nStage 7 pass_ranked\nStage 8 own_ranked\nStage 9 local_begin\nStage 10 local_finished\nStage 11 local_begin\nStage 12 local_finished\nStage 13 local_begin\nStage 14 local_finished\nStage 15 local_begin\nStage 16 local_finished\nStage 17 local_begin\nStage 18 local_finished\nStage 19 local_begin\nStage 20 local_finished\nStage 21 local_begin\nStage 22 local_finished\nStage 23 local_begin\nStage 24 local_finished\nStage 25 local_begin\nStage 26 local_finished\nStage 27 local_begin\nStage 28 local_finished\nStage 29 complete\n1 nubs\n2 rubric\n3 nibs\n4 nurs\n5 cinders\n6 incubi\n7 cursi\n8 biders\n9 burdens\n10 binders\n{\"scope\": \"Replay a complete original late-game search with all stages computed natively.\", \"checkpoints\": 30, \"final_moves\": 10, \"all_matched\": true}\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_late.mjs",
+        "late-search-poolblank-live"
+      ],
+      "seconds": 0.147,
+      "report": {
+        "scope": "Complete CODE36 late search in freestanding wasm; ten ranked moves, both reply pools, constraints and leaves match original",
+        "capture": "late-search-poolblank-live",
+        "imports": [],
+        "checkpoints": 30,
+        "ranked": 10,
+        "wasm_sha256": "ac1631d47f07ad46aaf65240899433c95ad4b4c51bcda3f36db09bef3f48936c",
+        "milliseconds": 81.06,
+        "all_matched": true
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/replay_late_search.py",
+        "--capture",
+        "analysis/toolchain/late-search-q16-coverage-live.json.gz"
+      ],
+      "seconds": 2.175,
+      "report": {
+        "stdout_tail": "Stage 0 pool_ready\nStage 1 pool_selected\nStage 2 merge_ready\nStage 3 pool_merged\nStage 4 pool_prepared\nStage 5 constraints_ready\nStage 6 leaves_ready\nStage 7 pass_ranked\nStage 8 own_ranked\nStage 9 local_begin\nStage 10 local_finished\nStage 11 local_begin\nStage 12 local_finished\nStage 13 local_begin\nStage 14 local_finished\nStage 15 local_begin\nStage 16 local_finished\nStage 17 local_begin\nStage 18 local_finished\nStage 19 local_begin\nStage 20 local_finished\nStage 21 local_begin\nStage 22 local_finished\nStage 23 local_begin\nStage 24 local_finished\nStage 25 local_begin\nStage 26 local_finished\nStage 27 local_begin\nStage 28 local_finished\nStage 29 complete\n1 nibs\n2 nubs\n3 nib\n4 nub\n5 bland\n6 sic\n7 rubric\n8 sib\n9 sir\n10 sin\n{\"scope\": \"Replay a complete original late-game search with all stages computed natively.\", \"checkpoints\": 30, \"final_moves\": 10, \"all_matched\": true}\n",
+        "stderr_tail": ""
+      }
+    },
+    {
+      "command": [
+        "node",
+        "scripts/replay_wasm_late.mjs",
+        "late-search-q16-coverage-live"
+      ],
+      "seconds": 0.08,
+      "report": {
+        "scope": "Complete CODE36 late search in freestanding wasm; ten ranked moves, both reply pools, constraints and leaves match original",
+        "capture": "late-search-q16-coverage-live",
+        "imports": [],
+        "checkpoints": 30,
+        "ranked": 10,
+        "wasm_sha256": "ac1631d47f07ad46aaf65240899433c95ad4b4c51bcda3f36db09bef3f48936c",
+        "milliseconds": 15.95,
+        "all_matched": true
+      }
+    }
+  ]
+}

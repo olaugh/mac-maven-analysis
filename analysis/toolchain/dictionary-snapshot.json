@@ -1,0 +1,52 @@
+{
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "code15_base": 130655024,
+  "code15_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10",
+  "a5": 131028224,
+  "counted_wrapper_count": 0,
+  "sections": [
+    {
+      "index": 0,
+      "guest_base": 129525324,
+      "root_index": 122166,
+      "file_offset": 12,
+      "byte_count": 488768,
+      "sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "snapshot_bytes_match_data_file": true,
+      "reconstructed_results": {
+        "": 0,
+        "a": 0,
+        "aa": 256,
+        "aardvark": 256,
+        "cat": 256,
+        "dog": 256,
+        "queen": 256,
+        "quizzify": 0,
+        "zzzzzz": 0,
+        "CAT": 0
+      }
+    },
+    {
+      "index": 1,
+      "guest_base": 130014092,
+      "root_index": 145476,
+      "file_offset": 488780,
+      "byte_count": 582008,
+      "sha256": "1ca93927a8362b6eca672be5b3301735b1bac3ba23b5f4779b3248c3c094578c",
+      "snapshot_bytes_match_data_file": true,
+      "reconstructed_results": {
+        "": 0,
+        "a": 0,
+        "aa": 256,
+        "aardvark": 256,
+        "cat": 256,
+        "dog": 256,
+        "queen": 256,
+        "quizzify": 256,
+        "zzzzzz": 0,
+        "CAT": 0
+      }
+    }
+  ],
+  "scope": "Reconstructed C on exact saved runtime table bytes; original lookup call/return comparison pending"
+}

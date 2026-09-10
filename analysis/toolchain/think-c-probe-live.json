@@ -1,0 +1,13 @@
+{
+  "a5": 131031688,
+  "pc": 130623434,
+  "code2_base": 130623376,
+  "globals_hex": "12345678000100038d1503680000123400001fdc0001",
+  "left": 305419896,
+  "right": 65539,
+  "product": 2366964584,
+  "quotient": 4660,
+  "remainder": 8156,
+  "finished": 1,
+  "live_code_matches_compiler_output": true
+}

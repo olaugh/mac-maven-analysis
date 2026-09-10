@@ -1,0 +1,5020 @@
+{
+  "scope": "Magpie picks human moves; original Maven Kibitz plays the other side.\nEvery normal original search is compared byte-for-byte with the owned C engine.\nPositions are imported through original files. Host owns seeded bag/deals, not\noriginal UI move-entry, refill, simulation, or history lifecycle.\n",
+  "ui_delay_scale": 0.25,
+  "key_delay_seconds": 0.04,
+  "seed": 9102071,
+  "requested_games": 50000,
+  "completed_games": 302,
+  "positions": 6869,
+  "ranked_records": 67942,
+  "issues": [],
+  "games": [
+    {
+      "game": 0,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        396,
+        564
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "S",
+          "F"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 1,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        474,
+        335
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 2,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        409,
+        466
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "O",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 3,
+      "turns": 19,
+      "scores_before_final_adjustment": [
+        499,
+        423
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "G",
+          "R",
+          "E",
+          "A",
+          "V"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 4,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        478,
+        461
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "P",
+          "C"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 5,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        402,
+        370
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 6,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        383,
+        372
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "?",
+          "U",
+          "W",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 7,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        474,
+        389
+      ],
+      "remaining_racks": [
+        [
+          "A",
+          "T",
+          "V"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 8,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        500,
+        379
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 9,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        361,
+        533
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "O",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 10,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        449,
+        399
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O",
+          "A",
+          "A",
+          "L",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 11,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        525,
+        422
+      ],
+      "remaining_racks": [
+        [
+          "F"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 12,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        337,
+        489
+      ],
+      "remaining_racks": [
+        [
+          "E",
+          "U"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 13,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        431,
+        401
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "U",
+          "U",
+          "A",
+          "R",
+          "D"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 14,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        417,
+        409
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 15,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        432,
+        478
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "Y"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 16,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        580,
+        379
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "S",
+          "T",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 17,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        412,
+        420
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "N",
+          "I",
+          "O"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 18,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        302,
+        496
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "E",
+          "R",
+          "L"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 19,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        366,
+        424
+      ],
+      "remaining_racks": [
+        [
+          "E",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 20,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        406,
+        482
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "G",
+          "O",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 21,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        482,
+        402
+      ],
+      "remaining_racks": [
+        [
+          "O",
+          "O"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 22,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        371,
+        462
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "V"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 23,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        446,
+        425
+      ],
+      "remaining_racks": [
+        [
+          "S",
+          "D",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 24,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        455,
+        409
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 25,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        371,
+        492
+      ],
+      "remaining_racks": [
+        [
+          "G",
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 26,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        515,
+        350
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "I",
+          "N",
+          "B",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 27,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        426,
+        423
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "L",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 28,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        406,
+        458
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "L"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 29,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        351,
+        458
+      ],
+      "remaining_racks": [
+        [
+          "C",
+          "S",
+          "T",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 30,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        460,
+        376
+      ],
+      "remaining_racks": [
+        [
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 31,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        389,
+        389
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "I",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 32,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        559,
+        376
+      ],
+      "remaining_racks": [
+        [
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 33,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        481,
+        384
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 34,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        399,
+        387
+      ],
+      "remaining_racks": [
+        [
+          "C",
+          "R",
+          "D"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 35,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        444,
+        427
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D",
+          "S"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 36,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        377,
+        413
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 37,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        435,
+        441
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "S",
+          "S"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 38,
+      "turns": 28,
+      "scores_before_final_adjustment": [
+        464,
+        420
+      ],
+      "remaining_racks": [
+        [
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 39,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        403,
+        463
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 40,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        543,
+        358
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "N",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 41,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        536,
+        322
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "R",
+          "T",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 42,
+      "turns": 19,
+      "scores_before_final_adjustment": [
+        520,
+        463
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "G",
+          "E",
+          "L",
+          "E",
+          "J"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 43,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        391,
+        448
+      ],
+      "remaining_racks": [
+        [
+          "A",
+          "T",
+          "O",
+          "E",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 44,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        418,
+        475
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "M"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 45,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        411,
+        447
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 46,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        477,
+        381
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "U",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 47,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        448,
+        479
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "T",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 48,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        387,
+        397
+      ],
+      "remaining_racks": [
+        [
+          "D",
+          "U",
+          "U",
+          "V"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 49,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        417,
+        433
+      ],
+      "remaining_racks": [
+        [
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 50,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        478,
+        459
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "Q"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 51,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        466,
+        423
+      ],
+      "remaining_racks": [
+        [
+          "A",
+          "O"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 52,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        377,
+        394
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D",
+          "E",
+          "G",
+          "S"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 53,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        426,
+        370
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "I",
+          "U",
+          "F",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 54,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        456,
+        453
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 55,
+      "turns": 28,
+      "scores_before_final_adjustment": [
+        466,
+        351
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 56,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        524,
+        320
+      ],
+      "remaining_racks": [
+        [
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 57,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        426,
+        470
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 58,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        489,
+        351
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "L"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 59,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        349,
+        492
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "G"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 60,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        400,
+        478
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 61,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        445,
+        423
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "F",
+          "P",
+          "R",
+          "J",
+          "P"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 62,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        493,
+        457
+      ],
+      "remaining_racks": [
+        [
+          "Y",
+          "D"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 63,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        509,
+        426
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 64,
+      "turns": 27,
+      "scores_before_final_adjustment": [
+        350,
+        396
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 65,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        413,
+        349
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "L"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 66,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        501,
+        367
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "R",
+          "I",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 67,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        368,
+        403
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "U"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 68,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        404,
+        445
+      ],
+      "remaining_racks": [
+        [
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 69,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        404,
+        490
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 70,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        377,
+        362
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 71,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        389,
+        376
+      ],
+      "remaining_racks": [
+        [
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 72,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        391,
+        414
+      ],
+      "remaining_racks": [
+        [
+          "F",
+          "J",
+          "R",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 73,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        377,
+        483
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 74,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        421,
+        402
+      ],
+      "remaining_racks": [
+        [
+          "D",
+          "E",
+          "R",
+          "E",
+          "N",
+          "O"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 75,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        406,
+        370
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "Y",
+          "N",
+          "U",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 76,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        509,
+        364
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 77,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        471,
+        406
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "P"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 78,
+      "turns": 34,
+      "scores_before_final_adjustment": [
+        535,
+        322
+      ],
+      "remaining_racks": [
+        [
+          "U",
+          "U"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 79,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        358,
+        424
+      ],
+      "remaining_racks": [
+        [
+          "U",
+          "U"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 80,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        478,
+        377
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "L",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 81,
+      "turns": 27,
+      "scores_before_final_adjustment": [
+        510,
+        523
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "V"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 82,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        475,
+        446
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "A",
+          "T",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 83,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        440,
+        346
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "R",
+          "D",
+          "E",
+          "I",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 84,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        429,
+        351
+      ],
+      "remaining_racks": [
+        [
+          "U"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 85,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        483,
+        357
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 86,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        300,
+        446
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "A",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 87,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        544,
+        449
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 88,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        493,
+        360
+      ],
+      "remaining_racks": [
+        [
+          "G",
+          "N",
+          "V"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 89,
+      "turns": 19,
+      "scores_before_final_adjustment": [
+        447,
+        395
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "O",
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 90,
+      "turns": 18,
+      "scores_before_final_adjustment": [
+        565,
+        372
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "K",
+          "S",
+          "W"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 91,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        589,
+        337
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "U",
+          "R",
+          "G"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 92,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        442,
+        365
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 93,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        355,
+        474
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 94,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        390,
+        387
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "?",
+          "L",
+          "R",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 95,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        513,
+        385
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 96,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        537,
+        497
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 97,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        465,
+        337
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "A",
+          "S",
+          "S",
+          "E",
+          "T",
+          "I",
+          "Z"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 98,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        478,
+        439
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "L",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 99,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        487,
+        408
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 100,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        491,
+        446
+      ],
+      "remaining_racks": [
+        [
+          "E",
+          "E",
+          "O"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 101,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        365,
+        510
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "L"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 102,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        441,
+        384
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "O",
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 103,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        460,
+        277
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "M",
+          "I",
+          "A",
+          "X",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 104,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        433,
+        463
+      ],
+      "remaining_racks": [
+        [
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 105,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        487,
+        392
+      ],
+      "remaining_racks": [
+        [
+          "G",
+          "N",
+          "T",
+          "D",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 106,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        410,
+        480
+      ],
+      "remaining_racks": [
+        [
+          "A",
+          "I",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 107,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        323,
+        482
+      ],
+      "remaining_racks": [
+        [
+          "L",
+          "K",
+          "V"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 108,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        495,
+        472
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 109,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        528,
+        429
+      ],
+      "remaining_racks": [
+        [
+          "X",
+          "U"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 110,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        426,
+        352
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "L"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 111,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        432,
+        405
+      ],
+      "remaining_racks": [
+        [
+          "E",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 112,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        416,
+        417
+      ],
+      "remaining_racks": [
+        [
+          "M"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 113,
+      "turns": 19,
+      "scores_before_final_adjustment": [
+        476,
+        380
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "T",
+          "T",
+          "G",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 114,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        428,
+        286
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "S",
+          "R",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 115,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        499,
+        492
+      ],
+      "remaining_racks": [
+        [
+          "U",
+          "G",
+          "D"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 116,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        515,
+        404
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 117,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        362,
+        380
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 118,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        481,
+        385
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "V",
+          "E",
+          "N",
+          "E",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 119,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        412,
+        399
+      ],
+      "remaining_racks": [
+        [
+          "V",
+          "E",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 120,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        461,
+        347
+      ],
+      "remaining_racks": [
+        [
+          "L",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 121,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        370,
+        374
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 122,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        475,
+        362
+      ],
+      "remaining_racks": [
+        [
+          "?",
+          "I",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 123,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        479,
+        313
+      ],
+      "remaining_racks": [
+        [
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 124,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        431,
+        528
+      ],
+      "remaining_racks": [
+        [
+          "O",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 125,
+      "turns": 19,
+      "scores_before_final_adjustment": [
+        503,
+        460
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "N",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 126,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        365,
+        480
+      ],
+      "remaining_racks": [
+        [
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 127,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        400,
+        403
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "T",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 128,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        375,
+        508
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "Q",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 129,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        389,
+        373
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "V",
+          "G",
+          "N",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 130,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        389,
+        509
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "O",
+          "O",
+          "O"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 131,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        330,
+        392
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D",
+          "A",
+          "N",
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 132,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        433,
+        392
+      ],
+      "remaining_racks": [
+        [
+          "E",
+          "E",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 133,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        352,
+        480
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "I",
+          "L",
+          "A",
+          "E",
+          "Y",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 134,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        495,
+        475
+      ],
+      "remaining_racks": [
+        [
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 135,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        409,
+        466
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "D",
+          "R",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 136,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        499,
+        388
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 137,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        439,
+        420
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 138,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        452,
+        421
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "L"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 139,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        399,
+        405
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 140,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        416,
+        448
+      ],
+      "remaining_racks": [
+        [
+          "L",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 141,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        352,
+        458
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 142,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        448,
+        398
+      ],
+      "remaining_racks": [
+        [
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 143,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        414,
+        459
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O",
+          "E",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 144,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        389,
+        489
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "S",
+          "G"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 145,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        401,
+        436
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "L",
+          "G",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 146,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        381,
+        420
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "N",
+          "P"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 147,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        476,
+        370
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "E",
+          "D",
+          "T",
+          "E",
+          "R",
+          "H"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 148,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        415,
+        459
+      ],
+      "remaining_racks": [
+        [
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 149,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        545,
+        363
+      ],
+      "remaining_racks": [
+        [
+          "V",
+          "S"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 150,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        587,
+        363
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "L",
+          "B"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 151,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        357,
+        477
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 152,
+      "turns": 28,
+      "scores_before_final_adjustment": [
+        409,
+        416
+      ],
+      "remaining_racks": [
+        [
+          "V"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 153,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        406,
+        424
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "L",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 154,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        420,
+        334
+      ],
+      "remaining_racks": [
+        [
+          "D",
+          "E",
+          "V",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 155,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        435,
+        416
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "K",
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 156,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        486,
+        501
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "L",
+          "L"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 157,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        447,
+        421
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "S",
+          "R",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 158,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        451,
+        344
+      ],
+      "remaining_racks": [
+        [
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 159,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        461,
+        311
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 160,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        372,
+        469
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "U"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 161,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        461,
+        382
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "R",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 162,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        443,
+        462
+      ],
+      "remaining_racks": [
+        [
+          "F"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 163,
+      "turns": 27,
+      "scores_before_final_adjustment": [
+        452,
+        485
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 164,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        425,
+        416
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "A",
+          "G"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 165,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        436,
+        372
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "I",
+          "G",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 166,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        545,
+        356
+      ],
+      "remaining_racks": [
+        [
+          "L",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 167,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        431,
+        341
+      ],
+      "remaining_racks": [
+        [
+          "G",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 168,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        367,
+        432
+      ],
+      "remaining_racks": [
+        [
+          "D",
+          "L",
+          "S"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 169,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        427,
+        444
+      ],
+      "remaining_racks": [
+        [
+          "L",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 170,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        425,
+        413
+      ],
+      "remaining_racks": [
+        [
+          "O",
+          "E",
+          "O",
+          "A",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 171,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        555,
+        417
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "?",
+          "E",
+          "D",
+          "N",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 172,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        457,
+        432
+      ],
+      "remaining_racks": [
+        [
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 173,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        471,
+        393
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "V"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 174,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        518,
+        358
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 175,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        515,
+        439
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 176,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        484,
+        302
+      ],
+      "remaining_racks": [
+        [
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 177,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        474,
+        391
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 178,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        358,
+        529
+      ],
+      "remaining_racks": [
+        [
+          "O"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 179,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        467,
+        535
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "T",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 180,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        415,
+        499
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "P",
+          "U"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 181,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        510,
+        426
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 182,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        448,
+        394
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "C",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 183,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        423,
+        534
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 184,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        516,
+        385
+      ],
+      "remaining_racks": [
+        [
+          "O",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 185,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        404,
+        384
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "I",
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 186,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        311,
+        469
+      ],
+      "remaining_racks": [
+        [
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 187,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        486,
+        407
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "I",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 188,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        346,
+        377
+      ],
+      "remaining_racks": [
+        [
+          "E",
+          "W",
+          "U",
+          "F",
+          "O",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 189,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        480,
+        485
+      ],
+      "remaining_racks": [
+        [
+          "E",
+          "S"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 190,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        523,
+        399
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "E",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 191,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        372,
+        504
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 192,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        442,
+        455
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "A",
+          "U"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 193,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        357,
+        418
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "O",
+          "?",
+          "D",
+          "E",
+          "V"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 194,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        341,
+        373
+      ],
+      "remaining_racks": [
+        [
+          "L"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 195,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        353,
+        584
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "E",
+          "M"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 196,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        431,
+        480
+      ],
+      "remaining_racks": [
+        [
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 197,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        409,
+        412
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "L",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 198,
+      "turns": 34,
+      "scores_before_final_adjustment": [
+        455,
+        441
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 199,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        414,
+        370
+      ],
+      "remaining_racks": [
+        [
+          "U"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 200,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        396,
+        494
+      ],
+      "remaining_racks": [
+        [
+          "L"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 201,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        401,
+        439
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "I",
+          "V",
+          "B"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 202,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        364,
+        352
+      ],
+      "remaining_racks": [
+        [
+          "O"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 203,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        430,
+        463
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 204,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        461,
+        430
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 205,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        306,
+        472
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O",
+          "I",
+          "U",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 206,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        553,
+        329
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "A",
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 207,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        505,
+        410
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "Q",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 208,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        538,
+        346
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "W",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 209,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        448,
+        522
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "U",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 210,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        487,
+        479
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 211,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        476,
+        283
+      ],
+      "remaining_racks": [
+        [
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 212,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        477,
+        393
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 213,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        466,
+        477
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "S"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 214,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        499,
+        416
+      ],
+      "remaining_racks": [
+        [
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 215,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        431,
+        403
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 216,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        385,
+        364
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "R",
+          "F",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 217,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        524,
+        333
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 218,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        468,
+        314
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "U",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 219,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        465,
+        406
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "Z",
+          "A",
+          "T",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 220,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        418,
+        449
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 221,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        448,
+        442
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "O",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 222,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        406,
+        387
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "F",
+          "O",
+          "G"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 223,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        365,
+        388
+      ],
+      "remaining_racks": [
+        [
+          "E",
+          "O"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 224,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        448,
+        339
+      ],
+      "remaining_racks": [
+        [
+          "F",
+          "T",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 225,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        444,
+        436
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O",
+          "O",
+          "C",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 226,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        373,
+        431
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 227,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        460,
+        476
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "U"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 228,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        463,
+        406
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "U"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 229,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        392,
+        432
+      ],
+      "remaining_racks": [
+        [
+          "S",
+          "Q"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 230,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        351,
+        410
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "R",
+          "E",
+          "Z"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 231,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        514,
+        451
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "L",
+          "D",
+          "R",
+          "O",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 232,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        533,
+        407
+      ],
+      "remaining_racks": [
+        [
+          "L",
+          "B"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 233,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        462,
+        379
+      ],
+      "remaining_racks": [
+        [
+          "J",
+          "L",
+          "G",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 234,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        391,
+        526
+      ],
+      "remaining_racks": [
+        [
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 235,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        428,
+        435
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 236,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        597,
+        388
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 237,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        432,
+        421
+      ],
+      "remaining_racks": [
+        [
+          "O",
+          "O",
+          "I",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 238,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        411,
+        413
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "E",
+          "L",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 239,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        444,
+        387
+      ],
+      "remaining_racks": [
+        [
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 240,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        389,
+        459
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "L",
+          "I",
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 241,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        439,
+        390
+      ],
+      "remaining_racks": [
+        [
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 242,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        492,
+        436
+      ],
+      "remaining_racks": [
+        [
+          "L",
+          "R",
+          "D",
+          "P"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 243,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        385,
+        462
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 244,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        369,
+        401
+      ],
+      "remaining_racks": [
+        [
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 245,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        498,
+        365
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "I",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 246,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        444,
+        398
+      ],
+      "remaining_racks": [
+        [
+          "O",
+          "G",
+          "I",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 247,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        408,
+        486
+      ],
+      "remaining_racks": [
+        [
+          "C",
+          "I",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 248,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        415,
+        408
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "A",
+          "U",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 249,
+      "turns": 19,
+      "scores_before_final_adjustment": [
+        491,
+        419
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "U",
+          "A",
+          "Y"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 250,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        367,
+        383
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 251,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        396,
+        497
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 252,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        336,
+        524
+      ],
+      "remaining_racks": [
+        [
+          "R"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 253,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        554,
+        464
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "V",
+          "U",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 254,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        371,
+        536
+      ],
+      "remaining_racks": [
+        [
+          "Q",
+          "I",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 255,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        420,
+        457
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "L"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 256,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        430,
+        465
+      ],
+      "remaining_racks": [
+        [
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 257,
+      "turns": 27,
+      "scores_before_final_adjustment": [
+        459,
+        476
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "Q"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 258,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        471,
+        370
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "T",
+          "S",
+          "R",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 259,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        477,
+        423
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "P",
+          "V"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 260,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        429,
+        406
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "E",
+          "R",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 261,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        478,
+        431
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 262,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        366,
+        434
+      ],
+      "remaining_racks": [
+        [
+          "S",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 263,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        344,
+        451
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 264,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        431,
+        376
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "E",
+          "D"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 265,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        430,
+        387
+      ],
+      "remaining_racks": [
+        [
+          "E"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 266,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        416,
+        338
+      ],
+      "remaining_racks": [
+        [
+          "U",
+          "N",
+          "?"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 267,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        410,
+        485
+      ],
+      "remaining_racks": [
+        [
+          "O",
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 268,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        377,
+        398
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 269,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        479,
+        508
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "I",
+          "E",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 270,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        367,
+        441
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "I",
+          "S",
+          "T",
+          "E",
+          "T",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 271,
+      "turns": 19,
+      "scores_before_final_adjustment": [
+        507,
+        445
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 272,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        388,
+        473
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "A",
+          "O",
+          "U",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 273,
+      "turns": 19,
+      "scores_before_final_adjustment": [
+        489,
+        369
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D",
+          "R",
+          "N",
+          "A"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 274,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        365,
+        488
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "F",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 275,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        431,
+        463
+      ],
+      "remaining_racks": [
+        [
+          "I",
+          "C"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 276,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        469,
+        403
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "O",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 277,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        513,
+        470
+      ],
+      "remaining_racks": [
+        [
+          "U",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 278,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        411,
+        427
+      ],
+      "remaining_racks": [
+        [
+          "L"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 279,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        480,
+        352
+      ],
+      "remaining_racks": [
+        [
+          "V",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 280,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        442,
+        394
+      ],
+      "remaining_racks": [
+        [
+          "E",
+          "L"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 281,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        466,
+        357
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "O",
+          "A",
+          "G"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 282,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        406,
+        565
+      ],
+      "remaining_racks": [
+        [
+          "A",
+          "A",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 283,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        478,
+        365
+      ],
+      "remaining_racks": [
+        [
+          "G",
+          "A",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 284,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        373,
+        513
+      ],
+      "remaining_racks": [
+        [
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 285,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        428,
+        401
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 286,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        333,
+        536
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 287,
+      "turns": 19,
+      "scores_before_final_adjustment": [
+        417,
+        401
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "O",
+          "S"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 288,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        454,
+        464
+      ],
+      "remaining_racks": [
+        [
+          "L"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 289,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        476,
+        408
+      ],
+      "remaining_racks": [
+        [
+          "L",
+          "R",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 290,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        446,
+        393
+      ],
+      "remaining_racks": [
+        [
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 291,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        519,
+        403
+      ],
+      "remaining_racks": [
+        [
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 292,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        439,
+        478
+      ],
+      "remaining_racks": [
+        [
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 293,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        459,
+        405
+      ],
+      "remaining_racks": [
+        [
+          "H",
+          "F",
+          "L",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 294,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        554,
+        400
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 295,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        448,
+        337
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 296,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        615,
+        447
+      ],
+      "remaining_racks": [
+        [
+          "U"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 297,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        409,
+        578
+      ],
+      "remaining_racks": [
+        [
+          "F",
+          "E",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 298,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        397,
+        465
+      ],
+      "remaining_racks": [
+        [
+          "V",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 299,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        498,
+        454
+      ],
+      "remaining_racks": [
+        [
+          "T",
+          "A",
+          "T"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 300,
+      "turns": 26,
+      "scores_before_final_adjustment": [
+        343,
+        402
+      ],
+      "remaining_racks": [
+        [
+          "O",
+          "E",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 301,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        365,
+        494
+      ],
+      "remaining_racks": [
+        [
+          "V",
+          "T",
+          "I",
+          "W",
+          "R",
+          "J",
+          "A"
+        ],
+        []
+      ],
+      "bag": 0
+    }
+  ],
+  "started": 1789007000.3852868,
+  "max_seconds": 43200,
+  "magpie_leaves": "CSW21.klv2",
+  "magpie_only_selects_human_moves": true,
+  "original_executable_compared": true,
+  "files": {
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/bin/magpie": "298b70c362f5b79e0429fae21bc6a931ebc25cd2338b5d82f1df0050091fc2f4",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.kwg": "caabddb67f27a265fa9df4487d07fd93f4010650fbf0f684647b6ac4e0eb333e",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.wmp": "0049dcb9c3dc0913518d7a6f4333e89da37063ce89acd9a9560aee7fd6371c93",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.klv2": "d33c30e637d53ee6250fac943a01c3c9a18f93c638499ff5e13fa358c2ca03bb",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/.build/magpie-match.dylib": "445784e1dda27f1f2e8164a56994f1369c7abef067fdc577a36bf06754b2ff4c",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py": "7c48010ab8714654bdb29a58d1c6e2bf7a8502bc302c52b5e332f7dcfdd72d5e",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/original_match_search.py": "f3d49af49379dfe6bc6c82d47d6e0aa41b8686de833b479d484dbdaf768f4510",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/mac_ui.py": "6e9a1c61835473d9de8d20e56fb2d61f12dca9dc31d3f6a01de11fead4fa9f1c"
+  },
+  "fresh_state_guard": {
+    "a5": 131028224,
+    "workspace": "00000000000000000000000000000000000000000000000000000000000000000000000000000101000101000000000000000000000101000101000000000000",
+    "matched_resource_initializer": true
+  },
+  "elapsed_seconds": 8495.25156211853,
+  "complete": false,
+  "stop_reason": "signal_15"
+}

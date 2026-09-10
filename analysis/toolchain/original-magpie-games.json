@@ -1,0 +1,25 @@
+{
+  "scope": "Magpie picks human moves; original Maven Kibitz plays the other side.\nEvery normal original search is compared byte-for-byte with the owned C engine.\nPositions are imported through original files. Host owns seeded bag/deals, not\noriginal UI move-entry, refill, simulation, or history lifecycle.\n",
+  "seed": 9102026,
+  "requested_games": 20,
+  "completed_games": 0,
+  "positions": 18,
+  "ranked_records": 180,
+  "issues": [],
+  "games": [],
+  "started": 1789001505.393887,
+  "max_seconds": 3600,
+  "magpie_leaves": "CSW21.klv2",
+  "magpie_only_selects_human_moves": true,
+  "original_executable_compared": true,
+  "files": {
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/bin/magpie": "298b70c362f5b79e0429fae21bc6a931ebc25cd2338b5d82f1df0050091fc2f4",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.kwg": "f162e7849daf0c95bc2809b4a2c294cf15390d7e7f6e0d7c2bc428abe341ea14",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.wmp": "427fa638d1ea918e06435129bf056e17f786d0ba798a777efaceda155c4ceaa5",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.klv2": "d33c30e637d53ee6250fac943a01c3c9a18f93c638499ff5e13fa358c2ca03bb",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/.build/magpie-match.dylib": "c9b1a795386304be4c0f472ef9d59427890216b59fccb6066b126c136ecea237"
+  },
+  "elapsed_seconds": 62.76111197471619,
+  "failure": "timed out",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py\", line 33, in main\n    capture=original.search(name);init=capture['initial'];pos=Position();pos.zero=init['zero'];bb=bytes.fromhex(init['board']);vv=struct.unpack('>544H',bytes.fromhex(init['values']))\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/original_match_search.py\", line 24, in search\n    a5=long(0x904);slot=a5+0x852;add(slot);r.command('c',wait=False);key('meta_l-k');r.receive();assert regs()[17]==slot;clear()\n                                                                                     ~~~~~~~~~^^\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/gdb_remote.py\", line 21, in receive\n    marker = self.sock.recv(1)\nTimeoutError: timed out\n"
+}

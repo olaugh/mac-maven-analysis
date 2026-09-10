@@ -1,0 +1,25 @@
+{
+  "scope": "C record-writer replay from captured payloads and original tag-1 pre-save word; not full save orchestration",
+  "records": [
+    {
+      "tag": 1,
+      "length": 22,
+      "all_write_bytes_match": true,
+      "restoration_matches": true
+    },
+    {
+      "tag": 4,
+      "length": 0,
+      "all_write_bytes_match": true,
+      "restoration_matches": true
+    },
+    {
+      "tag": 2,
+      "length": 52,
+      "all_write_bytes_match": true,
+      "restoration_matches": true
+    }
+  ],
+  "capture_sha256": "e321f46eb1c4c5cef1cd54cd124fc8a535ad2b67a37f7ba211926de8e00b6ff3",
+  "source_sha256": "8a53681dc33cf72c6ec9fb8100cda79580042ba3c17466dfe24b3f2bde2e980e"
+}

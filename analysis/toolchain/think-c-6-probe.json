@@ -1,0 +1,36 @@
+{
+  "probe_rdump_sha256": "492a348410b447b5b140e88751b6cf0f3de97b6167b3aa837f4f1f6baec97590",
+  "source_sha256": "2544ecd84ed99ae17f3998914736e9e6d737d819400d77ae309a83f8036057f7",
+  "code1_length": 578,
+  "maven_code1_length": 578,
+  "code1_differences": [
+    {
+      "offset": 6,
+      "maven": 1,
+      "probe": 0
+    },
+    {
+      "offset": 7,
+      "maven": 186,
+      "probe": 114
+    }
+  ],
+  "startup_body_exact_match": true,
+  "code2_hex": "005000012f2dffea2f2dffee4ead00422b40fff22f2dffee2f2dffea4ead004a2b40fff62f2dffee2f2dffea4ead00522b40fffa3b7c0001fffe60fe4e75",
+  "main_code_matches_5_0_2": true,
+  "options": "New project; no external library; Smart Link enabled",
+  "runtime_execution": "Verified under QEMU/GDB",
+  "live_code2_exact_match": true,
+  "live_code2_base": 130622432,
+  "live_pc": 130622490,
+  "live_a5": 131030728,
+  "live_globals_hex": "12345678000100038d1503680000123400001fdc0001",
+  "live_values": {
+    "left": 305419896,
+    "right": 65539,
+    "product": 2366964584,
+    "quotient": 4660,
+    "remainder": 8156,
+    "finished": 1
+  }
+}

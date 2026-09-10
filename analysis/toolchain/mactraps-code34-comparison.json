@@ -1,0 +1,114 @@
+{
+  "maven_code_resource": 34,
+  "maven_sha256": "891d3d98ce59b26f24c5d7396e7703896ff332d203a0a7ac7d58a33ba58ae01a",
+  "library_code_resource": 2,
+  "library_sha256": "9488afaa4b32dd004e08436c5afac1aad7df49f36f4743ad18e7912ea5212f36",
+  "library_rdump_sha256": "ae80f35d06272f8b7faa1d4ae0be90721bc955d12c9c8a090e546707828825d8",
+  "minimum_block_bytes": 16,
+  "exact_bytes": 1353,
+  "bytes_after_header": 1388,
+  "blocks": [
+    {
+      "maven_start": 4,
+      "library_start": 4,
+      "length": 54
+    },
+    {
+      "maven_start": 58,
+      "library_start": 116,
+      "length": 362
+    },
+    {
+      "maven_start": 432,
+      "library_start": 1296,
+      "length": 18
+    },
+    {
+      "maven_start": 464,
+      "library_start": 2738,
+      "length": 167
+    },
+    {
+      "maven_start": 631,
+      "library_start": 3095,
+      "length": 82
+    },
+    {
+      "maven_start": 713,
+      "library_start": 3273,
+      "length": 100
+    },
+    {
+      "maven_start": 813,
+      "library_start": 3507,
+      "length": 53
+    },
+    {
+      "maven_start": 866,
+      "library_start": 3670,
+      "length": 68
+    },
+    {
+      "maven_start": 934,
+      "library_start": 4002,
+      "length": 16
+    },
+    {
+      "maven_start": 950,
+      "library_start": 4040,
+      "length": 35
+    },
+    {
+      "maven_start": 994,
+      "library_start": 5654,
+      "length": 164
+    },
+    {
+      "maven_start": 1158,
+      "library_start": 6444,
+      "length": 22
+    },
+    {
+      "maven_start": 1180,
+      "library_start": 6558,
+      "length": 50
+    },
+    {
+      "maven_start": 1230,
+      "library_start": 6630,
+      "length": 131
+    },
+    {
+      "maven_start": 1361,
+      "library_start": 6795,
+      "length": 31
+    }
+  ],
+  "gaps": [
+    {
+      "start": 420,
+      "end": 432,
+      "bytes_hex": "225f205fa0212e806a024297",
+      "short_exact_occurrences": [
+        1224
+      ]
+    },
+    {
+      "start": 450,
+      "end": 464,
+      "bytes_hex": "101f205f6604a0076002a4073e80",
+      "short_exact_occurrences": [
+        2350
+      ]
+    },
+    {
+      "start": 985,
+      "end": 994,
+      "bytes_hex": "04a20c6002a60c3e80",
+      "short_exact_occurrences": [
+        4325
+      ]
+    }
+  ],
+  "scope": "Ordered exact byte correspondence. Gaps are not automatically relocations; no unique release or decompilation-completeness claim"
+}

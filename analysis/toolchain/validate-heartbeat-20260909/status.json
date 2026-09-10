@@ -1,0 +1,29 @@
+{
+  "state": "COMPLETE",
+  "supervisor_pid": 26667,
+  "qemu_pid": 90578,
+  "started": 1789018102.2154071,
+  "run_dir": "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/analysis/toolchain/validate-heartbeat-20260909",
+  "max_seconds": 3600,
+  "heartbeat_seconds": 5,
+  "source_check_seconds": 60,
+  "stall_limit_seconds": 120,
+  "model_calls": 0,
+  "batch_pid": 26670,
+  "updated": 1789018127.2679522,
+  "positions": 20,
+  "completed_games": 1,
+  "ranked_records": 200,
+  "seconds_since_progress": 0.0,
+  "last_heartbeat": {
+    "time": 1789018122.077288,
+    "event": "return",
+    "stops": 48
+  },
+  "batch_returncode": 0,
+  "stop_reason": null,
+  "failure": null,
+  "issues": [],
+  "vm_paused": true,
+  "finished": 1789018127.267953
+}

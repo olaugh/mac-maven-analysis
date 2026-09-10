@@ -1,0 +1,290 @@
+{
+  "interpretation": "Exact runtime-family match; not a unique compiler/linker version identification.",
+  "compiler_version_resources": [
+    "05028000000005352e302e320d5448494e4b204320352e302e32"
+  ],
+  "compiler_resource_sha256": "9b48e63707f2692867011e5ede01fb8037c01542c4e6795d490be29e84fb48c6",
+  "maven_code1_sha256": "224d4f2ac2f62ef032a6bd1633cc5e9d2f282bb365bf4f303dc2079e4c838641",
+  "probe_rdump_sha256": "67a41f033f736e6dfee30222557d58449e5261e7429109c8bde36b220a5680a6",
+  "distribution_disks": [
+    {
+      "name": "disk01.img",
+      "sha256": "f035b097b19c9c049374f4281d74f5a690ceac3c4a5fd9c0feb19625d7c71b5c"
+    },
+    {
+      "name": "disk02.img",
+      "sha256": "dc743c41390135ab334e7c35a3b6d3df545754fcf42a687192792b24f5ec62cb"
+    },
+    {
+      "name": "disk03.img",
+      "sha256": "90a1b1753484a7bf80195c9417e54ae43cadbf4b3c679d62951177f767b0f1fc"
+    },
+    {
+      "name": "disk04.img",
+      "sha256": "46daf874ddab047085c71f69a540271f1b951216a9353cda1c11db5707b41886"
+    }
+  ],
+  "matches": [
+    {
+      "fingerprint": "global_initializer_and_arithmetic",
+      "maven_offset": 72,
+      "length": 506,
+      "sha256": "4e085390fed17f210d037d347154b9fbeae50ec8e3e6dce50b027ed3e8e1e6a5",
+      "reference": "compiler",
+      "resource_id": 13,
+      "offset": 52
+    },
+    {
+      "fingerprint": "global_initializer_and_arithmetic",
+      "maven_offset": 72,
+      "length": 506,
+      "sha256": "4e085390fed17f210d037d347154b9fbeae50ec8e3e6dce50b027ed3e8e1e6a5",
+      "reference": "compiler",
+      "resource_id": 1,
+      "offset": 52
+    },
+    {
+      "fingerprint": "global_initializer_and_arithmetic",
+      "maven_offset": 72,
+      "length": 506,
+      "sha256": "4e085390fed17f210d037d347154b9fbeae50ec8e3e6dce50b027ed3e8e1e6a5",
+      "reference": "compiled_probe",
+      "resource_id": 1,
+      "offset": 52
+    },
+    {
+      "fingerprint": "globals",
+      "maven_offset": 72,
+      "length": 98,
+      "sha256": "9a275136a3397fef6207877af284c89801e79ee344842f8dfad523bb8bbd29e6",
+      "reference": "compiler",
+      "resource_id": 13,
+      "offset": 52
+    },
+    {
+      "fingerprint": "globals",
+      "maven_offset": 72,
+      "length": 98,
+      "sha256": "9a275136a3397fef6207877af284c89801e79ee344842f8dfad523bb8bbd29e6",
+      "reference": "compiler",
+      "resource_id": 1,
+      "offset": 52
+    },
+    {
+      "fingerprint": "globals",
+      "maven_offset": 72,
+      "length": 98,
+      "sha256": "9a275136a3397fef6207877af284c89801e79ee344842f8dfad523bb8bbd29e6",
+      "reference": "compiled_probe",
+      "resource_id": 1,
+      "offset": 52
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiler",
+      "resource_id": 7,
+      "offset": 1498
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiler",
+      "resource_id": 8,
+      "offset": 308
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiler",
+      "resource_id": 13,
+      "offset": 150
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiler",
+      "resource_id": 9,
+      "offset": 398
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiler",
+      "resource_id": 11,
+      "offset": 60
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiler",
+      "resource_id": 6,
+      "offset": 660
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiler",
+      "resource_id": 1,
+      "offset": 150
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiler",
+      "resource_id": 14,
+      "offset": 438
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiler",
+      "resource_id": 17,
+      "offset": 28
+    },
+    {
+      "fingerprint": "switches",
+      "maven_offset": 170,
+      "length": 68,
+      "sha256": "ddfd4bfae94e946ced94d22f46b992ae6b7e8c6040ef4818d446e630393550d0",
+      "reference": "compiled_probe",
+      "resource_id": 1,
+      "offset": 150
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiler",
+      "resource_id": 7,
+      "offset": 1566
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiler",
+      "resource_id": 8,
+      "offset": 376
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiler",
+      "resource_id": 13,
+      "offset": 218
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiler",
+      "resource_id": 9,
+      "offset": 466
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiler",
+      "resource_id": 11,
+      "offset": 128
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiler",
+      "resource_id": 6,
+      "offset": 728
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiler",
+      "resource_id": 1,
+      "offset": 218
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiler",
+      "resource_id": 14,
+      "offset": 506
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiler",
+      "resource_id": 17,
+      "offset": 96
+    },
+    {
+      "fingerprint": "multiply",
+      "maven_offset": 238,
+      "length": 54,
+      "sha256": "e7ab30982c6a3188749f64e50513afc0b3cf1ea693117463138c48828834d5a2",
+      "reference": "compiled_probe",
+      "resource_id": 1,
+      "offset": 218
+    },
+    {
+      "fingerprint": "division",
+      "maven_offset": 292,
+      "length": 286,
+      "sha256": "81e6089cedcc2753816a3dcf2303c93a224f6f9669cee48cfd865743f9fbf5c1",
+      "reference": "compiler",
+      "resource_id": 13,
+      "offset": 272
+    },
+    {
+      "fingerprint": "division",
+      "maven_offset": 292,
+      "length": 286,
+      "sha256": "81e6089cedcc2753816a3dcf2303c93a224f6f9669cee48cfd865743f9fbf5c1",
+      "reference": "compiler",
+      "resource_id": 1,
+      "offset": 272
+    },
+    {
+      "fingerprint": "division",
+      "maven_offset": 292,
+      "length": 286,
+      "sha256": "81e6089cedcc2753816a3dcf2303c93a224f6f9669cee48cfd865743f9fbf5c1",
+      "reference": "compiled_probe",
+      "resource_id": 1,
+      "offset": 272
+    }
+  ]
+}

@@ -1,0 +1,584 @@
+{
+  "scope": "Manual instruction-effect accounting for one routine, with called helpers treated as explicit boundaries. Not a claim every callee instruction is audited.",
+  "resource": 29,
+  "start": 84,
+  "end_exclusive": 210,
+  "instructions": [
+    {
+      "resource": 29,
+      "offset": 84,
+      "hex_offset": "0x0054",
+      "bytes": "4e560000",
+      "disassembly": "link.w     a6, #$0",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 22,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "C activation record; saved A4 is represented by the node local."
+    },
+    {
+      "resource": 29,
+      "offset": 88,
+      "hex_offset": "0x0058",
+      "bytes": "2f0c",
+      "disassembly": "move.l     a4, -(a7)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 23,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "C activation record; saved A4 is represented by the node local."
+    },
+    {
+      "resource": 29,
+      "offset": 90,
+      "hex_offset": "0x005a",
+      "bytes": "286e0008",
+      "disassembly": "movea.l    $8(a6), a4",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 24,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: node and the emptied-rack / child / pass guards."
+    },
+    {
+      "resource": 29,
+      "offset": 94,
+      "hex_offset": "0x005e",
+      "bytes": "4a2c001c",
+      "disassembly": "tst.b      $1c(a4)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 25,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: node and the emptied-rack / child / pass guards."
+    },
+    {
+      "resource": 29,
+      "offset": 98,
+      "hex_offset": "0x0062",
+      "bytes": "6668",
+      "disassembly": "bne.b      $cc",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 26,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: node and the emptied-rack / child / pass guards."
+    },
+    {
+      "resource": 29,
+      "offset": 100,
+      "hex_offset": "0x0064",
+      "bytes": "4a6c0004",
+      "disassembly": "tst.w      $4(a4)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 27,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: node and the emptied-rack / child / pass guards."
+    },
+    {
+      "resource": 29,
+      "offset": 104,
+      "hex_offset": "0x0068",
+      "bytes": "6662",
+      "disassembly": "bne.b      $cc",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 28,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: node and the emptied-rack / child / pass guards."
+    },
+    {
+      "resource": 29,
+      "offset": 106,
+      "hex_offset": "0x006a",
+      "bytes": "4a2c001a",
+      "disassembly": "tst.b      $1a(a4)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 29,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: node and the emptied-rack / child / pass guards."
+    },
+    {
+      "resource": 29,
+      "offset": 110,
+      "hex_offset": "0x006e",
+      "bytes": "675c",
+      "disassembly": "beq.b      $cc",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 30,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: node and the emptied-rack / child / pass guards."
+    },
+    {
+      "resource": 29,
+      "offset": 112,
+      "hex_offset": "0x0070",
+      "bytes": "48780022",
+      "disassembly": "pea.l      $22.w",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 31,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: memset(s->best_empty_move, 0, sizeof s->best_empty_move). This write was missing before the VID fix."
+    },
+    {
+      "resource": 29,
+      "offset": 116,
+      "hex_offset": "0x0074",
+      "bytes": "486da5ce",
+      "disassembly": "pea.l      -$5a32(a5)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 32,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: memset(s->best_empty_move, 0, sizeof s->best_empty_move). This write was missing before the VID fix."
+    },
+    {
+      "resource": 29,
+      "offset": 120,
+      "hex_offset": "0x0078",
+      "bytes": "4ead01aa",
+      "disassembly": "jsr        $1aa(a5) ; CODE11+0c5c",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 33,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "tighten_replies: memset(s->best_empty_move, 0, sizeof s->best_empty_move). This write was missing before the VID fix."
+    },
+    {
+      "resource": 29,
+      "offset": 124,
+      "hex_offset": "0x007c",
+      "bytes": "306c0002",
+      "disassembly": "movea.w    $2(a4), a0",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 34,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "TightenContext.upper/lower initialized from node bounds. Original uses ranking scratch longs; C uses explicit context fields."
+    },
+    {
+      "resource": 29,
+      "offset": 128,
+      "hex_offset": "0x0080",
+      "bytes": "2b48a600",
+      "disassembly": "move.l     a0, -$5a00(a5)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 35,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "TightenContext.upper/lower initialized from node bounds. Original uses ranking scratch longs; C uses explicit context fields."
+    },
+    {
+      "resource": 29,
+      "offset": 132,
+      "hex_offset": "0x0084",
+      "bytes": "3054",
+      "disassembly": "movea.w    (a4), a0",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 36,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "TightenContext.upper/lower initialized from node bounds. Original uses ranking scratch longs; C uses explicit context fields."
+    },
+    {
+      "resource": 29,
+      "offset": 134,
+      "hex_offset": "0x0086",
+      "bytes": "2b48a622",
+      "disassembly": "move.l     a0, -$59de(a5)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 37,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "TightenContext.upper/lower initialized from node bounds. Original uses ranking scratch longs; C uses explicit context fields."
+    },
+    {
+      "resource": 29,
+      "offset": 138,
+      "hex_offset": "0x008a",
+      "bytes": "102c0019",
+      "disassembly": "move.b     $19(a4), d0",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 38,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "node->kept_mask is the input to bound_local_reply via c.node."
+    },
+    {
+      "resource": 29,
+      "offset": 142,
+      "hex_offset": "0x008e",
+      "bytes": "4880",
+      "disassembly": "ext.w      d0",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 39,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "node->kept_mask is the input to bound_local_reply via c.node."
+    },
+    {
+      "resource": 29,
+      "offset": 144,
+      "hex_offset": "0x0090",
+      "bytes": "3b40f526",
+      "disassembly": "move.w     d0, -$ada(a5)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 40,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "node->kept_mask is the input to bound_local_reply via c.node."
+    },
+    {
+      "resource": 29,
+      "offset": 148,
+      "hex_offset": "0x0094",
+      "bytes": "2eadcf2c",
+      "disassembly": "move.l     -$30d4(a5), (a7)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 41,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "local_replies(..., bound_local_reply, &c, workspace), including original node expansion and apply/generate/undo helper."
+    },
+    {
+      "resource": 29,
+      "offset": 152,
+      "hex_offset": "0x0098",
+      "bytes": "486d087a",
+      "disassembly": "pea.l      $87a(a5)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 42,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "local_replies(..., bound_local_reply, &c, workspace), including original node expansion and apply/generate/undo helper."
+    },
+    {
+      "resource": 29,
+      "offset": 156,
+      "hex_offset": "0x009c",
+      "bytes": "2f2dcf28",
+      "disassembly": "move.l     -$30d8(a5), -(a7)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 43,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "local_replies(..., bound_local_reply, &c, workspace), including original node expansion and apply/generate/undo helper."
+    },
+    {
+      "resource": 29,
+      "offset": 160,
+      "hex_offset": "0x00a0",
+      "bytes": "2f0c",
+      "disassembly": "move.l     a4, -(a7)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 44,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "local_replies(..., bound_local_reply, &c, workspace), including original node expansion and apply/generate/undo helper."
+    },
+    {
+      "resource": 29,
+      "offset": 162,
+      "hex_offset": "0x00a2",
+      "bytes": "4ebaff60",
+      "disassembly": "jsr        $4(pc)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 45,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "local_replies(..., bound_local_reply, &c, workspace), including original node expansion and apply/generate/undo helper."
+    },
+    {
+      "resource": 29,
+      "offset": 166,
+      "hex_offset": "0x00a6",
+      "bytes": "396da6020002",
+      "disassembly": "move.w     -$59fe(a5), $2(a4)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 46,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "node->upper/lower receive signed 16-bit narrowed c.upper/c.lower."
+    },
+    {
+      "resource": 29,
+      "offset": 172,
+      "hex_offset": "0x00ac",
+      "bytes": "38ada624",
+      "disassembly": "move.w     -$59dc(a5), (a4)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 47,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "node->upper/lower receive signed 16-bit narrowed c.upper/c.lower."
+    },
+    {
+      "resource": 29,
+      "offset": 176,
+      "hex_offset": "0x00b0",
+      "bytes": "4a6da5ea",
+      "disassembly": "tst.w      -$5a16(a5)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 48,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "c.best_empty sets node->leave_tag. Shared record bytes 28-29 mirror the flag."
+    },
+    {
+      "resource": 29,
+      "offset": 180,
+      "hex_offset": "0x00b4",
+      "bytes": "4fef0014",
+      "disassembly": "lea.l      $14(a7), a7",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 49,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "c.best_empty sets node->leave_tag. Shared record bytes 28-29 mirror the flag."
+    },
+    {
+      "resource": 29,
+      "offset": 184,
+      "hex_offset": "0x00b8",
+      "bytes": "6706",
+      "disassembly": "beq.b      $c0",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 50,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "c.best_empty sets node->leave_tag. Shared record bytes 28-29 mirror the flag."
+    },
+    {
+      "resource": 29,
+      "offset": 186,
+      "hex_offset": "0x00ba",
+      "bytes": "197c0001001d",
+      "disassembly": "move.b     #$1, $1d(a4)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 51,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "c.best_empty sets node->leave_tag. Shared record bytes 28-29 mirror the flag."
+    },
+    {
+      "resource": 29,
+      "offset": 192,
+      "hex_offset": "0x00c0",
+      "bytes": "4aada5e6",
+      "disassembly": "tst.l      -$5a1a(a5)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 52,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "c.any sets node->adjustment_tag. Shared record long at byte 24 mirrors it."
+    },
+    {
+      "resource": 29,
+      "offset": 196,
+      "hex_offset": "0x00c4",
+      "bytes": "6706",
+      "disassembly": "beq.b      $cc",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 53,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "c.any sets node->adjustment_tag. Shared record long at byte 24 mirrors it."
+    },
+    {
+      "resource": 29,
+      "offset": 198,
+      "hex_offset": "0x00c6",
+      "bytes": "197c00010018",
+      "disassembly": "move.b     #$1, $18(a4)",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 54,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "c.any sets node->adjustment_tag. Shared record long at byte 24 mirrors it."
+    },
+    {
+      "resource": 29,
+      "offset": 204,
+      "hex_offset": "0x00cc",
+      "bytes": "285f",
+      "disassembly": "movea.l    (a7)+, a4",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 55,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "Restore saved A4, frame and return: C function/loop lifetime; no reconstructed persistent state."
+    },
+    {
+      "resource": 29,
+      "offset": 206,
+      "hex_offset": "0x00ce",
+      "bytes": "4e5e",
+      "disassembly": "unlk       a6",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 56,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "Restore saved A4, frame and return: C function/loop lifetime; no reconstructed persistent state."
+    },
+    {
+      "resource": 29,
+      "offset": 208,
+      "hex_offset": "0x00d0",
+      "bytes": "4e75",
+      "disassembly": "rts        ",
+      "listing": "analysis/toolchain/code29-corrected.asm",
+      "listing_line": 57,
+      "source_candidates": [
+        "endgame_leaf.c"
+      ],
+      "status": "manually_effect_mapped",
+      "c_file": "reconstruction/endgame_leaf.c",
+      "c_function": "tighten_replies",
+      "effect_mapping": "Restore saved A4, frame and return: C function/loop lifetime; no reconstructed persistent state."
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "captures": [
+    {
+      "capture": "length-controls-live-default.json",
+      "sha256": "5ea3091a556cd24bc77a475df918ada1b4035f9424cdcfcc3964251ed6f5872e",
+      "inputs": [
+        "2",
+        "15"
+      ],
+      "limits": [
+        2,
+        15
+      ],
+      "all_calls_match": true
+    },
+    {
+      "capture": "length-controls-live-inverted.json",
+      "sha256": "f17064ad6e8e1dc86e7119374228549c54a510e921bfdfd472c156a40e520190",
+      "inputs": [
+        "2068",
+        "3"
+      ],
+      "limits": [
+        2068,
+        15
+      ],
+      "all_calls_match": true
+    },
+    {
+      "capture": "length-controls-live-overflow.json",
+      "sha256": "24f2120f251524dd06481afdbb38858469d458274c7a6a346824568be33eadfc",
+      "inputs": [
+        "32768",
+        ""
+      ],
+      "limits": [
+        32767,
+        15
+      ],
+      "all_calls_match": true
+    }
+  ],
+  "natural_calls": 6,
+  "scope": "Three UI queries; six natural decimal calls. Capture verifies loaded CODE 12 and CODE 24. VM terminated after capture.",
+  "input_notes": "Attempted x did not reach parser (empty input captured). Inverted query actually contained 2068 and 3, not intended 20 and 3; capture is authoritative."
+}

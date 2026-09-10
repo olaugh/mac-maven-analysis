@@ -1,0 +1,19 @@
+{
+  "emulator": "QEMU 11.0.1, q800, 128 MB",
+  "cpu_mode": "Unthrottled TCG; launch has no icount instruction pacing, clock alignment, or CPU throttle",
+  "basilisk": "Not found in PATH or the searched application/source directories; existing debugger driver is QEMU-specific",
+  "seed": 9102050,
+  "requested_games": 20,
+  "maximum_seconds": 3600,
+  "launch_script_sha256": "0156c2e680ebe05346fa20a9e5bdc473b01c9cc17d66aa189da8f6bc4ef1cbe3",
+  "fixed_open_wait_seconds": 1.2,
+  "filename_key_wait_seconds": 0.56,
+  "driver": "scripts/play_original_magpie_matches.py",
+  "report": "original-magpie-more-games.json",
+  "scope": "Imported-position searches, normal Open/Kibitz, read-only debugger breakpoints; Magpie chooses human-side moves only.",
+  "driver_source_sha256": {
+    "scripts/play_original_magpie_matches.py": "7b1be84d4905c2d349b166df35e001846a66246fe25dc34e99b12d58c8850210",
+    "scripts/original_match_search.py": "5b872f2d6a4b11eeac375cbd37892fe1b5da0c2a3d52e6fa7f3fedf01e3829f6",
+    "scripts/mac_ui.py": "ef96d9baf9a9ef22e701406d55206da90bf26f626b6684226cf2ef6f265b8adf"
+  }
+}

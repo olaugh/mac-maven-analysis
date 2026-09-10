@@ -1,0 +1,12 @@
+{
+  "scope": "Direct original application boundary capture from a constructed save fixture.",
+  "board_bytes_matching": 544,
+  "value_words_matching": 544,
+  "undo_bytes_matching": 33,
+  "residual_rack": "i",
+  "new_tiles": 6,
+  "row_zero_count": 0,
+  "score_capture_sha256": "2fcead7e613b5975a8e1ede13c1c49a0143a8b2a15c8674cc06ea83625bb7ab1",
+  "restore_capture_sha256": null,
+  "counts_match": true
+}

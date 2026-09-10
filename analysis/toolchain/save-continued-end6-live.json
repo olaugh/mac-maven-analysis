@@ -1,0 +1,1018 @@
+{
+  "scope": "Natural Save UI action; original code identity and FSWrite inputs/results observed",
+  "a5": 131028224,
+  "code22_base": 130724688,
+  "code22_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d",
+  "complete_loaded_code_matches": true,
+  "name": "maven-port-turns-0909",
+  "volume": -3,
+  "writes": [
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0001"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0016"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 22,
+      "bytes_hex": "000000000000616f71747478790061727075656f3f00"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0004"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0000"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 0,
+      "bytes_hex": ""
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "6f70617175657200000000000000000000001c20ffffff66ffffffe0000100000803000061727075656f3f00616f717474787900"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "71756f74610000000000000000000000000009c400000000000000000000000016070001616f7174747879006569676572616500"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "72656769650000000000000000000000000008fcffffffb30000000500000009170b0000656967657261650068696c7074787900"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0004"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0000"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 0,
+      "bytes_hex": ""
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0000"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "012c"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 300,
+      "bytes_hex": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000710000000000000000000000006f70617175657200000000000000000000000000006f00000000000000000000000000000000740000000000000000000000000000000061720000000000000000000000000000000065000000000000000000000000000000006700000000000000000000000000000000690000000000000000000000000000000065000000000000000068696c70747879006469616573646600000000000000000008060000"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0004"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0000"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 0,
+      "bytes_hex": ""
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "6f78797068696c000000000000000000000017700000000000000000000000001208000168696c70747879006469616573646600"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "6661726164697365640000000000000000001e78ffffff830000000a000100000b06000064696165736466006165696f73747600"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "766973746f0000000000000000000000000013880000000000000000000000000f0100016165696f737476007479646569687300"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "7468657900000000000000000000000000000fa00000028effffffec000000190c0c0000747964656968730061616365676e6e00"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "616c616e67000000000000000000000000000af00000000000000000000000000e02000161616365676e6e006469736a75746700"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "6a75646965730000000000000000000000000dacfffffeb4fffffff300000022170400006469736a757467006365696e6e6f7400"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "63656e746f6e6973740000000000000000001ce80000000000000000000000001b0400016365696e6e6f740067746d6c6d767200"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "74756d6d6c657200000000000000000000000898fffffe11ffffffb0000000410507000067746d6c6d767200616565696c6e3f00"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "616c69656e61676500000000000000000000190000000000000000000000000014030001616565696c6e3f0067767a6c69656200"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "62657a006c000000000000000000000000000d48fffffee4ffffffaa0000003e0604000067767a6c696562006263666f72737700"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "6f66000000000000000000000000000000000ed8000000000000000000000000110900016263666f727377006567696c76756f00"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "6775760065690000000000000000000000000d48fffffc4a000000160000001d100700006567696c76756f006162637273777700"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "777261776c000000000000000000000000000bb800000000000000000000000004010001616263727377770065696c6f65726f00"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "6c6f6f0000000000000000000000000000000bb800000000fffff88b00000047130a00006565696c6f6f72006263696e72737500"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "7275627269630000000000000000000000000c80000000000000000000000000110100016263696e7273750065656972646e6100"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "656e000000000000000000000000000000000578000000000000023b0000005b1001000065656972646e610061656b6e6f737400"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0000"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "012c"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 300,
+      "bytes_hex": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000061000000000000000000000000777261776c00006a00000063000000000000000000690074756d6d6c65720000000000000062657a00640000006e0000000000670000006e00716900000074000000000075006f70617175657200006f0000000000766f780067006f730000006e00000000000066796c650074000000006900000000000000706f006661726164697365640000000000686f00000065000000746865790000000069000000006700000000000000000000616c616e670069000000000000000000766973746f00006500000000000000006263696e7273750065656972646e61000000866000006aa409050806"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0004"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0000"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 0,
+      "bytes_hex": ""
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "627572696e000000000000000000000000000708000000000000000000000000110200016263696e7273750065656972646e6100"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "65616e656400000000000000000000000000089800000000fffffb0a00000070060a000065656972646e610061636b6f72737400"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "7961636b00000000000000000000000000000f3c0000000000000000000000001e0c000161636b6f727374006565696e7200e2f4"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "6a6565000000000000000000000000000000076cfffff5740000001b0000007c040800006565696e720000006f72737400cee2f0"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0002"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0034"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 52,
+      "bytes_hex": "7469726f730000000000000000000000000008340000000000000000000000000a0b00016f72737400000000696e720007cee2f4"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0003"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0012"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 18,
+      "bytes_hex": "000100cee2564080dbfe000000000000a730"
+    },
+    {
+      "offset": 544,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0003"
+    },
+    {
+      "offset": 582,
+      "reference": 3762,
+      "count": 2,
+      "bytes_hex": "0012"
+    },
+    {
+      "offset": 632,
+      "reference": 3762,
+      "count": 18,
+      "bytes_hex": "0000696e7200000100ce0000025800007aa8"
+    }
+  ],
+  "results": [
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 548,
+      "error": 0
+    },
+    {
+      "offset": 586,
+      "error": 0
+    },
+    {
+      "offset": 636,
+      "error": 0
+    },
+    {
+      "offset": 672,
+      "error": 0
+    }
+  ],
+  "return_value": 1,
+  "tag1_mutations": [
+    {
+      "offset": 594,
+      "word_hex": "0000"
+    },
+    {
+      "offset": 654,
+      "word_hex": "0000"
+    }
+  ]
+}

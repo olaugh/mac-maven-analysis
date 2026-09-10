@@ -1,0 +1,98 @@
+[
+  {
+    "type": "CURS",
+    "id": 129,
+    "old_size": 32,
+    "size": 68
+  },
+  {
+    "type": "CURS",
+    "id": 132,
+    "old_size": 32,
+    "size": 68
+  },
+  {
+    "type": "DATA",
+    "id": 0,
+    "old_size": 4608,
+    "size": 9472
+  },
+  {
+    "type": "DITL",
+    "id": 1029,
+    "old_size": 32,
+    "size": 72
+  },
+  {
+    "type": "EXPR",
+    "id": 0,
+    "old_size": 96,
+    "size": 8960
+  },
+  {
+    "type": "FOND",
+    "id": 22,
+    "old_size": 80,
+    "size": 2282
+  },
+  {
+    "type": "FONT",
+    "id": 394,
+    "old_size": 592,
+    "size": 2200
+  },
+  {
+    "type": "FONT",
+    "id": 396,
+    "old_size": 688,
+    "size": 3176
+  },
+  {
+    "type": "FONT",
+    "id": 398,
+    "old_size": 3056,
+    "size": 3568
+  },
+  {
+    "type": "FONT",
+    "id": 408,
+    "old_size": 6944,
+    "size": 7568
+  },
+  {
+    "type": "FONT",
+    "id": 521,
+    "old_size": 944,
+    "size": 2468
+  },
+  {
+    "type": "FONT",
+    "id": 2826,
+    "old_size": 1152,
+    "size": 2510
+  },
+  {
+    "type": "MULd",
+    "id": 0,
+    "old_size": 48,
+    "size": 224
+  },
+  {
+    "type": "MULt",
+    "id": 0,
+    "old_size": 96,
+    "size": 224
+  },
+  {
+    "type": "PATB",
+    "id": 0,
+    "old_size": 688,
+    "size": 18104
+  },
+  {
+    "type": "wplc",
+    "id": 1,
+    "old_size": 92,
+    "size": 120
+  }
+]

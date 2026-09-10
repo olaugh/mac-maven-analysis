@@ -1,0 +1,33 @@
+{
+  "scope": "Observe the unmodified force0 CPU-calibrated late-search gate through its decision.",
+  "a5": 131028224,
+  "base": 130742096,
+  "identities": {
+    "36": "4d83b00b3db272ab9ef932f3b2ada2aa65edf4bd9d0cb8419c7503029e31402e",
+    "9": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+  },
+  "force": 0,
+  "complete": true,
+  "measured_calibration": 7406364,
+  "controlled_input": true,
+  "calibration": 1,
+  "own_blanks": 0,
+  "unseen_blanks": 0,
+  "unseen_total": 9,
+  "table": "00a000b500e0011901580197019c01fc029c01d1024d02ee0349050e074008970a1f0c5403d1047e05dc069009f60e74145019002260014c016301a0022802870308037d041c05020331036a0400054f063907770a260d311127036d03e804b00528060e09600ed8125c1a90",
+  "quotient": 1488544,
+  "heuristic_fallback": true,
+  "decision_offset": 6278,
+  "cleanup": [
+    {
+      "address": 130748394,
+      "initial_remove": "OK",
+      "confirmed_absent": true
+    },
+    {
+      "address": 130748374,
+      "initial_remove": "OK",
+      "confirmed_absent": true
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "scope": "Repartition existing rack tiles in a new disposable test save, preserving board and bag.\n\nThis constructs a test fixture, not a naturally played position. The original\nsave and metadata are never overwritten. Load and search via ordinary Mac UI.\n",
+  "source": "maven-search-end7",
+  "name": "maven-search-gc7",
+  "source_sha256": "ccd4de64fa6777de3e037d1276e9d956fc314402f227e180efda67cf7792979c",
+  "sha256": "f513ab56fd33152a45bde4c1910617d214df4d5458966f11952492bb80add899",
+  "own": "beekoqs",
+  "other": "ceinrtu",
+  "synthetic_position": true
+}

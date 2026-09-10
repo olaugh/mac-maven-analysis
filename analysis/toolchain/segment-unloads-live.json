@@ -1,0 +1,104 @@
+{
+  "code11_base": 129173408,
+  "a5": 131028224,
+  "unloadseg_handler": 1082178930,
+  "code11_exact_match": true,
+  "code11_sha256": "fce9e1233c58aa6d899ec186bc937634f1bb50141e60c81f4eb8ff2890f8c967",
+  "calls": [
+    {
+      "return_resource_offset": 3410,
+      "routine_address": 131030978,
+      "a5_offset": 2754
+    },
+    {
+      "return_resource_offset": 3416,
+      "routine_address": 131030930,
+      "a5_offset": 2706
+    },
+    {
+      "return_resource_offset": 3422,
+      "routine_address": 131030946,
+      "a5_offset": 2722
+    },
+    {
+      "return_resource_offset": 3428,
+      "routine_address": 131030306,
+      "a5_offset": 2082
+    },
+    {
+      "return_resource_offset": 3434,
+      "routine_address": 131030370,
+      "a5_offset": 2146
+    },
+    {
+      "return_resource_offset": 3440,
+      "routine_address": 131030450,
+      "a5_offset": 2226
+    },
+    {
+      "return_resource_offset": 3446,
+      "routine_address": 131031018,
+      "a5_offset": 2794
+    },
+    {
+      "return_resource_offset": 3452,
+      "routine_address": 131030906,
+      "a5_offset": 2682
+    },
+    {
+      "return_resource_offset": 3458,
+      "routine_address": 131030810,
+      "a5_offset": 2586
+    },
+    {
+      "return_resource_offset": 3464,
+      "routine_address": 131031666,
+      "a5_offset": 3442
+    },
+    {
+      "return_resource_offset": 3470,
+      "routine_address": 131030842,
+      "a5_offset": 2618
+    },
+    {
+      "return_resource_offset": 3476,
+      "routine_address": 131030866,
+      "a5_offset": 2642
+    },
+    {
+      "return_resource_offset": 3482,
+      "routine_address": 131030546,
+      "a5_offset": 2322
+    },
+    {
+      "return_resource_offset": 3488,
+      "routine_address": 131030338,
+      "a5_offset": 2114
+    },
+    {
+      "return_resource_offset": 3494,
+      "routine_address": 131030666,
+      "a5_offset": 2442
+    }
+  ],
+  "unrelated_calls": 0,
+  "reconstructed_offsets": [
+    2754,
+    2706,
+    2722,
+    2082,
+    2146,
+    2226,
+    2794,
+    2682,
+    2586,
+    3442,
+    2618,
+    2642,
+    2322,
+    2114,
+    2442
+  ],
+  "exact_argument_sequence_match": true,
+  "scope": "Original trap entry arguments; Toolbox implementation not reconstructed"
+}

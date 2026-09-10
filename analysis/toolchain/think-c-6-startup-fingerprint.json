@@ -1,0 +1,20 @@
+{
+  "source": "Installed THINK Project Manager from recovered THINK C 6.0.1 distribution",
+  "manager_version_resources": [
+    "06018000000005362e302e3122362e302e312c20a92053796d616e74656320436f72706f726174696f6e2031393933"
+  ],
+  "manager_rdump_sha256": "3a163aed93095fea047037acd5134ee1951c818698774990c9ce92c1797dbb72",
+  "maven_code1_sha256": "224d4f2ac2f62ef032a6bd1633cc5e9d2f282bb365bf4f303dc2079e4c838641",
+  "manager_code1_sha256": "2999939bd88df98be9e87a42d61889fda1a8878a433b9bcb1179e7eea274779e",
+  "maven_length": 578,
+  "manager_length": 578,
+  "byte_differences": [
+    {
+      "offset": 7,
+      "maven": 186,
+      "manager": 66
+    }
+  ],
+  "executable_body_equal": true,
+  "interpretation": "Exact startup-body match in recovered 6.0.1 executable; comparison build still required; not unique original compiler/linker version proof"
+}

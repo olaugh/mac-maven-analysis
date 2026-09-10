@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Maven bitmap font demo</title>
+<style>
+  body { background: #ddd; font: 13px/1.4 -apple-system, Helvetica, Arial, sans-serif; margin: 16px; color: #222; }
+  h1 { font-size: 16px; margin: 0 0 8px; }
+  .row { margin: 0 0 12px; }
+  canvas { display: block; background: #fff; image-rendering: pixelated; image-rendering: crisp-edges; border: 1px solid #888; }
+  .label { font-size: 11px; color: #555; margin-bottom: 2px; font-family: Monaco, Menlo, monospace; }
+  #zoom { margin-top: 12px; }
+  label { font-size: 12px; margin-right: 12px; }
+  #status { color: #a00; }
+</style>
+</head>
+<body>
+<h1>Classic Mac OS bitmap fonts (extracted from the Mac OS 8 System / Fonts suitcases)</h1>
+<div>
+  <label>Zoom <select id="zoomSel"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+  <label><input type="checkbox" id="baselines" checked> show baselines</label>
+  <span id="status"></span>
+</div>
+<div id="out"></div>
+<div class="row"><div class="label">Mock Maven screen (Chicago 12 menu bar, Geneva 9 list, Geneva 12 board tiles, Geneva 14 rack)</div><canvas id="mock" width="640" height="200"></canvas></div>
+
+<script type="module">
+import { MacFont, loadFontIndex } from './macfont.js';
+
+const SAMPLES = [
+  'Maven™ Software Position',
+  'File Edit Stuff Level View Lexicon Help',
+  "KIBITZER'S CHOICES",
+  'MOVER: 356  OPPON: 415',
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  'abcdefghijklmnopqrstuvwxyz',
+  '0123456789  © ™ é • ¿¡ ÅØ',
+];
+
+const status = document.getElementById('status');
+const out = document.getElementById('out');
+const zoomSel = document.getElementById('zoomSel');
+const baselines = document.getElementById('baselines');
+let fonts;
+
+function order(a, b) {
+  const fam = ['Charcoal', 'Chicago', 'Geneva', 'Helvetica', 'Monaco'];
+  const fa = fam.indexOf(a.family), fb = fam.indexOf(b.family);
+  if (fa !== fb) return fa - fb;
+  if (a.size !== b.size) return a.size - b.size;
+  return a.style - b.style;
+}
+
+function render() {
+  const zoom = parseInt(zoomSel.value, 10);
+  out.innerHTML = '';
+  const list = [...fonts.entries()].sort((a, b) => order(a[1], b[1]));
+  for (const [name, f] of list) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = `${name}  ascent ${f.ascent}  descent ${f.descent}  leading ${f.leading}  height ${f.height}  widMax ${f.widMax}  glyphs ${Object.keys(f.glyphs).length}`;
+    row.appendChild(label);
+    const lh = f.lineHeight + 2;
+    const widest = Math.max(...SAMPLES.map(s => f.measure(s)));
+    const c = document.createElement('canvas');
+    c.width = (widest + 16) * zoom;
+    c.height = (SAMPLES.length * lh + 4) * zoom;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+    let y = 2 + f.ascent;
+    for (const s of SAMPLES) {
+      if (baselines.checked) {
+        ctx.fillStyle = 'rgba(255,0,0,0.25)';
+        ctx.fillRect(0, y * zoom, c.width, zoom);
+      }
+      f.drawScaled(ctx, s, 8, y, zoom, '#000');
+      y += lh;
+    }
+    row.appendChild(c);
+    out.appendChild(row);
+  }
+  drawMock(zoom);
+}
+
+function drawMock(zoom) {
+  const c = document.getElementById('mock');
+  c.width = 640; c.height = 200;
+  c.style.width = (640 * Math.min(zoom, 2)) + 'px';
+  c.style.height = (200 * Math.min(zoom, 2)) + 'px';
+  const ctx = c.getContext('2d');
+  // Mac OS 8 draws menus and window titles in Charcoal 12 (TrueType); Chicago
+  // 12 is the pre-8.0 look.  Maven's own text: Monaco 9 bold for the
+  // Kibitzer list / scores, Geneva 9 for tile values, Geneva outlines for the
+  // big board (24) and rack (20) letters.
+  const sysfont = fonts.get('Charcoal-12') || fonts.get('Chicago-12');
+  const chicago = fonts.get('Chicago-12'), gen9 = fonts.get('Geneva-9');
+  const gen12 = fonts.get('Geneva-12'), gen14 = fonts.get('Geneva-14');
+  const mon9 = fonts.get('Monaco-9');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 640, 200);
+  // menu bar (screenshot: baseline y=14, 'File' at x=3)
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 20, 640, 1);
+  let x = 3;
+  for (const m of ['File', 'Edit', 'Stuff', 'Level', 'View', 'Lexicon', 'Help']) {
+    x = sysfont.draw(ctx, m, x, 14) + 12;
+  }
+  // window title
+  sysfont.drawCentered(ctx, 'Maven™ Software Position', 320, 38);
+  // board tiles (Geneva 12 letters on 20px squares)
+  const word = 'QUIXOTIC';
+  for (let i = 0; i < word.length; i++) {
+    const tx = 20 + i * 21, ty = 60;
+    ctx.fillStyle = '#e8d8a0'; ctx.fillRect(tx, ty, 20, 20);
+    ctx.strokeStyle = '#000'; ctx.strokeRect(tx + 0.5, ty + 0.5, 19, 19);
+    gen12.drawCentered(ctx, word[i], tx + 10, ty + 14);
+    gen9.drawRight(ctx, String([10, 1, 8, 1, 1, 1, 1, 3][i]), tx + 18, ty + 18);
+  }
+  // rack (Geneva 14 letters on 24px tiles)
+  const rack = 'AEINRST';
+  for (let i = 0; i < rack.length; i++) {
+    const tx = 20 + i * 26, ty = 100;
+    ctx.fillStyle = '#e8d8a0'; ctx.fillRect(tx, ty, 24, 24);
+    ctx.strokeStyle = '#000'; ctx.strokeRect(tx + 0.5, ty + 0.5, 23, 23);
+    gen14.drawCentered(ctx, rack[i], tx + 12, ty + 18);
+  }
+  // kibitzer list
+  ctx.strokeStyle = '#000'; ctx.strokeRect(300.5, 55.5, 220, 130);
+  const bold = { bold: true };
+  mon9.draw(ctx, 'MOVER: 356  OPPON: 415', 306, 66, '#000', bold);
+  mon9.draw(ctx, "KIBITZER'S CHOICES", 330, 80, '#000', bold);
+  const rows = ['RETAINS  8A  74', 'RETINAS  8A  74', 'STAINER  8A  74', 'ANESTRI  8A  74', 'NASTIER  8A  74'];
+  rows.forEach((r, i) => mon9.draw(ctx, r, 306, 96 + i * 12, '#000', bold));
+  gen9.draw(ctx, 'Geneva 9 regular (tile values)', 306, 164);
+  chicago.draw(ctx, 'Chicago 12 (pre-Mac OS 8 system font)', 306, 180);
+}
+
+try {
+  fonts = await loadFontIndex('fonts/');
+  status.textContent = `${fonts.size} fonts loaded`;
+  status.style.color = '#060';
+  zoomSel.onchange = render;
+  baselines.onchange = render;
+  render();
+} catch (e) {
+  status.textContent = 'Error: ' + e.message + ' (serve this directory over http, e.g. python3 -m http.server)';
+  console.error(e);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "scope": "C table-installation replay against natural setup return; load-error and diagnostic paths not live-verified",
+  "matches": true,
+  "roots": [
+    122166,
+    145476
+  ],
+  "table_offsets": [
+    12,
+    488780
+  ],
+  "root_records_hex": [
+    "00a94861",
+    "00b7cc61"
+  ],
+  "diagnostics": 0,
+  "capture_sha256": "b893d57427ff2a1a07c8ddfc57fd29ff29f91e435a3f3a6042503f6c018c1972",
+  "source_sha256": "e4082a32c2e30e9729d6162d513d536db3e59da66e73dc65e0b536bdb7a6b885"
+}

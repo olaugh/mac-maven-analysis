@@ -1,0 +1,190 @@
+{
+  "scope": "Controlled native diagnosis and independently initialized public-API reproduction; no new VM capture",
+  "original_capture": "late-search-live.json.gz",
+  "original_sha256": "0b18d0e76fb18ecf1f234083a7fd3010b8227926779db4136feddf4a3e3e5868",
+  "sequence": {
+    "board": "AT at row8 columns8-9",
+    "rack": "?abcdef",
+    "opponent": "ghijklm",
+    "operations": [
+      "set_position(AT)",
+      "heuristic_search",
+      "set_position(original late-search board/rack)",
+      "late_search(force=1)"
+    ]
+  },
+  "control": "Build the same source with only the new occurrence-mask transfer omitted; no original binary mutation",
+  "final_differences_before": [
+    {
+      "offset": 333,
+      "before": 142,
+      "original": 216
+    }
+  ],
+  "before_burr_adjustment": 1678,
+  "original_burr_adjustment": 1752,
+  "after_burr_adjustment": 1752,
+  "after_all_340_ranking_bytes_match": true,
+  "first_local_weight_changes": [
+    {
+      "index": 4,
+      "before": 924,
+      "after": 714
+    },
+    {
+      "index": 5,
+      "before": 7,
+      "after": 2
+    },
+    {
+      "index": 9,
+      "before": 462,
+      "after": 336
+    },
+    {
+      "index": 18,
+      "before": 462,
+      "after": 336
+    },
+    {
+      "index": 23,
+      "before": 462,
+      "after": 336
+    },
+    {
+      "index": 31,
+      "before": 924,
+      "after": 714
+    },
+    {
+      "index": 34,
+      "before": 462,
+      "after": 336
+    },
+    {
+      "index": 36,
+      "before": 462,
+      "after": 336
+    },
+    {
+      "index": 55,
+      "before": 210,
+      "after": 140
+    }
+  ],
+  "mechanism": {
+    "shared_original_table": "A5-0x4c0c",
+    "sentinel_address": "A5-0x445c = occurrence_masks[123][0]",
+    "write": "CODE42+0x92: move.w #0xffff,(a4)",
+    "missing_transfer": "search occurrence masks -> leave-table occurrence masks before leave preparation",
+    "controlled_single_word_injection_also_eliminates_difference": true
+  },
+  "limitations": [
+    "AT is a constructed sufficient predecessor, not proof of the exact historical sequence before the old capture",
+    "Empty-square values and unused pool-record byte65 differ but do not explain this ranking discrepancy"
+  ],
+  "all_active_original_constraint_weights_match": [
+    {
+      "stage": "constraints_ready",
+      "weights": 61
+    },
+    {
+      "stage": "leaves_ready",
+      "weights": 61
+    },
+    {
+      "stage": "pass_ranked",
+      "weights": 61
+    },
+    {
+      "stage": "own_ranked",
+      "weights": 61
+    },
+    {
+      "stage": "local_begin",
+      "weights": 61
+    },
+    {
+      "stage": "local_finished",
+      "weights": 64
+    },
+    {
+      "stage": "local_begin",
+      "weights": 64
+    },
+    {
+      "stage": "local_finished",
+      "weights": 62
+    },
+    {
+      "stage": "local_begin",
+      "weights": 62
+    },
+    {
+      "stage": "local_finished",
+      "weights": 61
+    },
+    {
+      "stage": "local_begin",
+      "weights": 61
+    },
+    {
+      "stage": "local_finished",
+      "weights": 61
+    },
+    {
+      "stage": "local_begin",
+      "weights": 61
+    },
+    {
+      "stage": "local_finished",
+      "weights": 61
+    },
+    {
+      "stage": "local_begin",
+      "weights": 61
+    },
+    {
+      "stage": "local_finished",
+      "weights": 68
+    },
+    {
+      "stage": "local_begin",
+      "weights": 68
+    },
+    {
+      "stage": "local_finished",
+      "weights": 64
+    },
+    {
+      "stage": "local_begin",
+      "weights": 64
+    },
+    {
+      "stage": "local_finished",
+      "weights": 66
+    },
+    {
+      "stage": "local_begin",
+      "weights": 66
+    },
+    {
+      "stage": "local_finished",
+      "weights": 61
+    },
+    {
+      "stage": "local_begin",
+      "weights": 61
+    },
+    {
+      "stage": "local_finished",
+      "weights": 65
+    }
+  ],
+  "regression": {
+    "report": "portable-verification-burr-fix.json",
+    "commands_passed": 223,
+    "completed_utc": "2026-09-10T00:39:53.443476+00:00",
+    "source_fingerprints_unchanged": true
+  }
+}

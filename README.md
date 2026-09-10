@@ -1,5 +1,42 @@
 # Maven Reverse Engineering Project
 
+## Current reconstruction work
+
+The POOFIER discrepancy was a mismatched search lifetime in the test harness;
+continued original/native sequences agree. The separate VID stale-byte bug is fixed.
+See [the corrected diagnosis](analysis/toolchain/POOFIER-DISAGREEMENT.md) and
+[the instruction-to-C audit](analysis/instruction-audit/README.md).
+
+The current evidence and limitations are in
+[DECOMPILATION-STATUS.md](analysis/DECOMPILATION-STATUS.md). Readable C lives in
+[reconstruction/](reconstruction/); the native and WebAssembly replay tools
+compare it with debugger captures from the original classic Mac executable.
+The [owned native/wasm API](analysis/PORTABLE-API.md) supports move generation,
+heuristic/late/endgame search, simulation, play/refill, history and original
+save/load, with original-runtime acceptance on the documented fixtures. This is not yet
+a complete playable application or a proof of every engine branch. The five
+behavioral steps pass the [230-command acceptance suite](analysis/toolchain/portable-verification-scratch-lifecycle.json), including79 host tests.
+
+```sh
+make check
+python3 scripts/verify_portable_replays.py
+```
+
+The full replay command uses the fingerprinted dictionary in the disposable
+session share; see [PORTING-NOTES.md](analysis/PORTING-NOTES.md) for data and
+runtime dependencies, compatibility behavior, and modern/wasm boundaries.
+Compiler evidence is in [THINK-C-EVIDENCE.md](analysis/toolchain/THINK-C-EVIDENCE.md).
+The current acceptance and process ledger is [BEHAVIORAL-COMPLETION.md](analysis/BEHAVIORAL-COMPLETION.md); older timed-run logs are historical.
+
+## Historical project notes
+
+The original notes below and older analysis files contain superseded hypotheses.
+In particular, the34-byte records used by CODE3 are moves, and A5-15514/
+A5-15522 hold player rack strings. Earlier descriptions of them as DAWG headers
+or dictionary-section buffers are incorrect. Use the corrected disassembly,
+readable source and runtime captures for current claims.
+
+
 ## Status: Work in Progress
 
 This project aims to reverse engineer Maven 2.1, Brian Sheppard's classic Macintosh Scrabble engine. This copy has been updated to use the OSWI (SOWPODS) word list.

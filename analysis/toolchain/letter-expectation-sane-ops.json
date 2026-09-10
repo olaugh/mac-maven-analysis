@@ -1,0 +1,13 @@
+{
+  "source": "../../media/maven/toolchains/think-c-6/installed/THINK C/Mac #includes/THINK #includes/SANE.h",
+  "sha256": "95ba2cbeb6ff2e7923dd9228a4c1b0be7c18c786fb6bfa5701648eaa73715d2d",
+  "operations": {
+    "FADDX": "0x0000",
+    "FMULX": "0x0004",
+    "FMULL": "0x2804",
+    "FDIVX": "0x0006",
+    "FRINTX_not_used": "0x0014",
+    "FTINTX_used": "0x0016"
+  },
+  "scope": "Operation names/constants decoded from recovered THINK6 primary header; numerical behavior also checked against original calls"
+}

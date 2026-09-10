@@ -1,0 +1,2 @@
+{"all_matched": true, "positions": 6869, "ranked_records": 67942, "kinds": {"heuristic": 5263, "late": 746, "endgame": 860}, "scope": "Replay saved game-search captures without a VM, preserving search sequence."}
+python3 scripts/replay_original_magpie_matches.py   38.69s user 0.31s system 95% cpu 40.958 total

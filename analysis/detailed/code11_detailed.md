@@ -1,5 +1,11 @@
 # CODE 11 Detailed Analysis - Game Controller & Event Dispatcher
 
+> Audit correction: offsets here omit the four-byte CODE header. The block
+> labeled “register 15 handlers via A9F1” actually calls UnloadSeg. The entry at
+> 0x0c7a (resource offset 0x0c7e) is the application's main entry, established
+> from CODE 1 and CODE 0. See [the corrected audit](../toolchain/MAIN-ENTRY.md).
+> Other inherited names and confidence labels still require independent checks.
+
 ## Overview
 
 | Property | Value |

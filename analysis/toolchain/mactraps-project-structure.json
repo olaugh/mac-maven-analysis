@@ -1,0 +1,3043 @@
+{
+  "rdump_sha256": "ae80f35d06272f8b7faa1d4ae0be90721bc955d12c9c8a090e546707828825d8",
+  "code0_header": {
+    "above_a5": 2336,
+    "below_a5": 206,
+    "table_size": 2304,
+    "table_a5_offset": 32
+  },
+  "record_counts": {
+    "linked_stub": 10,
+    "offset_only": 277,
+    "other": 1
+  },
+  "records": [
+    {
+      "index": 0,
+      "words": [
+        32,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 1,
+      "words": [
+        1518,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 2,
+      "words": [
+        1538,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 3,
+      "words": [
+        1558,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 4,
+      "words": [
+        1586,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 5,
+      "words": [
+        1640,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 6,
+      "words": [
+        1672,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 7,
+      "words": [
+        1706,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 8,
+      "words": [
+        1738,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 9,
+      "words": [
+        2372,
+        16188,
+        1,
+        43504
+      ],
+      "classification": "linked_stub"
+    },
+    {
+      "index": 10,
+      "words": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 11,
+      "words": [
+        20,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 12,
+      "words": [
+        40,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 13,
+      "words": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 14,
+      "words": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 15,
+      "words": [
+        56,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 16,
+      "words": [
+        120,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 17,
+      "words": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 18,
+      "words": [
+        12,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 19,
+      "words": [
+        22,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 20,
+      "words": [
+        32,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 21,
+      "words": [
+        46,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 22,
+      "words": [
+        60,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 23,
+      "words": [
+        70,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 24,
+      "words": [
+        80,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 25,
+      "words": [
+        90,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 26,
+      "words": [
+        100,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 27,
+      "words": [
+        114,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 28,
+      "words": [
+        124,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 29,
+      "words": [
+        134,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 30,
+      "words": [
+        144,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 31,
+      "words": [
+        154,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 32,
+      "words": [
+        164,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 33,
+      "words": [
+        174,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 34,
+      "words": [
+        188,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 35,
+      "words": [
+        198,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 36,
+      "words": [
+        208,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 37,
+      "words": [
+        218,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 38,
+      "words": [
+        218,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 39,
+      "words": [
+        228,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 40,
+      "words": [
+        242,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 41,
+      "words": [
+        280,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 42,
+      "words": [
+        310,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 43,
+      "words": [
+        346,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 44,
+      "words": [
+        390,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 45,
+      "words": [
+        434,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 46,
+      "words": [
+        438,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 47,
+      "words": [
+        468,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 48,
+      "words": [
+        476,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 49,
+      "words": [
+        516,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 50,
+      "words": [
+        560,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 51,
+      "words": [
+        598,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 52,
+      "words": [
+        634,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 53,
+      "words": [
+        684,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 54,
+      "words": [
+        694,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 55,
+      "words": [
+        704,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 56,
+      "words": [
+        724,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 57,
+      "words": [
+        744,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 58,
+      "words": [
+        754,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 59,
+      "words": [
+        764,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 60,
+      "words": [
+        764,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 61,
+      "words": [
+        774,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 62,
+      "words": [
+        774,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 63,
+      "words": [
+        784,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 64,
+      "words": [
+        798,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 65,
+      "words": [
+        808,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 66,
+      "words": [
+        818,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 67,
+      "words": [
+        828,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 68,
+      "words": [
+        838,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 69,
+      "words": [
+        850,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 70,
+      "words": [
+        850,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 71,
+      "words": [
+        866,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 72,
+      "words": [
+        866,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 73,
+      "words": [
+        878,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 74,
+      "words": [
+        892,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 75,
+      "words": [
+        956,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 76,
+      "words": [
+        980,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 77,
+      "words": [
+        992,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 78,
+      "words": [
+        1008,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 79,
+      "words": [
+        1044,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 80,
+      "words": [
+        1070,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 81,
+      "words": [
+        1098,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 82,
+      "words": [
+        1116,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 83,
+      "words": [
+        1134,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 84,
+      "words": [
+        1152,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 85,
+      "words": [
+        1170,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 86,
+      "words": [
+        1188,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 87,
+      "words": [
+        1206,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 88,
+      "words": [
+        1224,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 89,
+      "words": [
+        1242,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 90,
+      "words": [
+        1260,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 91,
+      "words": [
+        1278,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 92,
+      "words": [
+        1296,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 93,
+      "words": [
+        1314,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 94,
+      "words": [
+        1332,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 95,
+      "words": [
+        1350,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 96,
+      "words": [
+        1368,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 97,
+      "words": [
+        1386,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 98,
+      "words": [
+        1404,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 99,
+      "words": [
+        1422,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 100,
+      "words": [
+        1440,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 101,
+      "words": [
+        1458,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 102,
+      "words": [
+        1476,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 103,
+      "words": [
+        1494,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 104,
+      "words": [
+        1512,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 105,
+      "words": [
+        1530,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 106,
+      "words": [
+        1548,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 107,
+      "words": [
+        1566,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 108,
+      "words": [
+        1576,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 109,
+      "words": [
+        1586,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 110,
+      "words": [
+        1596,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 111,
+      "words": [
+        1606,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 112,
+      "words": [
+        1616,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 113,
+      "words": [
+        1616,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 114,
+      "words": [
+        1680,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 115,
+      "words": [
+        1706,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 116,
+      "words": [
+        1710,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 117,
+      "words": [
+        1778,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 118,
+      "words": [
+        1832,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 119,
+      "words": [
+        1876,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 120,
+      "words": [
+        1902,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 121,
+      "words": [
+        1968,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 122,
+      "words": [
+        2022,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 123,
+      "words": [
+        2056,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 124,
+      "words": [
+        2088,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 125,
+      "words": [
+        2120,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 126,
+      "words": [
+        2152,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 127,
+      "words": [
+        2184,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 128,
+      "words": [
+        2246,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 129,
+      "words": [
+        2282,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 130,
+      "words": [
+        2336,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 131,
+      "words": [
+        2380,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 132,
+      "words": [
+        2438,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 133,
+      "words": [
+        2474,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 134,
+      "words": [
+        2510,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 135,
+      "words": [
+        2548,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 136,
+      "words": [
+        2582,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 137,
+      "words": [
+        2614,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 138,
+      "words": [
+        2648,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 139,
+      "words": [
+        2686,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 140,
+      "words": [
+        2754,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 141,
+      "words": [
+        2776,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 142,
+      "words": [
+        2798,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 143,
+      "words": [
+        2816,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 144,
+      "words": [
+        2834,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 145,
+      "words": [
+        2856,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 146,
+      "words": [
+        2878,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 147,
+      "words": [
+        2900,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 148,
+      "words": [
+        2922,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 149,
+      "words": [
+        2944,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 150,
+      "words": [
+        2966,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 151,
+      "words": [
+        2984,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 152,
+      "words": [
+        3006,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 153,
+      "words": [
+        3028,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 154,
+      "words": [
+        3050,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 155,
+      "words": [
+        3068,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 156,
+      "words": [
+        3086,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 157,
+      "words": [
+        3104,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 158,
+      "words": [
+        3122,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 159,
+      "words": [
+        3140,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 160,
+      "words": [
+        3158,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 161,
+      "words": [
+        3176,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 162,
+      "words": [
+        3194,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 163,
+      "words": [
+        3212,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 164,
+      "words": [
+        3230,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 165,
+      "words": [
+        3252,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 166,
+      "words": [
+        3274,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 167,
+      "words": [
+        3296,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 168,
+      "words": [
+        3318,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 169,
+      "words": [
+        3340,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 170,
+      "words": [
+        3362,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 171,
+      "words": [
+        3384,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 172,
+      "words": [
+        3406,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 173,
+      "words": [
+        3428,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 174,
+      "words": [
+        3450,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 175,
+      "words": [
+        3472,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 176,
+      "words": [
+        3494,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 177,
+      "words": [
+        3516,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 178,
+      "words": [
+        3538,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 179,
+      "words": [
+        3560,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 180,
+      "words": [
+        3582,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 181,
+      "words": [
+        3604,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 182,
+      "words": [
+        3626,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 183,
+      "words": [
+        3648,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 184,
+      "words": [
+        3670,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 185,
+      "words": [
+        3692,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 186,
+      "words": [
+        3714,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 187,
+      "words": [
+        3736,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 188,
+      "words": [
+        3758,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 189,
+      "words": [
+        3780,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 190,
+      "words": [
+        3802,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 191,
+      "words": [
+        3824,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 192,
+      "words": [
+        3846,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 193,
+      "words": [
+        3868,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 194,
+      "words": [
+        3890,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 195,
+      "words": [
+        3912,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 196,
+      "words": [
+        3934,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 197,
+      "words": [
+        3956,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 198,
+      "words": [
+        3968,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 199,
+      "words": [
+        3988,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 200,
+      "words": [
+        4002,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 201,
+      "words": [
+        4016,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 202,
+      "words": [
+        4050,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 203,
+      "words": [
+        4062,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 204,
+      "words": [
+        4336,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 205,
+      "words": [
+        4062,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 206,
+      "words": [
+        4506,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 207,
+      "words": [
+        4532,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 208,
+      "words": [
+        4568,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 209,
+      "words": [
+        4638,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 210,
+      "words": [
+        4694,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 211,
+      "words": [
+        4702,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 212,
+      "words": [
+        4710,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 213,
+      "words": [
+        4730,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 214,
+      "words": [
+        4738,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 215,
+      "words": [
+        4746,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 216,
+      "words": [
+        4754,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 217,
+      "words": [
+        4764,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 218,
+      "words": [
+        4774,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 219,
+      "words": [
+        4788,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 220,
+      "words": [
+        4854,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 221,
+      "words": [
+        4862,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 222,
+      "words": [
+        4882,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 223,
+      "words": [
+        4906,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 224,
+      "words": [
+        4914,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 225,
+      "words": [
+        4940,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 226,
+      "words": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 227,
+      "words": [
+        2,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 228,
+      "words": [
+        10,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 229,
+      "words": [
+        16,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 230,
+      "words": [
+        22,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 231,
+      "words": [
+        28,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 232,
+      "words": [
+        30,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 233,
+      "words": [
+        38,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 234,
+      "words": [
+        44,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 235,
+      "words": [
+        50,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 236,
+      "words": [
+        56,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 237,
+      "words": [
+        64,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 238,
+      "words": [
+        72,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 239,
+      "words": [
+        80,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 240,
+      "words": [
+        84,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 241,
+      "words": [
+        120,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 242,
+      "words": [
+        120,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 243,
+      "words": [
+        128,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 244,
+      "words": [
+        128,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 245,
+      "words": [
+        132,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 246,
+      "words": [
+        170,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 247,
+      "words": [
+        170,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 248,
+      "words": [
+        214,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 249,
+      "words": [
+        234,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 250,
+      "words": [
+        246,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 251,
+      "words": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 252,
+      "words": [
+        26,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 253,
+      "words": [
+        42,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 254,
+      "words": [
+        54,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 255,
+      "words": [
+        66,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 256,
+      "words": [
+        78,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 257,
+      "words": [
+        90,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 258,
+      "words": [
+        102,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 259,
+      "words": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 260,
+      "words": [
+        22,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 261,
+      "words": [
+        40,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 262,
+      "words": [
+        68,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 263,
+      "words": [
+        88,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 264,
+      "words": [
+        114,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 265,
+      "words": [
+        114,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 266,
+      "words": [
+        134,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 267,
+      "words": [
+        128,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 268,
+      "words": [
+        122,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 269,
+      "words": [
+        134,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 270,
+      "words": [
+        128,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 271,
+      "words": [
+        122,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 272,
+      "words": [
+        164,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 273,
+      "words": [
+        164,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 274,
+      "words": [
+        176,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 275,
+      "words": [
+        176,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 276,
+      "words": [
+        186,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 277,
+      "words": [
+        272,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 278,
+      "words": [
+        310,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 279,
+      "words": [
+        344,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 280,
+      "words": [
+        382,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 281,
+      "words": [
+        452,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 282,
+      "words": [
+        514,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 283,
+      "words": [
+        530,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 284,
+      "words": [
+        554,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 285,
+      "words": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 286,
+      "words": [
+        28,
+        0,
+        0,
+        0
+      ],
+      "classification": "offset_only"
+    },
+    {
+      "index": 287,
+      "words": [
+        0,
+        14,
+        0,
+        0
+      ],
+      "classification": "other"
+    }
+  ],
+  "resources": [
+    {
+      "type": "HASH",
+      "id": 1,
+      "bytes": 1008,
+      "sha256": "360e259340a5d1dfa2041cfb0afb6baf7338e0f251a5f6dcc9a93596cdee9013"
+    },
+    {
+      "type": "ZONE",
+      "id": 0,
+      "bytes": 30720,
+      "sha256": "bc279a3c6a337654a3a6a609922ded5338c96f710b67a1e0fb9929b7553fd9d3"
+    },
+    {
+      "type": "KIND",
+      "id": 0,
+      "bytes": 346,
+      "sha256": "f05d15e5318bc76a2ff2dfe96f13e260ba86eeaef9a4a32cba9c3d281c6b575f"
+    },
+    {
+      "type": "WLOC",
+      "id": 0,
+      "bytes": 8,
+      "sha256": "f688002181f4d82f48f8eb645be9a445bd785021e9c1c255da35793a96ca21d0"
+    },
+    {
+      "type": "INDX",
+      "id": 0,
+      "bytes": 640,
+      "sha256": "05c0505bd390b2d0444791d5f06c733360c688ca39b9aab11311d9cfe1cdee88"
+    },
+    {
+      "type": "SLST",
+      "id": 0,
+      "bytes": 6,
+      "sha256": "10897b89af0cf124b11bf2ccd172732d0494124f02e2e5481306b4b1f0bbd684"
+    },
+    {
+      "type": "CODE",
+      "id": 0,
+      "bytes": 2320,
+      "sha256": "b571186a00efd4b0cc86c9cabf8bccc0072f8a839373bf6df5f05dc5d4c0ee15"
+    },
+    {
+      "type": "CODE",
+      "id": 2,
+      "bytes": 7030,
+      "sha256": "9488afaa4b32dd004e08436c5afac1aad7df49f36f4743ad18e7912ea5212f36"
+    },
+    {
+      "type": "CODE",
+      "id": 1,
+      "bytes": 2390,
+      "sha256": "d7ccc6cd19eb7eeed5fb73d5e8277e2ce280fed0be80971d6c7af2dcdc99df84"
+    },
+    {
+      "type": "DATA",
+      "id": 0,
+      "bytes": 206,
+      "sha256": "ba7aa0bfea71dbaf1033edc80705d4db3d0f8f5f938385f764912619b1c344c9"
+    },
+    {
+      "type": "STRS",
+      "id": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "type": "DREL",
+      "id": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "type": "SYMS",
+      "id": 0,
+      "bytes": 4032,
+      "sha256": "080dc3f153423b1f1c75ee45d1c2f8e4818bcc4830c47d3cb93a3bd46a613c29"
+    },
+    {
+      "type": "CNFG",
+      "id": 10515,
+      "bytes": 2,
+      "sha256": "9dcf97a184f32623d11a73124ceb99a5709b083721e878a16d78f596718ba7b2"
+    },
+    {
+      "type": "CNFG",
+      "id": 8798,
+      "bytes": 32,
+      "sha256": "a7dde9d1f825c269d3027755cae1c1acb784473d03d5cfaa77e63851c8df5660"
+    },
+    {
+      "type": "CNFG",
+      "id": 5192,
+      "bytes": 32,
+      "sha256": "40a1d3f4a32191c7f89f8862be8b371636aa635b6bd9ae1f69e1b93150a084f8"
+    },
+    {
+      "type": "CNFG",
+      "id": 29597,
+      "bytes": 112,
+      "sha256": "c1887141dcd8e6916adf893f3ba48ffe2a8a122b009f7249c0a21dd24770e3d8"
+    },
+    {
+      "type": "CNFG",
+      "id": 11,
+      "bytes": 153,
+      "sha256": "3dec36441acfbfdeb2b74868bab6f74be26df639c71b4ade15a2f671e1d199c4"
+    },
+    {
+      "type": "SIZE",
+      "id": -1,
+      "bytes": 10,
+      "sha256": "1fc803049baf4e3b21d48e97b76a084eed00a970245b4337fdc06bab8be8957b"
+    },
+    {
+      "type": "DBST",
+      "id": 128,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "type": "DBWS",
+      "id": 128,
+      "bytes": 22,
+      "sha256": "5ed326599c19f2f0fefcf18991f1bad23fd999d4706445ba139dc7add2b48419"
+    },
+    {
+      "type": "CREL",
+      "id": 2,
+      "bytes": 156,
+      "sha256": "c3ce2570b9f9e3586e76bd4e500c7468c4ce8c766a09c8dd4f92836a4733eebc"
+    },
+    {
+      "type": "DBUG",
+      "id": 2,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "type": "FWIN",
+      "id": 128,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "scope": "Structural inventory of recovered THINK library project. Offset-only records are not resolved CODE resource addresses; symbol/zone metadata unparsed"
+}

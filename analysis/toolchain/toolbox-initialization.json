@@ -1,0 +1,37 @@
+{
+  "code_resource": 15,
+  "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10",
+  "range": [
+    3264,
+    3404
+  ],
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "a5": 131028224,
+  "cursor_copies": [
+    {
+      "cursor_resource_id": 1,
+      "destination_a5_offset": -3464,
+      "cursor_hex": "0c60028001000100010001000100010001000100010001000100010002800c60000000000000000000000000000000000000000000000000000000000000000000040007",
+      "sha256": "a99ec0e60771ada5a580bbddf4e57924375ccf51250d8c48831de5c0ee0f7908"
+    },
+    {
+      "cursor_resource_id": 4,
+      "destination_a5_offset": -3396,
+      "cursor_hex": "3f003f003f003f0040808440844084609c608040804040803f003f003f003f003f003f003f003f007f80ffc0ffc0ffc0ffc0ffc0ffc07f803f003f003f003f0000080008",
+      "sha256": "3226d4d77426a9da25fbc0a74920b6242d83c6b9805ca04103c741f872c48829"
+    }
+  ],
+  "scope": "Static initialization sequence and saved cursor destinations; no new live startup sequence trace",
+  "cursor_resource_comparison": [
+    {
+      "requested_id": 1,
+      "application_fork_has_id": false,
+      "exact_application_resource_matches": []
+    },
+    {
+      "requested_id": 4,
+      "application_fork_has_id": false,
+      "exact_application_resource_matches": []
+    }
+  ]
+}

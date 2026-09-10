@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py", line 104, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py", line 37, in main
+    report['fresh_state_guard']=original.require_fresh_workspace(bytes(initial_workspace))
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/original_match_search.py", line 23, in require_fresh_workspace
+    if actual!=expected:raise RuntimeError('Original Maven has warm query/control state. Restart the original application before creating a fresh match engine, or replay the complete preceding sequence in both engines.')
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Original Maven has warm query/control state. Restart the original application before creating a fresh match engine, or replay the complete preceding sequence in both engines.

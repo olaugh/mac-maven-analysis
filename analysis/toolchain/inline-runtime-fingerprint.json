@@ -1,0 +1,178 @@
+{
+  "header_sha256": "13b41331a303cc4946ad1f164ea9012796da2c0c31fa981f468631cd4d4e84ae",
+  "scope": "Exact aligned instruction bytes, not unique version attribution",
+  "fingerprints": [
+    {
+      "header_branch": "setjmp_without_mc68881",
+      "bytes_hex": "700043fa000648d0def8",
+      "matches": [
+        {
+          "code_resource": 11,
+          "resource_offset": 2668,
+          "code_sha256": "fce9e1233c58aa6d899ec186bc937634f1bb50141e60c81f4eb8ff2890f8c967"
+        },
+        {
+          "code_resource": 11,
+          "resource_offset": 3240,
+          "code_sha256": "fce9e1233c58aa6d899ec186bc937634f1bb50141e60c81f4eb8ff2890f8c967"
+        },
+        {
+          "code_resource": 12,
+          "resource_offset": 714,
+          "code_sha256": "7fa76bffb79ccaef927a1baee70ad369f9b783f6b89d5008e62485f9f0786d29"
+        },
+        {
+          "code_resource": 14,
+          "resource_offset": 132,
+          "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+        },
+        {
+          "code_resource": 22,
+          "resource_offset": 1242,
+          "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+        },
+        {
+          "code_resource": 30,
+          "resource_offset": 140,
+          "code_sha256": "53206b55b9efc03be55e46cf16efac6c985cc5348eac181ea9a6939cac5710a5"
+        },
+        {
+          "code_resource": 30,
+          "resource_offset": 630,
+          "code_sha256": "53206b55b9efc03be55e46cf16efac6c985cc5348eac181ea9a6939cac5710a5"
+        },
+        {
+          "code_resource": 3,
+          "resource_offset": 1808,
+          "code_sha256": "45264938d606efd4a84aad6e98c4836385e2a8c06807a11139fcd3717886f2cc"
+        },
+        {
+          "code_resource": 3,
+          "resource_offset": 3318,
+          "code_sha256": "45264938d606efd4a84aad6e98c4836385e2a8c06807a11139fcd3717886f2cc"
+        }
+      ]
+    },
+    {
+      "header_branch": "setjmp_with_mc68881",
+      "bytes_hex": "700043fa000e48d0def8f228f00f002c6004f210d00f",
+      "matches": []
+    },
+    {
+      "header_branch": "longjmp_without_int_4",
+      "bytes_hex": "4a40660270014cd8def84ed1",
+      "matches": [
+        {
+          "code_resource": 11,
+          "resource_offset": 2758,
+          "code_sha256": "fce9e1233c58aa6d899ec186bc937634f1bb50141e60c81f4eb8ff2890f8c967"
+        },
+        {
+          "code_resource": 12,
+          "resource_offset": 854,
+          "code_sha256": "7fa76bffb79ccaef927a1baee70ad369f9b783f6b89d5008e62485f9f0786d29"
+        },
+        {
+          "code_resource": 14,
+          "resource_offset": 252,
+          "code_sha256": "d90a01beaa68412e5b33176fc75c0170f6d4ceb438300d4c4449e659be87ce59"
+        },
+        {
+          "code_resource": 15,
+          "resource_offset": 66,
+          "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+        },
+        {
+          "code_resource": 15,
+          "resource_offset": 122,
+          "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+        },
+        {
+          "code_resource": 15,
+          "resource_offset": 184,
+          "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+        },
+        {
+          "code_resource": 15,
+          "resource_offset": 1352,
+          "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+        },
+        {
+          "code_resource": 15,
+          "resource_offset": 2148,
+          "code_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10"
+        },
+        {
+          "code_resource": 22,
+          "resource_offset": 1402,
+          "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+        },
+        {
+          "code_resource": 22,
+          "resource_offset": 1750,
+          "code_sha256": "747ca8cbf66ebc9f12bc68265ff773f964a77f9261a56d7cdf2e5231062c335d"
+        },
+        {
+          "code_resource": 2,
+          "resource_offset": 300,
+          "code_sha256": "6dce1edba6e48c415c07b4d2750c2abf6f96ba8fc11edbdd8be5b151854d8898"
+        },
+        {
+          "code_resource": 30,
+          "resource_offset": 62,
+          "code_sha256": "53206b55b9efc03be55e46cf16efac6c985cc5348eac181ea9a6939cac5710a5"
+        },
+        {
+          "code_resource": 30,
+          "resource_offset": 228,
+          "code_sha256": "53206b55b9efc03be55e46cf16efac6c985cc5348eac181ea9a6939cac5710a5"
+        },
+        {
+          "code_resource": 30,
+          "resource_offset": 1530,
+          "code_sha256": "53206b55b9efc03be55e46cf16efac6c985cc5348eac181ea9a6939cac5710a5"
+        },
+        {
+          "code_resource": 30,
+          "resource_offset": 1584,
+          "code_sha256": "53206b55b9efc03be55e46cf16efac6c985cc5348eac181ea9a6939cac5710a5"
+        },
+        {
+          "code_resource": 3,
+          "resource_offset": 1676,
+          "code_sha256": "45264938d606efd4a84aad6e98c4836385e2a8c06807a11139fcd3717886f2cc"
+        },
+        {
+          "code_resource": 3,
+          "resource_offset": 3040,
+          "code_sha256": "45264938d606efd4a84aad6e98c4836385e2a8c06807a11139fcd3717886f2cc"
+        },
+        {
+          "code_resource": 3,
+          "resource_offset": 3450,
+          "code_sha256": "45264938d606efd4a84aad6e98c4836385e2a8c06807a11139fcd3717886f2cc"
+        },
+        {
+          "code_resource": 41,
+          "resource_offset": 648,
+          "code_sha256": "6cb9327c957fe9c18156df5ed8962abc756e92f42d5d5b1e3cdc3a4e7fca0b08"
+        },
+        {
+          "code_resource": 6,
+          "resource_offset": 742,
+          "code_sha256": "4ab8b6ed67bcd2b40579d0f6b811bcc8b3b1212270e3195ab2f80ed235becdca"
+        },
+        {
+          "code_resource": 9,
+          "resource_offset": 956,
+          "code_sha256": "e0b18bb869a53387cae37131665906d963ae03cd5168c48f328b540ee7a9c415"
+        }
+      ]
+    },
+    {
+      "header_branch": "longjmp_with_int_4",
+      "bytes_hex": "4a80660270014cd8def84ed1",
+      "matches": []
+    }
+  ]
+}

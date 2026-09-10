@@ -1,0 +1,2678 @@
+{
+  "scope": "Every Maven entry-to-next-entry interval matches a full library symbol-to-next-symbol interval. Aliases remain ambiguous. Not an independently reproduced linker.",
+  "library_sha256": "9488afaa4b32dd004e08436c5afac1aad7df49f36f4743ad18e7912ea5212f36",
+  "units": [
+    {
+      "index": 0,
+      "name": "CPstr.Lib",
+      "jump_table_offset": 2304,
+      "symbols_offset": 0,
+      "code_offset": 4,
+      "symbols_size": 28,
+      "code_size": 54
+    },
+    {
+      "index": 1,
+      "name": "DITLFuncs.o",
+      "jump_table_offset": 96,
+      "symbols_offset": 28,
+      "code_offset": 58,
+      "symbols_size": 42,
+      "code_size": 58
+    },
+    {
+      "index": 2,
+      "name": "EnvironsGlue.a.o",
+      "jump_table_offset": 120,
+      "symbols_offset": 70,
+      "code_offset": 116,
+      "symbols_size": 14,
+      "code_size": 362
+    },
+    {
+      "index": 3,
+      "name": "GestaltGlue.a.o",
+      "jump_table_offset": 128,
+      "symbols_offset": 84,
+      "code_offset": 478,
+      "symbols_size": 42,
+      "code_size": 646
+    },
+    {
+      "index": 4,
+      "name": "OSTraps.a.o",
+      "jump_table_offset": 152,
+      "symbols_offset": 126,
+      "code_offset": 1124,
+      "symbols_size": 2926,
+      "code_size": 4948
+    },
+    {
+      "index": 5,
+      "name": "PackTraps.a.o",
+      "jump_table_offset": 1824,
+      "symbols_offset": 3052,
+      "code_offset": 6072,
+      "symbols_size": 350,
+      "code_size": 252
+    },
+    {
+      "index": 6,
+      "name": "QDGlobals.a.o",
+      "jump_table_offset": 2304,
+      "symbols_offset": 3402,
+      "code_offset": 7030,
+      "symbols_size": 140,
+      "code_size": 0
+    },
+    {
+      "index": 7,
+      "name": "SlotTraps.a.o",
+      "jump_table_offset": 2024,
+      "symbols_offset": 3542,
+      "code_offset": 6324,
+      "symbols_size": 112,
+      "code_size": 120
+    },
+    {
+      "index": 8,
+      "name": "ToolTraps.a.o",
+      "jump_table_offset": 2088,
+      "symbols_offset": 3654,
+      "code_offset": 6444,
+      "symbols_size": 364,
+      "code_size": 582
+    },
+    {
+      "index": 9,
+      "name": "UnloadA4Seg.Lib",
+      "jump_table_offset": 2296,
+      "symbols_offset": 4018,
+      "code_offset": 7026,
+      "symbols_size": 14,
+      "code_size": 4
+    }
+  ],
+  "symbols": [
+    {
+      "name": "PtoCstr",
+      "unit": 0,
+      "code_offset": 32,
+      "zone_offset": 18702,
+      "symbol_record_offset": 0,
+      "jump_record_offset": 2304
+    },
+    {
+      "name": "CtoPstr",
+      "unit": 0,
+      "code_offset": 4,
+      "zone_offset": 18736,
+      "symbol_record_offset": 14,
+      "jump_record_offset": 2312
+    },
+    {
+      "name": "AppendDITL",
+      "unit": 1,
+      "code_offset": 58,
+      "zone_offset": 18770,
+      "symbol_record_offset": 28,
+      "jump_record_offset": 96
+    },
+    {
+      "name": "CountDITL",
+      "unit": 1,
+      "code_offset": 78,
+      "zone_offset": 18808,
+      "symbol_record_offset": 42,
+      "jump_record_offset": 104
+    },
+    {
+      "name": "ShortenDITL",
+      "unit": 1,
+      "code_offset": 98,
+      "zone_offset": 18846,
+      "symbol_record_offset": 56,
+      "jump_record_offset": 112
+    },
+    {
+      "name": "SysEnvirons",
+      "unit": 2,
+      "code_offset": 116,
+      "zone_offset": 18884,
+      "symbol_record_offset": 70,
+      "jump_record_offset": 120
+    },
+    {
+      "name": "NewGestalt",
+      "unit": 3,
+      "code_offset": 478,
+      "zone_offset": 18922,
+      "symbol_record_offset": 84,
+      "jump_record_offset": 128
+    },
+    {
+      "name": "ReplaceGestalt",
+      "unit": 3,
+      "code_offset": 534,
+      "zone_offset": 18960,
+      "symbol_record_offset": 98,
+      "jump_record_offset": 136
+    },
+    {
+      "name": "Gestalt",
+      "unit": 3,
+      "code_offset": 598,
+      "zone_offset": 19002,
+      "symbol_record_offset": 112,
+      "jump_record_offset": 144
+    },
+    {
+      "name": "InitZone",
+      "unit": 4,
+      "code_offset": 1124,
+      "zone_offset": 19036,
+      "symbol_record_offset": 126,
+      "jump_record_offset": 152
+    },
+    {
+      "name": "CompactMem",
+      "unit": 4,
+      "code_offset": 1136,
+      "zone_offset": 19074,
+      "symbol_record_offset": 140,
+      "jump_record_offset": 160
+    },
+    {
+      "name": "CompactMemSys",
+      "unit": 4,
+      "code_offset": 1146,
+      "zone_offset": 19112,
+      "symbol_record_offset": 154,
+      "jump_record_offset": 168
+    },
+    {
+      "name": "MaxMem",
+      "unit": 4,
+      "code_offset": 1156,
+      "zone_offset": 19154,
+      "symbol_record_offset": 168,
+      "jump_record_offset": 176
+    },
+    {
+      "name": "MaxMemSys",
+      "unit": 4,
+      "code_offset": 1170,
+      "zone_offset": 19188,
+      "symbol_record_offset": 182,
+      "jump_record_offset": 184
+    },
+    {
+      "name": "NewPtr",
+      "unit": 4,
+      "code_offset": 1184,
+      "zone_offset": 19226,
+      "symbol_record_offset": 196,
+      "jump_record_offset": 192
+    },
+    {
+      "name": "NewPtrSys",
+      "unit": 4,
+      "code_offset": 1194,
+      "zone_offset": 19260,
+      "symbol_record_offset": 210,
+      "jump_record_offset": 200
+    },
+    {
+      "name": "NewPtrClear",
+      "unit": 4,
+      "code_offset": 1204,
+      "zone_offset": 19298,
+      "symbol_record_offset": 224,
+      "jump_record_offset": 208
+    },
+    {
+      "name": "NewPtrSysClear",
+      "unit": 4,
+      "code_offset": 1214,
+      "zone_offset": 19336,
+      "symbol_record_offset": 238,
+      "jump_record_offset": 216
+    },
+    {
+      "name": "GetPtrSize",
+      "unit": 4,
+      "code_offset": 1224,
+      "zone_offset": 19378,
+      "symbol_record_offset": 252,
+      "jump_record_offset": 224
+    },
+    {
+      "name": "SetPtrSize",
+      "unit": 4,
+      "code_offset": 1238,
+      "zone_offset": 19416,
+      "symbol_record_offset": 266,
+      "jump_record_offset": 232
+    },
+    {
+      "name": "PtrZone",
+      "unit": 4,
+      "code_offset": 1248,
+      "zone_offset": 19454,
+      "symbol_record_offset": 280,
+      "jump_record_offset": 240
+    },
+    {
+      "name": "NewHandle",
+      "unit": 4,
+      "code_offset": 1258,
+      "zone_offset": 19488,
+      "symbol_record_offset": 294,
+      "jump_record_offset": 248
+    },
+    {
+      "name": "NewHandleSys",
+      "unit": 4,
+      "code_offset": 1268,
+      "zone_offset": 19526,
+      "symbol_record_offset": 308,
+      "jump_record_offset": 256
+    },
+    {
+      "name": "NewHandleClear",
+      "unit": 4,
+      "code_offset": 1278,
+      "zone_offset": 19568,
+      "symbol_record_offset": 322,
+      "jump_record_offset": 264
+    },
+    {
+      "name": "NewHandleSysClear",
+      "unit": 4,
+      "code_offset": 1288,
+      "zone_offset": 19610,
+      "symbol_record_offset": 336,
+      "jump_record_offset": 272
+    },
+    {
+      "name": "GetHandleSize",
+      "unit": 4,
+      "code_offset": 1298,
+      "zone_offset": 19656,
+      "symbol_record_offset": 350,
+      "jump_record_offset": 280
+    },
+    {
+      "name": "SetHandleSize",
+      "unit": 4,
+      "code_offset": 1312,
+      "zone_offset": 19698,
+      "symbol_record_offset": 364,
+      "jump_record_offset": 288
+    },
+    {
+      "name": "HandleZone",
+      "unit": 4,
+      "code_offset": 1322,
+      "zone_offset": 19740,
+      "symbol_record_offset": 378,
+      "jump_record_offset": 296
+    },
+    {
+      "name": "RecoverHandle",
+      "unit": 4,
+      "code_offset": 1332,
+      "zone_offset": 19778,
+      "symbol_record_offset": 392,
+      "jump_record_offset": 304
+    },
+    {
+      "name": "ReallocHandle",
+      "unit": 4,
+      "code_offset": 1342,
+      "zone_offset": 19820,
+      "symbol_record_offset": 406,
+      "jump_record_offset": 312
+    },
+    {
+      "name": "ReallocateHandle",
+      "unit": 4,
+      "code_offset": 1342,
+      "zone_offset": 19862,
+      "symbol_record_offset": 420,
+      "jump_record_offset": 320
+    },
+    {
+      "name": "BlockMove",
+      "unit": 4,
+      "code_offset": 1352,
+      "zone_offset": 19908,
+      "symbol_record_offset": 434,
+      "jump_record_offset": 328
+    },
+    {
+      "name": "OpenDriver",
+      "unit": 4,
+      "code_offset": 1366,
+      "zone_offset": 19946,
+      "symbol_record_offset": 448,
+      "jump_record_offset": 336
+    },
+    {
+      "name": "CloseDriver",
+      "unit": 4,
+      "code_offset": 1404,
+      "zone_offset": 19984,
+      "symbol_record_offset": 462,
+      "jump_record_offset": 344
+    },
+    {
+      "name": "SerReset",
+      "unit": 4,
+      "code_offset": 1434,
+      "zone_offset": 20022,
+      "symbol_record_offset": 476,
+      "jump_record_offset": 352
+    },
+    {
+      "name": "SerSetBuf",
+      "unit": 4,
+      "code_offset": 1470,
+      "zone_offset": 20060,
+      "symbol_record_offset": 490,
+      "jump_record_offset": 360
+    },
+    {
+      "name": "SerHShake",
+      "unit": 4,
+      "code_offset": 1514,
+      "zone_offset": 20098,
+      "symbol_record_offset": 504,
+      "jump_record_offset": 368
+    },
+    {
+      "name": "SerSetBrk",
+      "unit": 4,
+      "code_offset": 1558,
+      "zone_offset": 20136,
+      "symbol_record_offset": 518,
+      "jump_record_offset": 376
+    },
+    {
+      "name": "SetCLR",
+      "unit": 4,
+      "code_offset": 1562,
+      "zone_offset": 20174,
+      "symbol_record_offset": 532,
+      "jump_record_offset": 384
+    },
+    {
+      "name": "SerClrBrk",
+      "unit": 4,
+      "code_offset": 1592,
+      "zone_offset": 20208,
+      "symbol_record_offset": 546,
+      "jump_record_offset": 392
+    },
+    {
+      "name": "SerGetBuf",
+      "unit": 4,
+      "code_offset": 1600,
+      "zone_offset": 20246,
+      "symbol_record_offset": 560,
+      "jump_record_offset": 400
+    },
+    {
+      "name": "SerStatus",
+      "unit": 4,
+      "code_offset": 1640,
+      "zone_offset": 20284,
+      "symbol_record_offset": 574,
+      "jump_record_offset": 408
+    },
+    {
+      "name": "DiskEject",
+      "unit": 4,
+      "code_offset": 1684,
+      "zone_offset": 20322,
+      "symbol_record_offset": 588,
+      "jump_record_offset": 416
+    },
+    {
+      "name": "SetTagBuffer",
+      "unit": 4,
+      "code_offset": 1722,
+      "zone_offset": 20360,
+      "symbol_record_offset": 602,
+      "jump_record_offset": 424
+    },
+    {
+      "name": "DriveStatus",
+      "unit": 4,
+      "code_offset": 1758,
+      "zone_offset": 20402,
+      "symbol_record_offset": 616,
+      "jump_record_offset": 432
+    },
+    {
+      "name": "GetTrapAddress",
+      "unit": 4,
+      "code_offset": 1808,
+      "zone_offset": 20440,
+      "symbol_record_offset": 630,
+      "jump_record_offset": 440
+    },
+    {
+      "name": "SetTrapAddress",
+      "unit": 4,
+      "code_offset": 1818,
+      "zone_offset": 20482,
+      "symbol_record_offset": 644,
+      "jump_record_offset": 448
+    },
+    {
+      "name": "NGetTrapAddress",
+      "unit": 4,
+      "code_offset": 1828,
+      "zone_offset": 20524,
+      "symbol_record_offset": 658,
+      "jump_record_offset": 456
+    },
+    {
+      "name": "NSetTrapAddress",
+      "unit": 4,
+      "code_offset": 1848,
+      "zone_offset": 20566,
+      "symbol_record_offset": 672,
+      "jump_record_offset": 464
+    },
+    {
+      "name": "GetOSTrapAddress",
+      "unit": 4,
+      "code_offset": 1868,
+      "zone_offset": 20608,
+      "symbol_record_offset": 686,
+      "jump_record_offset": 472
+    },
+    {
+      "name": "SetOSTrapAddress",
+      "unit": 4,
+      "code_offset": 1878,
+      "zone_offset": 20654,
+      "symbol_record_offset": 700,
+      "jump_record_offset": 480
+    },
+    {
+      "name": "GetToolTrapAddress",
+      "unit": 4,
+      "code_offset": 1888,
+      "zone_offset": 20700,
+      "symbol_record_offset": 714,
+      "jump_record_offset": 488
+    },
+    {
+      "name": "GetToolboxTrapAddress",
+      "unit": 4,
+      "code_offset": 1888,
+      "zone_offset": 20746,
+      "symbol_record_offset": 728,
+      "jump_record_offset": 496
+    },
+    {
+      "name": "SetToolTrapAddress",
+      "unit": 4,
+      "code_offset": 1898,
+      "zone_offset": 20796,
+      "symbol_record_offset": 742,
+      "jump_record_offset": 504
+    },
+    {
+      "name": "SetToolboxTrapAddress",
+      "unit": 4,
+      "code_offset": 1898,
+      "zone_offset": 20842,
+      "symbol_record_offset": 756,
+      "jump_record_offset": 512
+    },
+    {
+      "name": "WriteParam",
+      "unit": 4,
+      "code_offset": 1908,
+      "zone_offset": 20892,
+      "symbol_record_offset": 770,
+      "jump_record_offset": 520
+    },
+    {
+      "name": "ReadDateTime",
+      "unit": 4,
+      "code_offset": 1922,
+      "zone_offset": 20930,
+      "symbol_record_offset": 784,
+      "jump_record_offset": 528
+    },
+    {
+      "name": "GetDateTime",
+      "unit": 4,
+      "code_offset": 1932,
+      "zone_offset": 20972,
+      "symbol_record_offset": 798,
+      "jump_record_offset": 536
+    },
+    {
+      "name": "SetDateTime",
+      "unit": 4,
+      "code_offset": 1942,
+      "zone_offset": 21010,
+      "symbol_record_offset": 812,
+      "jump_record_offset": 544
+    },
+    {
+      "name": "SetTime",
+      "unit": 4,
+      "code_offset": 1952,
+      "zone_offset": 21048,
+      "symbol_record_offset": 826,
+      "jump_record_offset": 552
+    },
+    {
+      "name": "GetTime",
+      "unit": 4,
+      "code_offset": 1962,
+      "zone_offset": 21082,
+      "symbol_record_offset": 840,
+      "jump_record_offset": 560
+    },
+    {
+      "name": "DateToSeconds",
+      "unit": 4,
+      "code_offset": 1974,
+      "zone_offset": 21116,
+      "symbol_record_offset": 854,
+      "jump_record_offset": 568
+    },
+    {
+      "name": "Date2Secs",
+      "unit": 4,
+      "code_offset": 1974,
+      "zone_offset": 21158,
+      "symbol_record_offset": 868,
+      "jump_record_offset": 576
+    },
+    {
+      "name": "SecondsToDate",
+      "unit": 4,
+      "code_offset": 1990,
+      "zone_offset": 21196,
+      "symbol_record_offset": 882,
+      "jump_record_offset": 584
+    },
+    {
+      "name": "Secs2Date",
+      "unit": 4,
+      "code_offset": 1990,
+      "zone_offset": 21238,
+      "symbol_record_offset": 896,
+      "jump_record_offset": 592
+    },
+    {
+      "name": "Delay",
+      "unit": 4,
+      "code_offset": 2002,
+      "zone_offset": 21276,
+      "symbol_record_offset": 910,
+      "jump_record_offset": 600
+    },
+    {
+      "name": "EqualString",
+      "unit": 4,
+      "code_offset": 2016,
+      "zone_offset": 21310,
+      "symbol_record_offset": 924,
+      "jump_record_offset": 608
+    },
+    {
+      "name": "UprString",
+      "unit": 4,
+      "code_offset": 2080,
+      "zone_offset": 21348,
+      "symbol_record_offset": 938,
+      "jump_record_offset": 616
+    },
+    {
+      "name": "Enqueue",
+      "unit": 4,
+      "code_offset": 2104,
+      "zone_offset": 21386,
+      "symbol_record_offset": 952,
+      "jump_record_offset": 624
+    },
+    {
+      "name": "Dequeue",
+      "unit": 4,
+      "code_offset": 2116,
+      "zone_offset": 21420,
+      "symbol_record_offset": 966,
+      "jump_record_offset": 632
+    },
+    {
+      "name": "Environs",
+      "unit": 4,
+      "code_offset": 2132,
+      "zone_offset": 21454,
+      "symbol_record_offset": 980,
+      "jump_record_offset": 640
+    },
+    {
+      "name": "GetDCtlEntry",
+      "unit": 4,
+      "code_offset": 2168,
+      "zone_offset": 21492,
+      "symbol_record_offset": 994,
+      "jump_record_offset": 648
+    },
+    {
+      "name": "SetChooserAlert",
+      "unit": 4,
+      "code_offset": 2194,
+      "zone_offset": 21534,
+      "symbol_record_offset": 1008,
+      "jump_record_offset": 656
+    },
+    {
+      "name": "PBOpen",
+      "unit": 4,
+      "code_offset": 2222,
+      "zone_offset": 21576,
+      "symbol_record_offset": 1022,
+      "jump_record_offset": 664
+    },
+    {
+      "name": "PBClose",
+      "unit": 4,
+      "code_offset": 2240,
+      "zone_offset": 21610,
+      "symbol_record_offset": 1036,
+      "jump_record_offset": 672
+    },
+    {
+      "name": "PBRead",
+      "unit": 4,
+      "code_offset": 2258,
+      "zone_offset": 21644,
+      "symbol_record_offset": 1050,
+      "jump_record_offset": 680
+    },
+    {
+      "name": "PBWrite",
+      "unit": 4,
+      "code_offset": 2276,
+      "zone_offset": 21678,
+      "symbol_record_offset": 1064,
+      "jump_record_offset": 688
+    },
+    {
+      "name": "PBControl",
+      "unit": 4,
+      "code_offset": 2294,
+      "zone_offset": 21712,
+      "symbol_record_offset": 1078,
+      "jump_record_offset": 696
+    },
+    {
+      "name": "PBStatus",
+      "unit": 4,
+      "code_offset": 2312,
+      "zone_offset": 21750,
+      "symbol_record_offset": 1092,
+      "jump_record_offset": 704
+    },
+    {
+      "name": "PBKillIO",
+      "unit": 4,
+      "code_offset": 2330,
+      "zone_offset": 21788,
+      "symbol_record_offset": 1106,
+      "jump_record_offset": 712
+    },
+    {
+      "name": "PBGetVInfo",
+      "unit": 4,
+      "code_offset": 2348,
+      "zone_offset": 21826,
+      "symbol_record_offset": 1120,
+      "jump_record_offset": 720
+    },
+    {
+      "name": "PBGetVol",
+      "unit": 4,
+      "code_offset": 2366,
+      "zone_offset": 21864,
+      "symbol_record_offset": 1134,
+      "jump_record_offset": 728
+    },
+    {
+      "name": "PBSetVol",
+      "unit": 4,
+      "code_offset": 2384,
+      "zone_offset": 21902,
+      "symbol_record_offset": 1148,
+      "jump_record_offset": 736
+    },
+    {
+      "name": "PBFlushVol",
+      "unit": 4,
+      "code_offset": 2402,
+      "zone_offset": 21940,
+      "symbol_record_offset": 1162,
+      "jump_record_offset": 744
+    },
+    {
+      "name": "PBCreate",
+      "unit": 4,
+      "code_offset": 2420,
+      "zone_offset": 21978,
+      "symbol_record_offset": 1176,
+      "jump_record_offset": 752
+    },
+    {
+      "name": "PBDelete",
+      "unit": 4,
+      "code_offset": 2438,
+      "zone_offset": 22016,
+      "symbol_record_offset": 1190,
+      "jump_record_offset": 760
+    },
+    {
+      "name": "PBOpenRF",
+      "unit": 4,
+      "code_offset": 2456,
+      "zone_offset": 22054,
+      "symbol_record_offset": 1204,
+      "jump_record_offset": 768
+    },
+    {
+      "name": "PBRename",
+      "unit": 4,
+      "code_offset": 2474,
+      "zone_offset": 22092,
+      "symbol_record_offset": 1218,
+      "jump_record_offset": 776
+    },
+    {
+      "name": "PBGetFInfo",
+      "unit": 4,
+      "code_offset": 2492,
+      "zone_offset": 22130,
+      "symbol_record_offset": 1232,
+      "jump_record_offset": 784
+    },
+    {
+      "name": "PBSetFInfo",
+      "unit": 4,
+      "code_offset": 2510,
+      "zone_offset": 22168,
+      "symbol_record_offset": 1246,
+      "jump_record_offset": 792
+    },
+    {
+      "name": "PBSetFLock",
+      "unit": 4,
+      "code_offset": 2528,
+      "zone_offset": 22206,
+      "symbol_record_offset": 1260,
+      "jump_record_offset": 800
+    },
+    {
+      "name": "PBRstFLock",
+      "unit": 4,
+      "code_offset": 2546,
+      "zone_offset": 22244,
+      "symbol_record_offset": 1274,
+      "jump_record_offset": 808
+    },
+    {
+      "name": "PBSetFVers",
+      "unit": 4,
+      "code_offset": 2564,
+      "zone_offset": 22282,
+      "symbol_record_offset": 1288,
+      "jump_record_offset": 816
+    },
+    {
+      "name": "PBAllocate",
+      "unit": 4,
+      "code_offset": 2582,
+      "zone_offset": 22320,
+      "symbol_record_offset": 1302,
+      "jump_record_offset": 824
+    },
+    {
+      "name": "PBGetEOF",
+      "unit": 4,
+      "code_offset": 2600,
+      "zone_offset": 22358,
+      "symbol_record_offset": 1316,
+      "jump_record_offset": 832
+    },
+    {
+      "name": "PBSetEOF",
+      "unit": 4,
+      "code_offset": 2618,
+      "zone_offset": 22396,
+      "symbol_record_offset": 1330,
+      "jump_record_offset": 840
+    },
+    {
+      "name": "PBGetFPos",
+      "unit": 4,
+      "code_offset": 2636,
+      "zone_offset": 22434,
+      "symbol_record_offset": 1344,
+      "jump_record_offset": 848
+    },
+    {
+      "name": "PBSetFPos",
+      "unit": 4,
+      "code_offset": 2654,
+      "zone_offset": 22472,
+      "symbol_record_offset": 1358,
+      "jump_record_offset": 856
+    },
+    {
+      "name": "PBFlushFile",
+      "unit": 4,
+      "code_offset": 2672,
+      "zone_offset": 22510,
+      "symbol_record_offset": 1372,
+      "jump_record_offset": 864
+    },
+    {
+      "name": "PBMountVol",
+      "unit": 4,
+      "code_offset": 2690,
+      "zone_offset": 22548,
+      "symbol_record_offset": 1386,
+      "jump_record_offset": 872
+    },
+    {
+      "name": "PBUnmountVol",
+      "unit": 4,
+      "code_offset": 2700,
+      "zone_offset": 22586,
+      "symbol_record_offset": 1400,
+      "jump_record_offset": 880
+    },
+    {
+      "name": "PBEject",
+      "unit": 4,
+      "code_offset": 2710,
+      "zone_offset": 22628,
+      "symbol_record_offset": 1414,
+      "jump_record_offset": 888
+    },
+    {
+      "name": "PBOffLine",
+      "unit": 4,
+      "code_offset": 2720,
+      "zone_offset": 22662,
+      "symbol_record_offset": 1428,
+      "jump_record_offset": 896
+    },
+    {
+      "name": "AddDrive",
+      "unit": 4,
+      "code_offset": 2730,
+      "zone_offset": 22700,
+      "symbol_record_offset": 1442,
+      "jump_record_offset": 904
+    },
+    {
+      "name": "FSOpen",
+      "unit": 4,
+      "code_offset": 2740,
+      "zone_offset": 22738,
+      "symbol_record_offset": 1456,
+      "jump_record_offset": 912
+    },
+    {
+      "name": "OpenDF",
+      "unit": 4,
+      "code_offset": 2740,
+      "zone_offset": 22772,
+      "symbol_record_offset": 1470,
+      "jump_record_offset": 920
+    },
+    {
+      "name": "FSClose",
+      "unit": 4,
+      "code_offset": 2804,
+      "zone_offset": 22806,
+      "symbol_record_offset": 1484,
+      "jump_record_offset": 928
+    },
+    {
+      "name": "FSRead",
+      "unit": 4,
+      "code_offset": 2830,
+      "zone_offset": 22840,
+      "symbol_record_offset": 1498,
+      "jump_record_offset": 936
+    },
+    {
+      "name": "FSWrite",
+      "unit": 4,
+      "code_offset": 2834,
+      "zone_offset": 22874,
+      "symbol_record_offset": 1512,
+      "jump_record_offset": 944
+    },
+    {
+      "name": "Control",
+      "unit": 4,
+      "code_offset": 2902,
+      "zone_offset": 22908,
+      "symbol_record_offset": 1526,
+      "jump_record_offset": 952
+    },
+    {
+      "name": "Status",
+      "unit": 4,
+      "code_offset": 2956,
+      "zone_offset": 22942,
+      "symbol_record_offset": 1540,
+      "jump_record_offset": 960
+    },
+    {
+      "name": "KillIO",
+      "unit": 4,
+      "code_offset": 3000,
+      "zone_offset": 22976,
+      "symbol_record_offset": 1554,
+      "jump_record_offset": 968
+    },
+    {
+      "name": "GetVInfo",
+      "unit": 4,
+      "code_offset": 3026,
+      "zone_offset": 23010,
+      "symbol_record_offset": 1568,
+      "jump_record_offset": 976
+    },
+    {
+      "name": "GetFInfo",
+      "unit": 4,
+      "code_offset": 3092,
+      "zone_offset": 23048,
+      "symbol_record_offset": 1582,
+      "jump_record_offset": 984
+    },
+    {
+      "name": "GetVol",
+      "unit": 4,
+      "code_offset": 3146,
+      "zone_offset": 23086,
+      "symbol_record_offset": 1596,
+      "jump_record_offset": 992
+    },
+    {
+      "name": "SetVol",
+      "unit": 4,
+      "code_offset": 3180,
+      "zone_offset": 23120,
+      "symbol_record_offset": 1610,
+      "jump_record_offset": 1000
+    },
+    {
+      "name": "UnmountVol",
+      "unit": 4,
+      "code_offset": 3212,
+      "zone_offset": 23154,
+      "symbol_record_offset": 1624,
+      "jump_record_offset": 1008
+    },
+    {
+      "name": "Eject",
+      "unit": 4,
+      "code_offset": 3244,
+      "zone_offset": 23192,
+      "symbol_record_offset": 1638,
+      "jump_record_offset": 1016
+    },
+    {
+      "name": "FlushVol",
+      "unit": 4,
+      "code_offset": 3276,
+      "zone_offset": 23226,
+      "symbol_record_offset": 1652,
+      "jump_record_offset": 1024
+    },
+    {
+      "name": "Create",
+      "unit": 4,
+      "code_offset": 3308,
+      "zone_offset": 23264,
+      "symbol_record_offset": 1666,
+      "jump_record_offset": 1032
+    },
+    {
+      "name": "FSDelete",
+      "unit": 4,
+      "code_offset": 3370,
+      "zone_offset": 23298,
+      "symbol_record_offset": 1680,
+      "jump_record_offset": 1040
+    },
+    {
+      "name": "OpenRF",
+      "unit": 4,
+      "code_offset": 3406,
+      "zone_offset": 23336,
+      "symbol_record_offset": 1694,
+      "jump_record_offset": 1048
+    },
+    {
+      "name": "Rename",
+      "unit": 4,
+      "code_offset": 3460,
+      "zone_offset": 23370,
+      "symbol_record_offset": 1708,
+      "jump_record_offset": 1056
+    },
+    {
+      "name": "SetFInfo",
+      "unit": 4,
+      "code_offset": 3504,
+      "zone_offset": 23404,
+      "symbol_record_offset": 1722,
+      "jump_record_offset": 1064
+    },
+    {
+      "name": "SetFLock",
+      "unit": 4,
+      "code_offset": 3562,
+      "zone_offset": 23442,
+      "symbol_record_offset": 1736,
+      "jump_record_offset": 1072
+    },
+    {
+      "name": "RstFLock",
+      "unit": 4,
+      "code_offset": 3598,
+      "zone_offset": 23480,
+      "symbol_record_offset": 1750,
+      "jump_record_offset": 1080
+    },
+    {
+      "name": "Allocate",
+      "unit": 4,
+      "code_offset": 3634,
+      "zone_offset": 23518,
+      "symbol_record_offset": 1764,
+      "jump_record_offset": 1088
+    },
+    {
+      "name": "GetEOF",
+      "unit": 4,
+      "code_offset": 3672,
+      "zone_offset": 23556,
+      "symbol_record_offset": 1778,
+      "jump_record_offset": 1096
+    },
+    {
+      "name": "SetEOF",
+      "unit": 4,
+      "code_offset": 3706,
+      "zone_offset": 23590,
+      "symbol_record_offset": 1792,
+      "jump_record_offset": 1104
+    },
+    {
+      "name": "GetFPos",
+      "unit": 4,
+      "code_offset": 3738,
+      "zone_offset": 23624,
+      "symbol_record_offset": 1806,
+      "jump_record_offset": 1112
+    },
+    {
+      "name": "SetFPos",
+      "unit": 4,
+      "code_offset": 3772,
+      "zone_offset": 23658,
+      "symbol_record_offset": 1820,
+      "jump_record_offset": 1120
+    },
+    {
+      "name": "GetVRefNum",
+      "unit": 4,
+      "code_offset": 3810,
+      "zone_offset": 23692,
+      "symbol_record_offset": 1834,
+      "jump_record_offset": 1128
+    },
+    {
+      "name": "PBOpenWD",
+      "unit": 4,
+      "code_offset": 3878,
+      "zone_offset": 23730,
+      "symbol_record_offset": 1848,
+      "jump_record_offset": 1136
+    },
+    {
+      "name": "PBCloseWD",
+      "unit": 4,
+      "code_offset": 3900,
+      "zone_offset": 23768,
+      "symbol_record_offset": 1862,
+      "jump_record_offset": 1144
+    },
+    {
+      "name": "PBHSetVol",
+      "unit": 4,
+      "code_offset": 3922,
+      "zone_offset": 23806,
+      "symbol_record_offset": 1876,
+      "jump_record_offset": 1152
+    },
+    {
+      "name": "PBHGetVol",
+      "unit": 4,
+      "code_offset": 3940,
+      "zone_offset": 23844,
+      "symbol_record_offset": 1890,
+      "jump_record_offset": 1160
+    },
+    {
+      "name": "PBCatMove",
+      "unit": 4,
+      "code_offset": 3958,
+      "zone_offset": 23882,
+      "symbol_record_offset": 1904,
+      "jump_record_offset": 1168
+    },
+    {
+      "name": "PBDirCreate",
+      "unit": 4,
+      "code_offset": 3980,
+      "zone_offset": 23920,
+      "symbol_record_offset": 1918,
+      "jump_record_offset": 1176
+    },
+    {
+      "name": "PBGetWDInfo",
+      "unit": 4,
+      "code_offset": 4002,
+      "zone_offset": 23958,
+      "symbol_record_offset": 1932,
+      "jump_record_offset": 1184
+    },
+    {
+      "name": "PBGetFCBInfo",
+      "unit": 4,
+      "code_offset": 4024,
+      "zone_offset": 23996,
+      "symbol_record_offset": 1946,
+      "jump_record_offset": 1192
+    },
+    {
+      "name": "PBGetCatInfo",
+      "unit": 4,
+      "code_offset": 4046,
+      "zone_offset": 24038,
+      "symbol_record_offset": 1960,
+      "jump_record_offset": 1200
+    },
+    {
+      "name": "PBSetCatInfo",
+      "unit": 4,
+      "code_offset": 4068,
+      "zone_offset": 24080,
+      "symbol_record_offset": 1974,
+      "jump_record_offset": 1208
+    },
+    {
+      "name": "PBAllocContig",
+      "unit": 4,
+      "code_offset": 4090,
+      "zone_offset": 24122,
+      "symbol_record_offset": 1988,
+      "jump_record_offset": 1216
+    },
+    {
+      "name": "PBLockRange",
+      "unit": 4,
+      "code_offset": 4108,
+      "zone_offset": 24164,
+      "symbol_record_offset": 2002,
+      "jump_record_offset": 1224
+    },
+    {
+      "name": "PBUnlockRange",
+      "unit": 4,
+      "code_offset": 4130,
+      "zone_offset": 24202,
+      "symbol_record_offset": 2016,
+      "jump_record_offset": 1232
+    },
+    {
+      "name": "PBSetVInfo",
+      "unit": 4,
+      "code_offset": 4152,
+      "zone_offset": 24244,
+      "symbol_record_offset": 2030,
+      "jump_record_offset": 1240
+    },
+    {
+      "name": "PBHGetVInfo",
+      "unit": 4,
+      "code_offset": 4174,
+      "zone_offset": 24282,
+      "symbol_record_offset": 2044,
+      "jump_record_offset": 1248
+    },
+    {
+      "name": "PBHOpen",
+      "unit": 4,
+      "code_offset": 4192,
+      "zone_offset": 24320,
+      "symbol_record_offset": 2058,
+      "jump_record_offset": 1256
+    },
+    {
+      "name": "PBHOpenRF",
+      "unit": 4,
+      "code_offset": 4210,
+      "zone_offset": 24354,
+      "symbol_record_offset": 2072,
+      "jump_record_offset": 1264
+    },
+    {
+      "name": "PBHCreate",
+      "unit": 4,
+      "code_offset": 4228,
+      "zone_offset": 24392,
+      "symbol_record_offset": 2086,
+      "jump_record_offset": 1272
+    },
+    {
+      "name": "PBHDelete",
+      "unit": 4,
+      "code_offset": 4246,
+      "zone_offset": 24430,
+      "symbol_record_offset": 2100,
+      "jump_record_offset": 1280
+    },
+    {
+      "name": "PBHRename",
+      "unit": 4,
+      "code_offset": 4264,
+      "zone_offset": 24468,
+      "symbol_record_offset": 2114,
+      "jump_record_offset": 1288
+    },
+    {
+      "name": "PBHRstFLock",
+      "unit": 4,
+      "code_offset": 4282,
+      "zone_offset": 24506,
+      "symbol_record_offset": 2128,
+      "jump_record_offset": 1296
+    },
+    {
+      "name": "PBHSetFLock",
+      "unit": 4,
+      "code_offset": 4300,
+      "zone_offset": 24544,
+      "symbol_record_offset": 2142,
+      "jump_record_offset": 1304
+    },
+    {
+      "name": "PBHGetFInfo",
+      "unit": 4,
+      "code_offset": 4318,
+      "zone_offset": 24582,
+      "symbol_record_offset": 2156,
+      "jump_record_offset": 1312
+    },
+    {
+      "name": "PBHSetFInfo",
+      "unit": 4,
+      "code_offset": 4336,
+      "zone_offset": 24620,
+      "symbol_record_offset": 2170,
+      "jump_record_offset": 1320
+    },
+    {
+      "name": "PBHGetVolParms",
+      "unit": 4,
+      "code_offset": 4354,
+      "zone_offset": 24658,
+      "symbol_record_offset": 2184,
+      "jump_record_offset": 1328
+    },
+    {
+      "name": "PBHGetLogInInfo",
+      "unit": 4,
+      "code_offset": 4376,
+      "zone_offset": 24700,
+      "symbol_record_offset": 2198,
+      "jump_record_offset": 1336
+    },
+    {
+      "name": "PBHGetDirAccess",
+      "unit": 4,
+      "code_offset": 4398,
+      "zone_offset": 24742,
+      "symbol_record_offset": 2212,
+      "jump_record_offset": 1344
+    },
+    {
+      "name": "PBHSetDirAccess",
+      "unit": 4,
+      "code_offset": 4420,
+      "zone_offset": 24784,
+      "symbol_record_offset": 2226,
+      "jump_record_offset": 1352
+    },
+    {
+      "name": "PBHMapID",
+      "unit": 4,
+      "code_offset": 4442,
+      "zone_offset": 24826,
+      "symbol_record_offset": 2240,
+      "jump_record_offset": 1360
+    },
+    {
+      "name": "PBHMapName",
+      "unit": 4,
+      "code_offset": 4464,
+      "zone_offset": 24864,
+      "symbol_record_offset": 2254,
+      "jump_record_offset": 1368
+    },
+    {
+      "name": "PBHCopyFile",
+      "unit": 4,
+      "code_offset": 4486,
+      "zone_offset": 24902,
+      "symbol_record_offset": 2268,
+      "jump_record_offset": 1376
+    },
+    {
+      "name": "PBHMoveRename",
+      "unit": 4,
+      "code_offset": 4508,
+      "zone_offset": 24940,
+      "symbol_record_offset": 2282,
+      "jump_record_offset": 1384
+    },
+    {
+      "name": "PBHOpenDeny",
+      "unit": 4,
+      "code_offset": 4530,
+      "zone_offset": 24982,
+      "symbol_record_offset": 2296,
+      "jump_record_offset": 1392
+    },
+    {
+      "name": "PBHOpenRFDeny",
+      "unit": 4,
+      "code_offset": 4552,
+      "zone_offset": 25020,
+      "symbol_record_offset": 2310,
+      "jump_record_offset": 1400
+    },
+    {
+      "name": "PBCreateFileIDRef",
+      "unit": 4,
+      "code_offset": 4574,
+      "zone_offset": 25062,
+      "symbol_record_offset": 2324,
+      "jump_record_offset": 1408
+    },
+    {
+      "name": "PBDeleteFileIDRef",
+      "unit": 4,
+      "code_offset": 4596,
+      "zone_offset": 25108,
+      "symbol_record_offset": 2338,
+      "jump_record_offset": 1416
+    },
+    {
+      "name": "PBResolveFileIDRef",
+      "unit": 4,
+      "code_offset": 4618,
+      "zone_offset": 25154,
+      "symbol_record_offset": 2352,
+      "jump_record_offset": 1424
+    },
+    {
+      "name": "PBExchangeFiles",
+      "unit": 4,
+      "code_offset": 4640,
+      "zone_offset": 25200,
+      "symbol_record_offset": 2366,
+      "jump_record_offset": 1432
+    },
+    {
+      "name": "PBCatSearch",
+      "unit": 4,
+      "code_offset": 4662,
+      "zone_offset": 25242,
+      "symbol_record_offset": 2380,
+      "jump_record_offset": 1440
+    },
+    {
+      "name": "PBGetForeignPrivs",
+      "unit": 4,
+      "code_offset": 4684,
+      "zone_offset": 25280,
+      "symbol_record_offset": 2394,
+      "jump_record_offset": 1448
+    },
+    {
+      "name": "PBSetForeignPrivs",
+      "unit": 4,
+      "code_offset": 4706,
+      "zone_offset": 25326,
+      "symbol_record_offset": 2408,
+      "jump_record_offset": 1456
+    },
+    {
+      "name": "PBOpenDF",
+      "unit": 4,
+      "code_offset": 4728,
+      "zone_offset": 25372,
+      "symbol_record_offset": 2422,
+      "jump_record_offset": 1464
+    },
+    {
+      "name": "PBHOpenDF",
+      "unit": 4,
+      "code_offset": 4750,
+      "zone_offset": 25410,
+      "symbol_record_offset": 2436,
+      "jump_record_offset": 1472
+    },
+    {
+      "name": "PBMakeFSSpec",
+      "unit": 4,
+      "code_offset": 4772,
+      "zone_offset": 25448,
+      "symbol_record_offset": 2450,
+      "jump_record_offset": 1480
+    },
+    {
+      "name": "PBDTAddIcon",
+      "unit": 4,
+      "code_offset": 4794,
+      "zone_offset": 25490,
+      "symbol_record_offset": 2464,
+      "jump_record_offset": 1488
+    },
+    {
+      "name": "PBDTGetIcon",
+      "unit": 4,
+      "code_offset": 4816,
+      "zone_offset": 25528,
+      "symbol_record_offset": 2478,
+      "jump_record_offset": 1496
+    },
+    {
+      "name": "PBDTGetIconInfo",
+      "unit": 4,
+      "code_offset": 4838,
+      "zone_offset": 25566,
+      "symbol_record_offset": 2492,
+      "jump_record_offset": 1504
+    },
+    {
+      "name": "PBDTAddAPPL",
+      "unit": 4,
+      "code_offset": 4860,
+      "zone_offset": 25608,
+      "symbol_record_offset": 2506,
+      "jump_record_offset": 1512
+    },
+    {
+      "name": "PBDTRemoveAPPL",
+      "unit": 4,
+      "code_offset": 4882,
+      "zone_offset": 25646,
+      "symbol_record_offset": 2520,
+      "jump_record_offset": 1520
+    },
+    {
+      "name": "PBDTGetAPPL",
+      "unit": 4,
+      "code_offset": 4904,
+      "zone_offset": 25688,
+      "symbol_record_offset": 2534,
+      "jump_record_offset": 1528
+    },
+    {
+      "name": "PBDTSetComment",
+      "unit": 4,
+      "code_offset": 4926,
+      "zone_offset": 25726,
+      "symbol_record_offset": 2548,
+      "jump_record_offset": 1536
+    },
+    {
+      "name": "PBDTRemoveComment",
+      "unit": 4,
+      "code_offset": 4948,
+      "zone_offset": 25768,
+      "symbol_record_offset": 2562,
+      "jump_record_offset": 1544
+    },
+    {
+      "name": "PBDTGetComment",
+      "unit": 4,
+      "code_offset": 4970,
+      "zone_offset": 25814,
+      "symbol_record_offset": 2576,
+      "jump_record_offset": 1552
+    },
+    {
+      "name": "PBDTFlush",
+      "unit": 4,
+      "code_offset": 4992,
+      "zone_offset": 25856,
+      "symbol_record_offset": 2590,
+      "jump_record_offset": 1560
+    },
+    {
+      "name": "PBDTReset",
+      "unit": 4,
+      "code_offset": 5014,
+      "zone_offset": 25894,
+      "symbol_record_offset": 2604,
+      "jump_record_offset": 1568
+    },
+    {
+      "name": "PBDTGetInfo",
+      "unit": 4,
+      "code_offset": 5036,
+      "zone_offset": 25932,
+      "symbol_record_offset": 2618,
+      "jump_record_offset": 1576
+    },
+    {
+      "name": "PBDTDelete",
+      "unit": 4,
+      "code_offset": 5058,
+      "zone_offset": 25970,
+      "symbol_record_offset": 2632,
+      "jump_record_offset": 1584
+    },
+    {
+      "name": "PostEvent",
+      "unit": 4,
+      "code_offset": 5080,
+      "zone_offset": 26008,
+      "symbol_record_offset": 2646,
+      "jump_record_offset": 1592
+    },
+    {
+      "name": "PPostEvent",
+      "unit": 4,
+      "code_offset": 5092,
+      "zone_offset": 26046,
+      "symbol_record_offset": 2660,
+      "jump_record_offset": 1600
+    },
+    {
+      "name": "OSEventAvail",
+      "unit": 4,
+      "code_offset": 5112,
+      "zone_offset": 26084,
+      "symbol_record_offset": 2674,
+      "jump_record_offset": 1608
+    },
+    {
+      "name": "GetOSEvent",
+      "unit": 4,
+      "code_offset": 5126,
+      "zone_offset": 26126,
+      "symbol_record_offset": 2688,
+      "jump_record_offset": 1616
+    },
+    {
+      "name": "SetSoundVol",
+      "unit": 4,
+      "code_offset": 5140,
+      "zone_offset": 26164,
+      "symbol_record_offset": 2702,
+      "jump_record_offset": 1624
+    },
+    {
+      "name": "GetSoundVol",
+      "unit": 4,
+      "code_offset": 5174,
+      "zone_offset": 26202,
+      "symbol_record_offset": 2716,
+      "jump_record_offset": 1632
+    },
+    {
+      "name": "StartStuff",
+      "unit": 4,
+      "code_offset": 5186,
+      "zone_offset": 26240,
+      "symbol_record_offset": 2730,
+      "jump_record_offset": 1640
+    },
+    {
+      "name": "StopSound",
+      "unit": 4,
+      "code_offset": 5460,
+      "zone_offset": 26278,
+      "symbol_record_offset": 2744,
+      "jump_record_offset": 1648
+    },
+    {
+      "name": "StartSound",
+      "unit": 4,
+      "code_offset": 5186,
+      "zone_offset": 26316,
+      "symbol_record_offset": 2758,
+      "jump_record_offset": 1656
+    },
+    {
+      "name": "SoundDone",
+      "unit": 4,
+      "code_offset": 5630,
+      "zone_offset": 26354,
+      "symbol_record_offset": 2772,
+      "jump_record_offset": 1664
+    },
+    {
+      "name": "CountAppFiles",
+      "unit": 4,
+      "code_offset": 5656,
+      "zone_offset": 26392,
+      "symbol_record_offset": 2786,
+      "jump_record_offset": 1672
+    },
+    {
+      "name": "GetAppFiles",
+      "unit": 4,
+      "code_offset": 5692,
+      "zone_offset": 26434,
+      "symbol_record_offset": 2800,
+      "jump_record_offset": 1680
+    },
+    {
+      "name": "ClrAppFiles",
+      "unit": 4,
+      "code_offset": 5762,
+      "zone_offset": 26472,
+      "symbol_record_offset": 2814,
+      "jump_record_offset": 1688
+    },
+    {
+      "name": "MaxBlock",
+      "unit": 4,
+      "code_offset": 5818,
+      "zone_offset": 26510,
+      "symbol_record_offset": 2828,
+      "jump_record_offset": 1696
+    },
+    {
+      "name": "MaxBlockSys",
+      "unit": 4,
+      "code_offset": 5826,
+      "zone_offset": 26548,
+      "symbol_record_offset": 2842,
+      "jump_record_offset": 1704
+    },
+    {
+      "name": "PurgeSpace",
+      "unit": 4,
+      "code_offset": 5834,
+      "zone_offset": 26586,
+      "symbol_record_offset": 2856,
+      "jump_record_offset": 1712
+    },
+    {
+      "name": "StackSpace",
+      "unit": 4,
+      "code_offset": 5854,
+      "zone_offset": 26624,
+      "symbol_record_offset": 2870,
+      "jump_record_offset": 1720
+    },
+    {
+      "name": "NewEmptyHandle",
+      "unit": 4,
+      "code_offset": 5862,
+      "zone_offset": 26662,
+      "symbol_record_offset": 2884,
+      "jump_record_offset": 1728
+    },
+    {
+      "name": "NewEmptyHandleSys",
+      "unit": 4,
+      "code_offset": 5870,
+      "zone_offset": 26704,
+      "symbol_record_offset": 2898,
+      "jump_record_offset": 1736
+    },
+    {
+      "name": "HGetState",
+      "unit": 4,
+      "code_offset": 5878,
+      "zone_offset": 26750,
+      "symbol_record_offset": 2912,
+      "jump_record_offset": 1744
+    },
+    {
+      "name": "HSetState",
+      "unit": 4,
+      "code_offset": 5888,
+      "zone_offset": 26788,
+      "symbol_record_offset": 2926,
+      "jump_record_offset": 1752
+    },
+    {
+      "name": "DTInstall",
+      "unit": 4,
+      "code_offset": 5898,
+      "zone_offset": 26826,
+      "symbol_record_offset": 2940,
+      "jump_record_offset": 1760
+    },
+    {
+      "name": "RelString",
+      "unit": 4,
+      "code_offset": 5912,
+      "zone_offset": 26864,
+      "symbol_record_offset": 2954,
+      "jump_record_offset": 1768
+    },
+    {
+      "name": "GetMMUMode",
+      "unit": 4,
+      "code_offset": 5978,
+      "zone_offset": 26902,
+      "symbol_record_offset": 2968,
+      "jump_record_offset": 1776
+    },
+    {
+      "name": "SwapMMUMode",
+      "unit": 4,
+      "code_offset": 5986,
+      "zone_offset": 26940,
+      "symbol_record_offset": 2982,
+      "jump_record_offset": 1784
+    },
+    {
+      "name": "SwapInstructionCache",
+      "unit": 4,
+      "code_offset": 6006,
+      "zone_offset": 26978,
+      "symbol_record_offset": 2996,
+      "jump_record_offset": 1792
+    },
+    {
+      "name": "FlushInstructionCache",
+      "unit": 4,
+      "code_offset": 6030,
+      "zone_offset": 27028,
+      "symbol_record_offset": 3010,
+      "jump_record_offset": 1800
+    },
+    {
+      "name": "SwapDataCache",
+      "unit": 4,
+      "code_offset": 6038,
+      "zone_offset": 27078,
+      "symbol_record_offset": 3024,
+      "jump_record_offset": 1808
+    },
+    {
+      "name": "FlushDataCache",
+      "unit": 4,
+      "code_offset": 6064,
+      "zone_offset": 27120,
+      "symbol_record_offset": 3038,
+      "jump_record_offset": 1816
+    },
+    {
+      "name": "SFPutFile",
+      "unit": 5,
+      "code_offset": 6072,
+      "zone_offset": 27162,
+      "symbol_record_offset": 3052,
+      "jump_record_offset": 1824
+    },
+    {
+      "name": "GOPACK",
+      "unit": 5,
+      "code_offset": 6074,
+      "zone_offset": 27200,
+      "symbol_record_offset": 3066,
+      "jump_record_offset": 1832
+    },
+    {
+      "name": "SFPPutFile",
+      "unit": 5,
+      "code_offset": 6082,
+      "zone_offset": 27234,
+      "symbol_record_offset": 3080,
+      "jump_record_offset": 1840
+    },
+    {
+      "name": "SFGetFile",
+      "unit": 5,
+      "code_offset": 6088,
+      "zone_offset": 27272,
+      "symbol_record_offset": 3094,
+      "jump_record_offset": 1848
+    },
+    {
+      "name": "SFPGetFile",
+      "unit": 5,
+      "code_offset": 6094,
+      "zone_offset": 27310,
+      "symbol_record_offset": 3108,
+      "jump_record_offset": 1856
+    },
+    {
+      "name": "DILoad",
+      "unit": 5,
+      "code_offset": 6100,
+      "zone_offset": 27348,
+      "symbol_record_offset": 3122,
+      "jump_record_offset": 1864
+    },
+    {
+      "name": "GODI",
+      "unit": 5,
+      "code_offset": 6102,
+      "zone_offset": 27382,
+      "symbol_record_offset": 3136,
+      "jump_record_offset": 1872
+    },
+    {
+      "name": "DIUnload",
+      "unit": 5,
+      "code_offset": 6110,
+      "zone_offset": 27416,
+      "symbol_record_offset": 3150,
+      "jump_record_offset": 1880
+    },
+    {
+      "name": "DIBadMount",
+      "unit": 5,
+      "code_offset": 6116,
+      "zone_offset": 27454,
+      "symbol_record_offset": 3164,
+      "jump_record_offset": 1888
+    },
+    {
+      "name": "DIFormat",
+      "unit": 5,
+      "code_offset": 6122,
+      "zone_offset": 27492,
+      "symbol_record_offset": 3178,
+      "jump_record_offset": 1896
+    },
+    {
+      "name": "DIVerify",
+      "unit": 5,
+      "code_offset": 6128,
+      "zone_offset": 27530,
+      "symbol_record_offset": 3192,
+      "jump_record_offset": 1904
+    },
+    {
+      "name": "DIZero",
+      "unit": 5,
+      "code_offset": 6136,
+      "zone_offset": 27568,
+      "symbol_record_offset": 3206,
+      "jump_record_offset": 1912
+    },
+    {
+      "name": "IUCompString",
+      "unit": 5,
+      "code_offset": 6144,
+      "zone_offset": 27602,
+      "symbol_record_offset": 3220,
+      "jump_record_offset": 1920
+    },
+    {
+      "name": "IUEqualString",
+      "unit": 5,
+      "code_offset": 6152,
+      "zone_offset": 27678,
+      "symbol_record_offset": 3234,
+      "jump_record_offset": 1928
+    },
+    {
+      "name": "GOPMAG",
+      "unit": 5,
+      "code_offset": 6156,
+      "zone_offset": 27644,
+      "symbol_record_offset": 3248,
+      "jump_record_offset": 1936
+    },
+    {
+      "name": "COMPARESTRING",
+      "unit": 5,
+      "code_offset": 6192,
+      "zone_offset": 27720,
+      "symbol_record_offset": 3262,
+      "jump_record_offset": 1944
+    },
+    {
+      "name": "IUCompPString",
+      "unit": 5,
+      "code_offset": 6192,
+      "zone_offset": 27762,
+      "symbol_record_offset": 3276,
+      "jump_record_offset": 1952
+    },
+    {
+      "name": "IDENTICALSTRING",
+      "unit": 5,
+      "code_offset": 6200,
+      "zone_offset": 27838,
+      "symbol_record_offset": 3290,
+      "jump_record_offset": 1960
+    },
+    {
+      "name": "IUEqualPString",
+      "unit": 5,
+      "code_offset": 6200,
+      "zone_offset": 27880,
+      "symbol_record_offset": 3304,
+      "jump_record_offset": 1968
+    },
+    {
+      "name": "GOPMAGP",
+      "unit": 5,
+      "code_offset": 6204,
+      "zone_offset": 27804,
+      "symbol_record_offset": 3318,
+      "jump_record_offset": 1976
+    },
+    {
+      "name": "STRINGORDER",
+      "unit": 5,
+      "code_offset": 6242,
+      "zone_offset": 27922,
+      "symbol_record_offset": 3332,
+      "jump_record_offset": 1984
+    },
+    {
+      "name": "IUStringOrder",
+      "unit": 5,
+      "code_offset": 6242,
+      "zone_offset": 27960,
+      "symbol_record_offset": 3346,
+      "jump_record_offset": 1992
+    },
+    {
+      "name": "StringToNum",
+      "unit": 5,
+      "code_offset": 6286,
+      "zone_offset": 28002,
+      "symbol_record_offset": 3360,
+      "jump_record_offset": 2000
+    },
+    {
+      "name": "NumToString",
+      "unit": 5,
+      "code_offset": 6306,
+      "zone_offset": 28074,
+      "symbol_record_offset": 3374,
+      "jump_record_offset": 2008
+    },
+    {
+      "name": "EXIT8",
+      "unit": 5,
+      "code_offset": 6318,
+      "zone_offset": 28040,
+      "symbol_record_offset": 3388,
+      "jump_record_offset": 2016
+    },
+    {
+      "name": "randSeed",
+      "unit": 6,
+      "data_offset": 76,
+      "zone_offset": 28418,
+      "symbol_record_offset": 3402
+    },
+    {
+      "name": "screenBits",
+      "unit": 6,
+      "data_offset": 80,
+      "zone_offset": 28380,
+      "symbol_record_offset": 3416
+    },
+    {
+      "name": "arrow",
+      "unit": 6,
+      "data_offset": 94,
+      "zone_offset": 28346,
+      "symbol_record_offset": 3430
+    },
+    {
+      "name": "dkGray",
+      "unit": 6,
+      "data_offset": 162,
+      "zone_offset": 28312,
+      "symbol_record_offset": 3444
+    },
+    {
+      "name": "ltGray",
+      "unit": 6,
+      "data_offset": 170,
+      "zone_offset": 28278,
+      "symbol_record_offset": 3458
+    },
+    {
+      "name": "gray",
+      "unit": 6,
+      "data_offset": 178,
+      "zone_offset": 28244,
+      "symbol_record_offset": 3472
+    },
+    {
+      "name": "black",
+      "unit": 6,
+      "data_offset": 186,
+      "zone_offset": 28210,
+      "symbol_record_offset": 3486
+    },
+    {
+      "name": "white",
+      "unit": 6,
+      "data_offset": 194,
+      "zone_offset": 28176,
+      "symbol_record_offset": 3500
+    },
+    {
+      "name": "thePort",
+      "unit": 6,
+      "data_offset": 202,
+      "zone_offset": 28142,
+      "symbol_record_offset": 3514
+    },
+    {
+      "name": "qd",
+      "unit": 6,
+      "data_offset": 0,
+      "zone_offset": 28112,
+      "symbol_record_offset": 3528
+    },
+    {
+      "name": "StripAddress",
+      "unit": 7,
+      "code_offset": 6324,
+      "zone_offset": 28456,
+      "symbol_record_offset": 3542,
+      "jump_record_offset": 2024
+    },
+    {
+      "name": "ADBOp",
+      "unit": 7,
+      "code_offset": 6350,
+      "zone_offset": 28498,
+      "symbol_record_offset": 3556,
+      "jump_record_offset": 2032
+    },
+    {
+      "name": "GetIndADB",
+      "unit": 7,
+      "code_offset": 6366,
+      "zone_offset": 28532,
+      "symbol_record_offset": 3570,
+      "jump_record_offset": 2040
+    },
+    {
+      "name": "GetADBInfo",
+      "unit": 7,
+      "code_offset": 6378,
+      "zone_offset": 28570,
+      "symbol_record_offset": 3584,
+      "jump_record_offset": 2048
+    },
+    {
+      "name": "SetADBInfo",
+      "unit": 7,
+      "code_offset": 6390,
+      "zone_offset": 28608,
+      "symbol_record_offset": 3598,
+      "jump_record_offset": 2056
+    },
+    {
+      "name": "GetTimeout",
+      "unit": 7,
+      "code_offset": 6402,
+      "zone_offset": 28646,
+      "symbol_record_offset": 3612,
+      "jump_record_offset": 2064
+    },
+    {
+      "name": "SetTimeout",
+      "unit": 7,
+      "code_offset": 6414,
+      "zone_offset": 28684,
+      "symbol_record_offset": 3626,
+      "jump_record_offset": 2072
+    },
+    {
+      "name": "OpenSlot",
+      "unit": 7,
+      "code_offset": 6426,
+      "zone_offset": 28722,
+      "symbol_record_offset": 3640,
+      "jump_record_offset": 2080
+    },
+    {
+      "name": "HandToHand",
+      "unit": 8,
+      "code_offset": 6444,
+      "zone_offset": 28760,
+      "symbol_record_offset": 3654,
+      "jump_record_offset": 2088
+    },
+    {
+      "name": "PtrToXHand",
+      "unit": 8,
+      "code_offset": 6466,
+      "zone_offset": 28798,
+      "symbol_record_offset": 3668,
+      "jump_record_offset": 2096
+    },
+    {
+      "name": "PtrToHand",
+      "unit": 8,
+      "code_offset": 6484,
+      "zone_offset": 28836,
+      "symbol_record_offset": 3682,
+      "jump_record_offset": 2104
+    },
+    {
+      "name": "HandAndHand",
+      "unit": 8,
+      "code_offset": 6512,
+      "zone_offset": 28874,
+      "symbol_record_offset": 3696,
+      "jump_record_offset": 2112
+    },
+    {
+      "name": "PtrAndHand",
+      "unit": 8,
+      "code_offset": 6532,
+      "zone_offset": 28912,
+      "symbol_record_offset": 3710,
+      "jump_record_offset": 2120
+    },
+    {
+      "name": "DialogPaste",
+      "unit": 8,
+      "code_offset": 6558,
+      "zone_offset": 28950,
+      "symbol_record_offset": 3724,
+      "jump_record_offset": 2128
+    },
+    {
+      "name": "DlgPaste",
+      "unit": 8,
+      "code_offset": 6558,
+      "zone_offset": 28988,
+      "symbol_record_offset": 3738,
+      "jump_record_offset": 2136
+    },
+    {
+      "name": "DlgDelete",
+      "unit": 8,
+      "code_offset": 6578,
+      "zone_offset": 29026,
+      "symbol_record_offset": 3752,
+      "jump_record_offset": 2144
+    },
+    {
+      "name": "DlgCopy",
+      "unit": 8,
+      "code_offset": 6572,
+      "zone_offset": 29064,
+      "symbol_record_offset": 3766,
+      "jump_record_offset": 2152
+    },
+    {
+      "name": "DlgCut",
+      "unit": 8,
+      "code_offset": 6566,
+      "zone_offset": 29098,
+      "symbol_record_offset": 3780,
+      "jump_record_offset": 2160
+    },
+    {
+      "name": "DialogDelete",
+      "unit": 8,
+      "code_offset": 6578,
+      "zone_offset": 29132,
+      "symbol_record_offset": 3794,
+      "jump_record_offset": 2168
+    },
+    {
+      "name": "DialogCopy",
+      "unit": 8,
+      "code_offset": 6572,
+      "zone_offset": 29174,
+      "symbol_record_offset": 3808,
+      "jump_record_offset": 2176
+    },
+    {
+      "name": "DialogCut",
+      "unit": 8,
+      "code_offset": 6566,
+      "zone_offset": 29212,
+      "symbol_record_offset": 3822,
+      "jump_record_offset": 2184
+    },
+    {
+      "name": "TEGetScrapLength",
+      "unit": 8,
+      "code_offset": 6608,
+      "zone_offset": 29250,
+      "symbol_record_offset": 3836,
+      "jump_record_offset": 2192
+    },
+    {
+      "name": "TEGetScrapLen",
+      "unit": 8,
+      "code_offset": 6608,
+      "zone_offset": 29296,
+      "symbol_record_offset": 3850,
+      "jump_record_offset": 2200
+    },
+    {
+      "name": "TESetScrapLength",
+      "unit": 8,
+      "code_offset": 6620,
+      "zone_offset": 29338,
+      "symbol_record_offset": 3864,
+      "jump_record_offset": 2208
+    },
+    {
+      "name": "TESetScrapLen",
+      "unit": 8,
+      "code_offset": 6620,
+      "zone_offset": 29384,
+      "symbol_record_offset": 3878,
+      "jump_record_offset": 2216
+    },
+    {
+      "name": "TEFromScrap",
+      "unit": 8,
+      "code_offset": 6630,
+      "zone_offset": 29426,
+      "symbol_record_offset": 3892,
+      "jump_record_offset": 2224
+    },
+    {
+      "name": "TEToScrap",
+      "unit": 8,
+      "code_offset": 6716,
+      "zone_offset": 29464,
+      "symbol_record_offset": 3906,
+      "jump_record_offset": 2232
+    },
+    {
+      "name": "SetClikLoop",
+      "unit": 8,
+      "code_offset": 6754,
+      "zone_offset": 29502,
+      "symbol_record_offset": 3920,
+      "jump_record_offset": 2240
+    },
+    {
+      "name": "SetWordBreak",
+      "unit": 8,
+      "code_offset": 6788,
+      "zone_offset": 29540,
+      "symbol_record_offset": 3934,
+      "jump_record_offset": 2248
+    },
+    {
+      "name": "GetIndString",
+      "unit": 8,
+      "code_offset": 6826,
+      "zone_offset": 29582,
+      "symbol_record_offset": 3948,
+      "jump_record_offset": 2256
+    },
+    {
+      "name": "GetIndPattern",
+      "unit": 8,
+      "code_offset": 6896,
+      "zone_offset": 29624,
+      "symbol_record_offset": 3962,
+      "jump_record_offset": 2264
+    },
+    {
+      "name": "ScreenRes",
+      "unit": 8,
+      "code_offset": 6958,
+      "zone_offset": 29666,
+      "symbol_record_offset": 3976,
+      "jump_record_offset": 2272
+    },
+    {
+      "name": "SetFractEnable",
+      "unit": 8,
+      "code_offset": 6974,
+      "zone_offset": 29704,
+      "symbol_record_offset": 3990,
+      "jump_record_offset": 2280
+    },
+    {
+      "name": "GetItemStyle",
+      "unit": 8,
+      "code_offset": 6998,
+      "zone_offset": 29746,
+      "symbol_record_offset": 4004,
+      "jump_record_offset": 2288
+    },
+    {
+      "name": "UnloadA4Seg",
+      "unit": 9,
+      "code_offset": 7026,
+      "zone_offset": 29788,
+      "symbol_record_offset": 4018,
+      "jump_record_offset": 2296
+    }
+  ],
+  "maven_code34_entries": [
+    {
+      "maven_offset": 420,
+      "a5_callable_offset": 2818,
+      "library_offset": 1224,
+      "length": 14,
+      "names": [
+        "GetPtrSize"
+      ]
+    },
+    {
+      "maven_offset": 434,
+      "a5_callable_offset": 2826,
+      "library_offset": 1298,
+      "length": 14,
+      "names": [
+        "GetHandleSize"
+      ]
+    },
+    {
+      "maven_offset": 448,
+      "a5_callable_offset": 2834,
+      "library_offset": 2348,
+      "length": 18,
+      "names": [
+        "PBGetVInfo"
+      ]
+    },
+    {
+      "maven_offset": 466,
+      "a5_callable_offset": 2842,
+      "library_offset": 2740,
+      "length": 64,
+      "names": [
+        "FSOpen",
+        "OpenDF"
+      ]
+    },
+    {
+      "maven_offset": 530,
+      "a5_callable_offset": 2850,
+      "library_offset": 2804,
+      "length": 26,
+      "names": [
+        "FSClose"
+      ]
+    },
+    {
+      "maven_offset": 556,
+      "a5_callable_offset": 2858,
+      "library_offset": 2830,
+      "length": 4,
+      "names": [
+        "FSRead"
+      ]
+    },
+    {
+      "maven_offset": 560,
+      "a5_callable_offset": 2866,
+      "library_offset": 2834,
+      "length": 68,
+      "names": [
+        "FSWrite"
+      ]
+    },
+    {
+      "maven_offset": 628,
+      "a5_callable_offset": 2874,
+      "library_offset": 3092,
+      "length": 54,
+      "names": [
+        "GetFInfo"
+      ]
+    },
+    {
+      "maven_offset": 682,
+      "a5_callable_offset": 2882,
+      "library_offset": 3146,
+      "length": 34,
+      "names": [
+        "GetVol"
+      ]
+    },
+    {
+      "maven_offset": 716,
+      "a5_callable_offset": 2890,
+      "library_offset": 3276,
+      "length": 32,
+      "names": [
+        "FlushVol"
+      ]
+    },
+    {
+      "maven_offset": 748,
+      "a5_callable_offset": 2898,
+      "library_offset": 3308,
+      "length": 62,
+      "names": [
+        "Create"
+      ]
+    },
+    {
+      "maven_offset": 810,
+      "a5_callable_offset": 2906,
+      "library_offset": 3504,
+      "length": 58,
+      "names": [
+        "SetFInfo"
+      ]
+    },
+    {
+      "maven_offset": 868,
+      "a5_callable_offset": 2914,
+      "library_offset": 3672,
+      "length": 34,
+      "names": [
+        "GetEOF"
+      ]
+    },
+    {
+      "maven_offset": 902,
+      "a5_callable_offset": 2922,
+      "library_offset": 3706,
+      "length": 32,
+      "names": [
+        "SetEOF"
+      ]
+    },
+    {
+      "maven_offset": 934,
+      "a5_callable_offset": 2930,
+      "library_offset": 4002,
+      "length": 22,
+      "names": [
+        "PBGetWDInfo"
+      ]
+    },
+    {
+      "maven_offset": 956,
+      "a5_callable_offset": 2938,
+      "library_offset": 4046,
+      "length": 22,
+      "names": [
+        "PBGetCatInfo"
+      ]
+    },
+    {
+      "maven_offset": 978,
+      "a5_callable_offset": 2946,
+      "library_offset": 4318,
+      "length": 18,
+      "names": [
+        "PBHGetFInfo"
+      ]
+    },
+    {
+      "maven_offset": 996,
+      "a5_callable_offset": 2954,
+      "library_offset": 5656,
+      "length": 36,
+      "names": [
+        "CountAppFiles"
+      ]
+    },
+    {
+      "maven_offset": 1032,
+      "a5_callable_offset": 2962,
+      "library_offset": 5692,
+      "length": 70,
+      "names": [
+        "GetAppFiles"
+      ]
+    },
+    {
+      "maven_offset": 1102,
+      "a5_callable_offset": 2970,
+      "library_offset": 5762,
+      "length": 56,
+      "names": [
+        "ClrAppFiles"
+      ]
+    },
+    {
+      "maven_offset": 1158,
+      "a5_callable_offset": 2978,
+      "library_offset": 6444,
+      "length": 22,
+      "names": [
+        "HandToHand"
+      ]
+    },
+    {
+      "maven_offset": 1180,
+      "a5_callable_offset": 2986,
+      "library_offset": 6558,
+      "length": 8,
+      "names": [
+        "DialogPaste",
+        "DlgPaste"
+      ]
+    },
+    {
+      "maven_offset": 1200,
+      "a5_callable_offset": 2994,
+      "library_offset": 6578,
+      "length": 30,
+      "names": [
+        "DlgDelete",
+        "DialogDelete"
+      ]
+    },
+    {
+      "maven_offset": 1194,
+      "a5_callable_offset": 3002,
+      "library_offset": 6572,
+      "length": 6,
+      "names": [
+        "DlgCopy",
+        "DialogCopy"
+      ]
+    },
+    {
+      "maven_offset": 1188,
+      "a5_callable_offset": 3010,
+      "library_offset": 6566,
+      "length": 6,
+      "names": [
+        "DlgCut",
+        "DialogCut"
+      ]
+    },
+    {
+      "maven_offset": 1230,
+      "a5_callable_offset": 3018,
+      "library_offset": 6630,
+      "length": 86,
+      "names": [
+        "TEFromScrap"
+      ]
+    },
+    {
+      "maven_offset": 1316,
+      "a5_callable_offset": 3026,
+      "library_offset": 6716,
+      "length": 38,
+      "names": [
+        "TEToScrap"
+      ]
+    },
+    {
+      "maven_offset": 1354,
+      "a5_callable_offset": 3034,
+      "library_offset": 6788,
+      "length": 38,
+      "names": [
+        "SetWordBreak"
+      ]
+    },
+    {
+      "maven_offset": 58,
+      "a5_callable_offset": 3042,
+      "library_offset": 116,
+      "length": 362,
+      "names": [
+        "SysEnvirons"
+      ]
+    },
+    {
+      "maven_offset": 32,
+      "a5_callable_offset": 3050,
+      "library_offset": 32,
+      "length": 26,
+      "names": [
+        "PtoCstr"
+      ]
+    },
+    {
+      "maven_offset": 4,
+      "a5_callable_offset": 3058,
+      "library_offset": 4,
+      "length": 28,
+      "names": [
+        "CtoPstr"
+      ]
+    }
+  ]
+}

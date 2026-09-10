@@ -1,0 +1,12 @@
+{
+  "scope": "Reconstructed-wasm exploratory fixture estimate only; not original-runtime acceptance",
+  "result": {
+    "own": "?beknrs",
+    "other": "ceeiotu",
+    "iterations": 1,
+    "free_head": 93,
+    "poll_calls": 89,
+    "empty_pool_polls": 0,
+    "trapped": false
+  }
+}

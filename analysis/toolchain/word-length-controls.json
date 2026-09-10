@@ -1,0 +1,27 @@
+{
+  "scope": "Saved snapshot format pointer plus static caller disassembly. CODE 12 absent from this snapshot; earlier full CODE 12 runtime identities are in enumeration captures. No new live calls or complete scanf equivalence claim.",
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "a5": 131028224,
+  "format_pointer_a5_offset": -24134,
+  "format_address": 131020010,
+  "format_hex": "256400",
+  "code12_present_in_snapshot": false,
+  "code12_sha256": "7fa76bffb79ccaef927a1baee70ad369f9b783f6b89d5008e62485f9f0786d29",
+  "caller_range": [
+    2094,
+    2196
+  ],
+  "field_items": [
+    11,
+    13
+  ],
+  "defaults": [
+    0,
+    15
+  ],
+  "inverted_limits_action": "Set maximum to 15 once; do not clamp minimum or recheck",
+  "parser_slot": 2074,
+  "parser_resource": 24,
+  "parser_offset": 5882,
+  "recovered_scanf_source_sha256": "6447bd2b0518acc5a3c9989d895a64978a87bf2f6e74a980c611c83f3a06e0fe"
+}

@@ -1,0 +1,11 @@
+{
+  "scope": "Integrated non-evaluation C move replay. Natural scoring inputs and separate post-restore board/value/undo capture for the same AORTAE move. Final refill/history/player totals excluded; no claim of single-call boundary trace.",
+  "board_bytes_matching": 544,
+  "value_words_matching": 544,
+  "undo_bytes_matching": 33,
+  "residual_rack": "i",
+  "new_tiles": 6,
+  "row_zero_count": 0,
+  "score_capture_sha256": "8c8b3bf6589e1620393ea260f5adb04a74d24723729998aecb4dc6dc9e8e7fa6",
+  "restore_capture_sha256": "a23800b0b0e154b57e0833aee0d2c32980d9ab003946b615614707a7a682daab"
+}

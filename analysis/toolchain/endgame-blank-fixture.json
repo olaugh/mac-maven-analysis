@@ -1,0 +1,8 @@
+{
+  "scope": "Constructed legal tile swap: rack Q replaces the board blank at7,7, and that blank moves into the rack. Board word text and total physical tile multiset are preserved.",
+  "source_sha256": "0bbb5ed9bc2664778d6119b59deeb96d55ee9879395a3b402c1da13c6909026b",
+  "sha256": "ac3df3070e0088e42d96794418f98f8b663a77fecf5f909388215dc744b89efe",
+  "own": "?beknrs",
+  "other": "ceeiotu",
+  "synthetic_position": true
+}

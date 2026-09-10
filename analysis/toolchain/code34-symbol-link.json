@@ -1,0 +1,193 @@
+{
+  "bytes": 1392,
+  "sha256": "891d3d98ce59b26f24c5d7396e7703896ff332d203a0a7ac7d58a33ba58ae01a",
+  "placements": [
+    {
+      "name": "CtoPstr",
+      "output_offset": 4,
+      "library_offset": 4,
+      "length": 28
+    },
+    {
+      "name": "PtoCstr",
+      "output_offset": 32,
+      "library_offset": 32,
+      "length": 26
+    },
+    {
+      "name": "SysEnvirons",
+      "output_offset": 58,
+      "library_offset": 116,
+      "length": 362
+    },
+    {
+      "name": "GetPtrSize",
+      "output_offset": 420,
+      "library_offset": 1224,
+      "length": 14
+    },
+    {
+      "name": "GetHandleSize",
+      "output_offset": 434,
+      "library_offset": 1298,
+      "length": 14
+    },
+    {
+      "name": "PBGetVInfo",
+      "output_offset": 448,
+      "library_offset": 2348,
+      "length": 18
+    },
+    {
+      "name": "FSOpen",
+      "output_offset": 466,
+      "library_offset": 2740,
+      "length": 64
+    },
+    {
+      "name": "FSClose",
+      "output_offset": 530,
+      "library_offset": 2804,
+      "length": 26
+    },
+    {
+      "name": "FSRead",
+      "output_offset": 556,
+      "library_offset": 2830,
+      "length": 4
+    },
+    {
+      "name": "FSWrite",
+      "output_offset": 560,
+      "library_offset": 2834,
+      "length": 68
+    },
+    {
+      "name": "GetFInfo",
+      "output_offset": 628,
+      "library_offset": 3092,
+      "length": 54
+    },
+    {
+      "name": "GetVol",
+      "output_offset": 682,
+      "library_offset": 3146,
+      "length": 34
+    },
+    {
+      "name": "FlushVol",
+      "output_offset": 716,
+      "library_offset": 3276,
+      "length": 32
+    },
+    {
+      "name": "Create",
+      "output_offset": 748,
+      "library_offset": 3308,
+      "length": 62
+    },
+    {
+      "name": "SetFInfo",
+      "output_offset": 810,
+      "library_offset": 3504,
+      "length": 58
+    },
+    {
+      "name": "GetEOF",
+      "output_offset": 868,
+      "library_offset": 3672,
+      "length": 34
+    },
+    {
+      "name": "SetEOF",
+      "output_offset": 902,
+      "library_offset": 3706,
+      "length": 32
+    },
+    {
+      "name": "PBGetWDInfo",
+      "output_offset": 934,
+      "library_offset": 4002,
+      "length": 22
+    },
+    {
+      "name": "PBGetCatInfo",
+      "output_offset": 956,
+      "library_offset": 4046,
+      "length": 22
+    },
+    {
+      "name": "PBHGetFInfo",
+      "output_offset": 978,
+      "library_offset": 4318,
+      "length": 18
+    },
+    {
+      "name": "CountAppFiles",
+      "output_offset": 996,
+      "library_offset": 5656,
+      "length": 36
+    },
+    {
+      "name": "GetAppFiles",
+      "output_offset": 1032,
+      "library_offset": 5692,
+      "length": 70
+    },
+    {
+      "name": "ClrAppFiles",
+      "output_offset": 1102,
+      "library_offset": 5762,
+      "length": 56
+    },
+    {
+      "name": "HandToHand",
+      "output_offset": 1158,
+      "library_offset": 6444,
+      "length": 22
+    },
+    {
+      "name": "DialogPaste",
+      "output_offset": 1180,
+      "library_offset": 6558,
+      "length": 8
+    },
+    {
+      "name": "DlgCut",
+      "output_offset": 1188,
+      "library_offset": 6566,
+      "length": 6
+    },
+    {
+      "name": "DlgCopy",
+      "output_offset": 1194,
+      "library_offset": 6572,
+      "length": 6
+    },
+    {
+      "name": "DlgDelete",
+      "output_offset": 1200,
+      "library_offset": 6578,
+      "length": 30
+    },
+    {
+      "name": "TEFromScrap",
+      "output_offset": 1230,
+      "library_offset": 6630,
+      "length": 86
+    },
+    {
+      "name": "TEToScrap",
+      "output_offset": 1316,
+      "library_offset": 6716,
+      "length": 38
+    },
+    {
+      "name": "SetWordBreak",
+      "output_offset": 1354,
+      "library_offset": 6788,
+      "length": 38
+    }
+  ],
+  "scope": "Rebuild the observed MacTraps segment from names and library metadata.\n\nModels ordered selection of symbol intervals only. Does not implement general\nTHINK linking, references, relocations, or dependency closure. No Maven code or\nbyte-range recipe is read. The selected names were recovered from Maven."
+}

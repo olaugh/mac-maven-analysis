@@ -1,0 +1,7 @@
+{
+  "scope": "Controlled legal AT opening; normal Open with blank rack, no guest-memory injection",
+  "file": "maven-cross-at-0909",
+  "sha256": "ee9209f7c5e1113aecd90c752ef600bc80ea60a5242bd6579b6e3141b6594071",
+  "own": "?abcdef",
+  "other": "ghijklm"
+}

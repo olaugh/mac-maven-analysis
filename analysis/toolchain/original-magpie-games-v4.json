@@ -1,0 +1,56 @@
+{
+  "scope": "Magpie picks human moves; original Maven Kibitz plays the other side.\nEvery normal original search is compared byte-for-byte with the owned C engine.\nPositions are imported through original files. Host owns seeded bag/deals, not\noriginal UI move-entry, refill, simulation, or history lifecycle.\n",
+  "seed": 9102026,
+  "requested_games": 20,
+  "completed_games": 2,
+  "positions": 60,
+  "ranked_records": 592,
+  "issues": [],
+  "games": [
+    {
+      "game": 0,
+      "turns": 25,
+      "scores_before_final_adjustment": [
+        528,
+        378
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 1,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        352,
+        454
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T"
+        ]
+      ],
+      "bag": 0
+    }
+  ],
+  "started": 1789002747.6283798,
+  "max_seconds": 3600,
+  "magpie_leaves": "CSW21.klv2",
+  "magpie_only_selects_human_moves": true,
+  "original_executable_compared": true,
+  "files": {
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/bin/magpie": "298b70c362f5b79e0429fae21bc6a931ebc25cd2338b5d82f1df0050091fc2f4",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.kwg": "caabddb67f27a265fa9df4487d07fd93f4010650fbf0f684647b6ac4e0eb333e",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.wmp": "0049dcb9c3dc0913518d7a6f4333e89da37063ce89acd9a9560aee7fd6371c93",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.klv2": "d33c30e637d53ee6250fac943a01c3c9a18f93c638499ff5e13fa358c2ca03bb",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/.build/magpie-match.dylib": "d1ed42e6871e3bb8c62d5d798f623f10ebc6677048f9940fee9a89fd5e01a264"
+  },
+  "elapsed_seconds": 135.7686891555786,
+  "failure": "timed out",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py\", line 35, in main\n    capture=original.search(name);init=capture['initial'];pos=Position();pos.zero=init['zero'];bb=bytes.fromhex(init['board']);vv=struct.unpack('>544H',bytes.fromhex(init['values']))\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/original_match_search.py\", line 26, in search\n    r.command('c',wait=False);key('meta_l-k');r.receive();slot=regs()[17];assert slot in entries;clear();rid,offset=entries[slot]\n                                              ~~~~~~~~~^^\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/gdb_remote.py\", line 21, in receive\n    marker = self.sock.recv(1)\nTimeoutError: timed out\n"
+}

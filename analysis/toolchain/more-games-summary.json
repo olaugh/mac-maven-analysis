@@ -1,0 +1,25 @@
+{
+  "baseline": {
+    "completed_games": 20,
+    "positions": 455,
+    "ranked_records": 4508,
+    "elapsed_seconds": 1092.6982290744781
+  },
+  "fast": {
+    "completed_games": 5,
+    "positions": 110,
+    "ranked_records": 1097,
+    "elapsed_seconds": 127.7225489616394,
+    "ui_delay_scale": 0.25,
+    "key_delay_seconds": 0.04
+  },
+  "both_offline_replays_passed": true,
+  "same_seed_positions_and_rankings": true,
+  "fast_stage_mean_seconds": {
+    "attach_and_arm": 0.0007871131780087401,
+    "open_ui": 0.7123315202450345,
+    "entry_and_input_capture": 0.2787830294462331,
+    "original_search_with_debugger": 0.11206787309946852
+  },
+  "note": "Stage means exclude first position, which verifies the entire dictionary; baseline first five elapsed about245.2seconds from progress log."
+}

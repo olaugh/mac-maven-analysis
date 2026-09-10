@@ -1,0 +1,32 @@
+{
+  "scope": "Freestanding wasm table setup, preparation and enumeration in Node; staged fingerprinted data, no original filesystem/UI/error runtime",
+  "wasm_sha256": "758900d65d030558a7e93c9b218a661131ebdfe29efdd81af552a7cb1bf63a7a",
+  "node": "v26.0.0",
+  "runs": [
+    {
+      "label": "cat",
+      "words": 4,
+      "ordered_words_match": true,
+      "capture_sha256": "296f75ce6a4daa5a6c7ffe9cd71b353ba3946d22aba06b614da72b8d5fb72737"
+    },
+    {
+      "label": "blank",
+      "words": 50,
+      "ordered_words_match": true,
+      "capture_sha256": "e6e7a91d6645ac2a850cce1c3357a193d77b77a5bdb77fa0363b46d664936243"
+    },
+    {
+      "label": "filtered",
+      "words": 10,
+      "ordered_words_match": true,
+      "capture_sha256": "ee82aece7d2596da9d4c61277ba6d0842ab27dd949df8659002ba281fc23e7c9"
+    },
+    {
+      "label": "required",
+      "words": 85,
+      "ordered_words_match": true,
+      "capture_sha256": "06ada6cd893490875e289908a4f8c7e551cf01b2618153e65d513532e8abcd2c"
+    }
+  ],
+  "total_words": 149
+}

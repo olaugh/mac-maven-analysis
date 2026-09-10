@@ -1,0 +1,38 @@
+[
+  {
+    "source": "../../media/maven/toolchains/think-c-6/disks/Symantec THINK C 6.0.1 for Macintosh (3.5-800k)/disk01.img",
+    "volume_name": "disk 1",
+    "output": "../../media/maven/toolchains/think-c-6/hfs-media/disk1.img",
+    "source_sha256": "1a5f4c40326686bcd4d09b030cca3b4d209150c813ac1befb829ad5077edc911",
+    "output_sha256": "d3cb74065f348861c19429d7e361965abf317006f740d88585b0bae0e48a97cf",
+    "driver_template_prefix_sha256": "f0a5f468c82bd2689ae63585904256aa39f09ee9f50b544613d8b71217c2d236",
+    "original_forks_types_creators_verified": true
+  },
+  {
+    "source": "../../media/maven/toolchains/think-c-6/disks/Symantec THINK C 6.0.1 for Macintosh (3.5-800k)/disk02.img",
+    "volume_name": "disk 2",
+    "output": "../../media/maven/toolchains/think-c-6/hfs-media/disk2.img",
+    "source_sha256": "f2042ee4debe107e02b81452b288a56f4e82e129142f928abc5cfc71d37528ef",
+    "output_sha256": "e57b7e3dcf9d3a7f889525da8fe2341ae1061ff81dd991e6096dfee46de5569a",
+    "driver_template_prefix_sha256": "f0a5f468c82bd2689ae63585904256aa39f09ee9f50b544613d8b71217c2d236",
+    "original_forks_types_creators_verified": true
+  },
+  {
+    "source": "../../media/maven/toolchains/think-c-6/disks/Symantec THINK C 6.0.1 for Macintosh (3.5-800k)/disk03.img",
+    "volume_name": "disk 3",
+    "output": "../../media/maven/toolchains/think-c-6/hfs-media/disk3.img",
+    "source_sha256": "64a0affde7092469f3712284e1f66cc34d76a3aa254bcfd3c7a7be4650e6362e",
+    "output_sha256": "8b413e9b4e179790eabd95fdee54736095143eec324f965a48a384bd4e8d50fa",
+    "driver_template_prefix_sha256": "f0a5f468c82bd2689ae63585904256aa39f09ee9f50b544613d8b71217c2d236",
+    "original_forks_types_creators_verified": true
+  },
+  {
+    "source": "../../media/maven/toolchains/think-c-6/disks/Symantec THINK C 6.0.1 for Macintosh (3.5-800k)/disk04.img",
+    "volume_name": "disk 4",
+    "output": "../../media/maven/toolchains/think-c-6/hfs-media/disk4.img",
+    "source_sha256": "60e07af351a8fa4ddba4fe5592decbcf8ce8b361e08dab3bb9c33cfa85af2203",
+    "output_sha256": "84408c00e9b33843d0f12c22c07fb5db1d951071dde30fb7492fb2d815e5026e",
+    "driver_template_prefix_sha256": "f0a5f468c82bd2689ae63585904256aa39f09ee9f50b544613d8b71217c2d236",
+    "original_forks_types_creators_verified": true
+  }
+]

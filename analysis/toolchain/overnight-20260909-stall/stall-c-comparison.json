@@ -1,0 +1,49 @@
+{
+ "rc": 0,
+ "iterations": 1388,
+ "clock_reads": 1388,
+ "c_count": 2,
+ "original_count": 2,
+ "byte_differences": [],
+ "matched": true,
+ "c_moves": [
+  {
+   "row": 11,
+   "col": 6,
+   "vertical": false,
+   "word": "DO",
+   "score": 3.0,
+   "equity": 91.08,
+   "raw": "646f00000000000000000000000000000000012c000022c4ffffffa40000007e0c07"
+  },
+  {
+   "row": 11,
+   "col": 7,
+   "vertical": false,
+   "word": "OD",
+   "score": 6.0,
+   "equity": 89.14,
+   "raw": "6f64000000000000000000000000000000000258000020d0ffffffaa0000007e0c08"
+  }
+ ],
+ "original_moves": [
+  {
+   "row": 11,
+   "col": 6,
+   "vertical": false,
+   "word": "DO",
+   "score": 3.0,
+   "equity": 91.08,
+   "raw": "646f00000000000000000000000000000000012c000022c4ffffffa40000007e0c07"
+  },
+  {
+   "row": 11,
+   "col": 7,
+   "vertical": false,
+   "word": "OD",
+   "score": 6.0,
+   "equity": 89.14,
+   "raw": "6f64000000000000000000000000000000000258000020d0ffffffaa0000007e0c08"
+  }
+ ]
+}

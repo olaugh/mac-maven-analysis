@@ -1,0 +1,8 @@
+{
+  "scope": "Native C pattern matcher compared with original total and all128 count bytes; record outputs compared only if observed in capture",
+  "mode": 0,
+  "result_bits": 4294966435,
+  "counts_match": true,
+  "observed_records": 1,
+  "capture_sha256": "10cd2670d41df3088483acf01bb7977bd5486db212dc4e53a73c0b55230f85aa"
+}

@@ -1,0 +1,5405 @@
+{
+  "scope": "Exploratory reconstructed-wasm fixture selection only; poll_calls are general polling, not collection counts; empty_pool_polls indicate pool exhaustion observations; no original-runtime correctness claim. A trap can indicate the bounded 4096-clock bridge limit or an engine diagnostic.",
+  "results": [
+    {
+      "own": "bceenqt",
+      "other": "eikorsu",
+      "iterations": 4097,
+      "free_head": 1684,
+      "poll_calls": 12831,
+      "empty_pool_polls": 1,
+      "trapped": true
+    },
+    {
+      "own": "bceeekq",
+      "other": "inorstu",
+      "iterations": 550,
+      "free_head": 8178,
+      "poll_calls": 13454,
+      "empty_pool_polls": 5,
+      "trapped": false
+    },
+    {
+      "own": "ceenoqs",
+      "other": "beikrtu",
+      "iterations": 382,
+      "free_head": 585,
+      "poll_calls": 11040,
+      "empty_pool_polls": 1,
+      "trapped": false
+    },
+    {
+      "own": "beknqrs",
+      "other": "ceeiotu",
+      "iterations": 251,
+      "free_head": 8173,
+      "poll_calls": 5966,
+      "empty_pool_polls": 1,
+      "trapped": false
+    },
+    {
+      "own": "ceeknqs",
+      "other": "beiortu",
+      "iterations": 181,
+      "free_head": 7815,
+      "poll_calls": 5390,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeoqs",
+      "other": "eiknrtu",
+      "iterations": 175,
+      "free_head": 7399,
+      "poll_calls": 5843,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beekoqs",
+      "other": "ceinrtu",
+      "iterations": 120,
+      "free_head": 6219,
+      "poll_calls": 5328,
+      "empty_pool_polls": 1,
+      "trapped": false
+    },
+    {
+      "own": "beeknqr",
+      "other": "ceiostu",
+      "iterations": 109,
+      "free_head": 4376,
+      "poll_calls": 3404,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeiostu",
+      "other": "bceknqr",
+      "iterations": 95,
+      "free_head": 3014,
+      "poll_calls": 1957,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcekoqs",
+      "other": "eeinrtu",
+      "iterations": 87,
+      "free_head": 3124,
+      "poll_calls": 2363,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeikot",
+      "other": "bcnqrsu",
+      "iterations": 82,
+      "free_head": 3517,
+      "poll_calls": 2778,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceekqrs",
+      "other": "beinotu",
+      "iterations": 72,
+      "free_head": 3543,
+      "poll_calls": 2894,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeioq",
+      "other": "cknrstu",
+      "iterations": 54,
+      "free_head": 1433,
+      "poll_calls": 946,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeknoqs",
+      "other": "bceirtu",
+      "iterations": 53,
+      "free_head": 1970,
+      "poll_calls": 1492,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eekostu",
+      "other": "bceinqr",
+      "iterations": 52,
+      "free_head": 1595,
+      "poll_calls": 1180,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeistu",
+      "other": "bcknoqr",
+      "iterations": 51,
+      "free_head": 1861,
+      "poll_calls": 1406,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeekotu",
+      "other": "bcinqrs",
+      "iterations": 39,
+      "free_head": 1272,
+      "poll_calls": 924,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeioqs",
+      "other": "beknrtu",
+      "iterations": 39,
+      "free_head": 1305,
+      "poll_calls": 953,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeekoq",
+      "other": "cinrstu",
+      "iterations": 37,
+      "free_head": 1514,
+      "poll_calls": 1180,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeinq",
+      "other": "ekorstu",
+      "iterations": 36,
+      "free_head": 1283,
+      "poll_calls": 958,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eekoqrt",
+      "other": "bceinsu",
+      "iterations": 33,
+      "free_head": 1068,
+      "poll_calls": 770,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcknrsu",
+      "other": "eeeioqt",
+      "iterations": 32,
+      "free_head": 1077,
+      "poll_calls": 796,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcikotu",
+      "other": "eeenqrs",
+      "iterations": 32,
+      "free_head": 1725,
+      "poll_calls": 1436,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeinstu",
+      "other": "bcekoqr",
+      "iterations": 28,
+      "free_head": 1209,
+      "poll_calls": 852,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeqru",
+      "other": "eiknost",
+      "iterations": 28,
+      "free_head": 1021,
+      "poll_calls": 768,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeqst",
+      "other": "eiknoru",
+      "iterations": 27,
+      "free_head": 818,
+      "poll_calls": 574,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnqrtu",
+      "other": "eeeikos",
+      "iterations": 26,
+      "free_head": 933,
+      "poll_calls": 698,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeioqr",
+      "other": "bcknstu",
+      "iterations": 26,
+      "free_head": 1036,
+      "poll_calls": 801,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceioqr",
+      "other": "eeknstu",
+      "iterations": 26,
+      "free_head": 647,
+      "poll_calls": 412,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeikoqr",
+      "other": "bcenstu",
+      "iterations": 25,
+      "free_head": 807,
+      "poll_calls": 581,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeikor",
+      "other": "cenqstu",
+      "iterations": 25,
+      "free_head": 713,
+      "poll_calls": 479,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bikostu",
+      "other": "ceeenqr",
+      "iterations": 25,
+      "free_head": 943,
+      "poll_calls": 717,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceenqs",
+      "other": "eikortu",
+      "iterations": 25,
+      "free_head": 1311,
+      "poll_calls": 1085,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "biknoqr",
+      "other": "ceeestu",
+      "iterations": 25,
+      "free_head": 453,
+      "poll_calls": 337,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bknoqru",
+      "other": "ceeeist",
+      "iterations": 25,
+      "free_head": 842,
+      "poll_calls": 616,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeikrt",
+      "other": "bcnoqsu",
+      "iterations": 24,
+      "free_head": 795,
+      "poll_calls": 578,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeinoqs",
+      "other": "bcekrtu",
+      "iterations": 24,
+      "free_head": 887,
+      "poll_calls": 670,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eikqrst",
+      "other": "bceenou",
+      "iterations": 23,
+      "free_head": 740,
+      "poll_calls": 474,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnqstu",
+      "other": "eeeikor",
+      "iterations": 23,
+      "free_head": 676,
+      "poll_calls": 468,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcikntu",
+      "other": "eeeoqrs",
+      "iterations": 23,
+      "free_head": 975,
+      "poll_calls": 767,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeoqst",
+      "other": "beiknru",
+      "iterations": 22,
+      "free_head": 1783,
+      "poll_calls": 1092,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeiost",
+      "other": "bcknqru",
+      "iterations": 22,
+      "free_head": 839,
+      "poll_calls": 641,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eekqrsu",
+      "other": "bceinot",
+      "iterations": 22,
+      "free_head": 646,
+      "poll_calls": 447,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeekqt",
+      "other": "cinorsu",
+      "iterations": 22,
+      "free_head": 879,
+      "poll_calls": 680,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeinoqt",
+      "other": "bcekrsu",
+      "iterations": 22,
+      "free_head": 730,
+      "poll_calls": 531,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeikqt",
+      "other": "bcnorsu",
+      "iterations": 21,
+      "free_head": 691,
+      "poll_calls": 501,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eikortu",
+      "other": "bceenqs",
+      "iterations": 21,
+      "free_head": 891,
+      "poll_calls": 701,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeioqs",
+      "other": "bcknrtu",
+      "iterations": 21,
+      "free_head": 627,
+      "poll_calls": 440,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceiotu",
+      "other": "eeknqrs",
+      "iterations": 21,
+      "free_head": 916,
+      "poll_calls": 731,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeiot",
+      "other": "cknqrsu",
+      "iterations": 20,
+      "free_head": 781,
+      "poll_calls": 605,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceoqrs",
+      "other": "eeikntu",
+      "iterations": 20,
+      "free_head": 928,
+      "poll_calls": 747,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ckoqrtu",
+      "other": "beeeins",
+      "iterations": 20,
+      "free_head": 537,
+      "poll_calls": 356,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcinrtu",
+      "other": "eeekoqs",
+      "iterations": 19,
+      "free_head": 550,
+      "poll_calls": 392,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eknoqst",
+      "other": "bceeiru",
+      "iterations": 19,
+      "free_head": 918,
+      "poll_calls": 613,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "iknortu",
+      "other": "bceeeqs",
+      "iterations": 19,
+      "free_head": 555,
+      "poll_calls": 385,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeoqs",
+      "other": "biknrtu",
+      "iterations": 19,
+      "free_head": 837,
+      "poll_calls": 665,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beikqru",
+      "other": "ceenost",
+      "iterations": 18,
+      "free_head": 1080,
+      "poll_calls": 917,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeqsu",
+      "other": "eiknort",
+      "iterations": 18,
+      "free_head": 907,
+      "poll_calls": 693,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeikno",
+      "other": "beqrstu",
+      "iterations": 18,
+      "free_head": 813,
+      "poll_calls": 650,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeist",
+      "other": "bknoqru",
+      "iterations": 18,
+      "free_head": 558,
+      "poll_calls": 406,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "binoqrs",
+      "other": "ceeektu",
+      "iterations": 18,
+      "free_head": 498,
+      "poll_calls": 347,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeitu",
+      "other": "eknoqrs",
+      "iterations": 18,
+      "free_head": 857,
+      "poll_calls": 552,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeikqt",
+      "other": "cenorsu",
+      "iterations": 18,
+      "free_head": 498,
+      "poll_calls": 335,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceekoqu",
+      "other": "beinrst",
+      "iterations": 17,
+      "free_head": 697,
+      "poll_calls": 543,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeekqrt",
+      "other": "bcinosu",
+      "iterations": 17,
+      "free_head": 650,
+      "poll_calls": 496,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeikrs",
+      "other": "benoqtu",
+      "iterations": 17,
+      "free_head": 460,
+      "poll_calls": 306,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceistu",
+      "other": "eeknoqr",
+      "iterations": 17,
+      "free_head": 556,
+      "poll_calls": 412,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceoqrsu",
+      "other": "beeiknt",
+      "iterations": 17,
+      "free_head": 1319,
+      "poll_calls": 834,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceinrt",
+      "other": "eekoqsu",
+      "iterations": 17,
+      "free_head": 676,
+      "poll_calls": 523,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeknoq",
+      "other": "bcirstu",
+      "iterations": 17,
+      "free_head": 681,
+      "poll_calls": 527,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeinoq",
+      "other": "bckrstu",
+      "iterations": 17,
+      "free_head": 639,
+      "poll_calls": 485,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeenstu",
+      "other": "bcikoqr",
+      "iterations": 17,
+      "free_head": 499,
+      "poll_calls": 347,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeekoqs",
+      "other": "bcinrtu",
+      "iterations": 17,
+      "free_head": 551,
+      "poll_calls": 397,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beknqst",
+      "other": "ceeioru",
+      "iterations": 17,
+      "free_head": 543,
+      "poll_calls": 389,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenoru",
+      "other": "ceikqst",
+      "iterations": 16,
+      "free_head": 633,
+      "poll_calls": 488,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceikotu",
+      "other": "beenqrs",
+      "iterations": 16,
+      "free_head": 542,
+      "poll_calls": 407,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bekrstu",
+      "other": "ceeinoq",
+      "iterations": 16,
+      "free_head": 433,
+      "poll_calls": 292,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcikstu",
+      "other": "eeenoqr",
+      "iterations": 16,
+      "free_head": 497,
+      "poll_calls": 352,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeoqs",
+      "other": "ciknrtu",
+      "iterations": 16,
+      "free_head": 641,
+      "poll_calls": 496,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cikoqsu",
+      "other": "beeenrt",
+      "iterations": 16,
+      "free_head": 776,
+      "poll_calls": 631,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeknqt",
+      "other": "bciorsu",
+      "iterations": 16,
+      "free_head": 575,
+      "poll_calls": 430,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeqrst",
+      "other": "bciknou",
+      "iterations": 16,
+      "free_head": 810,
+      "poll_calls": 488,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeikst",
+      "other": "benoqru",
+      "iterations": 16,
+      "free_head": 439,
+      "poll_calls": 294,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceentu",
+      "other": "eikoqrs",
+      "iterations": 16,
+      "free_head": 550,
+      "poll_calls": 405,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bciknru",
+      "other": "eeeoqst",
+      "iterations": 16,
+      "free_head": 547,
+      "poll_calls": 402,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnorsu",
+      "other": "eeeikqt",
+      "iterations": 15,
+      "free_head": 425,
+      "poll_calls": 291,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeekoqt",
+      "other": "bcinrsu",
+      "iterations": 15,
+      "free_head": 514,
+      "poll_calls": 378,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeikqr",
+      "other": "bcnostu",
+      "iterations": 15,
+      "free_head": 607,
+      "poll_calls": 395,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cinqrst",
+      "other": "beeekou",
+      "iterations": 15,
+      "free_head": 545,
+      "poll_calls": 377,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeist",
+      "other": "cknoqru",
+      "iterations": 15,
+      "free_head": 532,
+      "poll_calls": 379,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeiqr",
+      "other": "cknostu",
+      "iterations": 15,
+      "free_head": 722,
+      "poll_calls": 459,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeqst",
+      "other": "biknoru",
+      "iterations": 15,
+      "free_head": 581,
+      "poll_calls": 389,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "biknrst",
+      "other": "ceeeoqu",
+      "iterations": 15,
+      "free_head": 591,
+      "poll_calls": 455,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeiknq",
+      "other": "bcorstu",
+      "iterations": 15,
+      "free_head": 482,
+      "poll_calls": 346,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceenqst",
+      "other": "beikoru",
+      "iterations": 15,
+      "free_head": 950,
+      "poll_calls": 566,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeikoqs",
+      "other": "bcenrtu",
+      "iterations": 15,
+      "free_head": 573,
+      "poll_calls": 437,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeknr",
+      "other": "eioqstu",
+      "iterations": 15,
+      "free_head": 459,
+      "poll_calls": 323,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eikqrsu",
+      "other": "bceenot",
+      "iterations": 15,
+      "free_head": 632,
+      "poll_calls": 496,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeksu",
+      "other": "einoqrt",
+      "iterations": 14,
+      "free_head": 626,
+      "poll_calls": 499,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeioqt",
+      "other": "bcknrsu",
+      "iterations": 14,
+      "free_head": 610,
+      "poll_calls": 483,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeistu",
+      "other": "ceknoqr",
+      "iterations": 14,
+      "free_head": 464,
+      "poll_calls": 337,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnqrst",
+      "other": "eeeikou",
+      "iterations": 14,
+      "free_head": 484,
+      "poll_calls": 357,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinstu",
+      "other": "ceekoqr",
+      "iterations": 14,
+      "free_head": 532,
+      "poll_calls": 418,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceoqsu",
+      "other": "eeiknrt",
+      "iterations": 14,
+      "free_head": 846,
+      "poll_calls": 598,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beknqtu",
+      "other": "ceeiors",
+      "iterations": 14,
+      "free_head": 735,
+      "poll_calls": 608,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cekorsu",
+      "other": "beeinqt",
+      "iterations": 14,
+      "free_head": 619,
+      "poll_calls": 492,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceioqu",
+      "other": "eeknrst",
+      "iterations": 14,
+      "free_head": 465,
+      "poll_calls": 335,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bciqrsu",
+      "other": "eeeknot",
+      "iterations": 14,
+      "free_head": 487,
+      "poll_calls": 370,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeqrs",
+      "other": "biknotu",
+      "iterations": 14,
+      "free_head": 651,
+      "poll_calls": 524,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknosu",
+      "other": "bceeqrt",
+      "iterations": 14,
+      "free_head": 403,
+      "poll_calls": 276,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cenorst",
+      "other": "beeikqu",
+      "iterations": 14,
+      "free_head": 381,
+      "poll_calls": 254,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceiosu",
+      "other": "eeknqrt",
+      "iterations": 14,
+      "free_head": 471,
+      "poll_calls": 347,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeenors",
+      "other": "bcikqtu",
+      "iterations": 13,
+      "free_head": 294,
+      "poll_calls": 176,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeintu",
+      "other": "cekoqrs",
+      "iterations": 13,
+      "free_head": 409,
+      "poll_calls": 299,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeeis",
+      "other": "knoqrtu",
+      "iterations": 13,
+      "free_head": 332,
+      "poll_calls": 214,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceinotu",
+      "other": "beekqrs",
+      "iterations": 13,
+      "free_head": 437,
+      "poll_calls": 319,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeors",
+      "other": "eiknqtu",
+      "iterations": 13,
+      "free_head": 319,
+      "poll_calls": 201,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiqstu",
+      "other": "beeknor",
+      "iterations": 13,
+      "free_head": 397,
+      "poll_calls": 279,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiknqt",
+      "other": "beeorsu",
+      "iterations": 13,
+      "free_head": 442,
+      "poll_calls": 324,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceekntu",
+      "other": "beioqrs",
+      "iterations": 13,
+      "free_head": 549,
+      "poll_calls": 431,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeiknrs",
+      "other": "bceoqtu",
+      "iterations": 13,
+      "free_head": 448,
+      "poll_calls": 330,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cekoqsu",
+      "other": "beeinrt",
+      "iterations": 13,
+      "free_head": 415,
+      "poll_calls": 297,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bikoqst",
+      "other": "ceeenru",
+      "iterations": 13,
+      "free_head": 408,
+      "poll_calls": 290,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeenost",
+      "other": "bcikqru",
+      "iterations": 13,
+      "free_head": 335,
+      "poll_calls": 217,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "knoqstu",
+      "other": "bceeeir",
+      "iterations": 13,
+      "free_head": 442,
+      "poll_calls": 324,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeinos",
+      "other": "bekqrtu",
+      "iterations": 13,
+      "free_head": 353,
+      "poll_calls": 235,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceekou",
+      "other": "einqrst",
+      "iterations": 13,
+      "free_head": 608,
+      "poll_calls": 490,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeiknsu",
+      "other": "bceoqrt",
+      "iterations": 13,
+      "free_head": 366,
+      "poll_calls": 248,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeekrst",
+      "other": "bcinoqu",
+      "iterations": 13,
+      "free_head": 349,
+      "poll_calls": 231,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeinqr",
+      "other": "bekostu",
+      "iterations": 13,
+      "free_head": 2043,
+      "poll_calls": 1086,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bekorsu",
+      "other": "ceeinqt",
+      "iterations": 13,
+      "free_head": 371,
+      "poll_calls": 253,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeers",
+      "other": "iknoqtu",
+      "iterations": 13,
+      "free_head": 299,
+      "poll_calls": 181,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeikoq",
+      "other": "benrstu",
+      "iterations": 12,
+      "free_head": 336,
+      "poll_calls": 227,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenrsu",
+      "other": "ceikoqt",
+      "iterations": 12,
+      "free_head": 336,
+      "poll_calls": 231,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnostu",
+      "other": "eeeikqr",
+      "iterations": 12,
+      "free_head": 325,
+      "poll_calls": 216,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceoqstu",
+      "other": "beeiknr",
+      "iterations": 12,
+      "free_head": 382,
+      "poll_calls": 257,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beknrst",
+      "other": "ceeioqu",
+      "iterations": 12,
+      "free_head": 377,
+      "poll_calls": 268,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "knoqrtu",
+      "other": "bceeeis",
+      "iterations": 12,
+      "free_head": 399,
+      "poll_calls": 290,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeint",
+      "other": "ekoqrsu",
+      "iterations": 12,
+      "free_head": 529,
+      "poll_calls": 420,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceekrsu",
+      "other": "beinoqt",
+      "iterations": 12,
+      "free_head": 425,
+      "poll_calls": 316,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ciknosu",
+      "other": "beeeqrt",
+      "iterations": 12,
+      "free_head": 317,
+      "poll_calls": 208,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "binqstu",
+      "other": "ceeekor",
+      "iterations": 12,
+      "free_head": 368,
+      "poll_calls": 266,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeknt",
+      "other": "cioqrsu",
+      "iterations": 12,
+      "free_head": 387,
+      "poll_calls": 278,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceknsu",
+      "other": "eeioqrt",
+      "iterations": 12,
+      "free_head": 480,
+      "poll_calls": 371,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceiqru",
+      "other": "eeknost",
+      "iterations": 12,
+      "free_head": 562,
+      "poll_calls": 453,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnrstu",
+      "other": "eeeikoq",
+      "iterations": 12,
+      "free_head": 326,
+      "poll_calls": 217,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeikoqt",
+      "other": "bcenrsu",
+      "iterations": 12,
+      "free_head": 394,
+      "poll_calls": 285,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeknrs",
+      "other": "bcioqtu",
+      "iterations": 12,
+      "free_head": 306,
+      "poll_calls": 197,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bekorst",
+      "other": "ceeinqu",
+      "iterations": 12,
+      "free_head": 298,
+      "poll_calls": 189,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeist",
+      "other": "eknoqru",
+      "iterations": 12,
+      "free_head": 345,
+      "poll_calls": 236,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einoqru",
+      "other": "bceekst",
+      "iterations": 12,
+      "free_head": 519,
+      "poll_calls": 410,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceikru",
+      "other": "eenoqst",
+      "iterations": 12,
+      "free_head": 399,
+      "poll_calls": 290,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceknqrt",
+      "other": "beeiosu",
+      "iterations": 12,
+      "free_head": 396,
+      "poll_calls": 287,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cknoqrt",
+      "other": "beeeisu",
+      "iterations": 12,
+      "free_head": 401,
+      "poll_calls": 292,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einoqtu",
+      "other": "bceekrs",
+      "iterations": 11,
+      "free_head": 414,
+      "poll_calls": 314,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiknos",
+      "other": "ceeqrtu",
+      "iterations": 11,
+      "free_head": 419,
+      "poll_calls": 319,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeiknqu",
+      "other": "bceorst",
+      "iterations": 11,
+      "free_head": 351,
+      "poll_calls": 251,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bknqrst",
+      "other": "ceeeiou",
+      "iterations": 11,
+      "free_head": 379,
+      "poll_calls": 279,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cikrstu",
+      "other": "beeenoq",
+      "iterations": 11,
+      "free_head": 354,
+      "poll_calls": 254,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeknoqr",
+      "other": "bceistu",
+      "iterations": 11,
+      "free_head": 593,
+      "poll_calls": 493,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceekoru",
+      "other": "beinqst",
+      "iterations": 11,
+      "free_head": 490,
+      "poll_calls": 390,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeent",
+      "other": "ikoqrsu",
+      "iterations": 11,
+      "free_head": 344,
+      "poll_calls": 244,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeoqtu",
+      "other": "beiknrs",
+      "iterations": 11,
+      "free_head": 333,
+      "poll_calls": 233,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeinq",
+      "other": "bkorstu",
+      "iterations": 11,
+      "free_head": 433,
+      "poll_calls": 333,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknqtu",
+      "other": "bceeors",
+      "iterations": 11,
+      "free_head": 398,
+      "poll_calls": 298,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeiknqs",
+      "other": "bceortu",
+      "iterations": 11,
+      "free_head": 475,
+      "poll_calls": 375,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcenrst",
+      "other": "eeikoqu",
+      "iterations": 11,
+      "free_head": 320,
+      "poll_calls": 220,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cknoqsu",
+      "other": "beeeirt",
+      "iterations": 11,
+      "free_head": 452,
+      "poll_calls": 296,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeinu",
+      "other": "ekoqrst",
+      "iterations": 11,
+      "free_head": 462,
+      "poll_calls": 364,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beoqrtu",
+      "other": "ceeikns",
+      "iterations": 11,
+      "free_head": 288,
+      "poll_calls": 188,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeknqs",
+      "other": "ceiortu",
+      "iterations": 11,
+      "free_head": 817,
+      "poll_calls": 602,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeekn",
+      "other": "ioqrstu",
+      "iterations": 11,
+      "free_head": 383,
+      "poll_calls": 283,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beknosu",
+      "other": "ceeiqrt",
+      "iterations": 11,
+      "free_head": 336,
+      "poll_calls": 236,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeoqrs",
+      "other": "beikntu",
+      "iterations": 11,
+      "free_head": 613,
+      "poll_calls": 442,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeeks",
+      "other": "inoqrtu",
+      "iterations": 11,
+      "free_head": 337,
+      "poll_calls": 237,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeknru",
+      "other": "beioqst",
+      "iterations": 11,
+      "free_head": 472,
+      "poll_calls": 372,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beknoqt",
+      "other": "ceeirsu",
+      "iterations": 11,
+      "free_head": 539,
+      "poll_calls": 325,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeins",
+      "other": "bkoqrtu",
+      "iterations": 11,
+      "free_head": 320,
+      "poll_calls": 220,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bckorsu",
+      "other": "eeeinqt",
+      "iterations": 11,
+      "free_head": 328,
+      "poll_calls": 228,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeiknr",
+      "other": "ceoqstu",
+      "iterations": 11,
+      "free_head": 344,
+      "poll_calls": 244,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ikoqstu",
+      "other": "bceeenr",
+      "iterations": 10,
+      "free_head": 339,
+      "poll_calls": 248,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeknot",
+      "other": "beiqrsu",
+      "iterations": 10,
+      "free_head": 329,
+      "poll_calls": 238,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beekost",
+      "other": "ceinqru",
+      "iterations": 10,
+      "free_head": 251,
+      "poll_calls": 160,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bknoqrs",
+      "other": "ceeeitu",
+      "iterations": 10,
+      "free_head": 559,
+      "poll_calls": 468,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeiosu",
+      "other": "beknqrt",
+      "iterations": 10,
+      "free_head": 304,
+      "poll_calls": 213,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeqstu",
+      "other": "beiknor",
+      "iterations": 10,
+      "free_head": 398,
+      "poll_calls": 295,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cekoqru",
+      "other": "beeinst",
+      "iterations": 10,
+      "free_head": 481,
+      "poll_calls": 390,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeiot",
+      "other": "eknqrsu",
+      "iterations": 10,
+      "free_head": 373,
+      "poll_calls": 282,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiqstu",
+      "other": "ceeknor",
+      "iterations": 10,
+      "free_head": 266,
+      "poll_calls": 175,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiqrst",
+      "other": "ceeknou",
+      "iterations": 10,
+      "free_head": 281,
+      "poll_calls": 190,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceinsu",
+      "other": "eekoqrt",
+      "iterations": 10,
+      "free_head": 355,
+      "poll_calls": 267,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeqrsu",
+      "other": "beiknot",
+      "iterations": 10,
+      "free_head": 569,
+      "poll_calls": 380,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeenoqt",
+      "other": "bcikrsu",
+      "iterations": 10,
+      "free_head": 430,
+      "poll_calls": 339,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeinst",
+      "other": "bckoqru",
+      "iterations": 10,
+      "free_head": 292,
+      "poll_calls": 201,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eenoqru",
+      "other": "bceikst",
+      "iterations": 10,
+      "free_head": 349,
+      "poll_calls": 259,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcioqsu",
+      "other": "eeeknrt",
+      "iterations": 10,
+      "free_head": 375,
+      "poll_calls": 284,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeknqt",
+      "other": "ceiorsu",
+      "iterations": 10,
+      "free_head": 411,
+      "poll_calls": 320,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bciknos",
+      "other": "eeeqrtu",
+      "iterations": 10,
+      "free_head": 315,
+      "poll_calls": 227,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcinstu",
+      "other": "eeekoqr",
+      "iterations": 9,
+      "free_head": 293,
+      "poll_calls": 215,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeenotu",
+      "other": "bcikqrs",
+      "iterations": 9,
+      "free_head": 225,
+      "poll_calls": 143,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeknst",
+      "other": "beioqru",
+      "iterations": 9,
+      "free_head": 333,
+      "poll_calls": 251,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenrst",
+      "other": "ceikoqu",
+      "iterations": 9,
+      "free_head": 247,
+      "poll_calls": 165,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeenqr",
+      "other": "bikostu",
+      "iterations": 9,
+      "free_head": 422,
+      "poll_calls": 340,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcenost",
+      "other": "eeikqru",
+      "iterations": 9,
+      "free_head": 281,
+      "poll_calls": 199,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcekors",
+      "other": "eeinqtu",
+      "iterations": 9,
+      "free_head": 205,
+      "poll_calls": 123,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cinoqst",
+      "other": "beeekru",
+      "iterations": 9,
+      "free_head": 316,
+      "poll_calls": 202,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeikos",
+      "other": "benqrtu",
+      "iterations": 9,
+      "free_head": 266,
+      "poll_calls": 184,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeoqrsu",
+      "other": "bceiknt",
+      "iterations": 9,
+      "free_head": 349,
+      "poll_calls": 267,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeenor",
+      "other": "bikqstu",
+      "iterations": 9,
+      "free_head": 244,
+      "poll_calls": 162,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeinr",
+      "other": "ekoqstu",
+      "iterations": 9,
+      "free_head": 325,
+      "poll_calls": 243,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeknt",
+      "other": "bioqrsu",
+      "iterations": 9,
+      "free_head": 260,
+      "poll_calls": 178,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceoqru",
+      "other": "eeiknst",
+      "iterations": 9,
+      "free_head": 448,
+      "poll_calls": 366,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bciknst",
+      "other": "eeeoqru",
+      "iterations": 9,
+      "free_head": 267,
+      "poll_calls": 185,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinqst",
+      "other": "ceekoru",
+      "iterations": 9,
+      "free_head": 289,
+      "poll_calls": 209,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ciknqtu",
+      "other": "beeeors",
+      "iterations": 9,
+      "free_head": 337,
+      "poll_calls": 255,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "knqrstu",
+      "other": "bceeeio",
+      "iterations": 9,
+      "free_head": 276,
+      "poll_calls": 194,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeinoru",
+      "other": "bcekqst",
+      "iterations": 9,
+      "free_head": 223,
+      "poll_calls": 141,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiknqr",
+      "other": "beeostu",
+      "iterations": 9,
+      "free_head": 325,
+      "poll_calls": 243,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceikno",
+      "other": "eeqrstu",
+      "iterations": 9,
+      "free_head": 337,
+      "poll_calls": 255,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceknoru",
+      "other": "beeiqst",
+      "iterations": 9,
+      "free_head": 317,
+      "poll_calls": 235,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einoqst",
+      "other": "bceekru",
+      "iterations": 9,
+      "free_head": 297,
+      "poll_calls": 215,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeort",
+      "other": "biknqsu",
+      "iterations": 9,
+      "free_head": 267,
+      "poll_calls": 185,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeekos",
+      "other": "binqrtu",
+      "iterations": 9,
+      "free_head": 295,
+      "poll_calls": 213,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eenoqtu",
+      "other": "bceikrs",
+      "iterations": 9,
+      "free_head": 326,
+      "poll_calls": 244,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cnoqstu",
+      "other": "beeeikr",
+      "iterations": 9,
+      "free_head": 304,
+      "poll_calls": 222,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcekoqr",
+      "other": "eeinstu",
+      "iterations": 9,
+      "free_head": 2001,
+      "poll_calls": 1207,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeiqt",
+      "other": "eknorsu",
+      "iterations": 9,
+      "free_head": 474,
+      "poll_calls": 392,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceknrt",
+      "other": "eeioqsu",
+      "iterations": 9,
+      "free_head": 286,
+      "poll_calls": 204,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bciknor",
+      "other": "eeeqstu",
+      "iterations": 9,
+      "free_head": 318,
+      "poll_calls": 236,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnortu",
+      "other": "eeeikqs",
+      "iterations": 9,
+      "free_head": 247,
+      "poll_calls": 171,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeiqr",
+      "other": "bknostu",
+      "iterations": 9,
+      "free_head": 295,
+      "poll_calls": 213,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeektu",
+      "other": "cinoqrs",
+      "iterations": 8,
+      "free_head": 226,
+      "poll_calls": 155,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceikoqu",
+      "other": "beenrst",
+      "iterations": 8,
+      "free_head": 430,
+      "poll_calls": 357,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beekntu",
+      "other": "ceioqrs",
+      "iterations": 8,
+      "free_head": 245,
+      "poll_calls": 172,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcknost",
+      "other": "eeeiqru",
+      "iterations": 8,
+      "free_head": 239,
+      "poll_calls": 166,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cikqrsu",
+      "other": "beeenot",
+      "iterations": 8,
+      "free_head": 321,
+      "poll_calls": 248,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bknostu",
+      "other": "ceeeiqr",
+      "iterations": 8,
+      "free_head": 251,
+      "poll_calls": 180,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeikqrs",
+      "other": "bcenotu",
+      "iterations": 8,
+      "free_head": 471,
+      "poll_calls": 335,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeknq",
+      "other": "biorstu",
+      "iterations": 8,
+      "free_head": 449,
+      "poll_calls": 376,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cknqstu",
+      "other": "beeeior",
+      "iterations": 8,
+      "free_head": 368,
+      "poll_calls": 250,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeensu",
+      "other": "bikoqrt",
+      "iterations": 8,
+      "free_head": 242,
+      "poll_calls": 169,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnoqsu",
+      "other": "eeeikrt",
+      "iterations": 8,
+      "free_head": 350,
+      "poll_calls": 277,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beoqrst",
+      "other": "ceeiknu",
+      "iterations": 8,
+      "free_head": 199,
+      "poll_calls": 126,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeknor",
+      "other": "ceiqstu",
+      "iterations": 8,
+      "free_head": 209,
+      "poll_calls": 136,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcikqru",
+      "other": "eeenost",
+      "iterations": 8,
+      "free_head": 334,
+      "poll_calls": 261,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beioqst",
+      "other": "ceeknru",
+      "iterations": 8,
+      "free_head": 282,
+      "poll_calls": 209,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bikoqrt",
+      "other": "ceeensu",
+      "iterations": 8,
+      "free_head": 266,
+      "poll_calls": 193,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinosu",
+      "other": "ceekqrt",
+      "iterations": 8,
+      "free_head": 226,
+      "poll_calls": 153,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiqrsu",
+      "other": "ceeknot",
+      "iterations": 8,
+      "free_head": 245,
+      "poll_calls": 172,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiortu",
+      "other": "beeknqs",
+      "iterations": 8,
+      "free_head": 260,
+      "poll_calls": 187,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcorstu",
+      "other": "eeeiknq",
+      "iterations": 8,
+      "free_head": 268,
+      "poll_calls": 195,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beikoqr",
+      "other": "ceenstu",
+      "iterations": 8,
+      "free_head": 435,
+      "poll_calls": 362,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cknorsu",
+      "other": "beeeiqt",
+      "iterations": 8,
+      "free_head": 273,
+      "poll_calls": 200,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeioq",
+      "other": "bknrstu",
+      "iterations": 8,
+      "free_head": 248,
+      "poll_calls": 175,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeerstu",
+      "other": "bciknoq",
+      "iterations": 8,
+      "free_head": 236,
+      "poll_calls": 165,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeiks",
+      "other": "bnoqrtu",
+      "iterations": 8,
+      "free_head": 225,
+      "poll_calls": 152,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceekoqr",
+      "other": "beinstu",
+      "iterations": 8,
+      "free_head": 526,
+      "poll_calls": 453,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceknqt",
+      "other": "eeiorsu",
+      "iterations": 8,
+      "free_head": 394,
+      "poll_calls": 321,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceenou",
+      "other": "eikqrst",
+      "iterations": 8,
+      "free_head": 335,
+      "poll_calls": 263,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeoqt",
+      "other": "biknrsu",
+      "iterations": 8,
+      "free_head": 278,
+      "poll_calls": 205,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceknou",
+      "other": "eeiqrst",
+      "iterations": 8,
+      "free_head": 375,
+      "poll_calls": 302,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeikt",
+      "other": "cnoqrsu",
+      "iterations": 7,
+      "free_head": 215,
+      "poll_calls": 152,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cekortu",
+      "other": "beeinqs",
+      "iterations": 7,
+      "free_head": 262,
+      "poll_calls": 198,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cinqrtu",
+      "other": "beeekos",
+      "iterations": 7,
+      "free_head": 311,
+      "poll_calls": 247,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeikt",
+      "other": "enoqrsu",
+      "iterations": 7,
+      "free_head": 214,
+      "poll_calls": 150,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eknqrtu",
+      "other": "bceeios",
+      "iterations": 7,
+      "free_head": 270,
+      "poll_calls": 206,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beikoqu",
+      "other": "ceenrst",
+      "iterations": 7,
+      "free_head": 386,
+      "poll_calls": 322,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bnqrstu",
+      "other": "ceeeiko",
+      "iterations": 7,
+      "free_head": 259,
+      "poll_calls": 152,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeknou",
+      "other": "beiqrst",
+      "iterations": 7,
+      "free_head": 237,
+      "poll_calls": 174,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcioqrs",
+      "other": "eeekntu",
+      "iterations": 7,
+      "free_head": 250,
+      "poll_calls": 186,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "coqrstu",
+      "other": "beeeikn",
+      "iterations": 7,
+      "free_head": 220,
+      "poll_calls": 156,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eioqrtu",
+      "other": "bceekns",
+      "iterations": 7,
+      "free_head": 276,
+      "poll_calls": 212,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cekoqrs",
+      "other": "beeintu",
+      "iterations": 7,
+      "free_head": 1718,
+      "poll_calls": 948,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cenoqru",
+      "other": "beeikst",
+      "iterations": 7,
+      "free_head": 253,
+      "poll_calls": 189,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceinqru",
+      "other": "beekost",
+      "iterations": 7,
+      "free_head": 307,
+      "poll_calls": 243,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeekort",
+      "other": "bcinqsu",
+      "iterations": 7,
+      "free_head": 291,
+      "poll_calls": 227,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeknou",
+      "other": "ceiqrst",
+      "iterations": 7,
+      "free_head": 234,
+      "poll_calls": 170,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeknsu",
+      "other": "ceioqrt",
+      "iterations": 7,
+      "free_head": 237,
+      "poll_calls": 173,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceqstu",
+      "other": "eeiknor",
+      "iterations": 7,
+      "free_head": 467,
+      "poll_calls": 262,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beikoqs",
+      "other": "ceenrtu",
+      "iterations": 7,
+      "free_head": 389,
+      "poll_calls": 259,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiknsu",
+      "other": "beeoqrt",
+      "iterations": 7,
+      "free_head": 187,
+      "poll_calls": 123,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceikoqr",
+      "other": "beenstu",
+      "iterations": 7,
+      "free_head": 246,
+      "poll_calls": 182,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "biknqst",
+      "other": "ceeeoru",
+      "iterations": 7,
+      "free_head": 218,
+      "poll_calls": 154,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceikqsu",
+      "other": "beenort",
+      "iterations": 7,
+      "free_head": 272,
+      "poll_calls": 208,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnoqru",
+      "other": "eeeikst",
+      "iterations": 7,
+      "free_head": 269,
+      "poll_calls": 205,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeiqrs",
+      "other": "beknotu",
+      "iterations": 7,
+      "free_head": 282,
+      "poll_calls": 218,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceioru",
+      "other": "eeknqst",
+      "iterations": 7,
+      "free_head": 267,
+      "poll_calls": 203,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiostu",
+      "other": "ceeknqr",
+      "iterations": 7,
+      "free_head": 189,
+      "poll_calls": 130,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bknoqsu",
+      "other": "ceeeirt",
+      "iterations": 7,
+      "free_head": 274,
+      "poll_calls": 210,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeoqu",
+      "other": "biknrst",
+      "iterations": 6,
+      "free_head": 228,
+      "poll_calls": 173,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einqrtu",
+      "other": "bceekos",
+      "iterations": 6,
+      "free_head": 244,
+      "poll_calls": 189,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeisu",
+      "other": "cknoqrt",
+      "iterations": 6,
+      "free_head": 159,
+      "poll_calls": 104,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeikqsu",
+      "other": "bcenort",
+      "iterations": 6,
+      "free_head": 219,
+      "poll_calls": 164,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeior",
+      "other": "cknqstu",
+      "iterations": 6,
+      "free_head": 200,
+      "poll_calls": 145,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiknot",
+      "other": "beeqrsu",
+      "iterations": 6,
+      "free_head": 160,
+      "poll_calls": 105,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beikqst",
+      "other": "ceenoru",
+      "iterations": 6,
+      "free_head": 188,
+      "poll_calls": 133,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeqrst",
+      "other": "beiknou",
+      "iterations": 6,
+      "free_head": 177,
+      "poll_calls": 122,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bkqrstu",
+      "other": "ceeeino",
+      "iterations": 6,
+      "free_head": 159,
+      "poll_calls": 104,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenqsu",
+      "other": "ceikort",
+      "iterations": 6,
+      "free_head": 266,
+      "poll_calls": 211,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eekortu",
+      "other": "bceinqs",
+      "iterations": 6,
+      "free_head": 187,
+      "poll_calls": 132,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeenosu",
+      "other": "bcikqrt",
+      "iterations": 6,
+      "free_head": 153,
+      "poll_calls": 98,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeiks",
+      "other": "enoqrtu",
+      "iterations": 6,
+      "free_head": 161,
+      "poll_calls": 106,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeiru",
+      "other": "eknoqst",
+      "iterations": 6,
+      "free_head": 144,
+      "poll_calls": 89,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "inoqstu",
+      "other": "bceeekr",
+      "iterations": 6,
+      "free_head": 184,
+      "poll_calls": 129,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ciknoqs",
+      "other": "beeertu",
+      "iterations": 6,
+      "free_head": 214,
+      "poll_calls": 159,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beioqsu",
+      "other": "ceeknrt",
+      "iterations": 6,
+      "free_head": 212,
+      "poll_calls": 157,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceorst",
+      "other": "eeiknqu",
+      "iterations": 6,
+      "free_head": 174,
+      "poll_calls": 119,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeikrtu",
+      "other": "bcenoqs",
+      "iterations": 6,
+      "free_head": 237,
+      "poll_calls": 184,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bciknqt",
+      "other": "eeeorsu",
+      "iterations": 6,
+      "free_head": 231,
+      "poll_calls": 176,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeikru",
+      "other": "cenoqst",
+      "iterations": 6,
+      "free_head": 222,
+      "poll_calls": 167,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cikoqrs",
+      "other": "beeentu",
+      "iterations": 6,
+      "free_head": 307,
+      "poll_calls": 213,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cinostu",
+      "other": "beeekqr",
+      "iterations": 6,
+      "free_head": 191,
+      "poll_calls": 142,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeiktu",
+      "other": "cenoqrs",
+      "iterations": 6,
+      "free_head": 194,
+      "poll_calls": 139,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeikrt",
+      "other": "benoqsu",
+      "iterations": 6,
+      "free_head": 169,
+      "poll_calls": 114,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cnoqrst",
+      "other": "beeeiku",
+      "iterations": 6,
+      "free_head": 171,
+      "poll_calls": 116,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeikt",
+      "other": "bnoqrsu",
+      "iterations": 6,
+      "free_head": 218,
+      "poll_calls": 167,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bciorst",
+      "other": "eeeknqu",
+      "iterations": 6,
+      "free_head": 201,
+      "poll_calls": 146,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "enoqrst",
+      "other": "bceeiku",
+      "iterations": 6,
+      "free_head": 183,
+      "poll_calls": 128,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bknoqrt",
+      "other": "ceeeisu",
+      "iterations": 6,
+      "free_head": 236,
+      "poll_calls": 181,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bckoqru",
+      "other": "eeeinst",
+      "iterations": 6,
+      "free_head": 194,
+      "poll_calls": 139,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeiqrt",
+      "other": "bcknosu",
+      "iterations": 6,
+      "free_head": 346,
+      "poll_calls": 231,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeoqru",
+      "other": "beiknst",
+      "iterations": 6,
+      "free_head": 394,
+      "poll_calls": 233,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeenot",
+      "other": "cikqrsu",
+      "iterations": 6,
+      "free_head": 174,
+      "poll_calls": 119,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bknortu",
+      "other": "ceeeiqs",
+      "iterations": 6,
+      "free_head": 185,
+      "poll_calls": 130,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cikoqrt",
+      "other": "beeensu",
+      "iterations": 6,
+      "free_head": 197,
+      "poll_calls": 142,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ekoqrtu",
+      "other": "bceeins",
+      "iterations": 6,
+      "free_head": 180,
+      "poll_calls": 125,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bckortu",
+      "other": "eeeinqs",
+      "iterations": 6,
+      "free_head": 175,
+      "poll_calls": 120,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "iknoqsu",
+      "other": "bceeert",
+      "iterations": 6,
+      "free_head": 218,
+      "poll_calls": 163,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceekrt",
+      "other": "einoqsu",
+      "iterations": 6,
+      "free_head": 171,
+      "poll_calls": 126,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeoqrt",
+      "other": "beiknsu",
+      "iterations": 6,
+      "free_head": 437,
+      "poll_calls": 272,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeenqrs",
+      "other": "bcikotu",
+      "iterations": 5,
+      "free_head": 482,
+      "poll_calls": 237,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bciqrtu",
+      "other": "eeeknos",
+      "iterations": 5,
+      "free_head": 202,
+      "poll_calls": 156,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeknqtu",
+      "other": "bceiors",
+      "iterations": 5,
+      "free_head": 269,
+      "poll_calls": 223,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeins",
+      "other": "ckoqrtu",
+      "iterations": 5,
+      "free_head": 138,
+      "poll_calls": 92,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeino",
+      "other": "ckqrstu",
+      "iterations": 5,
+      "free_head": 166,
+      "poll_calls": 123,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eioqrsu",
+      "other": "bceeknt",
+      "iterations": 5,
+      "free_head": 202,
+      "poll_calls": 156,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bikoqrs",
+      "other": "ceeentu",
+      "iterations": 5,
+      "free_head": 165,
+      "poll_calls": 119,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceioqrt",
+      "other": "beeknsu",
+      "iterations": 5,
+      "free_head": 151,
+      "poll_calls": 105,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeiqu",
+      "other": "cknorst",
+      "iterations": 5,
+      "free_head": 150,
+      "poll_calls": 104,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcoqstu",
+      "other": "eeeiknr",
+      "iterations": 5,
+      "free_head": 153,
+      "poll_calls": 107,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "boqrstu",
+      "other": "ceeeikn",
+      "iterations": 5,
+      "free_head": 181,
+      "poll_calls": 135,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeknst",
+      "other": "bcioqru",
+      "iterations": 5,
+      "free_head": 151,
+      "poll_calls": 105,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinoqs",
+      "other": "ceekrtu",
+      "iterations": 5,
+      "free_head": 170,
+      "poll_calls": 124,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beqrstu",
+      "other": "ceeikno",
+      "iterations": 5,
+      "free_head": 158,
+      "poll_calls": 112,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeioru",
+      "other": "ceknqst",
+      "iterations": 5,
+      "free_head": 152,
+      "poll_calls": 106,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeqst",
+      "other": "ciknoru",
+      "iterations": 5,
+      "free_head": 165,
+      "poll_calls": 119,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "iknorsu",
+      "other": "bceeeqt",
+      "iterations": 5,
+      "free_head": 192,
+      "poll_calls": 146,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeioq",
+      "other": "eknrstu",
+      "iterations": 5,
+      "free_head": 173,
+      "poll_calls": 127,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeeiq",
+      "other": "knorstu",
+      "iterations": 5,
+      "free_head": 224,
+      "poll_calls": 178,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "binqrtu",
+      "other": "ceeekos",
+      "iterations": 5,
+      "free_head": 182,
+      "poll_calls": 136,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ikqrstu",
+      "other": "bceeeno",
+      "iterations": 5,
+      "free_head": 157,
+      "poll_calls": 111,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "inoqrst",
+      "other": "bceeeku",
+      "iterations": 5,
+      "free_head": 143,
+      "poll_calls": 97,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ciknort",
+      "other": "beeeqsu",
+      "iterations": 5,
+      "free_head": 174,
+      "poll_calls": 128,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeistu",
+      "other": "beknoqr",
+      "iterations": 5,
+      "free_head": 163,
+      "poll_calls": 117,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "iknoqtu",
+      "other": "bceeers",
+      "iterations": 5,
+      "free_head": 164,
+      "poll_calls": 118,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceikqrt",
+      "other": "beenosu",
+      "iterations": 5,
+      "free_head": 166,
+      "poll_calls": 120,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeiqu",
+      "other": "bknorst",
+      "iterations": 5,
+      "free_head": 168,
+      "poll_calls": 122,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcikrst",
+      "other": "eeenoqu",
+      "iterations": 5,
+      "free_head": 172,
+      "poll_calls": 117,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceinoqr",
+      "other": "beekstu",
+      "iterations": 5,
+      "free_head": 294,
+      "poll_calls": 168,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cenoqrs",
+      "other": "beeiktu",
+      "iterations": 5,
+      "free_head": 488,
+      "poll_calls": 250,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcknrtu",
+      "other": "eeeioqs",
+      "iterations": 5,
+      "free_head": 139,
+      "poll_calls": 93,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeqrsu",
+      "other": "ceiknot",
+      "iterations": 5,
+      "free_head": 306,
+      "poll_calls": 183,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceiqst",
+      "other": "eeknoru",
+      "iterations": 5,
+      "free_head": 134,
+      "poll_calls": 88,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeeio",
+      "other": "knqrstu",
+      "iterations": 5,
+      "free_head": 163,
+      "poll_calls": 117,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcinort",
+      "other": "eeekqsu",
+      "iterations": 5,
+      "free_head": 193,
+      "poll_calls": 147,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcikors",
+      "other": "eeenqtu",
+      "iterations": 5,
+      "free_head": 177,
+      "poll_calls": 131,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknqrs",
+      "other": "bceeotu",
+      "iterations": 5,
+      "free_head": 208,
+      "poll_calls": 162,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeekot",
+      "other": "binqrsu",
+      "iterations": 5,
+      "free_head": 228,
+      "poll_calls": 182,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeiort",
+      "other": "bcknqsu",
+      "iterations": 5,
+      "free_head": 135,
+      "poll_calls": 89,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "iknqrst",
+      "other": "bceeeou",
+      "iterations": 5,
+      "free_head": 160,
+      "poll_calls": 115,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeiorsu",
+      "other": "bceknqt",
+      "iterations": 4,
+      "free_head": 146,
+      "poll_calls": 109,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cioqstu",
+      "other": "beeeknr",
+      "iterations": 4,
+      "free_head": 135,
+      "poll_calls": 98,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beknqsu",
+      "other": "ceeiort",
+      "iterations": 4,
+      "free_head": 182,
+      "poll_calls": 145,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeortu",
+      "other": "beiknqs",
+      "iterations": 4,
+      "free_head": 164,
+      "poll_calls": 127,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cknorst",
+      "other": "beeeiqu",
+      "iterations": 4,
+      "free_head": 128,
+      "poll_calls": 91,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eioqrst",
+      "other": "bceeknu",
+      "iterations": 4,
+      "free_head": 153,
+      "poll_calls": 116,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeknqu",
+      "other": "bciorst",
+      "iterations": 4,
+      "free_head": 186,
+      "poll_calls": 149,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bioqstu",
+      "other": "ceeeknr",
+      "iterations": 4,
+      "free_head": 102,
+      "poll_calls": 65,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeinqu",
+      "other": "cekorst",
+      "iterations": 4,
+      "free_head": 153,
+      "poll_calls": 118,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcekqru",
+      "other": "eeinost",
+      "iterations": 4,
+      "free_head": 421,
+      "poll_calls": 247,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceekors",
+      "other": "beinqtu",
+      "iterations": 4,
+      "free_head": 106,
+      "poll_calls": 69,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ckoqrsu",
+      "other": "beeeint",
+      "iterations": 4,
+      "free_head": 192,
+      "poll_calls": 155,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beikqsu",
+      "other": "ceenort",
+      "iterations": 4,
+      "free_head": 131,
+      "poll_calls": 94,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeikn",
+      "other": "coqrstu",
+      "iterations": 4,
+      "free_head": 119,
+      "poll_calls": 82,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cinqrsu",
+      "other": "beeekot",
+      "iterations": 4,
+      "free_head": 128,
+      "poll_calls": 91,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeinqu",
+      "other": "bckorst",
+      "iterations": 4,
+      "free_head": 141,
+      "poll_calls": 104,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeinqt",
+      "other": "cekorsu",
+      "iterations": 4,
+      "free_head": 353,
+      "poll_calls": 199,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcknqsu",
+      "other": "eeeiort",
+      "iterations": 4,
+      "free_head": 202,
+      "poll_calls": 165,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcikqrt",
+      "other": "eeenosu",
+      "iterations": 4,
+      "free_head": 134,
+      "poll_calls": 97,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeekou",
+      "other": "binqrst",
+      "iterations": 4,
+      "free_head": 133,
+      "poll_calls": 96,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cekqrsu",
+      "other": "beeinot",
+      "iterations": 4,
+      "free_head": 134,
+      "poll_calls": 118,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeknru",
+      "other": "bcioqst",
+      "iterations": 4,
+      "free_head": 156,
+      "poll_calls": 119,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eikostu",
+      "other": "bceenqr",
+      "iterations": 4,
+      "free_head": 157,
+      "poll_calls": 120,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcknoru",
+      "other": "eeeiqst",
+      "iterations": 4,
+      "free_head": 108,
+      "poll_calls": 71,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiknor",
+      "other": "ceeqstu",
+      "iterations": 4,
+      "free_head": 155,
+      "poll_calls": 118,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeino",
+      "other": "ekqrstu",
+      "iterations": 4,
+      "free_head": 146,
+      "poll_calls": 109,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcikoqs",
+      "other": "eeenrtu",
+      "iterations": 4,
+      "free_head": 167,
+      "poll_calls": 130,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bckqstu",
+      "other": "eeeinor",
+      "iterations": 4,
+      "free_head": 136,
+      "poll_calls": 99,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceioqsu",
+      "other": "beeknrt",
+      "iterations": 4,
+      "free_head": 164,
+      "poll_calls": 127,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bikqrtu",
+      "other": "ceeenos",
+      "iterations": 4,
+      "free_head": 158,
+      "poll_calls": 121,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeinqs",
+      "other": "cekortu",
+      "iterations": 4,
+      "free_head": 138,
+      "poll_calls": 101,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeiko",
+      "other": "bnqrstu",
+      "iterations": 4,
+      "free_head": 135,
+      "poll_calls": 98,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "biknqsu",
+      "other": "ceeeort",
+      "iterations": 4,
+      "free_head": 133,
+      "poll_calls": 96,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeioqu",
+      "other": "ceknrst",
+      "iterations": 4,
+      "free_head": 153,
+      "poll_calls": 116,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeqrs",
+      "other": "eiknotu",
+      "iterations": 4,
+      "free_head": 296,
+      "poll_calls": 168,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "biknqru",
+      "other": "ceeeost",
+      "iterations": 4,
+      "free_head": 175,
+      "poll_calls": 138,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceikqrs",
+      "other": "beenotu",
+      "iterations": 4,
+      "free_head": 160,
+      "poll_calls": 123,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenqst",
+      "other": "ceikoru",
+      "iterations": 4,
+      "free_head": 136,
+      "poll_calls": 99,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cikoqru",
+      "other": "beeenst",
+      "iterations": 4,
+      "free_head": 174,
+      "poll_calls": 137,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeknor",
+      "other": "beiqstu",
+      "iterations": 4,
+      "free_head": 108,
+      "poll_calls": 71,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeinoqu",
+      "other": "bcekrst",
+      "iterations": 4,
+      "free_head": 144,
+      "poll_calls": 107,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeikrt",
+      "other": "cenoqsu",
+      "iterations": 4,
+      "free_head": 126,
+      "poll_calls": 89,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einoqsu",
+      "other": "bceekrt",
+      "iterations": 4,
+      "free_head": 136,
+      "poll_calls": 99,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknqsu",
+      "other": "bceeort",
+      "iterations": 4,
+      "free_head": 146,
+      "poll_calls": 109,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeotu",
+      "other": "ciknqrs",
+      "iterations": 4,
+      "free_head": 132,
+      "poll_calls": 95,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bckorst",
+      "other": "eeeinqu",
+      "iterations": 4,
+      "free_head": 111,
+      "poll_calls": 74,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeinqtu",
+      "other": "bcekors",
+      "iterations": 4,
+      "free_head": 137,
+      "poll_calls": 100,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeikoq",
+      "other": "cenrstu",
+      "iterations": 3,
+      "free_head": 132,
+      "poll_calls": 104,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bkoqrsu",
+      "other": "ceeeint",
+      "iterations": 3,
+      "free_head": 114,
+      "poll_calls": 86,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "biknstu",
+      "other": "ceeeoqr",
+      "iterations": 3,
+      "free_head": 115,
+      "poll_calls": 87,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcekrtu",
+      "other": "eeinoqs",
+      "iterations": 3,
+      "free_head": 105,
+      "poll_calls": 77,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeenqs",
+      "other": "cikortu",
+      "iterations": 3,
+      "free_head": 223,
+      "poll_calls": 127,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeiknu",
+      "other": "bcoqrst",
+      "iterations": 3,
+      "free_head": 123,
+      "poll_calls": 95,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiknqs",
+      "other": "beeortu",
+      "iterations": 3,
+      "free_head": 116,
+      "poll_calls": 88,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeinosu",
+      "other": "bcekqrt",
+      "iterations": 3,
+      "free_head": 96,
+      "poll_calls": 68,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeqrs",
+      "other": "ciknotu",
+      "iterations": 3,
+      "free_head": 222,
+      "poll_calls": 128,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeosu",
+      "other": "ciknqrt",
+      "iterations": 3,
+      "free_head": 76,
+      "poll_calls": 48,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cenoqrt",
+      "other": "beeiksu",
+      "iterations": 3,
+      "free_head": 88,
+      "poll_calls": 60,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknort",
+      "other": "bceeqsu",
+      "iterations": 3,
+      "free_head": 93,
+      "poll_calls": 65,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeknoqu",
+      "other": "bceirst",
+      "iterations": 3,
+      "free_head": 103,
+      "poll_calls": 75,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeknqru",
+      "other": "bceiost",
+      "iterations": 3,
+      "free_head": 94,
+      "poll_calls": 66,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinoqt",
+      "other": "ceekrsu",
+      "iterations": 3,
+      "free_head": 103,
+      "poll_calls": 75,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eenqrtu",
+      "other": "bceikos",
+      "iterations": 3,
+      "free_head": 128,
+      "poll_calls": 100,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeikqru",
+      "other": "bcenost",
+      "iterations": 3,
+      "free_head": 131,
+      "poll_calls": 103,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeior",
+      "other": "bknqstu",
+      "iterations": 3,
+      "free_head": 77,
+      "poll_calls": 49,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceenort",
+      "other": "beikqsu",
+      "iterations": 3,
+      "free_head": 102,
+      "poll_calls": 74,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceekqt",
+      "other": "einorsu",
+      "iterations": 3,
+      "free_head": 106,
+      "poll_calls": 78,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeiors",
+      "other": "beknqtu",
+      "iterations": 3,
+      "free_head": 106,
+      "poll_calls": 78,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "iknqrtu",
+      "other": "bceeeos",
+      "iterations": 3,
+      "free_head": 133,
+      "poll_calls": 105,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknoru",
+      "other": "bceeqst",
+      "iterations": 3,
+      "free_head": 142,
+      "poll_calls": 114,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeirsu",
+      "other": "bcknoqt",
+      "iterations": 3,
+      "free_head": 94,
+      "poll_calls": 66,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeoqtu",
+      "other": "bciknrs",
+      "iterations": 3,
+      "free_head": 69,
+      "poll_calls": 41,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeertu",
+      "other": "ciknoqs",
+      "iterations": 3,
+      "free_head": 86,
+      "poll_calls": 58,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinqru",
+      "other": "ceekost",
+      "iterations": 3,
+      "free_head": 94,
+      "poll_calls": 66,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "iknoqru",
+      "other": "bceeest",
+      "iterations": 3,
+      "free_head": 102,
+      "poll_calls": 74,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cenqrst",
+      "other": "beeikou",
+      "iterations": 3,
+      "free_head": 100,
+      "poll_calls": 72,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bckoqrs",
+      "other": "eeeintu",
+      "iterations": 3,
+      "free_head": 201,
+      "poll_calls": 119,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeikns",
+      "other": "bcoqrtu",
+      "iterations": 3,
+      "free_head": 111,
+      "poll_calls": 83,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cinoqrt",
+      "other": "beeeksu",
+      "iterations": 3,
+      "free_head": 80,
+      "poll_calls": 52,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcikoqr",
+      "other": "eeenstu",
+      "iterations": 3,
+      "free_head": 106,
+      "poll_calls": 78,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceenoqu",
+      "other": "beikrst",
+      "iterations": 3,
+      "free_head": 108,
+      "poll_calls": 80,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cikqrst",
+      "other": "beeenou",
+      "iterations": 3,
+      "free_head": 91,
+      "poll_calls": 63,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeikor",
+      "other": "bcnqstu",
+      "iterations": 3,
+      "free_head": 102,
+      "poll_calls": 74,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcqrstu",
+      "other": "eeeikno",
+      "iterations": 3,
+      "free_head": 103,
+      "poll_calls": 75,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcekntu",
+      "other": "eeioqrs",
+      "iterations": 3,
+      "free_head": 77,
+      "poll_calls": 49,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeioqrs",
+      "other": "bcekntu",
+      "iterations": 3,
+      "free_head": 96,
+      "poll_calls": 68,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cnoqrsu",
+      "other": "beeeikt",
+      "iterations": 3,
+      "free_head": 101,
+      "poll_calls": 73,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceinqrt",
+      "other": "beekosu",
+      "iterations": 3,
+      "free_head": 96,
+      "poll_calls": 68,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeiort",
+      "other": "beknqsu",
+      "iterations": 3,
+      "free_head": 102,
+      "poll_calls": 74,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ciknqst",
+      "other": "beeeoru",
+      "iterations": 3,
+      "free_head": 90,
+      "poll_calls": 62,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeiknru",
+      "other": "bceoqst",
+      "iterations": 3,
+      "free_head": 106,
+      "poll_calls": 78,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeknou",
+      "other": "bciqrst",
+      "iterations": 3,
+      "free_head": 91,
+      "poll_calls": 63,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eekoqru",
+      "other": "bceinst",
+      "iterations": 3,
+      "free_head": 90,
+      "poll_calls": 62,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknqru",
+      "other": "bceeost",
+      "iterations": 3,
+      "free_head": 122,
+      "poll_calls": 94,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenoqr",
+      "other": "ceikstu",
+      "iterations": 3,
+      "free_head": 294,
+      "poll_calls": 155,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeinr",
+      "other": "bkoqstu",
+      "iterations": 3,
+      "free_head": 97,
+      "poll_calls": 69,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcenoqt",
+      "other": "eeikrsu",
+      "iterations": 3,
+      "free_head": 104,
+      "poll_calls": 76,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeoqrst",
+      "other": "bceiknu",
+      "iterations": 3,
+      "free_head": 88,
+      "poll_calls": 60,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcinoqr",
+      "other": "eeekstu",
+      "iterations": 3,
+      "free_head": 88,
+      "poll_calls": 60,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcnoqtu",
+      "other": "eeeikrs",
+      "iterations": 3,
+      "free_head": 125,
+      "poll_calls": 97,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beekqrs",
+      "other": "ceinotu",
+      "iterations": 3,
+      "free_head": 282,
+      "poll_calls": 158,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiqrsu",
+      "other": "beeknot",
+      "iterations": 3,
+      "free_head": 107,
+      "poll_calls": 79,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeiknot",
+      "other": "bceqrsu",
+      "iterations": 3,
+      "free_head": 111,
+      "poll_calls": 83,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeioru",
+      "other": "beknqst",
+      "iterations": 3,
+      "free_head": 85,
+      "poll_calls": 57,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eknoqsu",
+      "other": "bceeirt",
+      "iterations": 3,
+      "free_head": 131,
+      "poll_calls": 103,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "binoqtu",
+      "other": "ceeekrs",
+      "iterations": 3,
+      "free_head": 95,
+      "poll_calls": 67,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bioqrtu",
+      "other": "ceeekns",
+      "iterations": 2,
+      "free_head": 53,
+      "poll_calls": 34,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeikqrt",
+      "other": "bcenosu",
+      "iterations": 2,
+      "free_head": 71,
+      "poll_calls": 53,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceenqu",
+      "other": "eikorst",
+      "iterations": 2,
+      "free_head": 79,
+      "poll_calls": 61,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknqrt",
+      "other": "bceeosu",
+      "iterations": 2,
+      "free_head": 58,
+      "poll_calls": 39,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeinqrt",
+      "other": "bcekosu",
+      "iterations": 2,
+      "free_head": 73,
+      "poll_calls": 54,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeenos",
+      "other": "bikqrtu",
+      "iterations": 2,
+      "free_head": 68,
+      "poll_calls": 49,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beekoqr",
+      "other": "ceinstu",
+      "iterations": 2,
+      "free_head": 73,
+      "poll_calls": 54,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiknru",
+      "other": "ceeoqst",
+      "iterations": 2,
+      "free_head": 68,
+      "poll_calls": 49,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeqru",
+      "other": "ciknost",
+      "iterations": 2,
+      "free_head": 63,
+      "poll_calls": 44,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beekqru",
+      "other": "ceinost",
+      "iterations": 2,
+      "free_head": 398,
+      "poll_calls": 219,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cekoqtu",
+      "other": "beeinrs",
+      "iterations": 2,
+      "free_head": 67,
+      "poll_calls": 48,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceikor",
+      "other": "eenqstu",
+      "iterations": 2,
+      "free_head": 56,
+      "poll_calls": 37,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceknot",
+      "other": "eeiqrsu",
+      "iterations": 2,
+      "free_head": 75,
+      "poll_calls": 57,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bekoqrt",
+      "other": "ceeinsu",
+      "iterations": 2,
+      "free_head": 55,
+      "poll_calls": 36,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beknoqs",
+      "other": "ceeirtu",
+      "iterations": 2,
+      "free_head": 204,
+      "poll_calls": 112,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknrsu",
+      "other": "bceeoqt",
+      "iterations": 2,
+      "free_head": 75,
+      "poll_calls": 56,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeeik",
+      "other": "noqrstu",
+      "iterations": 2,
+      "free_head": 85,
+      "poll_calls": 66,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeinr",
+      "other": "ckoqstu",
+      "iterations": 2,
+      "free_head": 61,
+      "poll_calls": 42,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcekost",
+      "other": "eeinqru",
+      "iterations": 2,
+      "free_head": 72,
+      "poll_calls": 56,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeiors",
+      "other": "bcknqtu",
+      "iterations": 2,
+      "free_head": 71,
+      "poll_calls": 52,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeekou",
+      "other": "cinqrst",
+      "iterations": 2,
+      "free_head": 66,
+      "poll_calls": 47,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenosu",
+      "other": "ceikqrt",
+      "iterations": 2,
+      "free_head": 68,
+      "poll_calls": 49,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeknoq",
+      "other": "beirstu",
+      "iterations": 2,
+      "free_head": 126,
+      "poll_calls": 109,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeinoq",
+      "other": "cekrstu",
+      "iterations": 2,
+      "free_head": 99,
+      "poll_calls": 81,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bnoqrtu",
+      "other": "ceeeiks",
+      "iterations": 2,
+      "free_head": 56,
+      "poll_calls": 37,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinors",
+      "other": "ceekqtu",
+      "iterations": 2,
+      "free_head": 70,
+      "poll_calls": 51,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eekqrtu",
+      "other": "bceinos",
+      "iterations": 2,
+      "free_head": 67,
+      "poll_calls": 49,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeosu",
+      "other": "biknqrt",
+      "iterations": 2,
+      "free_head": 57,
+      "poll_calls": 38,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cknoqrs",
+      "other": "beeeitu",
+      "iterations": 2,
+      "free_head": 85,
+      "poll_calls": 66,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeeikr",
+      "other": "cnoqstu",
+      "iterations": 2,
+      "free_head": 62,
+      "poll_calls": 43,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceinqt",
+      "other": "eekorsu",
+      "iterations": 2,
+      "free_head": 73,
+      "poll_calls": 54,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinoru",
+      "other": "ceekqst",
+      "iterations": 2,
+      "free_head": 69,
+      "poll_calls": 50,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeknoq",
+      "other": "ceirstu",
+      "iterations": 2,
+      "free_head": 113,
+      "poll_calls": 94,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcekqtu",
+      "other": "eeinors",
+      "iterations": 2,
+      "free_head": 66,
+      "poll_calls": 47,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "biknors",
+      "other": "ceeeqtu",
+      "iterations": 2,
+      "free_head": 79,
+      "poll_calls": 60,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeenor",
+      "other": "cikqstu",
+      "iterations": 2,
+      "free_head": 70,
+      "poll_calls": 51,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeeiou",
+      "other": "bknqrst",
+      "iterations": 2,
+      "free_head": 56,
+      "poll_calls": 37,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeinou",
+      "other": "bckqrst",
+      "iterations": 2,
+      "free_head": 62,
+      "poll_calls": 43,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeiost",
+      "other": "ceknqru",
+      "iterations": 2,
+      "free_head": 80,
+      "poll_calls": 61,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceekoq",
+      "other": "einrstu",
+      "iterations": 2,
+      "free_head": 126,
+      "poll_calls": 109,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcinost",
+      "other": "eeekqru",
+      "iterations": 2,
+      "free_head": 84,
+      "poll_calls": 65,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcenoqs",
+      "other": "eeikrtu",
+      "iterations": 2,
+      "free_head": 68,
+      "poll_calls": 49,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bekoqsu",
+      "other": "ceeinrt",
+      "iterations": 2,
+      "free_head": 59,
+      "poll_calls": 41,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beekoqt",
+      "other": "ceinrsu",
+      "iterations": 2,
+      "free_head": 72,
+      "poll_calls": 54,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceekqru",
+      "other": "beinost",
+      "iterations": 2,
+      "free_head": 121,
+      "poll_calls": 104,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beoqstu",
+      "other": "ceeiknr",
+      "iterations": 1,
+      "free_head": 39,
+      "poll_calls": 30,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cenrstu",
+      "other": "beeikoq",
+      "iterations": 1,
+      "free_head": 54,
+      "poll_calls": 45,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeirst",
+      "other": "beknoqu",
+      "iterations": 1,
+      "free_head": 55,
+      "poll_calls": 48,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiostu",
+      "other": "beeknqr",
+      "iterations": 1,
+      "free_head": 51,
+      "poll_calls": 42,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenost",
+      "other": "ceikqru",
+      "iterations": 1,
+      "free_head": 82,
+      "poll_calls": 73,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinrtu",
+      "other": "ceekoqs",
+      "iterations": 1,
+      "free_head": 85,
+      "poll_calls": 78,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beknors",
+      "other": "ceeiqtu",
+      "iterations": 1,
+      "free_head": 60,
+      "poll_calls": 51,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einqstu",
+      "other": "bceekor",
+      "iterations": 1,
+      "free_head": 45,
+      "poll_calls": 36,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einorst",
+      "other": "bceekqu",
+      "iterations": 1,
+      "free_head": 123,
+      "poll_calls": 121,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeirst",
+      "other": "ceknoqu",
+      "iterations": 1,
+      "free_head": 51,
+      "poll_calls": 43,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceikrst",
+      "other": "beenoqu",
+      "iterations": 1,
+      "free_head": 63,
+      "poll_calls": 56,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "inorstu",
+      "other": "bceeekq",
+      "iterations": 1,
+      "free_head": 89,
+      "poll_calls": 81,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenstu",
+      "other": "ceikoqr",
+      "iterations": 1,
+      "free_head": 68,
+      "poll_calls": 59,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einrstu",
+      "other": "bceekoq",
+      "iterations": 1,
+      "free_head": 112,
+      "poll_calls": 108,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einqrsu",
+      "other": "bceekot",
+      "iterations": 1,
+      "free_head": 48,
+      "poll_calls": 41,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiorst",
+      "other": "beeknqu",
+      "iterations": 1,
+      "free_head": 75,
+      "poll_calls": 68,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeknors",
+      "other": "bceiqtu",
+      "iterations": 1,
+      "free_head": 81,
+      "poll_calls": 72,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ikorstu",
+      "other": "bceeenq",
+      "iterations": 1,
+      "free_head": 71,
+      "poll_calls": 62,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeinot",
+      "other": "cekqrsu",
+      "iterations": 1,
+      "free_head": 82,
+      "poll_calls": 74,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeinrs",
+      "other": "bekoqtu",
+      "iterations": 1,
+      "free_head": 66,
+      "poll_calls": 58,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceinrsu",
+      "other": "beekoqt",
+      "iterations": 1,
+      "free_head": 46,
+      "poll_calls": 38,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeinqru",
+      "other": "bcekost",
+      "iterations": 1,
+      "free_head": 43,
+      "poll_calls": 35,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beinost",
+      "other": "ceekqru",
+      "iterations": 1,
+      "free_head": 73,
+      "poll_calls": 67,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiknrtu",
+      "other": "bceeoqs",
+      "iterations": 1,
+      "free_head": 62,
+      "poll_calls": 53,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiorsu",
+      "other": "ceeknqt",
+      "iterations": 1,
+      "free_head": 51,
+      "poll_calls": 43,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceekst",
+      "other": "einoqru",
+      "iterations": 1,
+      "free_head": 55,
+      "poll_calls": 46,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeknu",
+      "other": "eioqrst",
+      "iterations": 1,
+      "free_head": 41,
+      "poll_calls": 32,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eekorst",
+      "other": "bceinqu",
+      "iterations": 1,
+      "free_head": 80,
+      "poll_calls": 71,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "benrstu",
+      "other": "ceeikoq",
+      "iterations": 1,
+      "free_head": 58,
+      "poll_calls": 52,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cekorst",
+      "other": "beeinqu",
+      "iterations": 1,
+      "free_head": 69,
+      "poll_calls": 61,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "einortu",
+      "other": "bceekqs",
+      "iterations": 1,
+      "free_head": 66,
+      "poll_calls": 57,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeikr",
+      "other": "enoqstu",
+      "iterations": 1,
+      "free_head": 48,
+      "poll_calls": 39,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiorst",
+      "other": "ceeknqu",
+      "iterations": 1,
+      "free_head": 72,
+      "poll_calls": 64,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "binorst",
+      "other": "ceeekqu",
+      "iterations": 1,
+      "free_head": 59,
+      "poll_calls": 50,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceiknrs",
+      "other": "beeoqtu",
+      "iterations": 1,
+      "free_head": 61,
+      "poll_calls": 52,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bciorsu",
+      "other": "eeeknqt",
+      "iterations": 1,
+      "free_head": 40,
+      "poll_calls": 31,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcekrsu",
+      "other": "eeinoqt",
+      "iterations": 1,
+      "free_head": 61,
+      "poll_calls": 52,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceirtu",
+      "other": "eeknoqs",
+      "iterations": 1,
+      "free_head": 43,
+      "poll_calls": 34,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beikrst",
+      "other": "ceenoqu",
+      "iterations": 1,
+      "free_head": 50,
+      "poll_calls": 41,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bcinoru",
+      "other": "eeekqst",
+      "iterations": 1,
+      "free_head": 50,
+      "poll_calls": 41,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceknost",
+      "other": "beeiqru",
+      "iterations": 1,
+      "free_head": 67,
+      "poll_calls": 58,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeersu",
+      "other": "biknoqt",
+      "iterations": 1,
+      "free_head": 54,
+      "poll_calls": 45,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenors",
+      "other": "ceikqtu",
+      "iterations": 1,
+      "free_head": 84,
+      "poll_calls": 77,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceinru",
+      "other": "eekoqst",
+      "iterations": 1,
+      "free_head": 57,
+      "poll_calls": 48,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceersu",
+      "other": "eiknoqt",
+      "iterations": 1,
+      "free_head": 53,
+      "poll_calls": 45,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceinosu",
+      "other": "beekqrt",
+      "iterations": 1,
+      "free_head": 52,
+      "poll_calls": 43,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeintu",
+      "other": "bekoqrs",
+      "iterations": 1,
+      "free_head": 56,
+      "poll_calls": 47,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eiorstu",
+      "other": "bceeknq",
+      "iterations": 1,
+      "free_head": 114,
+      "poll_calls": 108,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beikors",
+      "other": "ceenqtu",
+      "iterations": 1,
+      "free_head": 54,
+      "poll_calls": 45,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceenrst",
+      "other": "beikoqu",
+      "iterations": 1,
+      "free_head": 72,
+      "poll_calls": 63,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eoqrstu",
+      "other": "bceeikn",
+      "iterations": 1,
+      "free_head": 63,
+      "poll_calls": 57,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceenrs",
+      "other": "eikoqtu",
+      "iterations": 1,
+      "free_head": 72,
+      "poll_calls": 63,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceiknr",
+      "other": "eeoqstu",
+      "iterations": 1,
+      "free_head": 65,
+      "poll_calls": 56,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceenost",
+      "other": "beikqru",
+      "iterations": 1,
+      "free_head": 76,
+      "poll_calls": 67,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceknotu",
+      "other": "beeiqrs",
+      "iterations": 1,
+      "free_head": 68,
+      "poll_calls": 59,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceikrs",
+      "other": "eenoqtu",
+      "iterations": 1,
+      "free_head": 57,
+      "poll_calls": 48,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeknrs",
+      "other": "beioqtu",
+      "iterations": 1,
+      "free_head": 64,
+      "poll_calls": 55,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeqstu",
+      "other": "bciknor",
+      "iterations": 1,
+      "free_head": 42,
+      "poll_calls": 33,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeirsu",
+      "other": "ceknoqt",
+      "iterations": 1,
+      "free_head": 52,
+      "poll_calls": 43,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceeirtu",
+      "other": "beknoqs",
+      "iterations": 1,
+      "free_head": 50,
+      "poll_calls": 42,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceinrs",
+      "other": "eekoqtu",
+      "iterations": 1,
+      "free_head": 56,
+      "poll_calls": 47,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cinortu",
+      "other": "beeekqs",
+      "iterations": 1,
+      "free_head": 56,
+      "poll_calls": 48,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceinot",
+      "other": "eekqrsu",
+      "iterations": 1,
+      "free_head": 35,
+      "poll_calls": 26,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceeirs",
+      "other": "eknoqtu",
+      "iterations": 1,
+      "free_head": 54,
+      "poll_calls": 45,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeenrst",
+      "other": "bcikoqu",
+      "iterations": 1,
+      "free_head": 90,
+      "poll_calls": 86,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cenorsu",
+      "other": "beeikqt",
+      "iterations": 1,
+      "free_head": 67,
+      "poll_calls": 58,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cenostu",
+      "other": "beeikqr",
+      "iterations": 1,
+      "free_head": 71,
+      "poll_calls": 64,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eikorst",
+      "other": "bceenqu",
+      "iterations": 1,
+      "free_head": 56,
+      "poll_calls": 47,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beeostu",
+      "other": "ceiknqr",
+      "iterations": 1,
+      "free_head": 47,
+      "poll_calls": 38,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beekrsu",
+      "other": "ceinoqt",
+      "iterations": 1,
+      "free_head": 49,
+      "poll_calls": 41,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceorsu",
+      "other": "eeiknqt",
+      "iterations": 1,
+      "free_head": 58,
+      "poll_calls": 51,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beikort",
+      "other": "ceenqsu",
+      "iterations": 1,
+      "free_head": 52,
+      "poll_calls": 43,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beenotu",
+      "other": "ceikqrs",
+      "iterations": 1,
+      "free_head": 70,
+      "poll_calls": 61,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "beiortu",
+      "other": "ceeknqs",
+      "iterations": 1,
+      "free_head": 71,
+      "poll_calls": 62,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "bceknos",
+      "other": "eeiqrtu",
+      "iterations": 1,
+      "free_head": 38,
+      "poll_calls": 29,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "cenortu",
+      "other": "beeikqs",
+      "iterations": 1,
+      "free_head": 59,
+      "poll_calls": 51,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eeeinrt",
+      "other": "bckoqsu",
+      "iterations": 1,
+      "free_head": 55,
+      "poll_calls": 46,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "ceinost",
+      "other": "beekqru",
+      "iterations": 1,
+      "free_head": 89,
+      "poll_calls": 83,
+      "empty_pool_polls": 0,
+      "trapped": false
+    },
+    {
+      "own": "eenorst",
+      "other": "bceikqu",
+      "iterations": 1,
+      "free_head": 117,
+      "poll_calls": 108,
+      "empty_pool_polls": 0,
+      "trapped": false
+    }
+  ]
+}

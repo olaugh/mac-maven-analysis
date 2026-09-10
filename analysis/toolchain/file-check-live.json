@@ -1,0 +1,67 @@
+{
+  "code15_base": 129177904,
+  "code15_exact_match": true,
+  "code15_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10",
+  "a5": 131028224,
+  "filename": "maven2.1",
+  "filename_pointer": 2320,
+  "volume_reference": -3,
+  "calls": [
+    {
+      "operation": "FSOpen",
+      "resource_offset": 3434,
+      "result": 0,
+      "file_refnum": 3762
+    },
+    {
+      "operation": "GetEOF",
+      "resource_offset": 3456,
+      "result": 0,
+      "file_refnum": 3762,
+      "original_eof": 1070788
+    },
+    {
+      "operation": "FSRead",
+      "resource_offset": 3482,
+      "result": 0,
+      "file_refnum": 3762,
+      "original_eof": 1070788,
+      "count": 1,
+      "buffer_hex": "00"
+    },
+    {
+      "operation": "FSWrite",
+      "resource_offset": 3516,
+      "result": 0,
+      "file_refnum": 3762,
+      "original_eof": 1070788,
+      "count": 1,
+      "buffer_hex": "00"
+    },
+    {
+      "operation": "SetEOF",
+      "resource_offset": 3538,
+      "result": 0,
+      "file_refnum": 3762,
+      "original_eof": 1070788,
+      "count": 1,
+      "buffer_hex": "00"
+    },
+    {
+      "operation": "FSClose",
+      "resource_offset": 3556,
+      "result": 0,
+      "file_refnum": 3762,
+      "original_eof": 1070788,
+      "count": 1,
+      "buffer_hex": "00"
+    }
+  ],
+  "return_value": 0,
+  "stack_advance": 4,
+  "data_bytes": 1070788,
+  "before_sha256": "2619382321bca5b52967b3515d15b0592a8e1f641bce92f65edcf06ba10edb19",
+  "after_sha256": "2619382321bca5b52967b3515d15b0592a8e1f641bce92f65edcf06ba10edb19",
+  "data_unchanged": true,
+  "scope": "Natural startup success path; no argument/register/memory injection"
+}

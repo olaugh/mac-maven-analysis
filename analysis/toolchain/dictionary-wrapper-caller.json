@@ -1,0 +1,16 @@
+{
+  "pc": 130655902,
+  "frame_pointer": 130998768,
+  "caller_return": 130660280,
+  "wrapper_word_pointer": 131018464,
+  "counted_limit": 1,
+  "resolved_caller": [
+    {
+      "code_resource": 12,
+      "resource_offset": 1224,
+      "base": 130659056,
+      "full_code_match": true,
+      "sha256": "7fa76bffb79ccaef927a1baee70ad369f9b783f6b89d5008e62485f9f0786d29"
+    }
+  ]
+}

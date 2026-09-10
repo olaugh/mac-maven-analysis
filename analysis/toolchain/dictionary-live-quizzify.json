@@ -1,0 +1,22 @@
+{
+  "code15_base": 130655472,
+  "code15_exact_match": true,
+  "a5": 131028224,
+  "code15_sha256": "5c298e060bd124565ceac13c43b5186a20c5db01a745f3165ed3ab30f8b87c10",
+  "calls": [
+    {
+      "word_hex": "7175697a7a696679",
+      "word": "quizzify",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 0,
+      "reconstructed_result": 0,
+      "stack_advance": 4,
+      "saved_registers_preserved": true
+    }
+  ],
+  "scope": "Natural original section-lookup calls compared with compiled C on byte-identical live tables"
+}

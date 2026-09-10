@@ -1,0 +1,23 @@
+{
+  "scope": "Constructed tag0 test position derived from unseen-Q fixture; THE/GU/OX/LAND replace THEY/GUV/VOX/ALAND; no guest memory edits",
+  "source_sha256": "4609502d9f745232e6645f0254dfa2925cdeb6718d73fe7a3d6c46dd27563c61",
+  "sha256": "980c8ca85ac8102f388c7ff602a89cb47227429a142487802cd4a4078a08151b",
+  "changes": [
+    {
+      "row": 12,
+      "column": 15,
+      "removed": "y"
+    },
+    {
+      "row": 9,
+      "column": 1,
+      "removed": "v"
+    },
+    {
+      "row": 14,
+      "column": 2,
+      "removed": "a"
+    }
+  ],
+  "expected_unseen": "aaaeeeeiknoqrtvy"
+}

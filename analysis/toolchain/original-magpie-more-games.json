@@ -1,0 +1,365 @@
+{
+  "scope": "Magpie picks human moves; original Maven Kibitz plays the other side.\nEvery normal original search is compared byte-for-byte with the owned C engine.\nPositions are imported through original files. Host owns seeded bag/deals, not\noriginal UI move-entry, refill, simulation, or history lifecycle.\n",
+  "seed": 9102050,
+  "requested_games": 20,
+  "completed_games": 20,
+  "positions": 455,
+  "ranked_records": 4508,
+  "issues": [],
+  "games": [
+    {
+      "game": 0,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        343,
+        529
+      ],
+      "remaining_racks": [
+        [
+          "D",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 1,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        340,
+        444
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "L",
+          "C"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 2,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        471,
+        469
+      ],
+      "remaining_racks": [
+        [
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 3,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        425,
+        465
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "L",
+          "A",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 4,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        501,
+        320
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "G",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 5,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        452,
+        448
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "R",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 6,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        377,
+        438
+      ],
+      "remaining_racks": [
+        [
+          "R",
+          "N"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 7,
+      "turns": 27,
+      "scores_before_final_adjustment": [
+        473,
+        477
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "U"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 8,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        449,
+        472
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "L"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 9,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        335,
+        479
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "E",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 10,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        446,
+        432
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "D",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 11,
+      "turns": 27,
+      "scores_before_final_adjustment": [
+        549,
+        261
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "G",
+          "R",
+          "G"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 12,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        376,
+        361
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "M",
+          "O"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 13,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        527,
+        380
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "N",
+          "O",
+          "I",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 14,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        490,
+        456
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "L",
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 15,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        489,
+        366
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "N",
+          "R",
+          "N",
+          "M",
+          "Z",
+          "E"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 16,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        388,
+        375
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "M",
+          "G",
+          "B"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 17,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        458,
+        435
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "C",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 18,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        463,
+        447
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 19,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        412,
+        348
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "A",
+          "E",
+          "C",
+          "T",
+          "?"
+        ]
+      ],
+      "bag": 0
+    }
+  ],
+  "started": 1789005428.1583328,
+  "max_seconds": 3600,
+  "magpie_leaves": "CSW21.klv2",
+  "magpie_only_selects_human_moves": true,
+  "original_executable_compared": true,
+  "files": {
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/bin/magpie": "298b70c362f5b79e0429fae21bc6a931ebc25cd2338b5d82f1df0050091fc2f4",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.kwg": "caabddb67f27a265fa9df4487d07fd93f4010650fbf0f684647b6ac4e0eb333e",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.wmp": "0049dcb9c3dc0913518d7a6f4333e89da37063ce89acd9a9560aee7fd6371c93",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.klv2": "d33c30e637d53ee6250fac943a01c3c9a18f93c638499ff5e13fa358c2ca03bb",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/.build/magpie-match.dylib": "445784e1dda27f1f2e8164a56994f1369c7abef067fdc577a36bf06754b2ff4c"
+  },
+  "fresh_state_guard": {
+    "a5": 131028224,
+    "workspace": "00000000000000000000000000000000000000000000000000000000000000000000000000000101000101000000000000000000000101000101000000000000",
+    "matched_resource_initializer": true
+  },
+  "elapsed_seconds": 1092.6982290744781,
+  "complete": true
+}

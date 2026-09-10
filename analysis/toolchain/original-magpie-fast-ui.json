@@ -1,0 +1,117 @@
+{
+  "scope": "Magpie picks human moves; original Maven Kibitz plays the other side.\nEvery normal original search is compared byte-for-byte with the owned C engine.\nPositions are imported through original files. Host owns seeded bag/deals, not\noriginal UI move-entry, refill, simulation, or history lifecycle.\n",
+  "ui_delay_scale": 0.25,
+  "key_delay_seconds": 0.04,
+  "seed": 9102050,
+  "requested_games": 5,
+  "completed_games": 5,
+  "positions": 110,
+  "ranked_records": 1097,
+  "issues": [],
+  "games": [
+    {
+      "game": 0,
+      "turns": 22,
+      "scores_before_final_adjustment": [
+        343,
+        529
+      ],
+      "remaining_racks": [
+        [
+          "D",
+          "G"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 1,
+      "turns": 24,
+      "scores_before_final_adjustment": [
+        340,
+        444
+      ],
+      "remaining_racks": [
+        [
+          "N",
+          "L",
+          "C"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 2,
+      "turns": 20,
+      "scores_before_final_adjustment": [
+        471,
+        469
+      ],
+      "remaining_racks": [
+        [
+          "I"
+        ],
+        []
+      ],
+      "bag": 0
+    },
+    {
+      "game": 3,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        425,
+        465
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "R",
+          "L",
+          "A",
+          "I"
+        ]
+      ],
+      "bag": 0
+    },
+    {
+      "game": 4,
+      "turns": 21,
+      "scores_before_final_adjustment": [
+        501,
+        320
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "G",
+          "T"
+        ]
+      ],
+      "bag": 0
+    }
+  ],
+  "started": 1789006563.727644,
+  "max_seconds": 600,
+  "magpie_leaves": "CSW21.klv2",
+  "magpie_only_selects_human_moves": true,
+  "original_executable_compared": true,
+  "files": {
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/bin/magpie": "298b70c362f5b79e0429fae21bc6a931ebc25cd2338b5d82f1df0050091fc2f4",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.kwg": "caabddb67f27a265fa9df4487d07fd93f4010650fbf0f684647b6ac4e0eb333e",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.wmp": "0049dcb9c3dc0913518d7a6f4333e89da37063ce89acd9a9560aee7fd6371c93",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.klv2": "d33c30e637d53ee6250fac943a01c3c9a18f93c638499ff5e13fa358c2ca03bb",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/.build/magpie-match.dylib": "445784e1dda27f1f2e8164a56994f1369c7abef067fdc577a36bf06754b2ff4c",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py": "195ae5a953faa2ee28397b7a6bf49b2c20c1b688ff6889745f6eab414cefcb49",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/original_match_search.py": "f3d49af49379dfe6bc6c82d47d6e0aa41b8686de833b479d484dbdaf768f4510",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/mac_ui.py": "6e9a1c61835473d9de8d20e56fb2d61f12dca9dc31d3f6a01de11fead4fa9f1c"
+  },
+  "fresh_state_guard": {
+    "a5": 131028224,
+    "workspace": "00000000000000000000000000000000000000000000000000000000000000000000000000000101000101000000000000000000000101000101000000000000",
+    "matched_resource_initializer": true
+  },
+  "elapsed_seconds": 127.7225489616394,
+  "complete": true
+}

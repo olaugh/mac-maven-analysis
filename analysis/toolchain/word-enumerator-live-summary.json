@@ -1,0 +1,51 @@
+{
+  "runs": [
+    {
+      "capture": "word-enumerator-live-cat.json",
+      "sha256": "296f75ce6a4daa5a6c7ffe9cd71b353ba3946d22aba06b614da72b8d5fb72737",
+      "label": "cat",
+      "emissions": 4,
+      "word_order_matches": true,
+      "final_state_matches": true
+    },
+    {
+      "capture": "word-enumerator-live-blank.json",
+      "sha256": "e6e7a91d6645ac2a850cce1c3357a193d77b77a5bdb77fa0363b46d664936243",
+      "label": "blank",
+      "emissions": 50,
+      "word_order_matches": true,
+      "final_state_matches": true
+    },
+    {
+      "capture": "word-enumerator-live-filtered.json",
+      "sha256": "ee82aece7d2596da9d4c61277ba6d0842ab27dd949df8659002ba281fc23e7c9",
+      "label": "filtered",
+      "emissions": 10,
+      "word_order_matches": true,
+      "final_state_matches": true
+    },
+    {
+      "capture": "word-enumerator-live-required.json",
+      "sha256": "06ada6cd893490875e289908a4f8c7e551cf01b2618153e65d513532e8abcd2c",
+      "label": "required",
+      "emissions": 85,
+      "word_order_matches": true,
+      "final_state_matches": true
+    }
+  ],
+  "total_emissions": 149,
+  "source_sha256": {
+    "reconstruction/word_enumerator.c": "48d5abdf9e4da33efccd6fab0f8529ca4dc42b3f3cb4154e3363f6c820b6f378",
+    "reconstruction/word_enumerator.h": "85840fe04d357f63b0bee1ae4f8311a66a4f06bc9652573432da7c495e3e549e",
+    "reconstruction/dictionary_lookup.c": "23e0dcf4dcd3021de21158cfc39df64ad513321053883e45c376afd9fabf7c33",
+    "reconstruction/dictionary_lookup.h": "869b131e954bcc685b78d8059a2f131c79c84b72befb4865751beec55305b11a"
+  },
+  "scope": "Four natural normal enumerations; exact emission order and captured core workspace. Setup/input parsing, UI storage and exceptional exits are not reconstructed by this comparison.",
+  "source_hash_note": "Hashes identify the tested source as captured before the subsequent comment-only evidence update.",
+  "documented_source_sha256": {
+    "reconstruction/word_enumerator.c": "dbccf9a4365c56704e7e7885ef41bee3193e02adb3fe085edfa99c1952ea1285",
+    "reconstruction/word_enumerator.h": "85840fe04d357f63b0bee1ae4f8311a66a4f06bc9652573432da7c495e3e549e",
+    "reconstruction/dictionary_lookup.c": "23e0dcf4dcd3021de21158cfc39df64ad513321053883e45c376afd9fabf7c33",
+    "reconstruction/dictionary_lookup.h": "869b131e954bcc685b78d8059a2f131c79c84b72befb4865751beec55305b11a"
+  }
+}

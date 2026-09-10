@@ -1,0 +1,12 @@
+{
+  "scope": "Constructed valid-format test save derived from natural86-byte save; not a naturally played game. One A replaced with ? in initial/selected racks; stored move score changed1400\u21921200. Original unmodified.",
+  "source_sha256": "7d03ba811655e75659311defa63db51a43abac2a6949a611bf73e5c16aebcc00",
+  "fixture_sha256": "c9dd3b77cf9dedc4dc9d772683c1a5aefebc47a273c260b2543767093abb6e0b",
+  "fixture_name": "maven-blank-fixture",
+  "changed_offsets": [
+    21,
+    52,
+    53,
+    73
+  ]
+}

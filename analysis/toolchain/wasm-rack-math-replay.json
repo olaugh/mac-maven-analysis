@@ -1,0 +1,22 @@
+{
+  "scope": "Freestanding wasm exact-integer letter expectation and original integer rack composition, compared with captured original outputs; no UI or full ranking",
+  "imports": [],
+  "wasm_sha256": "825105dd5f304302854e01bb009102f96b96003a9c61f042db557d160ebcb60b",
+  "node": "v26.0.0",
+  "expectation_calls_matching": 24,
+  "composition_calls_matching": 2,
+  "captures": [
+    {
+      "name": "letter-expectation-live",
+      "sha256": "b55913ef3085577506f16f7abd25bafd6ca30a3b9b60bac582c3c4ac3fcc57c3"
+    },
+    {
+      "name": "rack-composition-live",
+      "sha256": "f621f03630f4360076a80ec53186ac1731f6714ee5e298b2e5fc135485969c5d"
+    },
+    {
+      "name": "rack-composition-baseline-live",
+      "sha256": "a6f2a4d4003a7b6e860784351c4059a6abf4e62afa064c2d43ab06cfd81aee72"
+    }
+  ]
+}

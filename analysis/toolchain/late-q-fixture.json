@@ -1,0 +1,13 @@
+{
+  "scope": "Construct a separate tag0 test position; no original save or guest memory is modified.",
+  "name": "maven-search-unseenq",
+  "source_capture_sha256": "0b18d0e76fb18ecf1f234083a7fd3010b8227926779db4136feddf4a3e3e5868",
+  "fixture_sha256": "4609502d9f745232e6645f0254dfa2925cdeb6718d73fe7a3d6c46dd27563c61",
+  "changes": [
+    "ALANG at row14 col2 changed to ALAND by G->D at14,6",
+    "G at9,5 becomes real; Q at7,7 becomes blank; existing blank Q at8,6 retained"
+  ],
+  "expected_unseen": "aaeeeeiknoqrt",
+  "synthetic_position": true,
+  "original_save_unchanged": true
+}

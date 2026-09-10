@@ -1,0 +1,21 @@
+#character-encoding UTF-8
+#description Created with Macondo
+#id io.woogles fixtureSixPass
+#lexicon NWL23
+#game-type classic
+#player1 alpha alpha
+#player2 beta beta
+>alpha: DEGORTU 8D GROUTED +72 72
+#note Only bingo available.
+>beta: ABIMOS? J6 sO.A +14 14
+#note Blank S kept nothing better.
+>alpha: ACEHIKL 9I H. +18 90
+>beta: ABIMSNT - +0 14
+>alpha: ACEIKLN -3 +0 90
+>beta: ABIMSNT - +0 14
+>alpha: AELNRST - +0 90
+>beta: ABIMSNT - +0 14
+>alpha: AELNRST - +0 90
+#note Six consecutive scoreless turns end the game.
+>alpha: AELNRST (AELNRST) -7 83
+>beta: ABIMSNT (ABIMSNT) -11 3

@@ -1,0 +1,19 @@
+{
+  "scope": "Construct a seven-unseen-tile test save with a dictionary-generated one-tile placement.\nBoth players retain seven tiles, with an empty bag. The\nsource save is preserved; this is not a claim of a naturally played game.\n",
+  "sha256": "ccd4de64fa6777de3e037d1276e9d956fc314402f227e180efda67cf7792979c",
+  "word": "ae",
+  "row": 3,
+  "column": 5,
+  "changed": [
+    [
+      3,
+      6,
+      "e"
+    ]
+  ],
+  "unseen": "eeekoqt",
+  "rack1": "eeekoqt",
+  "synthetic_position": true,
+  "placement_reference_sha256": "249ccaf79560d0df5cf6f4c5cff6da0b883162f380dff9f94a451ec53cd8f461",
+  "source_save_sha256": "e2b8f1e909590a470bf2851406a94c015b4cbf3bb91ee3436cda36465599058d"
+}

@@ -1,5 +1,7 @@
 # CODE 36 Analysis
 
+> **Superseded analysis:** CODE36 implements late-game opponent-pool preparation and ranking. The DAWG-field label below is superseded; use reconstruction/late_search.c and analysis/DECOMPILATION-STATUS.md.
+
 ## Overview
 
 | Property | Value |

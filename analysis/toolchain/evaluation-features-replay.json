@@ -1,0 +1,30 @@
+{
+  "scope": "Feature preparation/completion C replay with original record-collector outputs and observed before/after counts; not complete evaluation or ranking",
+  "all_22_features_match": true,
+  "collected_records": 7,
+  "features": [
+    1,
+    2400,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4294967111,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "capture_sha256": "5b090621588d39578ad1eb9adf77a1bcf16b3ffea168560a6791571a7617de49"
+}

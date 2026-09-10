@@ -1,0 +1,18 @@
+{
+  "snapshot_sha256": "a241b5ea386d460078c51db53157da8f09889fd6b0efb9d26ef6c179e95a5245",
+  "header_sha256": "ff84752a137a737217ceec87759c47d87623cabd717fab9f1635d01deaa3792a",
+  "a5": 131028224,
+  "initgraf_resource_offset": 3284,
+  "the_port_a5_offset": -1334,
+  "screen_bits_a5_offset": -1456,
+  "screen_bits_hex": "f900100000800000000001e00280",
+  "base_address": 4177530880,
+  "row_bytes": 128,
+  "bounds": {
+    "top": 0,
+    "left": 0,
+    "bottom": 480,
+    "right": 640
+  },
+  "scope": "Recovered QuickDraw declaration, static InitGraf pointer, and saved screenBits record; no new live initialization trace"
+}

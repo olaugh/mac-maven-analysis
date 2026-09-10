@@ -1,0 +1,33 @@
+{
+  "scope": "Seeded MAGPIE vs reconstructed Maven games; retain every position and discrepancy.\nNot an original-executable oracle. Uses MAGPIE CSW21 leaves with Maven lexicon.\n",
+  "seed": 9102026,
+  "requested_games": 1,
+  "completed_games": 1,
+  "positions": 23,
+  "placement_comparisons": 18783,
+  "issues": [],
+  "games": [
+    {
+      "game": 0,
+      "turns": 23,
+      "scores_before_final_adjustment": [
+        529,
+        374
+      ],
+      "remaining_racks": [
+        [],
+        [
+          "T",
+          "M"
+        ]
+      ],
+      "bag": 0
+    }
+  ],
+  "started": 1789001144.957598,
+  "original_executable_compared": false,
+  "magpie_leaves": "CSW21.klv2",
+  "dictionary_sha256": "2619382321bca5b52967b3515d15b0592a8e1f641bce92f65edcf06ba10edb19",
+  "elapsed_seconds": 1.5321619510650635,
+  "complete": true
+}

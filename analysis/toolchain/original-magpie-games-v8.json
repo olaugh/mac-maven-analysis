@@ -1,0 +1,545 @@
+{
+  "scope": "Magpie picks human moves; original Maven Kibitz plays the other side.\nEvery normal original search is compared byte-for-byte with the owned C engine.\nPositions are imported through original files. Host owns seeded bag/deals, not\noriginal UI move-entry, refill, simulation, or history lifecycle.\n",
+  "seed": 9102038,
+  "requested_games": 9,
+  "completed_games": 0,
+  "positions": 5,
+  "ranked_records": 50,
+  "issues": [
+    {
+      "game": 0,
+      "turn": 4,
+      "cgp": "7O7/7R7/7S7/7E7/3ZiNGIEST4/7L7/7L7/3VAWTE7/15/15/15/15/15/15/15 AEPOOIF/ETQEVDC 77/148 0",
+      "differences": [
+        {
+          "byte": 34,
+          "original": 111,
+          "reconstruction": 112
+        },
+        {
+          "byte": 36,
+          "original": 122,
+          "reconstruction": 111
+        },
+        {
+          "byte": 37,
+          "original": 101,
+          "reconstruction": 102
+        },
+        {
+          "byte": 38,
+          "original": 0,
+          "reconstruction": 105
+        },
+        {
+          "byte": 39,
+          "original": 111,
+          "reconstruction": 101
+        },
+        {
+          "byte": 40,
+          "original": 0,
+          "reconstruction": 114
+        },
+        {
+          "byte": 53,
+          "original": 40,
+          "reconstruction": 240
+        },
+        {
+          "byte": 57,
+          "original": 122,
+          "reconstruction": 237
+        },
+        {
+          "byte": 61,
+          "original": 255,
+          "reconstruction": 245
+        },
+        {
+          "byte": 65,
+          "original": 77,
+          "reconstruction": 1
+        },
+        {
+          "byte": 66,
+          "original": 19,
+          "reconstruction": 2
+        },
+        {
+          "byte": 67,
+          "original": 3,
+          "reconstruction": 2
+        },
+        {
+          "byte": 68,
+          "original": 112,
+          "reconstruction": 111
+        },
+        {
+          "byte": 70,
+          "original": 111,
+          "reconstruction": 122
+        },
+        {
+          "byte": 71,
+          "original": 102,
+          "reconstruction": 101
+        },
+        {
+          "byte": 73,
+          "original": 0,
+          "reconstruction": 111
+        },
+        {
+          "byte": 86,
+          "original": 11,
+          "reconstruction": 10
+        },
+        {
+          "byte": 87,
+          "original": 184,
+          "reconstruction": 40
+        },
+        {
+          "byte": 90,
+          "original": 252,
+          "reconstruction": 254
+        },
+        {
+          "byte": 91,
+          "original": 58,
+          "reconstruction": 122
+        },
+        {
+          "byte": 92,
+          "original": 0,
+          "reconstruction": 255
+        },
+        {
+          "byte": 93,
+          "original": 0,
+          "reconstruction": 255
+        },
+        {
+          "byte": 94,
+          "original": 0,
+          "reconstruction": 255
+        },
+        {
+          "byte": 95,
+          "original": 0,
+          "reconstruction": 255
+        },
+        {
+          "byte": 99,
+          "original": 11,
+          "reconstruction": 77
+        },
+        {
+          "byte": 100,
+          "original": 6,
+          "reconstruction": 19
+        },
+        {
+          "byte": 101,
+          "original": 2,
+          "reconstruction": 3
+        },
+        {
+          "byte": 102,
+          "original": 97,
+          "reconstruction": 112
+        },
+        {
+          "byte": 103,
+          "original": 122,
+          "reconstruction": 111
+        },
+        {
+          "byte": 105,
+          "original": 0,
+          "reconstruction": 102
+        },
+        {
+          "byte": 120,
+          "original": 9,
+          "reconstruction": 11
+        },
+        {
+          "byte": 121,
+          "original": 96,
+          "reconstruction": 184
+        },
+        {
+          "byte": 124,
+          "original": 253,
+          "reconstruction": 252
+        },
+        {
+          "byte": 125,
+          "original": 99,
+          "reconstruction": 58
+        },
+        {
+          "byte": 133,
+          "original": 110,
+          "reconstruction": 11
+        },
+        {
+          "byte": 134,
+          "original": 19,
+          "reconstruction": 6
+        },
+        {
+          "byte": 135,
+          "original": 4,
+          "reconstruction": 2
+        },
+        {
+          "byte": 136,
+          "original": 102,
+          "reconstruction": 97
+        },
+        {
+          "byte": 137,
+          "original": 97,
+          "reconstruction": 122
+        },
+        {
+          "byte": 138,
+          "original": 122,
+          "reconstruction": 111
+        },
+        {
+          "byte": 139,
+          "original": 101,
+          "reconstruction": 0
+        },
+        {
+          "byte": 141,
+          "original": 111,
+          "reconstruction": 0
+        },
+        {
+          "byte": 154,
+          "original": 12,
+          "reconstruction": 9
+        },
+        {
+          "byte": 155,
+          "original": 128,
+          "reconstruction": 96
+        },
+        {
+          "byte": 158,
+          "original": 249,
+          "reconstruction": 253
+        },
+        {
+          "byte": 159,
+          "original": 220,
+          "reconstruction": 99
+        },
+        {
+          "byte": 167,
+          "original": 120,
+          "reconstruction": 110
+        },
+        {
+          "byte": 169,
+          "original": 3,
+          "reconstruction": 4
+        },
+        {
+          "byte": 170,
+          "original": 112,
+          "reconstruction": 102
+        },
+        {
+          "byte": 171,
+          "original": 105,
+          "reconstruction": 97
+        },
+        {
+          "byte": 188,
+          "original": 11,
+          "reconstruction": 12
+        },
+        {
+          "byte": 189,
+          "original": 184,
+          "reconstruction": 128
+        },
+        {
+          "byte": 192,
+          "original": 250,
+          "reconstruction": 249
+        },
+        {
+          "byte": 193,
+          "original": 96,
+          "reconstruction": 220
+        },
+        {
+          "byte": 201,
+          "original": 53,
+          "reconstruction": 120
+        },
+        {
+          "byte": 204,
+          "original": 102,
+          "reconstruction": 112
+        },
+        {
+          "byte": 205,
+          "original": 111,
+          "reconstruction": 105
+        },
+        {
+          "byte": 206,
+          "original": 105,
+          "reconstruction": 122
+        },
+        {
+          "byte": 207,
+          "original": 108,
+          "reconstruction": 101
+        },
+        {
+          "byte": 209,
+          "original": 0,
+          "reconstruction": 111
+        },
+        {
+          "byte": 222,
+          "original": 8,
+          "reconstruction": 11
+        },
+        {
+          "byte": 223,
+          "original": 52,
+          "reconstruction": 184
+        },
+        {
+          "byte": 226,
+          "original": 253,
+          "reconstruction": 250
+        },
+        {
+          "byte": 227,
+          "original": 176,
+          "reconstruction": 96
+        },
+        {
+          "byte": 235,
+          "original": 99,
+          "reconstruction": 53
+        },
+        {
+          "byte": 236,
+          "original": 7,
+          "reconstruction": 19
+        },
+        {
+          "byte": 237,
+          "original": 5,
+          "reconstruction": 3
+        },
+        {
+          "byte": 238,
+          "original": 111,
+          "reconstruction": 102
+        },
+        {
+          "byte": 240,
+          "original": 102,
+          "reconstruction": 105
+        },
+        {
+          "byte": 241,
+          "original": 0,
+          "reconstruction": 108
+        },
+        {
+          "byte": 261,
+          "original": 92,
+          "reconstruction": 176
+        },
+        {
+          "byte": 262,
+          "original": 255,
+          "reconstruction": 0
+        },
+        {
+          "byte": 263,
+          "original": 255,
+          "reconstruction": 0
+        },
+        {
+          "byte": 264,
+          "original": 255,
+          "reconstruction": 0
+        },
+        {
+          "byte": 265,
+          "original": 255,
+          "reconstruction": 0
+        },
+        {
+          "byte": 269,
+          "original": 75,
+          "reconstruction": 99
+        },
+        {
+          "byte": 270,
+          "original": 6,
+          "reconstruction": 7
+        },
+        {
+          "byte": 271,
+          "original": 3,
+          "reconstruction": 5
+        },
+        {
+          "byte": 272,
+          "original": 112,
+          "reconstruction": 111
+        },
+        {
+          "byte": 274,
+          "original": 122,
+          "reconstruction": 102
+        },
+        {
+          "byte": 277,
+          "original": 111,
+          "reconstruction": 0
+        },
+        {
+          "byte": 290,
+          "original": 10,
+          "reconstruction": 8
+        },
+        {
+          "byte": 291,
+          "original": 240,
+          "reconstruction": 52
+        },
+        {
+          "byte": 294,
+          "original": 250,
+          "reconstruction": 253
+        },
+        {
+          "byte": 295,
+          "original": 159,
+          "reconstruction": 92
+        },
+        {
+          "byte": 296,
+          "original": 0,
+          "reconstruction": 255
+        },
+        {
+          "byte": 297,
+          "original": 0,
+          "reconstruction": 255
+        },
+        {
+          "byte": 298,
+          "original": 0,
+          "reconstruction": 255
+        },
+        {
+          "byte": 299,
+          "original": 0,
+          "reconstruction": 255
+        },
+        {
+          "byte": 303,
+          "original": 47,
+          "reconstruction": 75
+        },
+        {
+          "byte": 304,
+          "original": 19,
+          "reconstruction": 6
+        },
+        {
+          "byte": 306,
+          "original": 102,
+          "reconstruction": 112
+        },
+        {
+          "byte": 308,
+          "original": 105,
+          "reconstruction": 122
+        },
+        {
+          "byte": 309,
+          "original": 108,
+          "reconstruction": 0
+        },
+        {
+          "byte": 311,
+          "original": 0,
+          "reconstruction": 111
+        },
+        {
+          "byte": 324,
+          "original": 7,
+          "reconstruction": 10
+        },
+        {
+          "byte": 325,
+          "original": 208,
+          "reconstruction": 240
+        },
+        {
+          "byte": 328,
+          "original": 253,
+          "reconstruction": 250
+        },
+        {
+          "byte": 329,
+          "original": 176,
+          "reconstruction": 159
+        },
+        {
+          "byte": 337,
+          "original": 99,
+          "reconstruction": 47
+        },
+        {
+          "byte": 338,
+          "original": 6,
+          "reconstruction": 19
+        },
+        {
+          "byte": 339,
+          "original": 5,
+          "reconstruction": 3
+        }
+      ],
+      "original_count": 10,
+      "reconstructed_count": 10
+    }
+  ],
+  "games": [],
+  "started": 1789003899.054647,
+  "max_seconds": 1800,
+  "magpie_leaves": "CSW21.klv2",
+  "magpie_only_selects_human_moves": true,
+  "original_executable_compared": true,
+  "files": {
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/bin/magpie": "298b70c362f5b79e0429fae21bc6a931ebc25cd2338b5d82f1df0050091fc2f4",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.kwg": "caabddb67f27a265fa9df4487d07fd93f4010650fbf0f684647b6ac4e0eb333e",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.wmp": "0049dcb9c3dc0913518d7a6f4333e89da37063ce89acd9a9560aee7fd6371c93",
+    "/Users/john/sources/jan14-aviary/magpie-pr-619/data/lexica/NWLMAVEN.klv2": "d33c30e637d53ee6250fac943a01c3c9a18f93c638499ff5e13fa358c2ca03bb",
+    "/Users/john/sources/jan14-aviary/research/mac-maven-analysis/.build/magpie-match.dylib": "d1ed42e6871e3bb8c62d5d798f623f10ebc6677048f9940fee9a89fd5e01a264"
+  },
+  "elapsed_seconds": 13.706414937973022,
+  "failure": "('Original/reconstruction disagreement', {'game': 0, 'turn': 4, 'cgp': '7O7/7R7/7S7/7E7/3ZiNGIEST4/7L7/7L7/3VAWTE7/15/15/15/15/15/15/15 AEPOOIF/ETQEVDC 77/148 0', 'differences': [{'byte': 34, 'original': 111, 'reconstruction': 112}, {'byte': 36, 'original': 122, 'reconstruction': 111}, {'byte': 37, 'original': 101, 'reconstruction': 102}, {'byte': 38, 'original': 0, 'reconstruction': 105}, {'byte': 39, 'original': 111, 'reconstruction': 101}, {'byte': 40, 'original': 0, 'reconstruction': 114}, {'byte': 53, 'original': 40, 'reconstruction': 240}, {'byte': 57, 'original': 122, 'reconstruction': 237}, {'byte': 61, 'original': 255, 'reconstruction': 245}, {'byte': 65, 'original': 77, 'reconstruction': 1}, {'byte': 66, 'original': 19, 'reconstruction': 2}, {'byte': 67, 'original': 3, 'reconstruction': 2}, {'byte': 68, 'original': 112, 'reconstruction': 111}, {'byte': 70, 'original': 111, 'reconstruction': 122}, {'byte': 71, 'original': 102, 'reconstruction': 101}, {'byte': 73, 'original': 0, 'reconstruction': 111}, {'byte': 86, 'original': 11, 'reconstruction': 10}, {'byte': 87, 'original': 184, 'reconstruction': 40}, {'byte': 90, 'original': 252, 'reconstruction': 254}, {'byte': 91, 'original': 58, 'reconstruction': 122}, {'byte': 92, 'original': 0, 'reconstruction': 255}, {'byte': 93, 'original': 0, 'reconstruction': 255}, {'byte': 94, 'original': 0, 'reconstruction': 255}, {'byte': 95, 'original': 0, 'reconstruction': 255}, {'byte': 99, 'original': 11, 'reconstruction': 77}, {'byte': 100, 'original': 6, 'reconstruction': 19}, {'byte': 101, 'original': 2, 'reconstruction': 3}, {'byte': 102, 'original': 97, 'reconstruction': 112}, {'byte': 103, 'original': 122, 'reconstruction': 111}, {'byte': 105, 'original': 0, 'reconstruction': 102}, {'byte': 120, 'original': 9, 'reconstruction': 11}, {'byte': 121, 'original': 96, 'reconstruction': 184}, {'byte': 124, 'original': 253, 'reconstruction': 252}, {'byte': 125, 'original': 99, 'reconstruction': 58}, {'byte': 133, 'original': 110, 'reconstruction': 11}, {'byte': 134, 'original': 19, 'reconstruction': 6}, {'byte': 135, 'original': 4, 'reconstruction': 2}, {'byte': 136, 'original': 102, 'reconstruction': 97}, {'byte': 137, 'original': 97, 'reconstruction': 122}, {'byte': 138, 'original': 122, 'reconstruction': 111}, {'byte': 139, 'original': 101, 'reconstruction': 0}, {'byte': 141, 'original': 111, 'reconstruction': 0}, {'byte': 154, 'original': 12, 'reconstruction': 9}, {'byte': 155, 'original': 128, 'reconstruction': 96}, {'byte': 158, 'original': 249, 'reconstruction': 253}, {'byte': 159, 'original': 220, 'reconstruction': 99}, {'byte': 167, 'original': 120, 'reconstruction': 110}, {'byte': 169, 'original': 3, 'reconstruction': 4}, {'byte': 170, 'original': 112, 'reconstruction': 102}, {'byte': 171, 'original': 105, 'reconstruction': 97}, {'byte': 188, 'original': 11, 'reconstruction': 12}, {'byte': 189, 'original': 184, 'reconstruction': 128}, {'byte': 192, 'original': 250, 'reconstruction': 249}, {'byte': 193, 'original': 96, 'reconstruction': 220}, {'byte': 201, 'original': 53, 'reconstruction': 120}, {'byte': 204, 'original': 102, 'reconstruction': 112}, {'byte': 205, 'original': 111, 'reconstruction': 105}, {'byte': 206, 'original': 105, 'reconstruction': 122}, {'byte': 207, 'original': 108, 'reconstruction': 101}, {'byte': 209, 'original': 0, 'reconstruction': 111}, {'byte': 222, 'original': 8, 'reconstruction': 11}, {'byte': 223, 'original': 52, 'reconstruction': 184}, {'byte': 226, 'original': 253, 'reconstruction': 250}, {'byte': 227, 'original': 176, 'reconstruction': 96}, {'byte': 235, 'original': 99, 'reconstruction': 53}, {'byte': 236, 'original': 7, 'reconstruction': 19}, {'byte': 237, 'original': 5, 'reconstruction': 3}, {'byte': 238, 'original': 111, 'reconstruction': 102}, {'byte': 240, 'original': 102, 'reconstruction': 105}, {'byte': 241, 'original': 0, 'reconstruction': 108}, {'byte': 261, 'original': 92, 'reconstruction': 176}, {'byte': 262, 'original': 255, 'reconstruction': 0}, {'byte': 263, 'original': 255, 'reconstruction': 0}, {'byte': 264, 'original': 255, 'reconstruction': 0}, {'byte': 265, 'original': 255, 'reconstruction': 0}, {'byte': 269, 'original': 75, 'reconstruction': 99}, {'byte': 270, 'original': 6, 'reconstruction': 7}, {'byte': 271, 'original': 3, 'reconstruction': 5}, {'byte': 272, 'original': 112, 'reconstruction': 111}, {'byte': 274, 'original': 122, 'reconstruction': 102}, {'byte': 277, 'original': 111, 'reconstruction': 0}, {'byte': 290, 'original': 10, 'reconstruction': 8}, {'byte': 291, 'original': 240, 'reconstruction': 52}, {'byte': 294, 'original': 250, 'reconstruction': 253}, {'byte': 295, 'original': 159, 'reconstruction': 92}, {'byte': 296, 'original': 0, 'reconstruction': 255}, {'byte': 297, 'original': 0, 'reconstruction': 255}, {'byte': 298, 'original': 0, 'reconstruction': 255}, {'byte': 299, 'original': 0, 'reconstruction': 255}, {'byte': 303, 'original': 47, 'reconstruction': 75}, {'byte': 304, 'original': 19, 'reconstruction': 6}, {'byte': 306, 'original': 102, 'reconstruction': 112}, {'byte': 308, 'original': 105, 'reconstruction': 122}, {'byte': 309, 'original': 108, 'reconstruction': 0}, {'byte': 311, 'original': 0, 'reconstruction': 111}, {'byte': 324, 'original': 7, 'reconstruction': 10}, {'byte': 325, 'original': 208, 'reconstruction': 240}, {'byte': 328, 'original': 253, 'reconstruction': 250}, {'byte': 329, 'original': 176, 'reconstruction': 159}, {'byte': 337, 'original': 99, 'reconstruction': 47}, {'byte': 338, 'original': 6, 'reconstruction': 19}, {'byte': 339, 'original': 5, 'reconstruction': 3}], 'original_count': 10, 'reconstructed_count': 10})",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/john/sources/jan14-aviary/research/mac-maven-analysis/scripts/play_original_magpie_matches.py\", line 58, in main\n    issue=dict(game=game,turn=turn,cgp=position_cgp,differences=diff,original_count=capture['count'],reconstructed_count=ranking.count);report['issues'].append(issue);log.write(json.dumps(record)+'\\n');log.flush();save();raise AssertionError(('Original/reconstruction disagreement',issue))\n                                                                                                                                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('Original/reconstruction disagreement', {'game': 0, 'turn': 4, 'cgp': '7O7/7R7/7S7/7E7/3ZiNGIEST4/7L7/7L7/3VAWTE7/15/15/15/15/15/15/15 AEPOOIF/ETQEVDC 77/148 0', 'differences': [{'byte': 34, 'original': 111, 'reconstruction': 112}, {'byte': 36, 'original': 122, 'reconstruction': 111}, {'byte': 37, 'original': 101, 'reconstruction': 102}, {'byte': 38, 'original': 0, 'reconstruction': 105}, {'byte': 39, 'original': 111, 'reconstruction': 101}, {'byte': 40, 'original': 0, 'reconstruction': 114}, {'byte': 53, 'original': 40, 'reconstruction': 240}, {'byte': 57, 'original': 122, 'reconstruction': 237}, {'byte': 61, 'original': 255, 'reconstruction': 245}, {'byte': 65, 'original': 77, 'reconstruction': 1}, {'byte': 66, 'original': 19, 'reconstruction': 2}, {'byte': 67, 'original': 3, 'reconstruction': 2}, {'byte': 68, 'original': 112, 'reconstruction': 111}, {'byte': 70, 'original': 111, 'reconstruction': 122}, {'byte': 71, 'original': 102, 'reconstruction': 101}, {'byte': 73, 'original': 0, 'reconstruction': 111}, {'byte': 86, 'original': 11, 'reconstruction': 10}, {'byte': 87, 'original': 184, 'reconstruction': 40}, {'byte': 90, 'original': 252, 'reconstruction': 254}, {'byte': 91, 'original': 58, 'reconstruction': 122}, {'byte': 92, 'original': 0, 'reconstruction': 255}, {'byte': 93, 'original': 0, 'reconstruction': 255}, {'byte': 94, 'original': 0, 'reconstruction': 255}, {'byte': 95, 'original': 0, 'reconstruction': 255}, {'byte': 99, 'original': 11, 'reconstruction': 77}, {'byte': 100, 'original': 6, 'reconstruction': 19}, {'byte': 101, 'original': 2, 'reconstruction': 3}, {'byte': 102, 'original': 97, 'reconstruction': 112}, {'byte': 103, 'original': 122, 'reconstruction': 111}, {'byte': 105, 'original': 0, 'reconstruction': 102}, {'byte': 120, 'original': 9, 'reconstruction': 11}, {'byte': 121, 'original': 96, 'reconstruction': 184}, {'byte': 124, 'original': 253, 'reconstruction': 252}, {'byte': 125, 'original': 99, 'reconstruction': 58}, {'byte': 133, 'original': 110, 'reconstruction': 11}, {'byte': 134, 'original': 19, 'reconstruction': 6}, {'byte': 135, 'original': 4, 'reconstruction': 2}, {'byte': 136, 'original': 102, 'reconstruction': 97}, {'byte': 137, 'original': 97, 'reconstruction': 122}, {'byte': 138, 'original': 122, 'reconstruction': 111}, {'byte': 139, 'original': 101, 'reconstruction': 0}, {'byte': 141, 'original': 111, 'reconstruction': 0}, {'byte': 154, 'original': 12, 'reconstruction': 9}, {'byte': 155, 'original': 128, 'reconstruction': 96}, {'byte': 158, 'original': 249, 'reconstruction': 253}, {'byte': 159, 'original': 220, 'reconstruction': 99}, {'byte': 167, 'original': 120, 'reconstruction': 110}, {'byte': 169, 'original': 3, 'reconstruction': 4}, {'byte': 170, 'original': 112, 'reconstruction': 102}, {'byte': 171, 'original': 105, 'reconstruction': 97}, {'byte': 188, 'original': 11, 'reconstruction': 12}, {'byte': 189, 'original': 184, 'reconstruction': 128}, {'byte': 192, 'original': 250, 'reconstruction': 249}, {'byte': 193, 'original': 96, 'reconstruction': 220}, {'byte': 201, 'original': 53, 'reconstruction': 120}, {'byte': 204, 'original': 102, 'reconstruction': 112}, {'byte': 205, 'original': 111, 'reconstruction': 105}, {'byte': 206, 'original': 105, 'reconstruction': 122}, {'byte': 207, 'original': 108, 'reconstruction': 101}, {'byte': 209, 'original': 0, 'reconstruction': 111}, {'byte': 222, 'original': 8, 'reconstruction': 11}, {'byte': 223, 'original': 52, 'reconstruction': 184}, {'byte': 226, 'original': 253, 'reconstruction': 250}, {'byte': 227, 'original': 176, 'reconstruction': 96}, {'byte': 235, 'original': 99, 'reconstruction': 53}, {'byte': 236, 'original': 7, 'reconstruction': 19}, {'byte': 237, 'original': 5, 'reconstruction': 3}, {'byte': 238, 'original': 111, 'reconstruction': 102}, {'byte': 240, 'original': 102, 'reconstruction': 105}, {'byte': 241, 'original': 0, 'reconstruction': 108}, {'byte': 261, 'original': 92, 'reconstruction': 176}, {'byte': 262, 'original': 255, 'reconstruction': 0}, {'byte': 263, 'original': 255, 'reconstruction': 0}, {'byte': 264, 'original': 255, 'reconstruction': 0}, {'byte': 265, 'original': 255, 'reconstruction': 0}, {'byte': 269, 'original': 75, 'reconstruction': 99}, {'byte': 270, 'original': 6, 'reconstruction': 7}, {'byte': 271, 'original': 3, 'reconstruction': 5}, {'byte': 272, 'original': 112, 'reconstruction': 111}, {'byte': 274, 'original': 122, 'reconstruction': 102}, {'byte': 277, 'original': 111, 'reconstruction': 0}, {'byte': 290, 'original': 10, 'reconstruction': 8}, {'byte': 291, 'original': 240, 'reconstruction': 52}, {'byte': 294, 'original': 250, 'reconstruction': 253}, {'byte': 295, 'original': 159, 'reconstruction': 92}, {'byte': 296, 'original': 0, 'reconstruction': 255}, {'byte': 297, 'original': 0, 'reconstruction': 255}, {'byte': 298, 'original': 0, 'reconstruction': 255}, {'byte': 299, 'original': 0, 'reconstruction': 255}, {'byte': 303, 'original': 47, 'reconstruction': 75}, {'byte': 304, 'original': 19, 'reconstruction': 6}, {'byte': 306, 'original': 102, 'reconstruction': 112}, {'byte': 308, 'original': 105, 'reconstruction': 122}, {'byte': 309, 'original': 108, 'reconstruction': 0}, {'byte': 311, 'original': 0, 'reconstruction': 111}, {'byte': 324, 'original': 7, 'reconstruction': 10}, {'byte': 325, 'original': 208, 'reconstruction': 240}, {'byte': 328, 'original': 253, 'reconstruction': 250}, {'byte': 329, 'original': 176, 'reconstruction': 159}, {'byte': 337, 'original': 99, 'reconstruction': 47}, {'byte': 338, 'original': 6, 'reconstruction': 19}, {'byte': 339, 'original': 5, 'reconstruction': 3}], 'original_count': 10, 'reconstructed_count': 10})\n"
+}

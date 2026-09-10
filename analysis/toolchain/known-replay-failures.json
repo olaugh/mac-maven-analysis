@@ -1,0 +1,33 @@
+{
+  "scope": "Historical original-runtime mismatch, now resolved; preserve the original failure evidence.",
+  "capture": "endgame-multiple-collection-search-live.json.gz",
+  "original_iterations": 549,
+  "native_first_difference": {
+    "iteration": 403,
+    "current_node": 231,
+    "actual_free_head": 189,
+    "original_free_head": 191,
+    "first_node": 190,
+    "actual_lower": 39,
+    "original_lower": 0
+  },
+  "wasm_iterations": 550,
+  "dedicated_collections_matched": 3,
+  "commands": [
+    "python3 scripts/replay_endgame_search.py --capture analysis/toolchain/endgame-multiple-collection-search-live.json.gz",
+    "node scripts/replay_wasm_endgame.mjs endgame-multiple-collection-search-live",
+    "python3 scripts/replay_endgame_collection.py --capture analysis/toolchain/endgame-multiple-collection-search-live.json.gz"
+  ],
+  "next": "Continue portable simulation orchestration; this mismatch no longer blocks acceptance.",
+  "status": "resolved",
+  "resolution": {
+    "cause": "CODE39+0558/+0564: offset 0x8ee is other_a[127][0], not other_a[127][8].",
+    "native_iterations": 549,
+    "wasm_iterations": 549,
+    "native_all_iteration_nodes_and_workspaces_match": true,
+    "wasm_final_state_and_rankings_match": true,
+    "evidence": "ENDGAME-403-FIX.md",
+    "regression_report": "portable-verification-403-fix.json",
+    "regression_commands_passed": 166
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "maven_resource": 34,
+  "range": [
+    58,
+    420
+  ],
+  "fingerprint_bytes": 362,
+  "fingerprint_sha256": "3696e64c1489ca02e3cdcb09d6b2368964da88e4843e916b191e63e6ced76fd0",
+  "scanned_files": 775,
+  "exact_matches": [],
+  "scope": "Exact contiguous bytes in recovered installed data forks and parsed rdump resource forks; no unique compiler-version attribution",
+  "resource_fork_matches": [
+    {
+      "path": "think-c-6/installed/THINK C/Tools/SourceServer.rdump",
+      "resource_type": "CODE",
+      "resource_id": 1,
+      "name": "Main",
+      "offset": 27430,
+      "resource_sha256": "150ce949635e15a4c00cab585aecf9b5873ef6a6e99ad8a38f2695499e524b4a"
+    },
+    {
+      "path": "think-c-6/installed/THINK C/Mac Libraries/MacTraps.rdump",
+      "resource_type": "CODE",
+      "resource_id": 2,
+      "name": null,
+      "offset": 116,
+      "resource_sha256": "9488afaa4b32dd004e08436c5afac1aad7df49f36f4743ad18e7912ea5212f36"
+    }
+  ],
+  "resources_checked": 3699
+}

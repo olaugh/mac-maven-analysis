@@ -1,0 +1,6 @@
+{
+  "scope": "Host inspection of naturally saved empty position",
+  "bytes": 0,
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "finder_info_status": "xattr reports no com.apple.FinderInfo; guest metadata persistence not verified"
+}

@@ -1,0 +1,45 @@
+{
+  "scope": "Native reconstructed load/setup/preparation/enumeration pipeline matches ordered words from four separate natural traces; not a full original UI session or full game",
+  "data_sha256": "2619382321bca5b52967b3515d15b0592a8e1f641bce92f65edcf06ba10edb19",
+  "runs": [
+    {
+      "capture": "word-enumerator-live-cat.json",
+      "capture_sha256": "296f75ce6a4daa5a6c7ffe9cd71b353ba3946d22aba06b614da72b8d5fb72737",
+      "words": 4,
+      "ordered_words_match": true,
+      "host_final_status": "count=4 length=0 blanks_used=0"
+    },
+    {
+      "capture": "word-enumerator-live-blank.json",
+      "capture_sha256": "e6e7a91d6645ac2a850cce1c3357a193d77b77a5bdb77fa0363b46d664936243",
+      "words": 50,
+      "ordered_words_match": true,
+      "host_final_status": "count=50 length=0 blanks_used=0"
+    },
+    {
+      "capture": "word-enumerator-live-filtered.json",
+      "capture_sha256": "ee82aece7d2596da9d4c61277ba6d0842ab27dd949df8659002ba281fc23e7c9",
+      "words": 10,
+      "ordered_words_match": true,
+      "host_final_status": "count=10 length=0 blanks_used=0"
+    },
+    {
+      "capture": "word-enumerator-live-required.json",
+      "capture_sha256": "06ada6cd893490875e289908a4f8c7e551cf01b2618153e65d513532e8abcd2c",
+      "words": 85,
+      "ordered_words_match": true,
+      "host_final_status": "count=85 length=0 blanks_used=0"
+    }
+  ],
+  "total_words": 149,
+  "source_sha256": {
+    "reconstruction/whole_file.c": "d1545eea66620d7e7a0c01aa5a6cb6ec050f39c7e4ed4050bae90eddcece4bc4",
+    "reconstruction/dictionary_setup.c": "427568de52d9816594810e413dbdea9e7ebb780d52587351b79acf6b3df98e7e",
+    "reconstruction/dictionary_tables.c": "e4082a32c2e30e9729d6162d513d536db3e59da66e73dc65e0b536bdb7a6b885",
+    "reconstruction/query_prepare.c": "7e61cc09980f3df247b4816bb6cfce4af19fd58674342676071e022bc3f5a29c",
+    "reconstruction/word_enumerator.c": "dbccf9a4365c56704e7e7885ef41bee3193e02adb3fe085edfa99c1952ea1285",
+    "reconstruction/dictionary_lookup.c": "23e0dcf4dcd3021de21158cfc39df64ad513321053883e45c376afd9fabf7c33",
+    "scripts/native_file_ops.h": "52e9201b9f8b79516f58c511ca4fd21a2cda0f5c1c2a334e7aa526da83f4e075",
+    "scripts/word_enumerator_probe.c": "868d61c0df49bb072c4d3a39abb9b0014d20702a4cffd28f5d7d24da87204e80"
+  }
+}

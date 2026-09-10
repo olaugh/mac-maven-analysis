@@ -34,3 +34,9 @@ lexica/short_words_enumerated.txt
 # Temporary files
 *.tmp
 /tmp/
+.build/
+
+# Research artifacts too large for GitHub's 100MB per-file limit
+analysis/toolchain/thousand-20260909/games.positions.jsonl.gz
+analysis/toolchain/overnight-20260909/failure.ram
+analysis/toolchain/overnight-supervisor-failure-check-v2/failure.ram

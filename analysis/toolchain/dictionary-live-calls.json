@@ -1,0 +1,166 @@
+{
+  "capture_sources": [
+    {
+      "file": "dictionary-live-first.json",
+      "sha256": "e0a51090a16eec452bc7e7ac5bd02a089a956025cee8b4840ff7e65bc8e460fa"
+    },
+    {
+      "file": "dictionary-live-quizzify.json",
+      "sha256": "4f34221aa694665354629647763b8ffe2fb32246fac9c69714aebfef36beb054"
+    },
+    {
+      "file": "dictionary-live-batch.json",
+      "sha256": "889d9ae0dd8dd0cee011bb1b9c921d433a462414d7e797b5cbc380159b4f880e"
+    }
+  ],
+  "calls": [
+    {
+      "word_hex": "616374",
+      "word": "act",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 256,
+      "reconstructed_result": 256,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-first.json"
+    },
+    {
+      "word_hex": "7175697a7a696679",
+      "word": "quizzify",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 0,
+      "reconstructed_result": 0,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-quizzify.json"
+    },
+    {
+      "word_hex": "66697a",
+      "word": "fiz",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 256,
+      "reconstructed_result": 256,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-batch.json"
+    },
+    {
+      "word_hex": "66697a7a",
+      "word": "fizz",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 256,
+      "reconstructed_result": 256,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-batch.json"
+    },
+    {
+      "word_hex": "66697a7a79",
+      "word": "fizzy",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 256,
+      "reconstructed_result": 256,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-batch.json"
+    },
+    {
+      "word_hex": "66757a7a",
+      "word": "fuzz",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 256,
+      "reconstructed_result": 256,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-batch.json"
+    },
+    {
+      "word_hex": "66757a7a79",
+      "word": "fuzzy",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 256,
+      "reconstructed_result": 256,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-batch.json"
+    },
+    {
+      "word_hex": "6679",
+      "word": "fy",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 0,
+      "reconstructed_result": 0,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-batch.json"
+    },
+    {
+      "word_hex": "6966",
+      "word": "if",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 256,
+      "reconstructed_result": 256,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-batch.json"
+    },
+    {
+      "word_hex": "7169",
+      "word": "qi",
+      "section": 0,
+      "root_index": 122166,
+      "table_base": 129525324,
+      "table_bytes_verified": 488768,
+      "table_sha256": "e478e511a9e35c8db6ea21984a4a7f86bf704136fd414945f0953a8bf1a7d261",
+      "original_result": 0,
+      "reconstructed_result": 0,
+      "stack_advance": 4,
+      "saved_registers_preserved": true,
+      "capture": "dictionary-live-batch.json"
+    }
+  ],
+  "call_count": 10,
+  "distinct_words": 10,
+  "original_nonzero": 7,
+  "original_zero": 3,
+  "all_results_match": true,
+  "all_saved_registers_preserved": true,
+  "all_stack_advances_four": true,
+  "scope": "Ten natural section-0 lookups during Word List generation; not exhaustive lookup validation or a live section-1 comparison"
+}

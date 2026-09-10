@@ -1,5 +1,13 @@
 # CODE 53 Detailed Analysis - Random Number Generator / Hash Function
 
+> CORRECTION (2026-09-09): the speculative pseudocode below is superseded by
+> `analysis/toolchain/code53-corrected.asm`, `reconstruction/hash_initializer.c`
+> and the owned endgame replay. JT1458 calls CODE4 private31-bit RNG, not
+> Toolbox Random. The hash accumulation shifts right4, not right1. A fresh
+> original endgame capture observes seed515346463 and all16 initialized words;
+> native and wasm resource-initialized searches reproduce the final ranking.
+> Do not use the older Toolbox/shift1 descriptions below as implementation evidence.
+
 ## Overview
 
 | Property | Value |

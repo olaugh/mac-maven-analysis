@@ -1,0 +1,8 @@
+{
+  "scope": "Complete scorer C replay from one natural invocation and actual tables; only branches exercised by captured move are runtime-verified",
+  "score_bits": 1000,
+  "new_tiles": 6,
+  "remaining_rack": "i",
+  "recorded_coordinates_match": true,
+  "capture_sha256": "fdd5348176fa1fde619568503f238e7834b44d8739d784cd72ecd66def8285fd"
+}
